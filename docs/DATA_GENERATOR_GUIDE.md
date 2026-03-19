@@ -1,4 +1,4 @@
-# MTG Data Generator Guide (Python + Colab)
+# MTG Data Generator Guide (Python)
 
 This guide explains the new v1.5 data-generation workflow in plain language.
 
@@ -32,16 +32,16 @@ It also:
 
 ## Recommended Workflow
 
-1. Run generator (local or Colab)
+1. Run generator locally
 2. Review XLSX output (colors + sanity check)
-3. Run your analysis script (`src/mtg_analyzer.py`)
+3. Use generated files in your analysis workflow
 
-## Option A: Local Python (Step by Step)
+## Local Python (Step by Step)
 
 ### 1. Open terminal in repository root
 
 ```sh
-cd MTG-Metagame-Analyzer
+cd MTG-Metagame-Input-Generator
 ```
 
 ### 2. Install dependencies
@@ -77,37 +77,6 @@ Main files:
 - `metagame_input_rogue_grouped.csv`
 - `unknown_archetypes.csv`
 - `alias_suggestions.csv`
-
-## Option B: Google Colab (Step by Step)
-
-### 1. Open Colab
-
-- https://colab.research.google.com
-
-### 2. Upload and run notebook
-
-- `docs/COLAB_INPUT_GENERATOR.ipynb`
-
-### 3. Set parameters in the notebook
-
-You can configure:
-
-- format
-- history points
-- metagame window
-- my deck
-- 90d and 180d matchup windows
-- Rogue threshold
-
-### 4. Run all cells
-
-The notebook will:
-
-- clone repository
-- install requirements
-- run generator
-- package outputs into ZIP
-- download ZIP to your computer
 
 ## Key Parameters Explained
 

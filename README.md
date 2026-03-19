@@ -2,7 +2,7 @@
 
 Standalone data-generation tool for MTG metagame analysis.
 
-This project fetches metagame and matchup data, normalizes deck names/archetypes, and exports ready-to-analyze files for local workflows and Google Colab.
+This project fetches metagame and matchup data, normalizes deck names/archetypes, and exports ready-to-analyze files for local workflows.
 
 ## What This Project Does
 
@@ -56,11 +56,7 @@ Generated files include:
 - `unknown_archetypes.csv`
 - `alias_suggestions.csv`
 
-## Colab
-
-Use notebook:
-
-- `docs/COLAB_INPUT_GENERATOR.ipynb`
+## User Guide
 
 Guide for non-technical users:
 
