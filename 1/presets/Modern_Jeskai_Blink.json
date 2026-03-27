@@ -1,0 +1,12 @@
+{
+  "name": "Modern_Jeskai_Blink",
+  "format": "Modern",
+  "my_deck": "Jeskai Blink",
+  "metagame_window_days": 14,
+  "my_window_days": 90,
+  "my_fallback_window_days": 180,
+  "rogue_threshold": 0.5,
+  "metagame_limit": 64,
+  "matchup_limit": 1000,
+  "history_points_default": 0
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Pioneer_Izzet_Prowess",
+  "format": "Pioneer",
+  "my_deck": "Izzet Prowess",
+  "metagame_window_days": 14,
+  "my_window_days": 90,
+  "my_fallback_window_days": 180,
+  "rogue_threshold": 0.5,
+  "history_points_default": 4
+}

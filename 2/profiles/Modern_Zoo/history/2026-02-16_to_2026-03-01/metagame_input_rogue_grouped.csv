@@ -1,0 +1,31 @@
+Deck,Source Deck Names,Meta,Winrate,Winrate Game Count,Archetype,My Deck Winrate,My Deck Winrate Game Count
+Boros Energy,Boros Energy,16.8,0.5169,1072,Aggro,0.5556000000000001,231
+Rogue,4c Midrange | Asmo Food | BG | BRG | Boros Midrange | Eldrazi | Esper Midrange | Generic Ragavan | Grixis Control | Jeskai Control | Jund | Land Destruction | Mardu GenericBlink | Merfolk | Mono-Black Midrange | Mono-Red Burn | Orzhov GenericBlink | Orzhov Midrange | RG | Rakdos Midrange | Simic Midrange | Temur Midrange | Temur Scapeshift | The Rock | UB | UBRG | URG | WBR | WR | WUG | WUR | WURG | Rogue,8.16,0.42819019607843134,587,Rogue,0.5164592592592593,116
+Jeskai Blink,Jeskai Blink,7.92,0.5819,590,Blink,0.3541375,80
+Eldrazi Tron,Eldrazi Tron,7.45,0.5047,553,Ramp,0.45949999999999996,98
+Ruby Storm,Ruby Storm,6.18,0.4736,409,Combo,0.5333,117
+Prowess,Izzet Prowess | Izzet Steel-Cutter | Temur Prowess,4.91,0.5236191446028513,389,Aggro,0.5024121212121212,198
+Affinity,Affinity,4.75,0.5318999999999999,352,Aggro,0.5253,82
+Dimir Midrange,Dimir Midrange,3.8,0.43119999999999997,268,Midrange,0.4210999999999999,49
+Domain Zoo,Domain Zoo,3.49,0.5051,247,Midrange,0.5,0
+Goryo's Vengeance,Goryo's Vengeance,3.33,0.5,230,Graveyard,0.6061,28
+Living End,Living End,3.17,0.5018,472,Graveyard,0.4569830188679245,106
+Esper Blink,Esper GenericBlink,3.17,0.5657,243,Blink,0.3636,27
+Grixis Midrange,Grixis Midrange,3.01,0.4982,230,Midrange,0.5333,25
+Neobrand,Neobrand,3.01,0.4365,217,Combo,0.6042000000000001,41
+Belcher,Belcher,2.69,0.5155,218,Combo,0.7273000000000001,26
+Amulet Titan,Amulet Titan,2.54,0.469,184,Combo,0.4444,38
+Eldrazi Ramp,Eldrazi Ramp,2.54,0.5047,181,Ramp,0.3667,25
+Through the Breach,Through the Breach,1.58,0.5374,123,Unknown,0.6667000000000001,3
+Yawgmoth,Yawgmoth,1.58,0.48889999999999995,107,Combo,0.5667,25
+Sultai Ritual,Sultai Midrange,1.43,0.5069,121,Midrange,0.4667,25
+Mono-Green Basking Broodscale Combo,Mono-Green Basking Broodscale Combo,1.27,0.46460000000000007,84,Combo,0.0,4
+Mill,Mill,0.95,0.3636,57,Unknown,0.8889000000000001,7
+Gruul Basking Broodscale Combo,Gruul Basking Broodscale Combo,0.95,0.5057,79,Combo,0.5,6
+UBR,UBR,0.79,0.381,51,Unknown,0.5556,8
+Indomitable Creativity,Indomitable Creativity,0.79,0.4603,52,Combo,0.6667000000000001,3
+Death's Shadow,Death's Shadow,0.79,0.3333,60,Unknown,0.6667000000000001,3
+BR,BR,0.63,0.45830000000000004,41,Unknown,0.3333,3
+Azorius Control,Azorius Control,0.63,0.43140000000000006,39,Control,0.6667000000000001,6
+Grixis Reanimator,Grixis Reanimator,0.63,0.5439,47,Graveyard,0.4286,19
+WU,WU,0.63,0.5185,45,Unknown,0.16670000000000001,5

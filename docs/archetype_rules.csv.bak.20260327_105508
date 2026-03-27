@@ -1,0 +1,28 @@
+pattern,archetype,match_type,priority
+Affinity,Aggro,exact,1
+Amulet Titan,Combo,exact,1
+Asmo Food,Rogue,exact,1
+Boros Energy,Aggro,exact,1
+BR,Graveyard,exact,1
+Broodscale Combo,Combo,exact,1
+Dimir Midrange,Midrange,exact,1
+Domain Zoo,Aggro,exact,1
+Eldrazi Tron,Ramp,exact,1
+Gruul Basking Broodscale Combo,Rogue,exact,1
+Hammer Time,Rogue,exact,1
+Jeskai Blink,Midrange,exact,1
+Living End,Graveyard,exact,1
+Mill,Combo,exact,1
+Mono-Green Basking Broodscale Combo,Rogue,exact,1
+Ruby Storm,Combo,exact,1
+WU,test,exact,1
+Blink,Blink,contains,2
+Yawgmoth,Combo,contains,2
+Eldrazi,Eldrazi,contains,3
+Energy,Energy,contains,3
+Burn,Aggro,contains,10
+Control,Control,contains,10
+Midrange,Midrange,contains,10
+Prowess,Aggro,contains,10
+Storm,Combo,contains,10
+Tron,Ramp,contains,10

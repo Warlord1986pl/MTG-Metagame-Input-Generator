@@ -37,6 +37,57 @@ python src/metagame_input_generator.py \
   --rogue-threshold 0.5
 ```
 
+Or use one-command launchers (PowerShell):
+
+```powershell
+./run_weekly.ps1
+./run_history_4.ps1 -AnchorSunday 2026-03-15
+```
+
+Preset-based interactive mode (recommended for daily use):
+
+```powershell
+./run_preset_cli.ps1
+```
+
+Desktop GUI (PySide6):
+
+```bat
+run_gui.bat
+```
+
+What preset mode gives you:
+
+- asks where to create workspace folder structure,
+- lets you create presets like `Modern_Domain_Zoo` or `Modern_Jeskai_Control`,
+- keeps separate `configs`, `outputs`, and `history` per preset,
+- on next run, lets you pick an existing preset and generate weekly/history snapshots quickly.
+
+What GUI mode gives you:
+
+- form for format, date range, deck name, and core generator parameters,
+- one-click weekly snapshot generation,
+- live execution log inside the window,
+- quick open for output folder and main XLSX,
+- clickable list of generated files.
+- built-in editor for canonical deck names and archetype assignment.
+- one-click "Regenerate Grouped Now" from the editor tab.
+
+GUI editor mode gives you:
+
+- loads the latest generated `metagame_input.csv` into a table,
+- lets you reclassify a deck into an archetype from a dropdown,
+- lets you type your own custom archetype and save it into a separate catalog,
+- lets you rename canonical deck names and persist exact alias + mapping rules,
+- writes changes back to config CSVs in `docs/`.
+
+Default GUI generation profile is now streamlined for analysis:
+
+- input file: `metagame_input.csv` (clean, per-deck rows),
+- final grouped output: `metagame_input_grouped.xlsx`.
+
+Use CLI `--output-profile full` when you want all auxiliary reports/files.
+
 ### 3) Check outputs
 
 Standard weekly output:
@@ -67,6 +118,7 @@ Guide for non-technical users:
 - `docs/archetype_rules.csv`
 - `docs/deck_aliases.csv`
 - `docs/user_deck_mapping.csv`
+- `docs/archetype_catalog.csv`
 
 ## License
 

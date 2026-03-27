@@ -1,0 +1,13 @@
+pattern,canonical_name,match_type,priority
+Boros Energy,Boros Energy,exact,1
+Hammer Time,Hammer Time,exact,1
+Sultai Midrange,Sultai Ritual,exact,1
+Sultai Ritual,Sultai Ritual,exact,1
+WU,WU,exact,1
+Izzet Prowess,Prowess,exact,2
+Izzet Steel-Cutter,Prowess,exact,2
+Temur Midrange,Temur Breach,exact,2
+Temur Prowess,Prowess,exact,2
+Temur Steel-Cutter,Prowess,exact,2
+IzzetControl,Izzet Control,exact,5
+Mono-Red Burn,Burn,exact,10

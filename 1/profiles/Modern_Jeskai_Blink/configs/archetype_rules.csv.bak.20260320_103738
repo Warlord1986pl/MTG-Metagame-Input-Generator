@@ -1,0 +1,20 @@
+pattern,archetype,match_type,priority
+Domain Zoo,Aggro,exact,1
+Boros Energy,Aggro,exact,1
+Ruby Storm,Combo,exact,1
+Eldrazi Tron,Ramp,exact,1
+Jeskai Blink,Midrange,exact,1
+Blink,Blink,contains,2
+Eldrazi,Eldrazi,contains,3
+Energy,Energy,contains,3
+Affinity,Aggro,exact,1
+Living End,Graveyard,exact,1
+Amulet Titan,Combo,exact,1
+Dimir Midrange,Midrange,exact,1
+Yawgmoth,Combo,contains,2
+Control,Control,contains,10
+Midrange,Midrange,contains,10
+Prowess,Aggro,contains,10
+Burn,Aggro,contains,10
+Tron,Ramp,contains,10
+Storm,Combo,contains,10

@@ -1,0 +1,31 @@
+Deck,Source Deck Names,Meta,Winrate,Winrate Game Count,Archetype,My Deck Winrate,My Deck Winrate Game Count
+Boros Energy,Boros Energy,20.49,0.49310000000000004,1160,Aggro,0.5615,371
+Prowess,Izzet Prowess | Izzet Steel-Cutter | Temur Prowess | Temur Steel-Cutter,8.5,0.5491038823529412,637,Aggro,0.5663611111111111,432
+Ruby Storm,Ruby Storm,7.64,0.5,512,Combo,0.5054,163
+Rogue,4/5c Omnath | 5c Midrange | Asmo Food | BRG | Bogles | Death's Shadow | Grixis Control | Gruul Basking Broodscale Combo | Indomitable Creativity | Izzet Splinter Twin | Jeskai Control | Jeskai Energy | Jund Saga | Lantern | Mardu Energy | Mardu GenericBlink | Mill | Miracles | Mono-Red Artifact Reanimation | Orzhov GenericBlink | Orzhov Midrange | RG | Rakdos Midrange | Simic Midrange | Temur Midrange | Tron | UB | UBR | W | WU | WUBRG | WUR,6.880000000000001,0.4475771802325581,462,Rogue,0.5386649224806201,187
+Eldrazi Tron,Eldrazi Tron,6.42,0.4845000000000001,405,Ramp,0.5699000000000001,158
+Jeskai Blink,Jeskai Blink,5.9,0.5588000000000001,440,Blink,0.5,0
+Affinity,Affinity,5.03,0.5357,346,Aggro,0.5539000000000001,163
+Amulet Titan,Amulet Titan,3.99,0.6126,285,Combo,0.3853999999999999,87
+Neobrand,Neobrand,3.47,0.44160000000000005,191,Combo,0.5806,78
+Living End,Living End,2.78,0.46759999999999996,174,Graveyard,0.44580357142857135,56
+Dimir Midrange,Dimir Midrange,2.78,0.5197999999999999,208,Midrange,0.47619999999999996,67
+Goryo's Vengeance,Goryo's Vengeance,2.78,0.46930000000000005,195,Graveyard,0.451,42
+Belcher,Belcher,2.6,0.5046,184,Combo,0.5897,63
+Domain Zoo,Domain Zoo,2.6,0.44969999999999993,161,Midrange,0.6570999999999999,84
+Sultai Ritual,Sultai Midrange,2.26,0.46109999999999995,147,Midrange,0.6457999999999999,40
+Eldrazi Ramp,Eldrazi Ramp,2.08,0.45909999999999995,134,Ramp,0.5467,71
+Esper Blink,Esper GenericBlink,1.74,0.42219999999999996,108,Blink,0.4545,50
+UR,UR,1.56,0.54,131,Unknown,0.6,15
+Grixis Reanimator,Grixis Reanimator,1.39,0.47780000000000006,73,Graveyard,0.4815,43
+Eldrazi,Eldrazi,1.22,0.5484,81,Eldrazi,0.9047999999999999,16
+Azorius Control,Azorius Control,1.22,0.4444,84,Control,0.5,25
+UBRG,UBRG,1.04,0.4048,73,Unknown,0.3333,6
+Izzet Control,IzzetControl,1.04,0.4203,55,Control,0.3333,3
+BR,BR,0.87,0.3556,39,Unknown,0.3333,9
+Yawgmoth,Yawgmoth,0.69,0.46670000000000006,38,Combo,0.6594,54
+Hollow One,Hollow One,0.69,0.4167,39,Graveyard,0.6667000000000001,8
+WG,WG,0.69,0.5417000000000001,65,Unknown,0.6667000000000001,3
+Grixis Midrange,Grixis Midrange,0.52,0.5185,48,Midrange,0.6667000000000001,34
+Mono-Green Basking Broodscale Combo,Mono-Green Basking Broodscale Combo,0.52,0.3636,24,Combo,0.6364,25
+Sam Combo,Sam Combo,0.52,0.2727,29,Combo,0.5,0

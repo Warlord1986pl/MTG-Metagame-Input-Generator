@@ -1,0 +1,23 @@
+pattern,canonical_name,match_type,priority
+Asmo Food,Asmo Food,exact,1
+Boros Energy,Boros Energy,exact,1
+BR,BR,exact,1
+BRG,BRG,exact,1
+Dimir Tezzerator,Dimir Tezzerator,exact,1
+Gruul Basking Broodscale Combo,Broodscale Combo,exact,1
+Hammer Time,Hammer Time,exact,1
+Mill,Mill,exact,1
+Mono-Green Basking Broodscale Combo,Broodscale Combo,exact,1
+Simic Basking Broodscale Combo,Broodscale Combo,exact,1
+Sultai Midrange,Sultai Ritual,exact,1
+Sultai Ritual,Sultai Ritual,exact,1
+Through the Breach,Through the Breach,exact,1
+UBRG,UBRG,exact,1
+WU,WU,exact,1
+Izzet Prowess,Prowess,exact,2
+Izzet Steel-Cutter,Prowess,exact,2
+Temur Midrange,Temur Breach,exact,2
+Temur Prowess,Prowess,exact,2
+Temur Steel-Cutter,Prowess,exact,2
+IzzetControl,Izzet Control,exact,5
+Mono-Red Burn,Burn,exact,10

@@ -1,0 +1,15 @@
+✅ User mapping rows loaded: 28
+✅ Rows matched by user mapping: 14
+✅ Rows exported: 30
+✅ My Deck Winrate primary (90d): 27/30
+✅ My Deck Winrate fallback (180d): 1
+✅ My Deck Winrate fallback 50%: 2
+✅ Data source: api
+✅ Rogue threshold: Meta < 0.5%
+✅ CSV: outputs\2026-03-02_to_2026-03-15\metagame_input.csv
+✅ XLSX: outputs\2026-03-02_to_2026-03-15\metagame_input.xlsx
+✅ CSV (Rogue grouped): outputs\2026-03-02_to_2026-03-15\metagame_input_rogue_grouped.csv
+✅ XLSX (Rogue grouped): outputs\2026-03-02_to_2026-03-15\metagame_input_rogue_grouped.xlsx
+✅ Unknown archetypes report: outputs\2026-03-02_to_2026-03-15\unknown_archetypes.csv
+✅ Alias suggestions report: outputs\2026-03-02_to_2026-03-15\alias_suggestions.csv
+✅ Output dir: outputs\2026-03-02_to_2026-03-15

@@ -1,0 +1,29 @@
+Deck,Source Deck Names,Meta,Winrate,Winrate Game Count,Archetype,My Deck Winrate,My Deck Winrate Game Count
+Boros Energy,Boros Energy,13.17,0.479,884,Aggro,0.5257999999999999,241
+Rogue,Azorius GenericBlink | BG | BR | BRG | Boros Midrange | Death's Shadow | Eldrazi | Esper Control | Esper Midrange | Generic Ragavan | Grixis Control | Gruul Basking Broodscale Combo | Gruul Prowess | Hammer Time | IzzetControl | Jeskai Control | Jeskai Energy | Jund | Land Destruction | Merfolk | Mono-Red Burn | Naya Burn | Oops! All Spells | Orzhov Midrange | Rakdos Midrange | Simic Midrange | Temur Midrange | UB | UG | URG | WU | WUG | WUR | WURG,9.920000000000002,0.45255806451612884,730,Rogue,0.5080210987529491,189
+Ruby Storm,Ruby Storm,7.78,0.515,538,Combo,0.5106,123
+Jeskai Blink,Jeskai Blink,6.67,0.5605,500,Blink,0.3861451219512195,82
+Eldrazi Tron,Eldrazi Tron,6.51,0.5163,474,Ramp,0.4706,90
+Affinity,Affinity,4.44,0.5394,332,Aggro,0.5354,82
+Prowess,Izzet Prowess | Izzet Steel-Cutter | Temur Prowess,4.28,0.5036901869158878,305,Aggro,0.5393072463768115,207
+Eldrazi Ramp,Eldrazi Ramp,3.97,0.4971,295,Ramp,0.3333,22
+Domain Zoo,Domain Zoo,3.97,0.5028,301,Midrange,0.5,0
+Living End,Living End,3.6500000000000004,0.47769999999999996,492,Graveyard,0.49091875,96
+Dimir Midrange,Dimir Midrange,3.49,0.4860999999999999,236,Midrange,0.4583,41
+Neobrand,Neobrand,3.33,0.5374,242,Combo,0.5965,47
+Grixis Midrange,Grixis Midrange,3.02,0.46580000000000005,197,Midrange,0.625,20
+Esper Blink,Esper GenericBlink,2.86,0.5725,230,Blink,0.3556000000000001,38
+Amulet Titan,Amulet Titan,2.7,0.5465,216,Combo,0.4614999999999999,32
+Goryo's Vengeance,Goryo's Vengeance,2.22,0.5436,166,Graveyard,0.6409999999999999,31
+Sultai Ritual,Sultai Midrange,2.06,0.4833,150,Midrange,0.47619999999999996,17
+Grixis Reanimator,Grixis Reanimator,2.06,0.4343,161,Graveyard,0.4286,19
+Yawgmoth,Yawgmoth,1.9,0.5157,135,Combo,0.5640999999999999,32
+Belcher,Belcher,1.75,0.4815,108,Combo,0.6667,27
+Mono-Black Midrange,Mono-Black Midrange,1.75,0.4524,142,Midrange,0.5,21
+Azorius Control,Azorius Control,1.59,0.5033,127,Control,0.6667000000000001,6
+Mono-Green Basking Broodscale Combo,Mono-Green Basking Broodscale Combo,1.11,0.4167,84,Combo,0.0,4
+Mill,Mill,0.95,0.5758,77,Unknown,0.8889000000000001,7
+Indomitable Creativity,Indomitable Creativity,0.79,0.4074,48,Combo,0.6667000000000001,3
+Through the Breach,Through the Breach,0.79,0.5556,50,Unknown,0.6667000000000001,3
+UBR,UBR,0.63,0.43140000000000006,42,Unknown,0.5556,8
+WR,WR,0.63,0.25489999999999996,41,Unknown,0.5,0

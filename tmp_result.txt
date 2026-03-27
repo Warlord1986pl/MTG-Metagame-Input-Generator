@@ -1,0 +1,250 @@
+Traceback (most recent call last):
+  File "E:\github\MTG-Metagame-Input-Generator\tmp_matchup_verify.py", line 152, in <module>
+    html = fetch(url)
+           ^^^^^^^^^^
+  File "E:\github\MTG-Metagame-Input-Generator\tmp_matchup_verify.py", line 51, in fetch
+    with urllib.request.urlopen(req, timeout=20) as r:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 1392, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\urllib\request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\http\client.py", line 1428, in getresponse
+    response.begin()
+  File "C:\Python\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python\Lib\ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+============================================================
+Fetching MTGO decklists index...
+Total event links: 310
+Modern Challenge events in range: 31
+  /decklist/modern-challenge-32-2026-03-1512835326
+  /decklist/modern-challenge-32-2026-03-1512835322
+  /decklist/premodern-challenge-32-2026-03-1412835320
+  /decklist/modern-challenge-64-2026-03-1412835315
+  /decklist/modern-challenge-32-2026-03-1412835310
+  /decklist/modern-challenge-32-2026-03-1412835308
+  /decklist/premodern-challenge-32-2026-03-1312835303
+  /decklist/modern-challenge-32-2026-03-1312835299
+  /decklist/premodern-challenge-32-2026-03-1212835285
+  /decklist/modern-challenge-64-2026-03-1212835281
+  /decklist/modern-challenge-32-2026-03-1112834561
+  /decklist/modern-challenge-64-2026-03-1012834551
+  /decklist/premodern-challenge-32-2026-03-1012834549
+  /decklist/modern-challenge-32-2026-03-0912834536
+  /decklist/modern-challenge-32-2026-03-0912834532
+  /decklist/modern-showcase-challenge-2026-03-0812834457
+  /decklist/modern-challenge-32-2026-03-0812834522
+  /decklist/modern-challenge-32-2026-03-0812834518
+  /decklist/premodern-challenge-32-2026-03-0712834516
+  /decklist/modern-challenge-64-2026-03-0712834511
+  /decklist/modern-challenge-32-2026-03-0712834506
+  /decklist/modern-challenge-32-2026-03-0712834504
+  /decklist/premodern-challenge-32-2026-03-0612834499
+  /decklist/modern-challenge-32-2026-03-0612834495
+  /decklist/premodern-challenge-32-2026-03-0512834482
+  /decklist/modern-challenge-64-2026-03-0512834478
+  /decklist/modern-challenge-32-2026-03-0412834469
+  /decklist/modern-challenge-64-2026-03-0312834459
+  /decklist/premodern-challenge-32-2026-03-0312834112
+  /decklist/modern-challenge-32-2026-03-0212834100
+  /decklist/modern-challenge-32-2026-03-0212834096
+
+[1/31] /decklist/modern-challenge-32-2026-03-1512835326
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['yriel', 'olbeda', 'peter780108']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[2/31] /decklist/modern-challenge-32-2026-03-1512835322
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['Spellyp', 'Dioferreira', 'gooplay1']
+    [WIN] Spellyp(JeskaiBlink) 2-1 termidor(Unknown)
+    [WIN] Spellyp(JeskaiBlink) 2-1 nprism(Ruby Storm)
+    [WIN] Spellyp(JeskaiBlink) 2-1 nahuel10(Prowess)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[4/31] /decklist/modern-challenge-64-2026-03-1412835315
+  Decklists: 32, Jeskai Blink players: 7
+    Jeskai players: ['Jedgi', 'Urthstrype', 'John1111', 'mh7lucky', 'r0cknati0n', 'Oderus Urungus', 'Dioferreira']
+    [WIN] r0cknati0n(JeskaiBlink) 2-1 ip_pontes(Boros Energy)
+    [LOSS] John1111(JeskaiBlink) 0-2 alessandro81(Dimir Midrange)
+    [WIN] r0cknati0n(JeskaiBlink) 2-0 alessandro81(Dimir Midrange)
+    [WIN] r0cknati0n(JeskaiBlink) 2-1 Alan07(Unknown)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 4
+
+[5/31] /decklist/modern-challenge-32-2026-03-1412835310
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['Barneygumbal', 'kthanakit26', 'yriel']
+    [WIN] yriel(JeskaiBlink) 2-1 Killerp0p0(Unknown)
+    [LOSS] yriel(JeskaiBlink) 1-2 sidisi(Amulet Titan)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 2
+
+[6/31] /decklist/modern-challenge-32-2026-03-1412835308
+  Decklists: 32, Jeskai Blink players: 2
+    Jeskai players: ['CMack_', 'Dioferreira']
+    [WIN] CMack_(JeskaiBlink) 2-1 NeoKipper(Eldrazi Tron)
+    [WIN] CMack_(JeskaiBlink) 2-1 LucasG1ggs(Unknown)
+    [WIN] CMack_(JeskaiBlink) 2-0 eclipse4343(Dimir Midrange)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[8/31] /decklist/modern-challenge-32-2026-03-1312835299
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['Jedgi', 'BrokenVerse', 'Rvng']
+    [WIN] BrokenVerse(JeskaiBlink) 2-1 MahfuzVanGogh(Unknown)
+    [LOSS] BrokenVerse(JeskaiBlink) 0-2 JPA93(Prowess)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 2
+
+[10/31] /decklist/modern-challenge-64-2026-03-1212835281
+  Decklists: 32, Jeskai Blink players: 2
+    Jeskai players: ['peter780108', 'Rvng']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[11/31] /decklist/modern-challenge-32-2026-03-1112834561
+  Decklists: 32, Jeskai Blink players: 2
+    Jeskai players: ['OkoDio', 'olbeda']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[12/31] /decklist/modern-challenge-64-2026-03-1012834551
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['yriel', 'SuperCow12653', 'peter780108']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[14/31] /decklist/modern-challenge-32-2026-03-0912834536
+  Decklists: 32, Jeskai Blink players: 6
+    Jeskai players: ['Nytrox', 'MarcoBelacca95', 'Ebnus', 'Omegauo', 'Zodiacek', 'SuperCow12653']
+    [LOSS] SuperCow12653(JeskaiBlink) 0-2 O_danielakos(Prowess)
+    [WIN] Ebnus(JeskaiBlink) 2-0 hardfight(Boros Energy)
+    [LOSS] Ebnus(JeskaiBlink) 1-2 O_danielakos(Prowess)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[15/31] /decklist/modern-challenge-32-2026-03-0912834532
+  Decklists: 32, Jeskai Blink players: 1
+    Jeskai players: ['LuckSackJack']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[16/31] /decklist/modern-showcase-challenge-2026-03-0812834457
+  Decklists: 32, Jeskai Blink players: 6
+    Jeskai players: ['Jedgi', 'Martin_Dominguez', 'Takayama', 'TheKingJijah', 'Bunbuneru', 'Junkmener']
+    [LOSS] Takayama(JeskaiBlink) 1-2 Dudarudi(Hollow One)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 1
+
+[17/31] /decklist/modern-challenge-32-2026-03-0812834522
+  Decklists: 32, Jeskai Blink players: 4
+    Jeskai players: ['oosunq', 'Venom1', 'olbeda', 'mtgobazaar8']
+    [WIN] Venom1(JeskaiBlink) 2-1 Mikebrav(Unknown)
+    [WIN] Venom1(JeskaiBlink) 2-1 DcNo(Unknown)
+    [WIN] Venom1(JeskaiBlink) 2-0 MeninoNey(Living End)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[18/31] /decklist/modern-challenge-32-2026-03-0812834518
+  ERROR: The read operation timed out
+
+[20/31] /decklist/modern-challenge-64-2026-03-0712834511
+  Decklists: 32, Jeskai Blink players: 8
+    Jeskai players: ['C_S_W____', 'Benjamin_S', 'Urthstrype', 'yriel', 'UninspiredMehjagic', 'Lufia', '6argamel', 'habieh']
+    [LOSS] Benjamin_S(JeskaiBlink) 1-2 SuperCow12653(Ruby Storm)
+    [LOSS] yriel(JeskaiBlink) 1-2 optivial(Ruby Storm)
+    [WIN] C_S_W____(JeskaiBlink) 2-0 Zoob5555(Unknown)
+    [WIN] C_S_W____(JeskaiBlink) 2-1 optivial(Ruby Storm)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 4
+
+[21/31] /decklist/modern-challenge-32-2026-03-0712834506
+  Decklists: 32, Jeskai Blink players: 5
+    Jeskai players: ['yriel', 'Venom1', 'bless_von', 'MultiformatSuperstar', 'olbeda']
+    [LOSS] olbeda(JeskaiBlink) 0-2 PANTARES(Ruby Storm)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 1
+
+[22/31] /decklist/modern-challenge-32-2026-03-0712834504
+  Decklists: 32, Jeskai Blink players: 4
+    Jeskai players: ['C_S_W____', 'Venom1', 'Benjamin_S', 'MikeEgan']
+    [WIN] Venom1(JeskaiBlink) 2-0 MisterTwin(Unknown)
+    [WIN] Venom1(JeskaiBlink) 2-1 TripleQ(Unknown)
+    [LOSS] Venom1(JeskaiBlink) 0-2 HelpfulHobo(Unknown)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[24/31] /decklist/modern-challenge-32-2026-03-0612834495
+  Decklists: 32, Jeskai Blink players: 1
+    Jeskai players: ['CMack_']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[26/31] /decklist/modern-challenge-64-2026-03-0512834478
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['Alpha_Go', 'Pnutz47', 'Omegauo']
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 0
+
+[27/31] /decklist/modern-challenge-32-2026-03-0412834469
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['Laplasjan', 'CMack_', 'groot02']
+    [WIN] CMack_(JeskaiBlink) 2-1 Misplacedginger(Boros Energy)
+    [LOSS] CMack_(JeskaiBlink) 1-2 GinkoHS(Unknown)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 2
+
+[28/31] /decklist/modern-challenge-64-2026-03-0312834459
+  Decklists: 32, Jeskai Blink players: 2
+    Jeskai players: ['AFX', 'No_e_that_knows']
+    [WIN] AFX(JeskaiBlink) 2-1 TheColorOfBoom(Unknown)
+    [LOSS] No_e_that_knows(JeskaiBlink) 0-2 hugofreitas1(Ruby Storm)
+    [LOSS] AFX(JeskaiBlink) 0-2 hugofreitas1(Ruby Storm)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 3
+
+[30/31] /decklist/modern-challenge-32-2026-03-0212834100
+  Decklists: 32, Jeskai Blink players: 3
+    Jeskai players: ['JuanmaAT', 'Rvng', 'Omegauo']
+    [WIN] JuanmaAT(JeskaiBlink) 2-1 Walker735(Belcher)
+    [LOSS] JuanmaAT(JeskaiBlink) 1-2 Xenowan(Unknown)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 2
+
+[31/31] /decklist/modern-challenge-32-2026-03-0212834096
+  Decklists: 32, Jeskai Blink players: 6
+    Jeskai players: ['indianpancake', 'bless_von', 'Ivan_Draw_Go', 'olbeda', 'bobo_el_cheque', 'mtgobazaar8']
+    [LOSS] bobo_el_cheque(JeskaiBlink) 0-2 Alpha_Go(Unknown)
+    [WIN] mtgobazaar8(JeskaiBlink) 2-0 kcomedina(Dimir Midrange)
+    [WIN] mtgobazaar8(JeskaiBlink) 2-1 Alpha_Go(Unknown)
+    [WIN] mtgobazaar8(JeskaiBlink) 2-0 MeninoNey(Living End)
+  Bracket rounds: 3, total matches: 7, Jeskai involvement: 4
+
+============================================================
+RESULTS: Jeskai Blink bracket matchups by opponent archetype
+============================================================
+Opponent                               W    L  Total  MTGO WR  API WR
+---------------------------------------------------------------------------
+Unknown                               12    4     16    0.750   nan  (diff=+nan)
+Ruby Storm                             2    5      7    0.286   0.505  (diff=-0.220)
+Prowess                                1    3      4    0.250   0.566  (diff=-0.316)
+Dimir Midrange                         3    1      4    0.750   0.476  (diff=+0.274)
+Boros Energy                           3    0      3    1.000   0.561  (diff=+0.439)
+Living End                             2    0      2    1.000   nan  (diff=+nan)
+Amulet Titan                           0    1      1    0.000   0.385  (diff=-0.385)
+Eldrazi Tron                           1    0      1    1.000   0.570  (diff=+0.430)
+Hollow One                             0    1      1    0.000   nan  (diff=+nan)
+Belcher                                1    0      1    1.000   nan  (diff=+nan)
+
+NOTE: MTGO bracket = match-level (2-1 / 1-2), API = game-level WR
+Total archetype buckets found: 10

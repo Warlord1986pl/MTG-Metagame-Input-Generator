@@ -1,0 +1,24 @@
+Deck,Source Deck Names,Meta,Winrate,Winrate Game Count,Archetype,My Deck Winrate,My Deck Winrate Game Count
+Prowess,Gruul Prowess | Izzet Prowess | Mono-Red Prowess,34.07,0.4888051951863809,1195,Aggro,0.513792774566474,1038
+Golgari Midrange,Golgari Midrange,11.88,0.5624,427,Midrange,0.341,206
+Orzhov Greasefang,Orzhov Greasefang,11.88,0.47300000000000003,426,Unknown,0.5546,285
+Abzan Greasefang,Abzan Greasefang,5.63,0.5111,216,Midrange,0.5021,195
+Izzet Phoenix,Izzet Phoenix,5.31,0.46149999999999997,191,Unknown,0.5567000000000001,236
+Niv to Light,Niv to Light,5.31,0.5943999999999999,217,Unknown,0.44439999999999996,63
+Rogue,4c Auras | 4c Elves | 4c Scapeshift | BG | Golgari Elves | Grixis Midrange | Naya Midrange | Orzhov Midrange | R | U | UG | WUBG | Rogue,3.72,0.41419999999999996,150,Rogue,0.46909999999999996,302
+Azorius Control,Azorius Control,3.44,0.5537,151,Control,0.38689999999999997,360
+Selesnya Company,Selesnya Company,3.13,0.5102,121,Unknown,0.499,416
+Selesnya Angels,Selesnya Angels,2.19,0.5079,97,Unknown,0.5455,29
+UB,UB,1.56,0.4267,62,Unknown,0.44439999999999996,23
+UR,UR,1.56,0.4035,46,Unknown,0.6111,45
+Sultai Scapeshift,Sultai Scapeshift,1.56,0.3651,54,Ramp,0.4533,63
+Rakdos Midrange,Rakdos Midrange,1.25,0.4386,48,Midrange,0.6667000000000001,35
+Abzan Midrange,Abzan Midrange,1.25,0.4048,49,Midrange,0.0,1
+Hidden Strings,Hidden Strings,0.94,0.5128,32,Unknown,0.6667,28
+Boros Convoke,Boros Convoke,0.94,0.5625,44,Unknown,0.35479999999999995,77
+Azorius Spirits,Azorius Spirits,0.94,0.5185,41,Control,0.8666999999999999,11
+Azorius Flash,Azorius Flash,0.94,0.5238,36,Control,0.5833,19
+5c Legends,5c Legends,0.63,0.5667,27,Unknown,0.5926,26
+Mono-Black Midrange,Mono-Black Midrange,0.63,0.5152,29,Midrange,0.375,23
+WR,WR,0.63,0.3636,27,Unknown,0.40479999999999994,32
+WUBR,WUBR,0.63,0.5556,24,Unknown,0.5,16
