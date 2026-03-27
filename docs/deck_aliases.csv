@@ -1,10 +1,56 @@
 pattern,canonical_name,match_type,priority
+4/5c Omnath,4/5c Omnath,exact,1
+4c Control,4c Control,exact,1
+Affinity,Affinity,exact,1
+Amulet Titan,Amulet Titan,exact,1
+Asmo Food,Asmo Food,exact,1
+Azorius Control,Azorius Control,exact,1
+Belcher,Belcher,exact,1
+Boros Energy,Boros Energy,exact,1
+BR,BR,exact,1
+BRG,BRG,exact,1
+Dimir Midrange,Dimir Midrange,exact,1
+Dimir Reanimator,Dimir Reanimator,exact,1
+Dimir Tezzerator,Dimir Tezzerator,exact,1
+Domain Zoo,Domain Zoo,exact,1
+Eldrazi,Eldrazi,exact,1
+Eldrazi Ramp,Eldrazi Ramp,exact,1
+Eldrazi Tron,Eldrazi Tron,exact,1
+Esper GenericBlink,Esper Blink,exact,1
+Esper Midrange,Esper Midrange,exact,1
+Goryo's Vengeance,Goryo's Vengeance,exact,1
+Grixis Control,Grixis Control,exact,1
+Grixis Midrange,Grixis Midrange,exact,1
+Grixis Reanimator,Grixis Reanimator,exact,1
+Gruul Basking Broodscale Combo,Broodscale Combo,exact,1
+Hammer Time,Hammer Time,exact,1
+Hollow One,Hollow One,exact,1
+Izzet Prowess,Prowess,exact,1
+Izzet Steel-Cutter,Prowess,exact,1
+IzzetControl,Izzet Control,exact,1
+Jeskai Blink,Jeskai Blink,exact,1
+Jeskai Control,Jeskai Control,exact,1
+Jeskai Energy,Jeskai Energy,exact,1
+Kethis Combo,Kethis Combo,exact,1
+Lantern,Lantern,exact,1
+Living End,Living End,exact,1
+Mardu GenericBlink,Mardu Blink,exact,1
+Mill,Mill,exact,1
+Mono-Blue Tron,Mono-Blue Tron,exact,1
+Mono-Green Basking Broodscale Combo,Broodscale Combo,exact,1
+Mono-Green Tron,Mono-Green Tron,exact,1
+Naya Energy,Naya Energy,exact,1
+Neobrand,Neobrand,exact,1
+Rakdos Midrange,Rakdos Midrange,exact,1
+Ruby Storm,Ruby Storm,exact,1
+Simic Basking Broodscale Combo,Broodscale Combo,exact,1
 Sultai Midrange,Sultai Ritual,exact,1
 Sultai Ritual,Sultai Ritual,exact,1
+Temur Prowess,Prowess,exact,1
+Through the Breach,Through the Breach,exact,1
+UBRG,UBRG,exact,1
+WU,WU,exact,1
+Yawgmoth,Yawgmoth,exact,1
 Temur Midrange,Temur Breach,exact,2
-Izzet Prowess,Prowess,exact,2
-Temur Prowess,Prowess,exact,2
-Izzet Steel-Cutter,Prowess,exact,2
 Temur Steel-Cutter,Prowess,exact,2
-IzzetControl,Izzet Control,exact,5
 Mono-Red Burn,Burn,exact,10

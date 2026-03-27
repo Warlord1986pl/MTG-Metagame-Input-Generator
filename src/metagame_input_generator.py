@@ -3,12 +3,17 @@ import csv
 import difflib
 import json
 import re
+import shutil
+import sys
+import time
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urlencode
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import pandas as pd
@@ -16,6 +21,8 @@ from openpyxl.styles import PatternFill
 
 
 API_BASE = "https://api.videreproject.com"
+API_RETRY_ATTEMPTS = 3
+API_RETRY_DELAYS_SECONDS = [1, 2, 4]
 
 
 @dataclass
@@ -39,6 +46,26 @@ class UserDeckMapping:
     raw_name: str
     canonical_name: str
     archetype: str
+
+
+@dataclass
+class GenerationRunResult:
+    week_start: date
+    week_end: date
+    run_dir: Path
+    row_count: int
+    mapped_from_user: int
+    primary_count: int
+    fallback_count: int
+    imputed_count: int
+    rogue_threshold: float
+    csv_path: Optional[Path] = None
+    xlsx_path: Optional[Path] = None
+    rogue_csv_path: Optional[Path] = None
+    rogue_xlsx_path: Optional[Path] = None
+    rogue_xml_path: Optional[Path] = None
+    unknown_output_path: Optional[Path] = None
+    alias_suggestions_path: Optional[Path] = None
 
 
 def parse_date(value: str) -> date:
@@ -97,12 +124,53 @@ def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
             "User-Agent": "MTG-Metagame-Analyzer/1.0 (+https://github.com)",
         },
     )
-    with urlopen(req, timeout=90) as response:
-        return json.loads(response.read().decode("utf-8"))
+    for attempt in range(API_RETRY_ATTEMPTS):
+        try:
+            with urlopen(req, timeout=90) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except HTTPError as err:
+            if err.code >= 500 and attempt < API_RETRY_ATTEMPTS - 1:
+                delay = API_RETRY_DELAYS_SECONDS[min(attempt, len(API_RETRY_DELAYS_SECONDS) - 1)]
+                print(
+                    f"[WARN] API temporary error ({err.code}) on '{endpoint}'. "
+                    f"Retrying in {delay}s ({attempt + 1}/{API_RETRY_ATTEMPTS})..."
+                )
+                time.sleep(delay)
+                continue
+            if err.code >= 500:
+                raise RuntimeError(
+                    "API temporary error. Please try again later. "
+                    f"Endpoint='{endpoint}', status={err.code}."
+                ) from err
+            raise
+        except URLError as err:
+            if attempt < API_RETRY_ATTEMPTS - 1:
+                delay = API_RETRY_DELAYS_SECONDS[min(attempt, len(API_RETRY_DELAYS_SECONDS) - 1)]
+                print(
+                    f"[WARN] API connection problem on '{endpoint}'. "
+                    f"Retrying in {delay}s ({attempt + 1}/{API_RETRY_ATTEMPTS})..."
+                )
+                time.sleep(delay)
+                continue
+            raise RuntimeError(
+                "API temporary error. Please try again later. "
+                f"Endpoint='{endpoint}', reason='{err}'."
+            ) from err
+
+    raise RuntimeError("API temporary error. Please try again later.")
 
 
 def normalize_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
+
+
+def _expand_camel_case(name: str) -> str:
+    """Expand CamelCase names that have no spaces: IzzetControl → Izzet Control."""
+    if " " not in name:
+        expanded = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+        if expanded != name:
+            return expanded
+    return name
 
 
 def load_rules(path: Path) -> List[ArchetypeRule]:
@@ -182,15 +250,17 @@ def canonicalize_deck_name(deck_name: str, aliases: Iterable[DeckAliasRule]) -> 
     base_name = re.sub(r"\s+", " ", str(deck_name).strip())
     base_name = re.sub(r"(?i)generic", " ", base_name)
     base_name = re.sub(r"\s+", " ", base_name).strip()
+    base_name = _expand_camel_case(base_name)
     deck_norm = normalize_name(base_name)
 
     for alias in aliases:
         pattern = alias.pattern
+        expanded_pattern = _expand_camel_case(pattern)
         mtype = alias.match_type
 
-        if mtype == "exact" and deck_norm == normalize_name(pattern):
+        if mtype == "exact" and deck_norm == normalize_name(expanded_pattern):
             return alias.canonical_name
-        if mtype == "contains" and normalize_name(pattern) in deck_norm:
+        if mtype == "contains" and normalize_name(expanded_pattern) in deck_norm:
             return alias.canonical_name
         if mtype == "regex" and re.search(pattern, base_name, flags=re.IGNORECASE):
             return alias.canonical_name
@@ -332,6 +402,40 @@ def extract_my_deck_matchups(
     return out
 
 
+def fetch_available_decks(
+    format_name: str,
+    start_date: date,
+    end_date: date,
+    limit: int,
+) -> List[str]:
+    payload = api_get(
+        "metagame",
+        {
+            "format": format_name,
+            "min_date": start_date.isoformat(),
+            "max_date": end_date.isoformat(),
+            "limit": limit,
+        },
+    )
+
+    rows = payload.get("data") or []
+    if not isinstance(rows, list):
+        return []
+
+    decks: List[str] = []
+    seen = set()
+    for row in rows:
+        name = str(row.get("archetype") or "").strip()
+        if not name:
+            continue
+        key = normalize_name(name)
+        if key in seen:
+            continue
+        seen.add(key)
+        decks.append(name)
+    return decks
+
+
 def build_dataset(
     format_name: str,
     week_start: date,
@@ -401,9 +505,6 @@ def build_dataset(
         archetype = apply_archetype_overrides(raw_deck_name, deck_name, meta_share, archetype)
 
         deck_lookup_name = deck_name
-        if meta_share is not None and meta_share < rogue_threshold:
-            deck_name = "Rogue"
-            archetype = "Rogue"
 
         deck_norm = normalize_name(deck_lookup_name)
         if deck_norm in my_wr_primary:
@@ -433,57 +534,9 @@ def build_dataset(
 
     df = pd.DataFrame(rows)
     df = df.dropna(subset=["Deck", "Meta", "Winrate"]).copy()
-
-    def merge_archetype(series: pd.Series) -> str:
-        known = [
-            normalize_archetype_label(s)
-            for s in series.astype(str).tolist()
-            if s and normalize_archetype_label(s) != "Unknown"
-        ]
-        return known[0] if known else "Unknown"
-
-    def merge_my_wr(series: pd.Series, meta_series: pd.Series):
-        mask = pd.Series(series).notna()
-        if not mask.any():
-            return pd.NA
-        wr_valid = pd.Series(series)[mask].astype(float)
-        meta_valid = pd.Series(meta_series)[mask].astype(float)
-        total_meta = meta_valid.sum()
-        if total_meta > 0:
-            return (wr_valid * meta_valid).sum() / total_meta
-        return wr_valid.mean()
-
-    def merge_my_wr_source(series: pd.Series) -> str:
-        values = [str(v) for v in series.astype(str).tolist() if v]
-        if any(v == "primary" for v in values):
-            return "primary"
-        if any(v == "fallback" for v in values):
-            return "fallback"
-        return "none"
-
-    def merge_count(series: pd.Series) -> int:
-        return int(pd.to_numeric(series, errors="coerce").fillna(0).sum())
-
-    aggregated = (
-        df.groupby("Deck", as_index=False)
-        .apply(
-            lambda g: pd.Series(
-                {
-                    "Source Deck Names": " | ".join(sorted(set(g["Raw Deck"].astype(str).tolist()))),
-                    "Meta": g["Meta"].sum(),
-                    "Winrate": (g["Winrate"] * g["Meta"]).sum() / g["Meta"].sum() if g["Meta"].sum() > 0 else g["Winrate"].mean(),
-                    "Winrate Game Count": merge_count(g["Winrate Game Count"]),
-                    "Archetype": merge_archetype(g["Archetype"]),
-                    "My Deck Winrate": merge_my_wr(g["My Deck Winrate"], g["Meta"]),
-                    "My Deck Winrate Game Count": merge_count(g["My Deck Winrate Game Count"]),
-                    "My Deck Winrate Source": merge_my_wr_source(g["My Deck Winrate Source"]),
-                }
-            )
-        )
-        .reset_index(drop=True)
-    )
-
-    df = aggregated[
+    df["Source Deck Names"] = df["Raw Deck"].astype(str)
+    source = df["My Deck Winrate Source"].copy()
+    df = df[
         [
             "Deck",
             "Source Deck Names",
@@ -496,12 +549,12 @@ def build_dataset(
         ]
     ].copy()
     df["Archetype"] = df["Archetype"].apply(normalize_archetype_label)
-    source = aggregated["My Deck Winrate Source"].copy()
     df["My Deck Winrate Fallback180"] = source.eq("fallback")
     df["My Deck Winrate Imputed"] = source.eq("none")
     df.loc[df["My Deck Winrate Imputed"], "My Deck Winrate"] = 0.5
     df = df.sort_values("Meta", ascending=False).reset_index(drop=True)
-    source = source.loc[df.index]
+    for col in ["Meta", "Winrate", "My Deck Winrate"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce").round(2)
     stats = {
         "primary": int(source.eq("primary").sum()),
         "fallback": int(source.eq("fallback").sum()),
@@ -525,63 +578,172 @@ def _safe_to_csv(df: pd.DataFrame, path: Path) -> Path:
     return final_path
 
 
-def export_outputs(df: pd.DataFrame, output_csv: Path, output_xlsx: Path) -> tuple[Path, Path]:
+def _remove_if_exists(path: Path) -> None:
+    try:
+        if path.exists():
+            path.unlink()
+    except Exception:
+        pass
+
+
+def _clear_previous_run_outputs(run_dir: Path) -> None:
+    if not run_dir.exists():
+        return
+
+    for child in run_dir.iterdir():
+        try:
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink()
+        except Exception:
+            pass
+
+
+def export_outputs(
+    df: pd.DataFrame,
+    output_csv: Path,
+    output_xlsx: Path,
+    include_csv: bool = True,
+    include_xlsx: bool = True,
+) -> tuple[Optional[Path], Optional[Path]]:
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     output_xlsx.parent.mkdir(parents=True, exist_ok=True)
 
-    export_df = df.drop(columns=["My Deck Winrate Imputed", "My Deck Winrate Fallback180"], errors="ignore")
+    export_df = df.drop(columns=["My Deck Winrate Imputed", "My Deck Winrate Fallback180"], errors="ignore").copy()
+    for col in ["Meta", "Winrate", "My Deck Winrate"]:
+        if col in export_df.columns:
+            export_df[col] = pd.to_numeric(export_df[col], errors="coerce").round(2)
     imputed_flags = df.get("My Deck Winrate Imputed", pd.Series([False] * len(df))).astype(bool).tolist()
     fallback180_flags = df.get("My Deck Winrate Fallback180", pd.Series([False] * len(df))).astype(bool).tolist()
 
-    final_csv = output_csv
-    final_xlsx = output_xlsx
+    final_csv: Optional[Path] = None
+    final_xlsx: Optional[Path] = None
 
-    try:
-        final_csv = _safe_to_csv(export_df, final_csv)
-    except Exception:
-        raise
+    if include_csv:
+        try:
+            final_csv = _safe_to_csv(export_df, output_csv)
+        except Exception:
+            raise
 
     yellow_fill = PatternFill(fill_type="solid", start_color="FFF59D", end_color="FFF59D")
     green_fill = PatternFill(fill_type="solid", start_color="C8E6C9", end_color="C8E6C9")
     wr_col_idx = export_df.columns.get_loc("My Deck Winrate") + 1
 
-    try:
-        with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
-            export_df.to_excel(writer, index=False)
-            ws = writer.sheets["Sheet1"]
-            for row_idx, is_imputed in enumerate(imputed_flags, start=2):
-                if is_imputed:
-                    ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
-            for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
-                if is_fallback:
-                    ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
-    except PermissionError:
-        final_xlsx = _fallback_path(output_xlsx)
-        with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
-            export_df.to_excel(writer, index=False)
-            ws = writer.sheets["Sheet1"]
-            for row_idx, is_imputed in enumerate(imputed_flags, start=2):
-                if is_imputed:
-                    ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
-            for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
-                if is_fallback:
-                    ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
+    if include_xlsx:
+        final_xlsx = output_xlsx
+        try:
+            with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
+                export_df.to_excel(writer, index=False)
+                ws = writer.sheets["Sheet1"]
+                for row_idx, is_imputed in enumerate(imputed_flags, start=2):
+                    if is_imputed:
+                        ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
+                for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
+                    if is_fallback:
+                        ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
+        except PermissionError:
+            final_xlsx = _fallback_path(output_xlsx)
+            with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
+                export_df.to_excel(writer, index=False)
+                ws = writer.sheets["Sheet1"]
+                for row_idx, is_imputed in enumerate(imputed_flags, start=2):
+                    if is_imputed:
+                        ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
+                for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
+                    if is_fallback:
+                        ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
 
     return final_csv, final_xlsx
 
 
-def aggregate_rogue_bucket(df: pd.DataFrame) -> pd.DataFrame:
+def aggregate_by_deck(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
-    if "Archetype" not in out.columns:
+    required = {"Deck", "Meta", "Winrate", "Archetype"}
+    if not required.issubset(set(out.columns)):
         return out
 
-    archetype_series = out["Archetype"].fillna("").astype(str).str.strip().str.lower()
-    rogue_mask = archetype_series.isin({"rogue", "other"})
+    def merge_archetype(series: pd.Series) -> str:
+        known = [
+            normalize_archetype_label(s)
+            for s in series.astype(str).tolist()
+            if s and normalize_archetype_label(s) != "Unknown"
+        ]
+        return known[0] if known else "Unknown"
+
+    def merge_my_wr(series: pd.Series, meta_series: pd.Series):
+        mask = pd.Series(series).notna()
+        if not mask.any():
+            return pd.NA
+        wr_valid = pd.Series(series)[mask].astype(float)
+        meta_valid = pd.Series(meta_series)[mask].astype(float)
+        total_meta = meta_valid.sum()
+        if total_meta > 0:
+            return (wr_valid * meta_valid).sum() / total_meta
+        return wr_valid.mean()
+
+    def merge_count(series: pd.Series) -> int:
+        return int(pd.to_numeric(series, errors="coerce").fillna(0).sum())
+
+    grouped = (
+        out.groupby("Deck", as_index=False)
+        .apply(
+            lambda g: pd.Series(
+                {
+                    "Source Deck Names": " | ".join(sorted(set(g["Source Deck Names"].astype(str).tolist()))),
+                    "Meta": pd.to_numeric(g["Meta"], errors="coerce").fillna(0).sum(),
+                    "Winrate": (
+                        (pd.to_numeric(g["Winrate"], errors="coerce").fillna(0) * pd.to_numeric(g["Meta"], errors="coerce").fillna(0)).sum()
+                        / pd.to_numeric(g["Meta"], errors="coerce").fillna(0).sum()
+                        if pd.to_numeric(g["Meta"], errors="coerce").fillna(0).sum() > 0
+                        else pd.to_numeric(g["Winrate"], errors="coerce").dropna().mean()
+                    ),
+                    "Winrate Game Count": merge_count(g.get("Winrate Game Count", pd.Series(dtype=float))),
+                    "Archetype": merge_archetype(g["Archetype"]),
+                    "My Deck Winrate": merge_my_wr(g.get("My Deck Winrate", pd.Series(dtype=float)), g["Meta"]),
+                    "My Deck Winrate Game Count": merge_count(g.get("My Deck Winrate Game Count", pd.Series(dtype=float))),
+                    "My Deck Winrate Fallback180": bool(g.get("My Deck Winrate Fallback180", pd.Series(dtype=bool)).fillna(False).any()),
+                    "My Deck Winrate Imputed": bool(g.get("My Deck Winrate Imputed", pd.Series(dtype=bool)).fillna(False).any()),
+                }
+            )
+        )
+        .reset_index(drop=True)
+    )
+
+    grouped = grouped.sort_values("Meta", ascending=False).reset_index(drop=True)
+    return grouped
+
+
+def apply_rogue_threshold_to_grouped(df: pd.DataFrame, rogue_threshold: float) -> pd.DataFrame:
+    out = df.copy()
+    if out.empty or "Meta" not in out.columns:
+        return out
+
+    out["Meta Tier"] = "Main"
+    meta = pd.to_numeric(out["Meta"], errors="coerce")
+    low_meta_mask = meta.notna() & (meta < float(rogue_threshold))
+    out.loc[low_meta_mask, "Meta Tier"] = "Rogue"
+    return out
+
+
+def aggregate_rogue_bucket(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "Meta Tier" in out.columns:
+        tier_series = out["Meta Tier"].fillna("").astype(str).str.strip().str.lower()
+        rogue_mask = tier_series.eq("rogue")
+    else:
+        archetype_series = out.get("Archetype", pd.Series(dtype=str)).fillna("").astype(str).str.strip().str.lower()
+        rogue_mask = archetype_series.isin({"rogue", "other"})
+
     if not rogue_mask.any():
+        if "Meta Tier" not in out.columns:
+            out["Meta Tier"] = "Main"
         return out
 
     rogue_rows = out.loc[rogue_mask].copy()
     keep_rows = out.loc[~rogue_mask].copy()
+    if "Meta Tier" not in keep_rows.columns:
+        keep_rows["Meta Tier"] = "Main"
 
     meta_sum = float(pd.to_numeric(rogue_rows["Meta"], errors="coerce").fillna(0).sum())
     winrate_vals = pd.to_numeric(rogue_rows["Winrate"], errors="coerce")
@@ -613,7 +775,8 @@ def aggregate_rogue_bucket(df: pd.DataFrame) -> pd.DataFrame:
         "Meta": meta_sum,
         "Winrate": winrate_agg,
         "Winrate Game Count": int(pd.to_numeric(rogue_rows["Winrate Game Count"], errors="coerce").fillna(0).sum()),
-        "Archetype": "Rogue",
+        "Archetype": "Mixed",
+        "Meta Tier": "Rogue",
         "My Deck Winrate": my_wr_agg,
         "My Deck Winrate Game Count": int(pd.to_numeric(rogue_rows["My Deck Winrate Game Count"], errors="coerce").fillna(0).sum()),
         "My Deck Winrate Fallback180": bool(rogue_rows.get("My Deck Winrate Fallback180", pd.Series(dtype=bool)).fillna(False).any()),
@@ -686,7 +849,52 @@ def export_alias_suggestions(df: pd.DataFrame, aliases: List[DeckAliasRule], pat
     return _safe_to_csv(result_df, path)
 
 
-def parse_args() -> argparse.Namespace:
+def _fmt_num(value, decimals: int = 2) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    try:
+        return f"{float(value):.{decimals}f}"
+    except Exception:
+        return str(value)
+
+
+def export_grouped_xml(df: pd.DataFrame, path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    root = ET.Element("metagame")
+    root.set("generated_at", datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"))
+    root.set("rows", str(len(df)))
+
+    for archetype, group in df.groupby("Archetype", dropna=False, sort=True):
+        archetype_name = str(archetype or "Unknown")
+        archetype_node = ET.SubElement(root, "archetype")
+        archetype_node.set("name", archetype_name)
+        archetype_node.set("meta", _fmt_num(pd.to_numeric(group["Meta"], errors="coerce").fillna(0).sum(), 4))
+        archetype_node.set("decks", str(len(group)))
+
+        ordered = group.sort_values("Meta", ascending=False)
+        for _, row in ordered.iterrows():
+            deck_node = ET.SubElement(archetype_node, "deck")
+            deck_node.set("name", str(row.get("Deck") or ""))
+            deck_node.set("source_names", str(row.get("Source Deck Names") or ""))
+            deck_node.set("meta", _fmt_num(row.get("Meta"), 4))
+            deck_node.set("winrate", _fmt_num(row.get("Winrate"), 4))
+            deck_node.set("winrate_game_count", str(int(pd.to_numeric(row.get("Winrate Game Count"), errors="coerce") or 0)))
+            deck_node.set("my_deck_winrate", _fmt_num(row.get("My Deck Winrate"), 4))
+            deck_node.set(
+                "my_deck_winrate_game_count",
+                str(int(pd.to_numeric(row.get("My Deck Winrate Game Count"), errors="coerce") or 0)),
+            )
+
+    tree = ET.ElementTree(root)
+    try:
+        ET.indent(tree, space="  ")
+    except Exception:
+        pass
+    tree.write(path, encoding="utf-8", xml_declaration=True)
+    return path
+
+
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Buduje plik wejściowy do MTG-Metagame-Analyzer: tygodniowy metagame + "
@@ -738,6 +946,10 @@ def parse_args() -> argparse.Namespace:
         default="outputs/metagame_input_rogue_grouped.xlsx",
     )
     parser.add_argument(
+        "--output-xml-grouped",
+        default="outputs/metagame_input_grouped.xml",
+    )
+    parser.add_argument(
         "--unknown-output",
         default="outputs/unknown_archetypes.csv",
     )
@@ -745,7 +957,13 @@ def parse_args() -> argparse.Namespace:
         "--alias-suggestions-output",
         default="outputs/alias_suggestions.csv",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--output-profile",
+        choices=["full", "analysis"],
+        default="full",
+        help="full: all outputs, analysis: base CSV + grouped XLSX",
+    )
+    return parser.parse_args(argv)
 
 
 def resolve_windows(args: argparse.Namespace) -> List[tuple[date, date]]:
@@ -771,8 +989,49 @@ def resolve_windows(args: argparse.Namespace) -> List[tuple[date, date]]:
     return windows
 
 
-def main() -> None:
-    args = parse_args()
+def interactive_menu() -> argparse.Namespace:
+    """Interaktywne menu zamiast linii komend"""
+    print("\n" + "="*50)
+    print("  MTG Metagame Generator - Menu")
+    print("="*50 + "\n")
+    
+    # Pytanie o format
+    print("Dostępne formaty:")
+    formats = ["Modern", "Legacy", "Pioneer", "Pauper", "Standard", "Commander"]
+    for i, fmt in enumerate(formats, 1):
+        print(f"  {i}. {fmt}")
+    
+    while True:
+        try:
+            choice = input("\nWybierz format (1-6) [1]: ").strip()
+            if not choice:
+                format_choice = "Modern"
+                break
+            choice_num = int(choice)
+            if 1 <= choice_num <= len(formats):
+                format_choice = formats[choice_num - 1]
+                break
+            print("Błędny wybór. Spróbuj ponownie.")
+        except ValueError:
+            print("Wpisz numer (1-6).")
+    
+    # Pytanie o deck
+    print(f"\nWybrano: {format_choice}")
+    my_deck = input("Podaj nazwę Twojego decka [Domain Zoo]: ").strip()
+    if not my_deck:
+        my_deck = "Domain Zoo"
+    
+    print(f"\nTwój deck: {my_deck}")
+    print("\nUruchamiam generator...\n")
+    
+    # Zwróć args w tym samym formacie co parse_args()
+    args = parse_args([])
+    args.format_name = format_choice
+    args.my_deck = my_deck
+    return args
+
+
+def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunResult]:
     windows = resolve_windows(args)
 
     rules = load_rules(Path(args.rules_file))
@@ -781,8 +1040,12 @@ def main() -> None:
     user_mapping = mapping_lookup(user_mappings)
     history_mode = len(windows) > 1
     history_output_dir = Path(args.history_output_dir)
+    output_profile = getattr(args, "output_profile", "full")
+    analysis_mode = output_profile == "analysis"
 
-    print(f"✅ User mapping rows loaded: {len(user_mappings)}")
+    log(f"[OK] User mapping rows loaded: {len(user_mappings)}")
+    results: List[GenerationRunResult] = []
+
     for idx, (week_start, week_end) in enumerate(windows, start=1):
         dataset, mapped_from_user, my_wr_stats = build_dataset(
             format_name=args.format_name,
@@ -803,61 +1066,184 @@ def main() -> None:
             history_output_dir.mkdir(parents=True, exist_ok=True)
             range_dir = history_output_dir / f"{week_start.isoformat()}_to_{week_end.isoformat()}"
             range_dir.mkdir(parents=True, exist_ok=True)
+            _clear_previous_run_outputs(range_dir)
             output_csv = range_dir / "metagame_input.csv"
             output_xlsx = range_dir / "metagame_input.xlsx"
-            final_csv, final_xlsx = export_outputs(dataset, output_csv=output_csv, output_xlsx=output_xlsx)
-            grouped = aggregate_rogue_bucket(dataset)
+            final_csv, final_xlsx = export_outputs(
+                dataset,
+                output_csv=output_csv,
+                output_xlsx=output_xlsx,
+                include_csv=True,
+                include_xlsx=not analysis_mode,
+            )
+            grouped = aggregate_by_deck(dataset)
+            grouped = apply_rogue_threshold_to_grouped(grouped, args.rogue_threshold)
             grouped_csv = range_dir / "metagame_input_rogue_grouped.csv"
             grouped_xlsx = range_dir / "metagame_input_rogue_grouped.xlsx"
-            grouped_final_csv, grouped_final_xlsx = export_outputs(grouped, output_csv=grouped_csv, output_xlsx=grouped_xlsx)
-            print(
-                f"✅ P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
+            grouped_xml = range_dir / "metagame_input_grouped.xml"
+            if analysis_mode:
+                grouped_xlsx = range_dir / "metagame_input_grouped.xlsx"
+                _remove_if_exists(output_xlsx)
+                _remove_if_exists(grouped_csv)
+                _remove_if_exists(grouped_xml)
+                _remove_if_exists(range_dir / "metagame_input_rogue_grouped.xlsx")
+            grouped_final_csv, grouped_final_xlsx = export_outputs(
+                grouped,
+                output_csv=grouped_csv,
+                output_xlsx=grouped_xlsx,
+                include_csv=not analysis_mode,
+                include_xlsx=True,
+            )
+            grouped_final_xml = None
+            if not analysis_mode:
+                grouped_final_xml = export_grouped_xml(grouped, grouped_xml)
+
+            log(
+                f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
                 f"rows={len(dataset)} | primary={my_wr_stats['primary']} | "
                 f"180d={my_wr_stats['fallback']} | 50%={my_wr_stats['imputed']}"
             )
-            print(f"✅ Rogue threshold: Meta < {args.rogue_threshold}%")
-            print(f"✅ Dir: {range_dir}")
-            print(f"✅ Files: {final_xlsx}")
-            print(f"✅ Files (Rogue grouped): {grouped_final_xlsx}")
+            log(f"[OK] Rogue threshold: Meta < {args.rogue_threshold}%")
+            log(f"[OK] Dir: {range_dir}")
+            if final_xlsx is not None:
+                log(f"[OK] Files: {final_xlsx}")
+            if grouped_final_xlsx is not None:
+                label = "grouped" if analysis_mode else "Rogue grouped"
+                log(f"[OK] Files ({label}): {grouped_final_xlsx}")
+            if grouped_final_xml is not None:
+                log(f"[OK] XML (grouped): {grouped_final_xml}")
+            results.append(
+                GenerationRunResult(
+                    week_start=week_start,
+                    week_end=week_end,
+                    run_dir=range_dir,
+                    row_count=len(dataset),
+                    mapped_from_user=mapped_from_user,
+                    primary_count=my_wr_stats["primary"],
+                    fallback_count=my_wr_stats["fallback"],
+                    imputed_count=my_wr_stats["imputed"],
+                    rogue_threshold=args.rogue_threshold,
+                    csv_path=final_csv,
+                    xlsx_path=final_xlsx,
+                    rogue_csv_path=grouped_final_csv,
+                    rogue_xlsx_path=grouped_final_xlsx,
+                    rogue_xml_path=grouped_final_xml,
+                )
+            )
             continue
 
         output_csv = Path(args.output_csv)
         output_xlsx = Path(args.output_xlsx)
         output_csv_grouped = Path(args.output_csv_rogue_grouped)
         output_xlsx_grouped = Path(args.output_xlsx_rogue_grouped)
+        output_xml_grouped = Path(args.output_xml_grouped)
         unknown_output = Path(args.unknown_output)
         alias_suggestions_output = Path(args.alias_suggestions_output)
 
         run_dir = output_csv.parent / f"{week_start.isoformat()}_to_{week_end.isoformat()}"
         run_dir.mkdir(parents=True, exist_ok=True)
+        _clear_previous_run_outputs(run_dir)
 
         output_csv = run_dir / output_csv.name
         output_xlsx = run_dir / output_xlsx.name
         output_csv_grouped = run_dir / output_csv_grouped.name
         output_xlsx_grouped = run_dir / output_xlsx_grouped.name
+        output_xml_grouped = run_dir / output_xml_grouped.name
         unknown_output = run_dir / unknown_output.name
         alias_suggestions_output = run_dir / alias_suggestions_output.name
+        if analysis_mode:
+            output_xlsx_grouped = run_dir / "metagame_input_grouped.xlsx"
+            _remove_if_exists(output_xlsx)
+            _remove_if_exists(output_csv_grouped)
+            _remove_if_exists(output_xml_grouped)
+            _remove_if_exists(run_dir / "metagame_input_rogue_grouped.xlsx")
+            _remove_if_exists(unknown_output)
+            _remove_if_exists(alias_suggestions_output)
 
-        final_csv, final_xlsx = export_outputs(dataset, output_csv=output_csv, output_xlsx=output_xlsx)
-        grouped = aggregate_rogue_bucket(dataset)
-        grouped_csv, grouped_xlsx = export_outputs(grouped, output_csv=output_csv_grouped, output_xlsx=output_xlsx_grouped)
-        final_unknown = export_unknown_archetypes(dataset, path=unknown_output)
-        final_alias_suggestions = export_alias_suggestions(dataset, aliases=aliases, path=alias_suggestions_output)
+        final_csv, final_xlsx = export_outputs(
+            dataset,
+            output_csv=output_csv,
+            output_xlsx=output_xlsx,
+            include_csv=True,
+            include_xlsx=not analysis_mode,
+        )
+        grouped = aggregate_by_deck(dataset)
+        grouped = apply_rogue_threshold_to_grouped(grouped, args.rogue_threshold)
+        grouped_csv, grouped_xlsx = export_outputs(
+            grouped,
+            output_csv=output_csv_grouped,
+            output_xlsx=output_xlsx_grouped,
+            include_csv=not analysis_mode,
+            include_xlsx=True,
+        )
+        grouped_xml = None
+        if not analysis_mode:
+            grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
+        final_unknown = None
+        final_alias_suggestions = None
+        if not analysis_mode:
+            final_unknown = export_unknown_archetypes(dataset, path=unknown_output)
+            final_alias_suggestions = export_alias_suggestions(dataset, aliases=aliases, path=alias_suggestions_output)
 
-        print(f"✅ Rows matched by user mapping: {mapped_from_user}")
-        print(f"✅ Rows exported: {len(dataset)}")
-        print(f"✅ My Deck Winrate primary ({args.my_window_days}d): {my_wr_stats['primary']}/{len(dataset)}")
-        print(f"✅ My Deck Winrate fallback ({args.my_fallback_window_days}d): {my_wr_stats['fallback']}")
-        print(f"✅ My Deck Winrate fallback 50%: {my_wr_stats['imputed']}")
-        print(f"✅ Rogue threshold: Meta < {args.rogue_threshold}%")
-        print(f"✅ CSV: {final_csv}")
-        print(f"✅ XLSX: {final_xlsx}")
-        print(f"✅ CSV (Rogue grouped): {grouped_csv}")
-        print(f"✅ XLSX (Rogue grouped): {grouped_xlsx}")
-        print(f"✅ Unknown archetypes report: {final_unknown}")
-        print(f"✅ Alias suggestions report: {final_alias_suggestions}")
-        print(f"✅ Output dir: {run_dir}")
+        log(f"[OK] Rows matched by user mapping: {mapped_from_user}")
+        log(f"[OK] Rows exported: {len(dataset)}")
+        log(f"[OK] My Deck Winrate primary ({args.my_window_days}d): {my_wr_stats['primary']}/{len(dataset)}")
+        log(f"[OK] My Deck Winrate fallback ({args.my_fallback_window_days}d): {my_wr_stats['fallback']}")
+        log(f"[OK] My Deck Winrate fallback 50%: {my_wr_stats['imputed']}")
+        log(f"[OK] Rogue threshold: Meta < {args.rogue_threshold}%")
+        log(f"[OK] CSV: {final_csv}")
+        if final_xlsx is not None:
+            log(f"[OK] XLSX: {final_xlsx}")
+        if grouped_csv is not None:
+            log(f"[OK] CSV (Rogue grouped): {grouped_csv}")
+        label = "grouped" if analysis_mode else "Rogue grouped"
+        log(f"[OK] XLSX ({label}): {grouped_xlsx}")
+        if grouped_xml is not None:
+            log(f"[OK] XML (grouped): {grouped_xml}")
+        if final_unknown is not None:
+            log(f"[OK] Unknown archetypes report: {final_unknown}")
+        if final_alias_suggestions is not None:
+            log(f"[OK] Alias suggestions report: {final_alias_suggestions}")
+        log(f"[OK] Output dir: {run_dir}")
+
+        results.append(
+            GenerationRunResult(
+                week_start=week_start,
+                week_end=week_end,
+                run_dir=run_dir,
+                row_count=len(dataset),
+                mapped_from_user=mapped_from_user,
+                primary_count=my_wr_stats["primary"],
+                fallback_count=my_wr_stats["fallback"],
+                imputed_count=my_wr_stats["imputed"],
+                rogue_threshold=args.rogue_threshold,
+                csv_path=final_csv,
+                xlsx_path=final_xlsx,
+                rogue_csv_path=grouped_csv,
+                rogue_xlsx_path=grouped_xlsx,
+                rogue_xml_path=grouped_xml,
+                unknown_output_path=final_unknown,
+                alias_suggestions_path=final_alias_suggestions,
+            )
+        )
+
+    return results
+
+
+def main() -> None:
+    # Sprawdź czy uruchomiona z argumentami linii komend
+    if len(sys.argv) > 1:
+        args = parse_args()
+    else:
+        # Interaktywne menu
+        args = interactive_menu()
+    
+    run_generation(args)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeError as err:
+        print(f"\n[ERROR] {err}")
+        sys.exit(2)
