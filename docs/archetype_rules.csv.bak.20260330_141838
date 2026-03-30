@@ -30,15 +30,12 @@ Eldrazi Tron,Ramp,exact,1
 Esper Blink,Blink,exact,1
 Esper GenericBlink,Blink,exact,1
 Esper Midrange,Midrange,exact,1
-Esper Reanimator,Graveyard,exact,1
 Generic Ragavan,Aggro,exact,1
 Goryo's Vengeance,Graveyard,exact,1
 Grixis Control,Control,exact,1
 Grixis Midrange,Midrange,exact,1
 Grixis Reanimator,Graveyard,exact,1
 Gruul Basking Broodscale Combo,Combo,exact,1
-Gruul Midrange,Midrange,exact,1
-Gruul Prowess,Aggro,exact,1
 Hammer Time,Combo,exact,1
 Hollow One,Graveyard,exact,1
 Humans,Aggro,exact,1
@@ -70,8 +67,6 @@ Mono-Green Basking Broodscale Combo,Combo,exact,1
 Mono-Green Tron,Ramp,exact,1
 Mono-Red Artifact Reanimation,Combo,exact,1
 Mono-Red Burn,Aggro,exact,1
-Mono-White Control,Control,exact,1
-Naya Burn,Aggro,exact,1
 Naya Energy,Aggro,exact,1
 Neobrand,Combo,exact,1
 Orzhov Blink,Blink,exact,1
@@ -84,7 +79,6 @@ Rakdos Midrange,Midrange,exact,1
 RG,Ramp,exact,1
 Ruby Storm,Combo,exact,1
 Sam Combo,Combo,exact,1
-Selective Oracle,Combo,exact,1
 Simic Basking Broodscale Combo,Combo,exact,1
 Simic Midrange,Midrange,exact,1
 Sultai Midrange,Midrange,exact,1

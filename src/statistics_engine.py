@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from math import comb
 from pathlib import Path
 from typing import Optional
+import re
 
 import matplotlib
 
@@ -68,6 +69,8 @@ PALETTE_PRESETS: dict[str, dict[str, dict[str, str]]] = {
 
 TREND_THRESHOLD_DECK = 0.5
 TREND_THRESHOLD_ARCHETYPE = 0.2
+MIN_GAMES_FOR_WINRATE_CHARTS = 50
+MIN_GAMES_FOR_TRUSTED = 150
 PREP_PRIORITY_COLORS: dict[str, str] = {
     "Very High Prep Priority": "red",
     "High Prep Priority": "orange",
@@ -109,6 +112,20 @@ def _normalize_key(value: str) -> str:
     return " ".join(str(value or "").strip().lower().split())
 
 
+def _extract_week_range_from_input(input_excel: Path) -> tuple[Optional[str], Optional[str]]:
+    """Parse week range from parent run directory name.
+
+    Supports both naming styles:
+      - WNN_YYYY-MM-DD_to_YYYY-MM-DD
+      - YYYY-MM-DD_to_YYYY-MM-DD
+    """
+    run_dir_name = input_excel.parent.name
+    match = re.search(r"(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})", run_dir_name)
+    if not match:
+        return None, None
+    return match.group(1), match.group(2)
+
+
 def _build_style(
     palette_name: str,
     deck_colors: Optional[dict[str, str]],
@@ -138,6 +155,10 @@ def _deck_color_override(deck_name: str, deck_colors: dict[str, str]) -> Optiona
 
 def _legend_color(label: str, legend_colors: dict[str, str], fallback: str) -> str:
     return legend_colors.get(_normalize_key(label), fallback)
+
+
+def _trust_label(games: float) -> str:
+    return "Trusted" if float(games) >= float(MIN_GAMES_FOR_TRUSTED) else "Sample"
 
 
 def prep_priority(quartile: str) -> str:
@@ -294,8 +315,6 @@ def _create_encounter_chart(
 ) -> Optional[Path]:
     show_df = df[df["Encounter Probability"] >= min_encounter_threshold].copy()
     if show_df.empty:
-        show_df = df.copy()
-    if show_df.empty:
         return None
 
     show_df = show_df.sort_values("Encounter Probability", ascending=False).reset_index(drop=True)
@@ -388,9 +407,21 @@ def _create_my_deck_chart(
     if df_my.empty:
         return None
 
+    games_col = None
+    for candidate in ["My Deck Winrate Game Count", "Winrate Game Count", "Match Count", "Matches", "Games"]:
+        if candidate in df_my.columns:
+            games_col = candidate
+            break
+    if games_col is None:
+        return None
+    df_my["_games"] = pd.to_numeric(df_my[games_col], errors="coerce").fillna(0)
+    df_my = df_my[df_my["_games"] >= MIN_GAMES_FOR_WINRATE_CHARTS].copy()
+    if df_my.empty:
+        return None
+
     show_df = df_my[df_my["Encounter Probability"] >= min_encounter_threshold].copy()
     if show_df.empty:
-        show_df = df_my.copy()
+        return None
 
     show_df["Problem Score"] = show_df["Encounter Probability"] * (1 - pd.to_numeric(show_df["My Deck Winrate"], errors="coerce").fillna(0.5))
     show_df = show_df.sort_values("Problem Score", ascending=False).reset_index(drop=True)
@@ -439,11 +470,12 @@ def _create_my_deck_chart(
             )
 
     rotation_angle = 30 if len(show_df) < 12 else 45 if len(show_df) < 20 else 60
-    for i, (deck, perf) in enumerate(zip(show_df["Deck Display Name"], show_df["Performance Label"])):
+    for i, (deck, perf, games) in enumerate(zip(show_df["Deck Display Name"], show_df["Performance Label"], show_df["_games"])):
+        status = _trust_label(games)
         ax.text(
             i,
             -0.03,
-            str(deck),
+            f"{str(deck)}\n(n={int(games)}, {status})",
             ha="right",
             va="top",
             fontsize=9,
@@ -458,7 +490,7 @@ def _create_my_deck_chart(
     ax.set_title(
         (
             f"{player_deck_name} Performance vs Metagame - Week {week_index}\n"
-            f"Sorted by Problem Score (Encounter Prob x Loss Rate) | N={total_players}"
+            f"Sorted by Problem Score (Encounter Prob x Loss Rate) | N={total_players} | min {MIN_GAMES_FOR_WINRATE_CHARTS} games | Trusted >= {MIN_GAMES_FOR_TRUSTED}"
         ),
         fontsize=14,
         pad=20,
@@ -549,21 +581,63 @@ def _create_record_probability_chart(
         )
 
     ax2 = axes[1]
-    top = df_results.sort_values("Winrate", ascending=False).head(20).reset_index(drop=True)
-    expected_wins = pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5) * rounds
-    top_colors = []
-    for _, row in top.iterrows():
-        wr = float(pd.to_numeric(row.get("Winrate"), errors="coerce") or 0.5)
-        top_colors.append(plt.cm.RdYlGn(plt.Normalize(vmin=0, vmax=1)(wr)))
-    ax2.barh(range(len(top)), expected_wins, color=top_colors, edgecolor="black", linewidth=0.5, alpha=0.9)
-    ax2.set_yticks(range(len(top)))
-    ax2.set_yticklabels(top["Deck Display Name"].astype(str).tolist(), fontsize=8)
-    ax2.set_xlabel("Expected Wins", fontsize=12)
-    ax2.set_title(f"Expected Wins per Deck\nBased on deck winrate | {rounds} rounds", fontsize=13)
-    ax2.set_xlim(0, rounds + 0.5)
-    ax2.grid(axis="x", alpha=0.3, linestyle="--")
-    for i, (wins, wr) in enumerate(zip(expected_wins, pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5))):
-        ax2.text(float(wins) + 0.05, i, f"{float(wins):.2f} ({float(wr):.1%})", va="center", fontsize=8)
+    games_col = None
+    for candidate in ["Winrate Game Count", "Match Count", "Matches", "Games"]:
+        if candidate in df_results.columns:
+            games_col = candidate
+            break
+
+    eligible = pd.DataFrame()
+    if games_col is not None:
+        ranked = df_results.sort_values("Winrate", ascending=False).copy()
+        ranked["_games"] = pd.to_numeric(ranked[games_col], errors="coerce").fillna(0)
+        eligible = ranked[ranked["_games"] >= MIN_GAMES_FOR_WINRATE_CHARTS].copy()
+
+    if eligible.empty:
+        ax2.set_title(
+            f"Expected Wins per Deck\nOnly decks with >= {MIN_GAMES_FOR_WINRATE_CHARTS} games",
+            fontsize=13,
+        )
+        ax2.set_xlabel("Expected Wins", fontsize=12)
+        ax2.set_xlim(0, rounds + 0.5)
+        ax2.grid(axis="x", alpha=0.3, linestyle="--")
+        if games_col is None:
+            msg = "No game-count column found in input data."
+        else:
+            msg = f"No decks reached >= {MIN_GAMES_FOR_WINRATE_CHARTS} games."
+        ax2.text(
+            0.5,
+            0.5,
+            msg,
+            transform=ax2.transAxes,
+            ha="center",
+            va="center",
+            fontsize=11,
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+        )
+    else:
+        top = eligible.head(20).reset_index(drop=True)
+        expected_wins = pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5) * rounds
+        top_colors = []
+        for _, row in top.iterrows():
+            wr = float(pd.to_numeric(row.get("Winrate"), errors="coerce") or 0.5)
+            top_colors.append(plt.cm.RdYlGn(plt.Normalize(vmin=0, vmax=1)(wr)))
+        ax2.barh(range(len(top)), expected_wins, color=top_colors, edgecolor="black", linewidth=0.5, alpha=0.9)
+        ax2.set_yticks(range(len(top)))
+        labels = [
+            f"{str(deck)} (n={int(g)}, {_trust_label(g)})"
+            for deck, g in zip(top["Deck Display Name"].astype(str), top["_games"])
+        ]
+        ax2.set_yticklabels(labels, fontsize=8)
+        ax2.set_xlabel("Expected Wins", fontsize=12)
+        ax2.set_title(
+            f"Expected Wins per Deck\nBased on deck winrate | {rounds} rounds | min {MIN_GAMES_FOR_WINRATE_CHARTS} games | Trusted >= {MIN_GAMES_FOR_TRUSTED}",
+            fontsize=13,
+        )
+        ax2.set_xlim(0, rounds + 0.5)
+        ax2.grid(axis="x", alpha=0.3, linestyle="--")
+        for i, (wins, wr) in enumerate(zip(expected_wins, pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5))):
+            ax2.text(float(wins) + 0.05, i, f"{float(wins):.2f} ({float(wr):.1%})", va="center", fontsize=8)
 
     sm2 = plt.cm.ScalarMappable(cmap=plt.cm.RdYlGn, norm=plt.Normalize(vmin=0, vmax=1))
     sm2.set_array([])
@@ -719,6 +793,7 @@ def run_statistics(
     deck_colors: Optional[dict[str, str]] = None,
     legend_colors: Optional[dict[str, str]] = None,
     log=None,
+    week_index: Optional[int] = None,
 ) -> StatisticsRunResult:
     def emit(message: str) -> None:
         if log is not None:
@@ -763,11 +838,32 @@ def run_statistics(
             emit(f"[stats][warn] Failed to read history: {err}")
             df_history = pd.DataFrame()
 
-    if len(df_history) > 0 and "WeekIndex" in df_history.columns:
-        max_week = pd.to_numeric(df_history["WeekIndex"], errors="coerce").max()
-        week_index = int(max_week) + 1 if pd.notna(max_week) else 1
-    else:
-        week_index = 1
+    week_start_tag, week_end_tag = _extract_week_range_from_input(input_excel)
+    existing_week_for_range: Optional[int] = None
+    if (
+        len(df_history) > 0
+        and week_start_tag is not None
+        and week_end_tag is not None
+        and {"WeekStart", "WeekEnd", "WeekIndex"}.issubset(df_history.columns)
+    ):
+        range_mask = (
+            df_history["WeekStart"].astype(str).str.strip().eq(week_start_tag)
+            & df_history["WeekEnd"].astype(str).str.strip().eq(week_end_tag)
+        )
+        if range_mask.any():
+            existing_week = pd.to_numeric(df_history.loc[range_mask, "WeekIndex"], errors="coerce").dropna()
+            if not existing_week.empty:
+                existing_week_for_range = int(existing_week.max())
+
+    if week_index is None:
+        if existing_week_for_range is not None:
+            week_index = existing_week_for_range
+            emit(f"[stats] Reusing existing week index for range {week_start_tag}_to_{week_end_tag}: {week_index}")
+        elif len(df_history) > 0 and "WeekIndex" in df_history.columns:
+            max_week = pd.to_numeric(df_history["WeekIndex"], errors="coerce").max()
+            week_index = int(max_week) + 1 if pd.notna(max_week) else 1
+        else:
+            week_index = 1
     emit(f"[stats] Week index: {week_index}")
     emit(f"[stats] Output profile: {normalized_profile}")
     emit(f"[stats] Palette: {palette_name}")
@@ -787,9 +883,16 @@ def run_statistics(
     df_new = _calculate_metrics(df_new, total_players, rounds)
     df_new["WeekIndex"] = week_index
     df_new["Level"] = "Deck"
+    df_new["WeekStart"] = week_start_tag if week_start_tag is not None else pd.NA
+    df_new["WeekEnd"] = week_end_tag if week_end_tag is not None else pd.NA
 
-    if len(df_history) > 0 and "Deck" in df_history.columns and "WeekIndex" in df_history.columns:
-        tmp = df_history.sort_values("WeekIndex").groupby("Deck").tail(4)
+    history_for_trend = df_history
+    if len(df_history) > 0 and "WeekIndex" in df_history.columns:
+        same_week_mask = pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index
+        history_for_trend = df_history[~same_week_mask].copy()
+
+    if len(history_for_trend) > 0 and "Deck" in history_for_trend.columns and "WeekIndex" in history_for_trend.columns:
+        tmp = history_for_trend.sort_values("WeekIndex").groupby("Deck").tail(4)
         trend_meta = tmp.groupby("Deck")["Meta"].mean().to_dict() if "Meta" in tmp.columns else {}
         df_new["Trend Label"] = df_new.apply(
             lambda row: trend_label(float(row["Meta"]), float(trend_meta.get(row["Deck"], row["Meta"])), threshold=TREND_THRESHOLD_DECK),
@@ -802,24 +905,26 @@ def run_statistics(
     df_new["Emerging Threat"] = False
     df_new["Declining Threat"] = False
 
-    if len(df_history) > 0 and "Deck" in df_history.columns and "WeekIndex" in df_history.columns:
-        mask = (pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index) & df_history["Deck"].isin(df_new["Deck"])
-        df_history = df_history[~mask]
-    df_history = pd.concat([df_history, df_new], ignore_index=True)
+    if len(df_history) > 0 and "WeekIndex" in df_history.columns:
+        week_mask = pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index
+        removed_rows = int(week_mask.sum())
+        if removed_rows > 0:
+            emit(f"[stats] Replacing existing rows for week index {week_index}: {removed_rows} rows removed")
+        df_history = df_history[~week_mask]
 
     df_arch = _aggregate_by_archetype(df_new)
     df_arch = _calculate_metrics(df_arch, total_players, rounds)
     df_arch["WeekIndex"] = week_index
     df_arch["Deck"] = df_arch["Archetype"]
     df_arch["Level"] = "Archetype"
+    df_arch["WeekStart"] = week_start_tag if week_start_tag is not None else pd.NA
+    df_arch["WeekEnd"] = week_end_tag if week_end_tag is not None else pd.NA
     df_arch["Trend Label"] = "Stable"
     df_arch["Pillar"] = False
     df_arch["Emerging Threat"] = False
     df_arch["Declining Threat"] = False
 
-    if "Level" in df_history.columns and "WeekIndex" in df_history.columns:
-        arch_mask = (pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index) & (df_history["Level"] == "Archetype")
-        df_history = df_history[~arch_mask]
+    df_history = pd.concat([df_history, df_new], ignore_index=True)
     df_history = pd.concat([df_history, df_arch], ignore_index=True)
 
     emit("[stats] Saving tabular outputs...")
@@ -938,3 +1043,75 @@ def run_statistics(
         archetype_rows=len(df_arch),
         files=files,
     )
+
+
+def rebuild_history_from_dirs(
+    outputs_base: Path,
+    history_csv: Path,
+    total_players: int = 1000,
+    rounds: int = 5,
+    min_encounter_pct: float = 5.0,
+    player_deck_name: str = "My Deck",
+    player_winrate: float = 0.5,
+    weeks_back: int = 4,
+    output_profile: str = "full",
+    palette_name: str = "classic",
+    deck_colors: Optional[dict[str, str]] = None,
+    legend_colors: Optional[dict[str, str]] = None,
+    log=None,
+) -> int:
+    """Scans all run directories under outputs_base, rebuilds metagame_history.csv from scratch.
+
+    Returns the number of weeks successfully processed.
+    """
+    from metagame_input_generator import scan_run_dirs  # local import to avoid circular at module level
+
+    def emit(msg: str) -> None:
+        if log is not None:
+            log(str(msg))
+
+    run_dirs = scan_run_dirs(outputs_base)
+    if not run_dirs:
+        emit("[rebuild] No run directories found under: " + str(outputs_base))
+        return 0
+
+    emit(f"[rebuild] Found {len(run_dirs)} run directories. Clearing history and rebuilding...")
+
+    # Reset history CSV so we start from scratch
+    if history_csv.exists():
+        history_csv.unlink()
+
+    processed = 0
+    for seq, (week_start, week_end, run_dir) in enumerate(run_dirs, start=1):
+        grouped_xlsx = run_dir / "metagame_input_grouped.xlsx"
+        if not grouped_xlsx.exists():
+            emit(f"[rebuild] Skip W{seq:02d} {run_dir.name}: metagame_input_grouped.xlsx not found")
+            continue
+
+        stats_dir = run_dir / "statistics"
+        emit(f"[rebuild] W{seq:02d} {run_dir.name}")
+        try:
+            run_statistics(
+                input_excel=grouped_xlsx,
+                output_dir=stats_dir,
+                history_csv=history_csv,
+                total_players=total_players,
+                rounds=rounds,
+                min_encounter_pct=min_encounter_pct,
+                player_deck_name=player_deck_name,
+                player_winrate=player_winrate,
+                weeks_back=weeks_back,
+                output_profile=output_profile,
+                palette_name=palette_name,
+                deck_colors=deck_colors,
+                legend_colors=legend_colors,
+                log=log,
+                week_index=seq,
+            )
+            processed += 1
+        except Exception as exc:
+            emit(f"[rebuild][error] {run_dir.name}: {exc}")
+
+    emit(f"[rebuild] Done. Processed {processed}/{len(run_dirs)} weeks.")
+    return processed
+

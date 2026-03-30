@@ -41,6 +41,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QSizePolicy,
 )
 
 try:
@@ -49,9 +50,9 @@ except ModuleNotFoundError:
     from .metagame_input_generator import GenerationRunResult, fetch_available_decks, parse_args, run_generation
 
 try:
-    from statistics_engine import StatisticsRunResult, run_statistics
+    from statistics_engine import StatisticsRunResult, rebuild_history_from_dirs, run_statistics
 except ModuleNotFoundError:
-    from .statistics_engine import StatisticsRunResult, run_statistics
+    from .statistics_engine import StatisticsRunResult, rebuild_history_from_dirs, run_statistics
 
 try:
     from change_model import ChangeModel, ConfigPaths, load_archetype_catalog, remove_archetype, upsert_archetype_catalog
@@ -240,13 +241,28 @@ class StudioWindow(QMainWindow):
         self._build_ui()
         self._restore_state()
 
+    def _on_history_points_changed(self, value: int) -> None:
+        single = value == 1
+        self.week_start_edit.setEnabled(single)
+        self.week_end_edit.setEnabled(single)
+        if single:
+            self.generate_button.setText("Generate Snapshot")
+        else:
+            self.generate_button.setText(f"Build History ({value} weeks)")
+
     def _build_generator_args(self) -> Namespace:
         args = parse_args([])
         args.format_name = self.format_combo.currentText()
         selected_deck = self.my_deck_combo.currentData(Qt.UserRole)
         args.my_deck = str(selected_deck or self.my_deck_combo.currentText() or "Domain Zoo").strip()
-        args.week_start = self.week_start_edit.date().toString("yyyy-MM-dd")
-        args.week_end = self.week_end_edit.date().toString("yyyy-MM-dd")
+        history_points = self.history_points_spin.value()
+        args.history_points = history_points
+        if history_points > 1:
+            args.week_start = None
+            args.week_end = None
+        else:
+            args.week_start = self.week_start_edit.date().toString("yyyy-MM-dd")
+            args.week_end = self.week_end_edit.date().toString("yyyy-MM-dd")
         args.my_window_days = self.my_window_spin.value()
         args.my_fallback_window_days = self.my_fallback_spin.value()
         args.rogue_threshold = self.rogue_spin.value()
@@ -256,14 +272,7 @@ class StudioWindow(QMainWindow):
         args.rules_file = str(self.config_dir / "archetype_rules.csv")
         args.aliases_file = str(self.config_dir / "deck_aliases.csv")
         args.user_mapping_file = str(self.config_dir / "user_deck_mapping.csv")
-        args.history_output_dir = str(outputs_dir / "history")
-        args.output_csv = str(outputs_dir / "metagame_input.csv")
-        args.output_xlsx = str(outputs_dir / "metagame_input.xlsx")
-        args.output_csv_rogue_grouped = str(outputs_dir / "metagame_input_rogue_grouped.csv")
-        args.output_xlsx_rogue_grouped = str(outputs_dir / "metagame_input_rogue_grouped.xlsx")
-        args.output_xml_grouped = str(outputs_dir / "metagame_input_grouped.xml")
-        args.unknown_output = str(outputs_dir / "unknown_archetypes.csv")
-        args.alias_suggestions_output = str(outputs_dir / "alias_suggestions.csv")
+        args.outputs_base = str(outputs_dir)
         args.output_profile = "analysis"
         return args
 
@@ -372,9 +381,19 @@ class StudioWindow(QMainWindow):
         self.matchup_limit_spin = QSpinBox()
         self.matchup_limit_spin.setRange(1, 2000)
 
+        self.history_points_spin = QSpinBox()
+        self.history_points_spin.setRange(1, 52)
+        self.history_points_spin.setValue(1)
+        self.history_points_spin.setToolTip(
+            "1 = single snapshot (use date fields below)\n"
+            ">1 = build N weekly windows back from latest Sunday (date fields ignored)"
+        )
+        self.history_points_spin.valueChanged.connect(self._on_history_points_changed)
+
         form.addRow("Format", self.format_combo)
         form.addRow("My Deck", deck_row)
         form.addRow("Deck Mode", self.deck_mode_label)
+        form.addRow("History Points", self.history_points_spin)
         form.addRow("Week Start", self.week_start_edit)
         form.addRow("Week End", self.week_end_edit)
         form.addRow("My WR Window", self.my_window_spin)
@@ -468,16 +487,25 @@ class StudioWindow(QMainWindow):
         left_layout.setSpacing(10)
 
         source_row = QHBoxLayout()
+        source_label = QLabel("Source:")
+        source_label.setFixedWidth(54)
+
+        self.editor_source_combo = QComboBox()
+        self.editor_source_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.editor_source_combo.setToolTip("Select which run directory to edit")
+        self.editor_source_combo.currentIndexChanged.connect(self._on_editor_source_combo_changed)
+
+        self.load_latest_button = QPushButton("Refresh List")
+        self.load_latest_button.clicked.connect(self._refresh_editor_source_combo)
+
+        source_row.addWidget(source_label)
+        source_row.addWidget(self.editor_source_combo, 1)
+        source_row.addWidget(self.load_latest_button)
+        left_layout.addLayout(source_row)
+
         self.editor_source_label = QLabel("Source: not loaded")
         self.editor_source_label.setWordWrap(True)
         self.editor_source_label.setObjectName("muted")
-
-        self.load_latest_button = QPushButton("Load Latest Output")
-        self.load_latest_button.clicked.connect(self.load_latest_output_for_editor)
-
-        source_row.addWidget(self.editor_source_label, 1)
-        source_row.addWidget(self.load_latest_button)
-        left_layout.addLayout(source_row)
 
         self.editor_table = QTableWidget(0, len(RESULT_TABLE_HEADERS))
         self.editor_table.setHorizontalHeaderLabels(RESULT_TABLE_HEADERS)
@@ -797,7 +825,13 @@ class StudioWindow(QMainWindow):
         self.stats_open_folder_button = QPushButton("Open Statistics Folder")
         self.stats_open_folder_button.clicked.connect(self.open_statistics_output_dir)
         self.stats_open_folder_button.setEnabled(False)
+        self.stats_rebuild_history_button = QPushButton("Rebuild History")
+        self.stats_rebuild_history_button.setToolTip(
+            "Scan all run directories under outputs/YYYY/MM/ and rebuild metagame_history.csv from scratch."
+        )
+        self.stats_rebuild_history_button.clicked.connect(self._rebuild_history)
         button_row.addWidget(self.stats_run_button)
+        button_row.addWidget(self.stats_rebuild_history_button)
         button_row.addWidget(self.stats_open_folder_button)
         controls_layout.addLayout(button_row)
 
@@ -1020,15 +1054,41 @@ class StudioWindow(QMainWindow):
         return self.repo_root / "outputs" / "metagame_history.csv"
 
     def _find_latest_grouped_input(self) -> Optional[Path]:
-        run_dir = self._latest_output_dir()
-        if run_dir is None:
-            return None
-        grouped = run_dir / "metagame_input_grouped.xlsx"
-        if grouped.exists():
-            return grouped
-        legacy = run_dir / "metagame_input_rogue_grouped.xlsx"
-        if legacy.exists():
-            return legacy
+        # Always scan disk for the newest run dir — do NOT rely on self.last_results
+        # which may point to an older run from the current session.
+        from metagame_input_generator import scan_run_dirs
+
+        runs = scan_run_dirs(self.repo_root / "outputs")
+        candidates = [run_dir for _ws, _we, run_dir in reversed(runs)]
+
+        # Also include legacy flat dirs
+        outputs_base = self.repo_root / "outputs"
+        if outputs_base.exists():
+            import re as _re
+            flat_re = _re.compile(r"^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$")
+            from datetime import date as _date
+            flat_dirs: list[tuple] = []
+            for d in outputs_base.iterdir():
+                if not d.is_dir():
+                    continue
+                m = flat_re.match(d.name)
+                if not m:
+                    continue
+                try:
+                    we = _date.fromisoformat(m.group(2))
+                    flat_dirs.append((we, d))
+                except ValueError:
+                    continue
+            for _we, d in sorted(flat_dirs, reverse=True):
+                candidates.append(d)
+
+        for run_dir in candidates:
+            grouped = run_dir / "metagame_input_grouped.xlsx"
+            if grouped.exists():
+                return grouped
+            legacy = run_dir / "metagame_input_rogue_grouped.xlsx"
+            if legacy.exists():
+                return legacy
         return None
 
     def _set_statistics_input_from_latest(self) -> None:
@@ -1063,6 +1123,61 @@ class StudioWindow(QMainWindow):
     def _statistics_output_dir_for_input(self, input_path: Path) -> Path:
         parent = input_path.parent
         return parent / "statistics"
+
+    def _rebuild_history(self) -> None:
+        history_text = self.stats_history_edit.text().strip()
+        history_path = Path(history_text) if history_text else self._default_history_csv()
+        outputs_base = self.repo_root / "outputs"
+
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self,
+            "Rebuild History",
+            f"This will delete and rebuild:\n{history_path}\n\n"
+            f"Scanning all run dirs in:\n{outputs_base}\n\nContinue?",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        self.stats_rebuild_history_button.setEnabled(False)
+        self.stats_run_button.setEnabled(False)
+        self.stats_log_output.clear()
+        self.stats_summary_label.setText("Rebuilding history...")
+
+        def _log(msg: str) -> None:
+            self.stats_log_output.append(msg)
+            QApplication.processEvents()
+
+        try:
+            count = rebuild_history_from_dirs(
+                outputs_base=outputs_base,
+                history_csv=history_path,
+                total_players=self.stats_total_players_spin.value(),
+                rounds=self.stats_rounds_spin.value(),
+                min_encounter_pct=self.stats_min_encounter_spin.value(),
+                player_deck_name=self.stats_player_deck_edit.text().strip() or "My Deck",
+                player_winrate=self.stats_player_wr_spin.value() / 100.0
+                if self.stats_player_wr_spin.value() > 1
+                else self.stats_player_wr_spin.value(),
+                weeks_back=self.stats_weeks_back_spin.value(),
+                output_profile=self.stats_output_profile_combo.currentText(),
+                palette_name=self.stats_palette_combo.currentText(),
+                deck_colors=self._parse_stats_deck_colors() or None,
+                legend_colors=self._parse_stats_legend_colors() or None,
+                log=_log,
+            )
+            self.stats_history_edit.setText(str(history_path))
+            self.stats_summary_label.setText(
+                f"Rebuild complete. {count} week(s) processed. History: {history_path.name}"
+            )
+            self.stats_open_folder_button.setEnabled(True)
+        except Exception as exc:
+            self.stats_summary_label.setText(f"Rebuild failed: {exc}")
+            _log(f"[rebuild][fatal] {exc}")
+        finally:
+            self.stats_rebuild_history_button.setEnabled(True)
+            self.stats_run_button.setEnabled(True)
 
     def _parse_stats_deck_colors(self) -> dict[str, str]:
         out: dict[str, str] = {}
@@ -1769,12 +1884,18 @@ class StudioWindow(QMainWindow):
             self.files_list.addItem(item)
 
     def _find_latest_range_dir(self, base_path: Path) -> Optional[Path]:
-        if not base_path.exists():
-            return None
-        candidates = [path for path in base_path.iterdir() if path.is_dir() and "_to_" in path.name]
-        if not candidates:
-            return None
-        return max(candidates, key=lambda path: path.stat().st_mtime)
+        """Return the most recently modified run directory under outputs/YYYY/MM/WNN_*."""
+        from metagame_input_generator import scan_run_dirs
+        runs = scan_run_dirs(base_path)
+        if not runs:
+            # Fallback: legacy flat structure
+            if not base_path.exists():
+                return None
+            candidates = [p for p in base_path.iterdir() if p.is_dir() and "_to_" in p.name]
+            if not candidates:
+                return None
+            return max(candidates, key=lambda p: p.stat().st_mtime)
+        return runs[-1][2]  # newest (week_start, week_end, path)
 
     def _latest_output_dir(self) -> Optional[Path]:
         if self.last_results:
@@ -1800,28 +1921,83 @@ class StudioWindow(QMainWindow):
         return rows
 
     def load_latest_output_for_editor(self) -> None:
-        run_dir = self._latest_output_dir()
-        if run_dir is None:
+        """Load the most recently modified run dir — also refreshes the source combo."""
+        self._refresh_editor_source_combo()
+
+    def _refresh_editor_source_combo(self) -> None:
+        """Scan outputs/ for all run directories and populate the source combo, selecting the latest."""
+        from metagame_input_generator import scan_run_dirs
+
+        outputs_base = self.repo_root / "outputs"
+        runs = scan_run_dirs(outputs_base)
+
+        # Fallback: also pick up legacy flat dirs (YYYY-MM-DD_to_YYYY-MM-DD directly in outputs/)
+        legacy: list[tuple] = []
+        if outputs_base.exists():
+            import re as _re
+            _flat_re = _re.compile(r"^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$")
+            from datetime import date as _date
+            for d in sorted(outputs_base.iterdir()):
+                if not d.is_dir():
+                    continue
+                m = _flat_re.match(d.name)
+                if not m:
+                    continue
+                try:
+                    ws = _date.fromisoformat(m.group(1))
+                    we = _date.fromisoformat(m.group(2))
+                    legacy.append((ws, we, d))
+                except ValueError:
+                    continue
+
+        all_runs = sorted(set(runs) | set(legacy), key=lambda x: x[0])
+
+        self.editor_source_combo.blockSignals(True)
+        self.editor_source_combo.clear()
+
+        if not all_runs:
+            self.editor_source_combo.addItem("(no run directories found)", None)
+            self.editor_source_combo.blockSignals(False)
             self.editor_rows = []
             self.current_editor_source = None
             self.editor_source_label.setText("Source: no generated outputs found yet")
             self.editor_table.setRowCount(0)
-            self.editor_status_label.setText("Generate a snapshot first or place a result folder in outputs/.")
+            self.editor_status_label.setText("Generate a snapshot first.")
             return
 
+        for week_start, week_end, run_dir in all_runs:
+            label = f"{run_dir.name}  ({week_start} → {week_end})"
+            self.editor_source_combo.addItem(label, str(run_dir))
+
+        # Select the newest entry
+        self.editor_source_combo.setCurrentIndex(self.editor_source_combo.count() - 1)
+        self.editor_source_combo.blockSignals(False)
+        self._load_editor_from_combo()
+
+    def _on_editor_source_combo_changed(self, _index: int) -> None:
+        self._load_editor_from_combo()
+
+    def _load_editor_from_run_dir(self, run_dir: Path) -> None:
         csv_path = run_dir / "metagame_input.csv"
         if not csv_path.exists():
             self.editor_rows = []
             self.current_editor_source = None
-            self.editor_source_label.setText(f"Source: missing {csv_path.name} in {run_dir.name}")
+            self.editor_source_label.setText(f"Source: missing metagame_input.csv in {run_dir.name}")
             self.editor_table.setRowCount(0)
             return
 
         self.editor_rows = self._load_result_rows(csv_path)
         self.current_editor_source = csv_path
-        self.editor_source_label.setText(f"Source: {csv_path}")
+        self.editor_source_label.setText(f"Source: {run_dir.name}")
         self._populate_editor_table()
         self.editor_status_label.setText("Select a row to edit canonical deck name and archetype.")
+
+    def _load_editor_from_combo(self) -> None:
+        run_dir_str = self.editor_source_combo.currentData()
+        if not run_dir_str:
+            return
+        self._load_editor_from_run_dir(Path(run_dir_str))
+
 
     def _populate_editor_table(self) -> None:
         deck_options = self._load_deck_catalog()
@@ -2061,11 +2237,186 @@ class StudioWindow(QMainWindow):
 
         return matched == expected
 
-    def _save_rows_to_config(self, row_indices: List[int]) -> tuple[int, int, bool, Optional[object]]:
+    def _current_editor_week_end(self) -> Optional[date]:
+        if self.current_editor_source is None:
+            return None
+        import re as _re
+
+        run_dir_name = self.current_editor_source.parent.name
+        match = _re.search(r"(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})", run_dir_name)
+        if not match:
+            return None
+        try:
+            return date.fromisoformat(match.group(2))
+        except ValueError:
+            return None
+
+    def _latest_available_week_end(self) -> Optional[date]:
+        from metagame_input_generator import scan_run_dirs
+
+        outputs_base = self.repo_root / "outputs"
+        runs = scan_run_dirs(outputs_base)
+        if not runs:
+            return None
+        return max(week_end for _week_start, week_end, _run_dir in runs)
+
+    def _is_editing_latest_run(self) -> bool:
+        current_end = self._current_editor_week_end()
+        latest_end = self._latest_available_week_end()
+        if current_end is None or latest_end is None:
+            return True
+        return current_end >= latest_end
+
+    def _read_existing_exact_index(self, path: Path, key_column: str, value_column: str) -> dict[str, str]:
+        if not path.exists():
+            return {}
+        out: dict[str, str] = {}
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            for row in reader:
+                key = str(row.get(key_column) or "").strip().lower()
+                if not key:
+                    continue
+                match_type = str(row.get("match_type") or "exact").strip().lower()
+                if "match_type" in (reader.fieldnames or []) and match_type != "exact":
+                    continue
+                out[key] = str(row.get(value_column) or "").strip()
+        return out
+
+    def _collect_mapping_payloads(self, row_indices: List[int]) -> List[tuple[List[str], str, str]]:
+        payloads: List[tuple[List[str], str, str]] = []
+        for row_index in row_indices:
+            if row_index < 0 or row_index >= len(self.editor_rows):
+                continue
+            row = self.editor_rows[row_index]
+            canonical_name = str(row.get("deck") or "").strip()
+            archetype = str(row.get("archetype") or "").strip()
+            raw_name = str(row.get("raw_deck") or "").strip()
+            if not canonical_name or not archetype or not raw_name:
+                continue
+            raw_names = self._split_raw_names(raw_name)
+            if not raw_names:
+                continue
+            payloads.append((raw_names, canonical_name, archetype))
+        return payloads
+
+    def _iter_run_dirs_with_week_end(self) -> List[tuple[Optional[date], Path]]:
+        from metagame_input_generator import scan_run_dirs
+
+        outputs_base = self.repo_root / "outputs"
+        runs = scan_run_dirs(outputs_base)
+        out: List[tuple[Optional[date], Path]] = [(week_end, run_dir) for _week_start, week_end, run_dir in runs]
+        known_paths = {run_dir.resolve() for _week_end, run_dir in out}
+
+        if outputs_base.exists():
+            import re as _re
+
+            flat_re = _re.compile(r"^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$")
+            for candidate in outputs_base.iterdir():
+                if not candidate.is_dir():
+                    continue
+                try:
+                    candidate_resolved = candidate.resolve()
+                except Exception:
+                    candidate_resolved = candidate
+                if candidate_resolved in known_paths:
+                    continue
+                match = flat_re.match(candidate.name)
+                if not match:
+                    continue
+                try:
+                    week_end = date.fromisoformat(match.group(2))
+                except ValueError:
+                    week_end = None
+                out.append((week_end, candidate))
+
+        out.sort(key=lambda item: (item[0] is None, item[0] or date.min, item[1].name))
+        return out
+
+    def _propagate_mappings_to_history(self, payloads: List[tuple[List[str], str, str]], limit_week_end: Optional[date]) -> tuple[int, int]:
+        if not payloads:
+            return 0, 0
+
+        exact_map: dict[str, tuple[str, str]] = {}
+        for raw_names, canonical_name, archetype in payloads:
+            for raw_name in raw_names:
+                key = raw_name.strip().lower()
+                if key:
+                    exact_map[key] = (canonical_name, archetype)
+
+        if not exact_map:
+            return 0, 0
+
+        files_updated = 0
+        rows_updated = 0
+        for week_end, run_dir in self._iter_run_dirs_with_week_end():
+            if limit_week_end is not None and week_end is not None and week_end > limit_week_end:
+                continue
+
+            csv_path = run_dir / "metagame_input.csv"
+            if not csv_path.exists():
+                continue
+
+            with csv_path.open("r", encoding="utf-8", newline="") as handle:
+                reader = csv.DictReader(handle)
+                rows = list(reader)
+                fieldnames = list(reader.fieldnames or [])
+
+            if not rows or not fieldnames:
+                continue
+
+            source_col = "Source Deck Names" if "Source Deck Names" in fieldnames else ("Raw Deck" if "Raw Deck" in fieldnames else "Deck")
+            if "Deck" not in fieldnames:
+                fieldnames.append("Deck")
+            if "Archetype" not in fieldnames:
+                fieldnames.append("Archetype")
+
+            file_changed = False
+            for row in rows:
+                source_value = str(row.get(source_col) or "").strip()
+                raw_candidates = self._split_raw_names(source_value)
+                target: Optional[tuple[str, str]] = None
+                for candidate in raw_candidates:
+                    mapped = exact_map.get(candidate.strip().lower())
+                    if mapped is not None:
+                        target = mapped
+                        break
+                if target is None:
+                    continue
+
+                target_deck, target_archetype = target
+                current_deck = str(row.get("Deck") or "").strip()
+                current_archetype = str(row.get("Archetype") or "").strip()
+                if current_deck == target_deck and current_archetype == target_archetype:
+                    continue
+
+                row["Deck"] = target_deck
+                row["Archetype"] = target_archetype
+                rows_updated += 1
+                file_changed = True
+
+            if not file_changed:
+                continue
+
+            with csv_path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+            files_updated += 1
+
+        return files_updated, rows_updated
+
+    def _save_rows_to_config(self, row_indices: List[int]) -> tuple[int, int, bool, Optional[object], int]:
         model = ChangeModel(paths=ConfigPaths.from_config_dir(self.config_dir))
         verification_items: List[tuple[List[str], str, str]] = []
         processed_rows = 0
         total_source_names = 0
+        skipped_existing = 0
+
+        editing_latest = self._is_editing_latest_run()
+        existing_mappings = self._read_existing_exact_index(self.config_dir / "user_deck_mapping.csv", "raw_name", "canonical_name") if not editing_latest else {}
+        existing_aliases = self._read_existing_exact_index(self.config_dir / "deck_aliases.csv", "pattern", "canonical_name") if not editing_latest else {}
+        existing_archetypes = self._read_existing_exact_index(self.config_dir / "archetype_rules.csv", "pattern", "archetype") if not editing_latest else {}
 
         for row_index in row_indices:
             if row_index < 0 or row_index >= len(self.editor_rows):
@@ -2084,21 +2435,32 @@ class StudioWindow(QMainWindow):
                 continue
 
             for source_name in raw_names:
+                key = source_name.strip().lower()
+                if not editing_latest and (
+                    key in existing_mappings or key in existing_aliases or key in existing_archetypes
+                ):
+                    skipped_existing += 1
+                    continue
                 model.queue_mapping(source_name, canonical_name, archetype)
                 model.queue_alias(source_name, canonical_name, match_type="exact", priority=1)
                 model.queue_archetype_rule(source_name, archetype, match_type="exact", priority=1)
-            model.queue_archetype_rule(canonical_name, archetype, match_type="exact", priority=1)
+
+            canonical_key = canonical_name.strip().lower()
+            if editing_latest or canonical_key not in existing_archetypes:
+                model.queue_archetype_rule(canonical_name, archetype, match_type="exact", priority=1)
+            elif not editing_latest:
+                skipped_existing += 1
 
             processed_rows += 1
             total_source_names += len(raw_names)
             verification_items.append((raw_names, canonical_name, archetype))
 
         if not model.has_changes():
-            return 0, 0, False, None
+            return 0, 0, False, None, skipped_existing
 
         summary = model.apply(create_backup=True)
         verified = all(self._verify_saved_mapping_entries(raw_names, canonical_name, archetype) for raw_names, canonical_name, archetype in verification_items)
-        return processed_rows, total_source_names, verified, summary
+        return processed_rows, total_source_names, verified, summary, skipped_existing
 
     def _save_editor_changes(self) -> None:
         row_index = self.editor_table.currentRow()
@@ -2116,8 +2478,11 @@ class StudioWindow(QMainWindow):
 
         row["deck"] = canonical_name
         row["archetype"] = archetype
-        processed_rows, total_source_names, verified, summary = self._save_rows_to_config([row_index])
-        if summary is None:
+        processed_rows, total_source_names, verified, summary, skipped_existing = self._save_rows_to_config([row_index])
+        payloads = self._collect_mapping_payloads([row_index])
+        backfill_files, backfill_rows = self._propagate_mappings_to_history(payloads, self._current_editor_week_end())
+
+        if summary is None and backfill_rows == 0:
             QMessageBox.warning(self, APP_NAME, "Nothing to save for selected row.")
             return
 
@@ -2126,8 +2491,15 @@ class StudioWindow(QMainWindow):
         self._populate_editor_table()
         self.editor_table.selectRow(row_index)
         verification_text = "Saved and verified in active config." if verified else "Saved, but verification failed."
+        skip_note = f" skipped={skipped_existing} (protected newer entries)." if skipped_existing else ""
+        summary_note = (
+            f" aliases={summary.aliases_upserted}, archetypes={summary.archetypes_upserted}, mappings={summary.mappings_upserted}"
+            if summary is not None
+            else " aliases=0, archetypes=0, mappings=0"
+        )
+        backfill_note = f" history_files={backfill_files}, history_rows={backfill_rows}"
         self.editor_status_label.setText(
-            f"{verification_text} rows={processed_rows}, source names={total_source_names}, aliases={summary.aliases_upserted}, archetypes={summary.archetypes_upserted}, mappings={summary.mappings_upserted}"
+            f"{verification_text} rows={processed_rows}, source names={total_source_names},{summary_note},{backfill_note}{skip_note}"
         )
         self._append_log(
             f"[OK] Saved editor mapping raw='{raw_name}' ({total_source_names} source name(s)) -> deck='{canonical_name}', archetype='{archetype}'"
@@ -2145,8 +2517,12 @@ class StudioWindow(QMainWindow):
             selected["deck"] = self.editor_canonical_input.text().strip() or str(selected.get("deck") or "").strip()
             selected["archetype"] = self.editor_archetype_combo.currentText().strip() or str(selected.get("archetype") or "").strip()
 
-        processed_rows, total_source_names, verified, summary = self._save_rows_to_config(list(range(len(self.editor_rows))))
-        if summary is None:
+        all_row_indices = list(range(len(self.editor_rows)))
+        processed_rows, total_source_names, verified, summary, skipped_existing = self._save_rows_to_config(all_row_indices)
+        payloads = self._collect_mapping_payloads(all_row_indices)
+        backfill_files, backfill_rows = self._propagate_mappings_to_history(payloads, self._current_editor_week_end())
+
+        if summary is None and backfill_rows == 0:
             QMessageBox.warning(self, APP_NAME, "Nothing to save across editor rows.")
             return
 
@@ -2155,24 +2531,42 @@ class StudioWindow(QMainWindow):
         if 0 <= row_index < len(self.editor_rows):
             self.editor_table.selectRow(row_index)
         verification_text = "Saved and verified in active config." if verified else "Saved, but verification failed."
+        skip_note = f" skipped={skipped_existing} (protected newer entries)." if skipped_existing else ""
+        summary_note = (
+            f" aliases={summary.aliases_upserted}, archetypes={summary.archetypes_upserted}, mappings={summary.mappings_upserted}"
+            if summary is not None
+            else " aliases=0, archetypes=0, mappings=0"
+        )
+        backfill_note = f" history_files={backfill_files}, history_rows={backfill_rows}"
         self.editor_status_label.setText(
-            f"{verification_text} rows={processed_rows}, source names={total_source_names}, aliases={summary.aliases_upserted}, archetypes={summary.archetypes_upserted}, mappings={summary.mappings_upserted}"
+            f"{verification_text} rows={processed_rows}, source names={total_source_names},{summary_note},{backfill_note}{skip_note}"
         )
         self._append_log(
             f"[OK] Saved ALL editor mappings: rows={processed_rows}, source names={total_source_names}, aliases={summary.aliases_upserted}, archetypes={summary.archetypes_upserted}, mappings={summary.mappings_upserted}"
         )
 
     def _regenerate_from_editor(self) -> None:
+        if self.editor_rows:
+            # Regenerate should always run on latest editor state, not only the last manually saved row.
+            _processed_rows, _total_source_names, _verified, summary, _skipped_existing = self._save_rows_to_config(list(range(len(self.editor_rows))))
+            if summary is not None:
+                self._refresh_archetype_combo()
+
         if self.current_editor_source is not None:
+            # Extract dates from run dir name — supports both:
+            #   WNN_YYYY-MM-DD_to_YYYY-MM-DD  (new structure)
+            #   YYYY-MM-DD_to_YYYY-MM-DD      (legacy flat)
+            import re as _re
             range_dir = self.current_editor_source.parent.name
-            if "_to_" in range_dir:
+            m = _re.search(r"(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})", range_dir)
+            if m:
                 try:
-                    start_text, end_text = range_dir.split("_to_", 1)
-                    start_qdate = QDate.fromString(start_text, "yyyy-MM-dd")
-                    end_qdate = QDate.fromString(end_text, "yyyy-MM-dd")
+                    start_qdate = QDate.fromString(m.group(1), "yyyy-MM-dd")
+                    end_qdate = QDate.fromString(m.group(2), "yyyy-MM-dd")
                     if start_qdate.isValid() and end_qdate.isValid():
                         self.week_start_edit.setDate(start_qdate)
                         self.week_end_edit.setDate(end_qdate)
+                        self.history_points_spin.setValue(1)
                 except Exception:
                     pass
 

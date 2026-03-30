@@ -1,105 +1,59 @@
 pattern,canonical_name,match_type,priority
 4/5c Omnath,4/5c Omnath,exact,1
 4c Control,4c Control,exact,1
-4c Midrange,4c Midrange,exact,1
-5c Midrange,5c Midrange,exact,1
 Affinity,Affinity,exact,1
 Amulet Titan,Amulet Titan,exact,1
 Asmo Food,Asmo Food,exact,1
 Azorius Control,Azorius Control,exact,1
-Azorius GenericBlink,Azorius Blink,exact,1
 Belcher,Belcher,exact,1
-BG,BG,exact,1
-Bogles,Bogles,exact,1
 Boros Energy,Boros Energy,exact,1
-Boros Midrange,Boros Midrange,exact,1
 BR,BR,exact,1
 BRG,BRG,exact,1
-Death's Shadow,Death's Shadow,exact,1
-Devoted Combo,Devoted Combo,exact,1
 Dimir Midrange,Dimir Midrange,exact,1
 Dimir Reanimator,Dimir Reanimator,exact,1
 Dimir Tezzerator,Dimir Tezzerator,exact,1
 Domain Zoo,Domain Zoo,exact,1
-Eldrazi,Eldrazi Tron,exact,1
+Eldrazi,Eldrazi,exact,1
 Eldrazi Ramp,Eldrazi Ramp,exact,1
 Eldrazi Tron,Eldrazi Tron,exact,1
 Esper GenericBlink,Esper Blink,exact,1
 Esper Midrange,Esper Midrange,exact,1
-Generic Ragavan,Ragavan,exact,1
 Goryo's Vengeance,Goryo's Vengeance,exact,1
 Grixis Control,Grixis Control,exact,1
 Grixis Midrange,Grixis Midrange,exact,1
 Grixis Reanimator,Grixis Reanimator,exact,1
 Gruul Basking Broodscale Combo,Broodscale Combo,exact,1
-Gruul Midrange,Gruul Midrange,exact,1
-Gruul Prowess,Prowess,exact,1
 Hammer Time,Hammer Time,exact,1
 Hollow One,Hollow One,exact,1
-Humans,Humans,exact,1
-Indomitable Creativity,Indomitable Creativity,exact,1
-Infect,Infect,exact,1
 Izzet Prowess,Prowess,exact,1
-Izzet Splinter Twin,Izzet Splinter Twin,exact,1
 Izzet Steel-Cutter,Prowess,exact,1
 IzzetControl,Izzet Control,exact,1
 Jeskai Blink,Jeskai Blink,exact,1
 Jeskai Control,Jeskai Control,exact,1
 Jeskai Energy,Jeskai Energy,exact,1
-Jund,Jund,exact,1
-Jund Saga,Jund Saga,exact,1
 Kethis Combo,Kethis Combo,exact,1
-Land Destruction,Land Destruction,exact,1
 Lantern,Lantern,exact,1
 Living End,Living End,exact,1
-Mardu Energy,Mardu Energy,exact,1
 Mardu GenericBlink,Mardu Blink,exact,1
-Merfolk,Merfolk,exact,1
 Mill,Mill,exact,1
-Miracles,Miracles,exact,1
-Mono-Black Midrange,Mono-Black Midrange,exact,1
 Mono-Blue Tron,Mono-Blue Tron,exact,1
 Mono-Green Basking Broodscale Combo,Broodscale Combo,exact,1
 Mono-Green Tron,Mono-Green Tron,exact,1
-Mono-Red Artifact Reanimation,Mono-Red Artifact Reanimation,exact,1
-Mono-Red Burn,Burn,exact,1
-Mono-White Control,Mono-White Control,exact,1
-Naya Burn,Naya Burn,exact,1
 Naya Energy,Naya Energy,exact,1
 Neobrand,Neobrand,exact,1
-Orzhov GenericBlink,Orzhov Blink,exact,1
-Orzhov Midrange,Orzhov Midrange,exact,1
-Rakdos Delirium,Rakdos Delirium,exact,1
 Rakdos Midrange,Rakdos Midrange,exact,1
-RG,RG,exact,1
 Ruby Storm,Ruby Storm,exact,1
-Sam Combo,Sam Combo,exact,1
-Selective Oracle,Selective Oracle,exact,1
 Simic Basking Broodscale Combo,Broodscale Combo,exact,1
-Simic Midrange,Simic Midrange,exact,1
 Sultai Midrange,Sultai Ritual,exact,1
 Sultai Ritual,Sultai Ritual,exact,1
 Temur Prowess,Prowess,exact,1
-Temur Scapeshift,Temur Scapeshift,exact,1
-The Rock,The Rock,exact,1
 Through the Breach,Through the Breach,exact,1
-Tron,Tron,exact,1
-UB,UB,exact,1
-UBR,UBR,exact,1
 UBRG,UBRG,exact,1
 UG,UG,exact,1
-UR,Prowess,exact,1
-URG,URG,exact,1
-W,W,exact,1
-WBR,WBR,exact,1
-WG,WG,exact,1
 WR,WR,exact,1
 WRG,WRG,exact,1
-WU,Azorius Control,exact,1
-WUBRG,WUBRG,exact,1
-WUG,WUG,exact,1
-WUR,WUR,exact,1
-WURG,WURG,exact,1
+WU,WU,exact,1
 Yawgmoth,Yawgmoth,exact,1
 Temur Midrange,Temur Breach,exact,2
 Temur Steel-Cutter,Prowess,exact,2
+Mono-Red Burn,Burn,exact,10

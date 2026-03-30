@@ -600,6 +600,51 @@ def _clear_previous_run_outputs(run_dir: Path) -> None:
             pass
 
 
+_RUN_DIR_RE = re.compile(r"^W\d{2,}_(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$")
+
+
+def compute_run_dir(outputs_base: Path, week_start: date, week_end: date) -> Path:
+    """Returns the canonical run directory for a given week window.
+
+    Layout: outputs_base / YYYY / MM / WNN_YYYY-MM-DD_to_YYYY-MM-DD
+    The WNN prefix uses the ISO week number of week_end for natural sorting.
+    """
+    iso_week = week_end.isocalendar()[1]
+    folder = f"W{iso_week:02d}_{week_start.isoformat()}_to_{week_end.isoformat()}"
+    return outputs_base / f"{week_end.year:04d}" / f"{week_end.month:02d}" / folder
+
+
+def scan_run_dirs(outputs_base: Path) -> List[tuple]:
+    """Scans outputs_base for all run directories matching the WNN_date_to_date pattern.
+
+    Returns a sorted list of (week_start, week_end, run_dir) tuples, oldest first.
+    """
+    results: List[tuple] = []
+    base = Path(outputs_base)
+    if not base.exists():
+        return results
+    for year_dir in sorted(base.iterdir()):
+        if not year_dir.is_dir() or not year_dir.name.isdigit():
+            continue
+        for month_dir in sorted(year_dir.iterdir()):
+            if not month_dir.is_dir() or not month_dir.name.isdigit():
+                continue
+            for run_dir in sorted(month_dir.iterdir()):
+                if not run_dir.is_dir():
+                    continue
+                m = _RUN_DIR_RE.match(run_dir.name)
+                if not m:
+                    continue
+                try:
+                    ws = date.fromisoformat(m.group(1))
+                    we = date.fromisoformat(m.group(2))
+                    results.append((ws, we, run_dir))
+                except ValueError:
+                    continue
+    results.sort(key=lambda x: x[0])
+    return results
+
+
 def export_outputs(
     df: pd.DataFrame,
     output_csv: Path,
@@ -907,7 +952,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("--metagame-window-days", type=int, default=14, help="okno metagame, domyślnie 14 dni")
     parser.add_argument("--history-points", type=int, default=1, help="ile kolejnych punktów tygodniowych wygenerować")
     parser.add_argument("--anchor-sunday", help="YYYY-MM-DD, domyślnie ostatnia niedziela")
-    parser.add_argument("--history-output-dir", default="outputs/history", help="katalog na serię snapshotów")
+    parser.add_argument("--history-output-dir", default="outputs/history", help="(deprecated – use --outputs-base)")
+    parser.add_argument("--outputs-base", default=None, help="katalog bazowy; jeśli pominięty – wyprowadzany z --history-output-dir")
     parser.add_argument("--my-deck", default="Domain Zoo")
     parser.add_argument("--my-window-days", type=int, default=90, help="np. 30 lub 90")
     parser.add_argument("--my-fallback-window-days", type=int, default=180, help="okno fallback dla brakow, np. 180")
@@ -1038,10 +1084,14 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
     aliases = load_aliases(Path(args.aliases_file))
     user_mappings = load_user_deck_mappings(Path(args.user_mapping_file))
     user_mapping = mapping_lookup(user_mappings)
-    history_mode = len(windows) > 1
-    history_output_dir = Path(args.history_output_dir)
     output_profile = getattr(args, "output_profile", "full")
     analysis_mode = output_profile == "analysis"
+
+    # Resolve outputs base directory from --outputs-base or fall back to parent of --history-output-dir
+    if getattr(args, "outputs_base", None):
+        outputs_base = Path(args.outputs_base)
+    else:
+        outputs_base = Path(args.history_output_dir).parent
 
     log(f"[OK] User mapping rows loaded: {len(user_mappings)}")
     results: List[GenerationRunResult] = []
@@ -1062,95 +1112,18 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             matchup_limit=args.matchup_limit,
         )
 
-        if history_mode:
-            history_output_dir.mkdir(parents=True, exist_ok=True)
-            range_dir = history_output_dir / f"{week_start.isoformat()}_to_{week_end.isoformat()}"
-            range_dir.mkdir(parents=True, exist_ok=True)
-            _clear_previous_run_outputs(range_dir)
-            output_csv = range_dir / "metagame_input.csv"
-            output_xlsx = range_dir / "metagame_input.xlsx"
-            final_csv, final_xlsx = export_outputs(
-                dataset,
-                output_csv=output_csv,
-                output_xlsx=output_xlsx,
-                include_csv=True,
-                include_xlsx=not analysis_mode,
-            )
-            grouped = aggregate_by_deck(dataset)
-            grouped = apply_rogue_threshold_to_grouped(grouped, args.rogue_threshold)
-            grouped_csv = range_dir / "metagame_input_rogue_grouped.csv"
-            grouped_xlsx = range_dir / "metagame_input_rogue_grouped.xlsx"
-            grouped_xml = range_dir / "metagame_input_grouped.xml"
-            if analysis_mode:
-                grouped_xlsx = range_dir / "metagame_input_grouped.xlsx"
-                _remove_if_exists(output_xlsx)
-                _remove_if_exists(grouped_csv)
-                _remove_if_exists(grouped_xml)
-                _remove_if_exists(range_dir / "metagame_input_rogue_grouped.xlsx")
-            grouped_final_csv, grouped_final_xlsx = export_outputs(
-                grouped,
-                output_csv=grouped_csv,
-                output_xlsx=grouped_xlsx,
-                include_csv=not analysis_mode,
-                include_xlsx=True,
-            )
-            grouped_final_xml = None
-            if not analysis_mode:
-                grouped_final_xml = export_grouped_xml(grouped, grouped_xml)
-
-            log(
-                f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
-                f"rows={len(dataset)} | primary={my_wr_stats['primary']} | "
-                f"180d={my_wr_stats['fallback']} | 50%={my_wr_stats['imputed']}"
-            )
-            log(f"[OK] Rogue threshold: Meta < {args.rogue_threshold}%")
-            log(f"[OK] Dir: {range_dir}")
-            if final_xlsx is not None:
-                log(f"[OK] Files: {final_xlsx}")
-            if grouped_final_xlsx is not None:
-                label = "grouped" if analysis_mode else "Rogue grouped"
-                log(f"[OK] Files ({label}): {grouped_final_xlsx}")
-            if grouped_final_xml is not None:
-                log(f"[OK] XML (grouped): {grouped_final_xml}")
-            results.append(
-                GenerationRunResult(
-                    week_start=week_start,
-                    week_end=week_end,
-                    run_dir=range_dir,
-                    row_count=len(dataset),
-                    mapped_from_user=mapped_from_user,
-                    primary_count=my_wr_stats["primary"],
-                    fallback_count=my_wr_stats["fallback"],
-                    imputed_count=my_wr_stats["imputed"],
-                    rogue_threshold=args.rogue_threshold,
-                    csv_path=final_csv,
-                    xlsx_path=final_xlsx,
-                    rogue_csv_path=grouped_final_csv,
-                    rogue_xlsx_path=grouped_final_xlsx,
-                    rogue_xml_path=grouped_final_xml,
-                )
-            )
-            continue
-
-        output_csv = Path(args.output_csv)
-        output_xlsx = Path(args.output_xlsx)
-        output_csv_grouped = Path(args.output_csv_rogue_grouped)
-        output_xlsx_grouped = Path(args.output_xlsx_rogue_grouped)
-        output_xml_grouped = Path(args.output_xml_grouped)
-        unknown_output = Path(args.unknown_output)
-        alias_suggestions_output = Path(args.alias_suggestions_output)
-
-        run_dir = output_csv.parent / f"{week_start.isoformat()}_to_{week_end.isoformat()}"
+        run_dir = compute_run_dir(outputs_base, week_start, week_end)
         run_dir.mkdir(parents=True, exist_ok=True)
         _clear_previous_run_outputs(run_dir)
 
-        output_csv = run_dir / output_csv.name
-        output_xlsx = run_dir / output_xlsx.name
-        output_csv_grouped = run_dir / output_csv_grouped.name
-        output_xlsx_grouped = run_dir / output_xlsx_grouped.name
-        output_xml_grouped = run_dir / output_xml_grouped.name
-        unknown_output = run_dir / unknown_output.name
-        alias_suggestions_output = run_dir / alias_suggestions_output.name
+        output_csv = run_dir / "metagame_input.csv"
+        output_xlsx = run_dir / "metagame_input.xlsx"
+        output_csv_grouped = run_dir / "metagame_input_rogue_grouped.csv"
+        output_xlsx_grouped = run_dir / "metagame_input_rogue_grouped.xlsx"
+        output_xml_grouped = run_dir / "metagame_input_grouped.xml"
+        unknown_output = run_dir / "unknown_archetypes.csv"
+        alias_suggestions_output = run_dir / "alias_suggestions.csv"
+
         if analysis_mode:
             output_xlsx_grouped = run_dir / "metagame_input_grouped.xlsx"
             _remove_if_exists(output_xlsx)
@@ -1177,19 +1150,18 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             include_xlsx=True,
         )
         grouped_xml = None
-        if not analysis_mode:
-            grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
         final_unknown = None
         final_alias_suggestions = None
         if not analysis_mode:
+            grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
             final_unknown = export_unknown_archetypes(dataset, path=unknown_output)
             final_alias_suggestions = export_alias_suggestions(dataset, aliases=aliases, path=alias_suggestions_output)
 
-        log(f"[OK] Rows matched by user mapping: {mapped_from_user}")
-        log(f"[OK] Rows exported: {len(dataset)}")
-        log(f"[OK] My Deck Winrate primary ({args.my_window_days}d): {my_wr_stats['primary']}/{len(dataset)}")
-        log(f"[OK] My Deck Winrate fallback ({args.my_fallback_window_days}d): {my_wr_stats['fallback']}")
-        log(f"[OK] My Deck Winrate fallback 50%: {my_wr_stats['imputed']}")
+        log(
+            f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
+            f"rows={len(dataset)} | primary={my_wr_stats['primary']} | "
+            f"180d={my_wr_stats['fallback']} | 50%={my_wr_stats['imputed']}"
+        )
         log(f"[OK] Rogue threshold: Meta < {args.rogue_threshold}%")
         log(f"[OK] CSV: {final_csv}")
         if final_xlsx is not None:
