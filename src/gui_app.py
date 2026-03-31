@@ -458,6 +458,17 @@ class StudioWindow(QMainWindow):
         )
         self.history_points_spin.valueChanged.connect(self._on_history_points_changed)
 
+
+        # Dodaj przycisk resetowania domyślnych wartości
+        self.reset_defaults_button = QPushButton("Przywróć domyślne")
+        self.reset_defaults_button.setToolTip("Przywróć domyślne wartości wszystkich pól")
+        self.reset_defaults_button.clicked.connect(self._reset_to_defaults)
+
+        # Dodaj przycisk do osobnego wiersza
+        reset_row = QHBoxLayout()
+        reset_row.addStretch(1)
+        reset_row.addWidget(self.reset_defaults_button)
+
         form.addRow("Format", self.format_combo)
         form.addRow("My Deck", deck_row)
         form.addRow("Deck Mode", self.deck_mode_label)
@@ -466,9 +477,11 @@ class StudioWindow(QMainWindow):
         form.addRow("Week End", self.week_end_edit)
         form.addRow("My WR Window", self.my_window_spin)
         form.addRow("Fallback Window", self.my_fallback_spin)
+
         form.addRow("Rogue Threshold", self.rogue_spin)
         form.addRow("Metagame Limit", self.metagame_limit_spin)
         form.addRow("Matchup Limit", self.matchup_limit_spin)
+        form.addRow("", reset_row)
         controls_layout.addLayout(form)
 
         button_row = QHBoxLayout()
@@ -540,6 +553,34 @@ class StudioWindow(QMainWindow):
         content.setRowStretch(1, 1)
 
         return page
+
+    def _reset_to_defaults(self):
+        """Ustawia wszystkie pola generatora na wartości domyślne."""
+        try:
+            from metagame_input_generator import parse_args
+        except ModuleNotFoundError:
+            from .metagame_input_generator import parse_args
+        defaults = parse_args([])
+        # Domyślne daty: week_end = wczoraj, week_start = 6 dni przed wczoraj
+        end_date = QDate.currentDate().addDays(-1)
+        start_date = end_date.addDays(-6)
+        self.format_combo.setCurrentIndex(self.format_combo.findText(defaults.format_name) if self.format_combo.findText(defaults.format_name) >= 0 else 0)
+        self.week_start_edit.setDate(start_date)
+        self.week_end_edit.setDate(end_date)
+        self.my_window_spin.setValue(getattr(defaults, "my_window_days", 90))
+        self.my_fallback_spin.setValue(getattr(defaults, "my_fallback_window_days", 180))
+        self.rogue_spin.setValue(getattr(defaults, "rogue_threshold", 0.5))
+        self.metagame_limit_spin.setValue(getattr(defaults, "metagame_limit", 64))
+        self.matchup_limit_spin.setValue(getattr(defaults, "matchup_limit", 300))
+        self.history_points_spin.setValue(getattr(defaults, "history_points", 1))
+        # My Deck domyślny
+        idx = self.my_deck_combo.findText(getattr(defaults, "my_deck", "Domain Zoo"))
+        if idx >= 0:
+            self.my_deck_combo.setCurrentIndex(idx)
+        else:
+            self.my_deck_combo.setCurrentIndex(0)
+        # Odśwież listę decków i inne zależne rzeczy
+        self.refresh_deck_list()
 
     def _build_editor_tab(self) -> QWidget:
         page = QWidget()
@@ -1108,25 +1149,10 @@ class StudioWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _restore_state(self) -> None:
+        # Wymusza domyślne wartości generatora niezależnie od QSettings
+        self._reset_to_defaults()
+        # Pozostałe pola (statystyki, edytor) mogą korzystać z QSettings jak dotychczas
         defaults = parse_args([])
-        end_date = QDate.currentDate().addDays(-1)
-        start_date = end_date.addDays(-6)
-
-        saved_format = self.settings.value("format_name", defaults.format_name)
-        index = self.format_combo.findText(saved_format)
-        self.format_combo.setCurrentIndex(index if index >= 0 else 0)
-
-        self.week_start_edit.setDate(self._load_date("week_start", start_date))
-        self.week_end_edit.setDate(self._load_date("week_end", end_date))
-        self.my_window_spin.setValue(int(self.settings.value("my_window_days", defaults.my_window_days)))
-        self.my_fallback_spin.setValue(int(self.settings.value("my_fallback_window_days", defaults.my_fallback_window_days)))
-        self.rogue_spin.setValue(float(self.settings.value("rogue_threshold", defaults.rogue_threshold)))
-        self.metagame_limit_spin.setValue(int(self.settings.value("metagame_limit", defaults.metagame_limit)))
-        self.matchup_limit_spin.setValue(int(self.settings.value("matchup_limit", defaults.matchup_limit)))
-        self.auto_stats_after_generate_check.setChecked(
-            str(self.settings.value("auto_stats_after_generate", "false")).lower() in {"true", "1", "yes"}
-        )
-
         default_history = str(self._default_statistics_history_path())
         self.stats_input_edit.setText(str(self.settings.value("stats_input", "") or ""))
         self.stats_history_edit.setText(str(self.settings.value("stats_history", default_history) or default_history))
