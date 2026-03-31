@@ -101,37 +101,31 @@ def cmd_fetch(args: argparse.Namespace) -> None:
     week_start = today - timedelta(days=args.days)
 
     print(f"=== MTG Backup Bot — FETCH  ({today}) ===")
-    print(f"Format: {args.format}  |  Range: {week_start} → {week_end}  |  My deck: {args.my_deck or 'N/A'}")
+    print(f"Format: {args.format}  |  Range: {week_start} → {week_end}")
     print()
 
-    # 1. Metagame snapshot
-    meta_params = {
+    common_params = {
         "format": args.format,
         "min_date": week_start.isoformat(),
         "max_date": week_end.isoformat(),
-        "limit": args.metagame_limit,
+        "limit": args.limit,
     }
+
+    # 1. Full metagame snapshot (all decks in format)
     print(f"Fetching metagame [{week_start} to {week_end}]...")
     try:
-        meta_data = _fetch("metagame", meta_params)
-        _save(_cache_path("metagame", meta_params), meta_data)
+        meta_data = _fetch("metagame", common_params)
+        _save(_cache_path("metagame", common_params), meta_data)
     except RuntimeError as e:
-        print(f"  [ERROR] {e}")
+        print(f"  [ERROR] metagame: {e}")
 
-    # 2. Matchup snapshot (only if my_deck is set)
-    if args.my_deck:
-        matchup_params = {
-            "format": args.format,
-            "min_date": week_start.isoformat(),
-            "max_date": week_end.isoformat(),
-            "limit": args.matchup_limit,
-        }
-        print(f"Fetching matchups [{week_start} to {week_end}]...")
-        try:
-            matchup_data = _fetch("matchups", matchup_params)
-            _save(_cache_path("matchups", matchup_params), matchup_data)
-        except RuntimeError as e:
-            print(f"  [ERROR] {e}")
+    # 2. Full matchup snapshot (all archetypes vs all archetypes)
+    print(f"Fetching matchups [{week_start} to {week_end}]...")
+    try:
+        matchup_data = _fetch("matchups", common_params)
+        _save(_cache_path("matchups", common_params), matchup_data)
+    except RuntimeError as e:
+        print(f"  [ERROR] matchups: {e}")
 
     _purge_old()
     print("\n[DONE]")
@@ -180,14 +174,12 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
 
     # fetch
-    fetch_p = sub.add_parser("fetch", help="Fetch from API and save cache")
+    fetch_p = sub.add_parser("fetch", help="Fetch full format data from API and save cache")
     fetch_p.add_argument("--format", default="modern", help="MTG format (default: modern)")
     fetch_p.add_argument("--days", type=int, default=14,
                          help="Window size in days (default: 14)")
-    fetch_p.add_argument("--my-deck", default="",
-                         help="Your deck name — enables matchup snapshot")
-    fetch_p.add_argument("--metagame-limit", type=int, default=100)
-    fetch_p.add_argument("--matchup-limit", type=int, default=100)
+    fetch_p.add_argument("--limit", type=int, default=100,
+                         help="Max archetypes per endpoint (default: 100)")
 
     # serve
     serve_p = sub.add_parser("serve", help="Serve cached data via HTTP")
