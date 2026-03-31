@@ -227,16 +227,18 @@ _ORIGINAL_API_PROBE = "https://api.videreproject.com"
 class ApiStatusWorker(QObject):
     """Checks both the original API reachability and the backup server /health."""
 
-    finished = Signal(dict)  # {"original_ok": bool, "backup": dict|None}
+    finished = Signal(dict)  # {"original_status": "online"|"degraded"|"offline", "backup": dict|None}
 
     def __init__(self, backup_url: str) -> None:
         super().__init__()
         self._backup_url = backup_url  # already stripped of trailing slash
 
     def run(self) -> None:
-        # 1. Probe original API — any HTTP response (even 4xx) means the server
-        #    is reachable; only a network-level error means truly offline.
-        original_ok = False
+        # 1. Probe original API
+        #    2xx/3xx/4xx → online (server responds normally)
+        #    5xx          → degraded (server up but erroring)
+        #    URLError / timeout → offline (unreachable)
+        original_status = "offline"
         try:
             from urllib.error import HTTPError as _HTTPError
             from urllib.request import Request as _Request
@@ -247,10 +249,13 @@ class ApiStatusWorker(QObject):
             )
             try:
                 with urlopen(req, timeout=5):
-                    original_ok = True
-            except _HTTPError:
-                # Got an HTTP response (e.g. 404/405) — server is up
-                original_ok = True
+                    original_status = "online"
+            except _HTTPError as e:
+                if e.code >= 500:
+                    original_status = "degraded"
+                else:
+                    # 4xx — server reachable and working normally
+                    original_status = "online"
         except Exception:
             pass  # URLError / timeout — genuinely unreachable
 
@@ -263,7 +268,7 @@ class ApiStatusWorker(QObject):
             except Exception:
                 pass
 
-        self.finished.emit({"original_ok": original_ok, "backup": backup_data})
+        self.finished.emit({"original_status": original_status, "backup": backup_data})
 
 
 class StudioWindow(QMainWindow):
@@ -1060,8 +1065,10 @@ class StudioWindow(QMainWindow):
         parts: list[str] = []
 
         # Original API
-        orig_ok = result.get("original_ok", False)
-        parts.append(f"Original API: {'\u2705 Online' if orig_ok else '\u274c Offline'}")
+        orig_status = result.get("original_status", "offline")
+        orig_icon = {"online": "\u2705", "degraded": "\u26a0\ufe0f", "offline": "\u274c"}[orig_status]
+        orig_label = {"online": "Online", "degraded": "Degraded (5xx)", "offline": "Offline"}[orig_status]
+        parts.append(f"Original API: {orig_icon} {orig_label}")
 
         # Original API uptime (tracked by backup bot)
         backup = result.get("backup") or {}
