@@ -1,7 +1,9 @@
 import argparse
 import csv
 import difflib
+import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -23,6 +25,40 @@ from openpyxl.styles import PatternFill
 API_BASE = "https://api.videreproject.com"
 API_RETRY_ATTEMPTS = 3
 API_RETRY_DELAYS_SECONDS = [1, 2, 4]
+
+# Optional fallback chain — set MTG_BACKUP_URL env var to point at your VPS
+# e.g. export MTG_BACKUP_URL=http://your-mikrus:8080
+BACKUP_SERVER_URL: Optional[str] = os.environ.get("MTG_BACKUP_URL") or None
+
+# Local JSON cache lives next to outputs/ in the repo root
+_CACHE_DIR: Path = Path(__file__).resolve().parent.parent / "outputs" / "cache"
+
+
+def _cache_key(endpoint: str, params: Dict[str, object]) -> str:
+    raw = endpoint + "?" + urlencode(sorted((str(k), str(v)) for k, v in params.items()))
+    return hashlib.md5(raw.encode()).hexdigest()[:16]
+
+
+def _cache_path(endpoint: str, params: Dict[str, object]) -> Path:
+    safe_ep = endpoint.replace("/", "_")
+    return _CACHE_DIR / f"{safe_ep}_{_cache_key(endpoint, params)}.json"
+
+
+def _save_cache(path: Path, data: Dict[str, object]) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data), encoding="utf-8")
+    except OSError:
+        pass  # cache write failure is non-fatal
+
+
+def _load_cache(path: Path) -> Optional[Dict[str, object]]:
+    try:
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        pass
+    return None
 
 
 @dataclass
@@ -114,9 +150,8 @@ def parse_count(value) -> int:
         return 0
 
 
-def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
-    qs = urlencode(params)
-    url = f"{API_BASE}/{endpoint}?{qs}"
+def _api_fetch(url: str) -> Dict[str, object]:
+    """Single HTTP GET with retries. Raises RuntimeError on final failure."""
     req = Request(
         url,
         headers={
@@ -132,32 +167,61 @@ def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
             if err.code >= 500 and attempt < API_RETRY_ATTEMPTS - 1:
                 delay = API_RETRY_DELAYS_SECONDS[min(attempt, len(API_RETRY_DELAYS_SECONDS) - 1)]
                 print(
-                    f"[WARN] API temporary error ({err.code}) on '{endpoint}'. "
+                    f"[WARN] HTTP {err.code} on '{url}'. "
                     f"Retrying in {delay}s ({attempt + 1}/{API_RETRY_ATTEMPTS})..."
                 )
                 time.sleep(delay)
                 continue
             if err.code >= 500:
-                raise RuntimeError(
-                    "API temporary error. Please try again later. "
-                    f"Endpoint='{endpoint}', status={err.code}."
-                ) from err
+                raise RuntimeError(f"HTTP {err.code}: {url}") from err
             raise
         except URLError as err:
             if attempt < API_RETRY_ATTEMPTS - 1:
                 delay = API_RETRY_DELAYS_SECONDS[min(attempt, len(API_RETRY_DELAYS_SECONDS) - 1)]
                 print(
-                    f"[WARN] API connection problem on '{endpoint}'. "
+                    f"[WARN] Connection error on '{url}'. "
                     f"Retrying in {delay}s ({attempt + 1}/{API_RETRY_ATTEMPTS})..."
                 )
                 time.sleep(delay)
                 continue
-            raise RuntimeError(
-                "API temporary error. Please try again later. "
-                f"Endpoint='{endpoint}', reason='{err}'."
-            ) from err
+            raise RuntimeError(f"Connection error: {err}") from err
+    raise RuntimeError(f"All retries exhausted for: {url}")
 
-    raise RuntimeError("API temporary error. Please try again later.")
+
+def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
+    """Fetch from API with fallback chain: primary API → backup VPS → local cache."""
+    qs = urlencode(params)
+    cache_path = _cache_path(endpoint, params)
+
+    # 1. Try primary API
+    try:
+        data = _api_fetch(f"{API_BASE}/{endpoint}?{qs}")
+        _save_cache(cache_path, data)  # update local cache on every success
+        return data
+    except RuntimeError as primary_err:
+        print(f"[WARN] Primary API failed for '{endpoint}': {primary_err}")
+
+    # 2. Try backup VPS (if MTG_BACKUP_URL is set)
+    if BACKUP_SERVER_URL:
+        backup_url = f"{BACKUP_SERVER_URL.rstrip('/')}/{endpoint}?{qs}"
+        try:
+            data = _api_fetch(backup_url)
+            print(f"[INFO] Using backup server data for '{endpoint}'.")
+            _save_cache(cache_path, data)  # keep local cache current
+            return data
+        except RuntimeError as backup_err:
+            print(f"[WARN] Backup server failed for '{endpoint}': {backup_err}")
+
+    # 3. Fall back to local cache
+    cached = _load_cache(cache_path)
+    if cached is not None:
+        print(f"[INFO] Using local cache for '{endpoint}' ({cache_path.name}).")
+        return cached
+
+    raise RuntimeError(
+        "API temporary error. Please try again later. "
+        f"Endpoint='{endpoint}'. No backup server or local cache available."
+    )
 
 
 def normalize_name(name: str) -> str:
