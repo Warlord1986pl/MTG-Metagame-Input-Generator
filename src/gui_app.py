@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import csv
+import json
+import os
 import traceback
 from argparse import Namespace
 from datetime import date
 from html import escape
 from pathlib import Path
 from typing import List, Optional
+from urllib.error import URLError
+from urllib.request import urlopen
 
 import pandas as pd
-from PySide6.QtCore import QDate, QObject, QSettings, Qt, QThread, Signal
+from PySide6.QtCore import QDate, QObject, QSettings, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QFont
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -217,6 +221,22 @@ class StatisticsWorker(QObject):
         self.finished.emit(result)
 
 
+class ApiStatusWorker(QObject):
+    finished = Signal(dict)
+
+    def __init__(self, url: str) -> None:
+        super().__init__()
+        self._url = url
+
+    def run(self) -> None:
+        try:
+            with urlopen(self._url, timeout=5) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                self.finished.emit(data)
+        except Exception:
+            self.finished.emit({})
+
+
 class StudioWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -236,10 +256,19 @@ class StudioWindow(QMainWindow):
         self.current_editor_source: Optional[Path] = None
         self._deck_catalog_cache: List[str] = []
 
+        self._api_status_thread: Optional[QThread] = None
+        self._api_status_worker: Optional[ApiStatusWorker] = None
+
         self.setWindowTitle(APP_NAME)
         self.resize(1180, 760)
         self._build_ui()
         self._restore_state()
+
+        # Refresh API status every 5 minutes; first check after 2s
+        self._api_status_timer = QTimer(self)
+        self._api_status_timer.timeout.connect(self._refresh_api_status)
+        self._api_status_timer.start(5 * 60 * 1000)
+        QTimer.singleShot(2000, self._refresh_api_status)
 
     def _on_history_points_changed(self, value: int) -> None:
         single = value == 1
@@ -301,6 +330,11 @@ class StudioWindow(QMainWindow):
 
         hero_layout.addWidget(title)
         hero_layout.addWidget(subtitle)
+
+        self.api_status_label = QLabel("API status: checking...")
+        self.api_status_label.setObjectName("muted")
+        hero_layout.addWidget(self.api_status_label)
+
         root.addWidget(hero)
 
         tabs = QTabWidget()
@@ -972,6 +1006,58 @@ class StudioWindow(QMainWindow):
             }
             """
         )
+
+    # ------------------------------------------------------------------
+    # API status helpers
+    # ------------------------------------------------------------------
+    def _refresh_api_status(self) -> None:
+        backup_url = os.environ.get("MTG_BACKUP_URL", "").rstrip("/")
+        if not backup_url:
+            self.api_status_label.setText("Backup server: nie skonfigurowany (MTG_BACKUP_URL nie ustawiony)")
+            return
+
+        # Avoid launching a second thread while one is running
+        if self._api_status_thread and self._api_status_thread.isRunning():
+            return
+
+        self._api_status_thread = QThread()
+        self._api_status_worker = ApiStatusWorker(f"{backup_url}/health")
+        self._api_status_worker.moveToThread(self._api_status_thread)
+        self._api_status_thread.started.connect(self._api_status_worker.run)
+        self._api_status_worker.finished.connect(self._apply_api_status)
+        self._api_status_worker.finished.connect(self._api_status_thread.quit)
+        self._api_status_worker.finished.connect(self._api_status_worker.deleteLater)
+        self._api_status_thread.finished.connect(self._api_status_thread.deleteLater)
+        self._api_status_thread.start()
+
+    def _apply_api_status(self, data: dict) -> None:
+        if not data:
+            self.api_status_label.setText("Backup server: \u274c brak odpowiedzi")
+            return
+
+        status = data.get("status", "?")
+        ok_icon = "\u2705" if status == "ok" else "\u274c"
+        parts = [f"{ok_icon} Backup API: {status}"]
+
+        uptime = data.get("api_uptime_pct")
+        if uptime is not None:
+            parts.append(f"Uptime: {uptime:.1f}%")
+
+        last_ok = data.get("last_success")
+        if last_ok:
+            parts.append(f"Ostatni OK: {last_ok}")
+
+        failures = data.get("consecutive_failures")
+        if failures is not None and failures > 0:
+            parts.append(f"Consecutve failures: {failures}")
+
+        cached = data.get("cached_files")
+        if cached is not None:
+            parts.append(f"Cache: {cached} plik\u00f3w")
+
+        self.api_status_label.setText("  |  ".join(parts))
+
+    # ------------------------------------------------------------------
 
     def _restore_state(self) -> None:
         defaults = parse_args([])
