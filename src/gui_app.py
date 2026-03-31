@@ -221,20 +221,42 @@ class StatisticsWorker(QObject):
         self.finished.emit(result)
 
 
-class ApiStatusWorker(QObject):
-    finished = Signal(dict)
+_ORIGINAL_API_PROBE = "https://api.videreproject.com"
 
-    def __init__(self, url: str) -> None:
+
+class ApiStatusWorker(QObject):
+    """Checks both the original API reachability and the backup server /health."""
+
+    finished = Signal(dict)  # {"original_ok": bool, "backup": dict|None}
+
+    def __init__(self, backup_url: str) -> None:
         super().__init__()
-        self._url = url
+        self._backup_url = backup_url  # already stripped of trailing slash
 
     def run(self) -> None:
+        # 1. Probe original API (HEAD-like lightweight GET)
+        original_ok = False
         try:
-            with urlopen(self._url, timeout=5) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                self.finished.emit(data)
+            req = __import__("urllib.request", fromlist=["Request"]).Request(
+                _ORIGINAL_API_PROBE,
+                headers={"User-Agent": "MTG-Status-Check/1.0"},
+                method="HEAD",
+            )
+            with urlopen(req, timeout=5):
+                original_ok = True
         except Exception:
-            self.finished.emit({})
+            pass
+
+        # 2. Fetch backup /health
+        backup_data: Optional[dict] = None
+        if self._backup_url:
+            try:
+                with urlopen(f"{self._backup_url}/health", timeout=5) as resp:
+                    backup_data = json.loads(resp.read().decode("utf-8"))
+            except Exception:
+                pass
+
+        self.finished.emit({"original_ok": original_ok, "backup": backup_data})
 
 
 class StudioWindow(QMainWindow):
@@ -1012,16 +1034,13 @@ class StudioWindow(QMainWindow):
     # ------------------------------------------------------------------
     def _refresh_api_status(self) -> None:
         backup_url = os.environ.get("MTG_BACKUP_URL", "").rstrip("/")
-        if not backup_url:
-            self.api_status_label.setText("Backup server: nie skonfigurowany (MTG_BACKUP_URL nie ustawiony)")
-            return
 
         # Avoid launching a second thread while one is running
         if self._api_status_thread and self._api_status_thread.isRunning():
             return
 
         self._api_status_thread = QThread()
-        self._api_status_worker = ApiStatusWorker(f"{backup_url}/health")
+        self._api_status_worker = ApiStatusWorker(backup_url)
         self._api_status_worker.moveToThread(self._api_status_thread)
         self._api_status_thread.started.connect(self._api_status_worker.run)
         self._api_status_worker.finished.connect(self._apply_api_status)
@@ -1030,30 +1049,42 @@ class StudioWindow(QMainWindow):
         self._api_status_thread.finished.connect(self._api_status_thread.deleteLater)
         self._api_status_thread.start()
 
-    def _apply_api_status(self, data: dict) -> None:
-        if not data:
-            self.api_status_label.setText("Backup server: \u274c brak odpowiedzi")
-            return
+    def _apply_api_status(self, result: dict) -> None:
+        parts: list[str] = []
 
-        status = data.get("status", "?")
-        ok_icon = "\u2705" if status == "ok" else "\u274c"
-        parts = [f"{ok_icon} Backup API: {status}"]
+        # Original API
+        orig_ok = result.get("original_ok", False)
+        parts.append(f"Original API: {'\u2705 Online' if orig_ok else '\u274c Offline'}")
 
-        uptime = data.get("api_uptime_pct")
+        # Original API uptime (tracked by backup bot)
+        backup = result.get("backup") or {}
+        uptime = backup.get("api_uptime_pct")
         if uptime is not None:
-            parts.append(f"Uptime: {uptime:.1f}%")
+            parts.append(f"Original API Uptime: {uptime:.1f}%")
+        else:
+            parts.append("Original API Uptime: N/A")
 
-        last_ok = data.get("last_success")
-        if last_ok:
-            parts.append(f"Ostatni OK: {last_ok}")
+        # Backup server
+        backup_url = os.environ.get("MTG_BACKUP_URL", "")
+        if not backup_url:
+            parts.append("Backup Server: not configured")
+        elif backup:
+            bk_status = backup.get("status", "?")
+            bk_icon = "\u2705" if bk_status == "ok" else "\u274c"
+            parts.append(f"Backup Server: {bk_icon} {bk_status}")
 
-        failures = data.get("consecutive_failures")
-        if failures is not None and failures > 0:
-            parts.append(f"Consecutve failures: {failures}")
+            last_ok = backup.get("last_success")
+            parts.append(f"Last OK: {last_ok}" if last_ok else "Last OK: never")
 
-        cached = data.get("cached_files")
-        if cached is not None:
-            parts.append(f"Cache: {cached} plik\u00f3w")
+            failures = backup.get("consecutive_failures")
+            if failures is not None and failures > 0:
+                parts.append(f"Failures: {failures}")
+
+            cached = backup.get("cached_files")
+            if cached is not None:
+                parts.append(f"Cached files: {cached}")
+        else:
+            parts.append("Backup Server: \u274c no response")
 
         self.api_status_label.setText("  |  ".join(parts))
 
