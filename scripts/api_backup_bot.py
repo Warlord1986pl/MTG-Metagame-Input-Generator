@@ -145,6 +145,7 @@ def _record_fetch(ok: bool) -> None:
     if ok:
         s["fetch_ok"] += 1
         s["last_success"] = _now_iso()
+        s["last_fetch"] = _now_iso()
         s["consecutive_failures"] = 0
     else:
         s["last_failure"] = _now_iso()
@@ -291,6 +292,7 @@ def cmd_serve(args: argparse.Namespace) -> None:
             "cached_files": len(cached),
             "api_uptime_pct": round(ping_ok / pings * 100, 1) if pings else None,
             "last_success": s.get("last_success"),
+            "last_fetch": s.get("last_fetch"),
             "consecutive_failures": s.get("consecutive_failures", 0),
         })
 

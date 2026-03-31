@@ -1076,6 +1076,9 @@ class StudioWindow(QMainWindow):
             last_ok = backup.get("last_success")
             parts.append(f"Last OK: {last_ok}" if last_ok else "Last OK: never")
 
+            last_fetch = backup.get("last_fetch")
+            parts.append(f"Last backup: {last_fetch}" if last_fetch else "Last backup: never")
+
             failures = backup.get("consecutive_failures")
             if failures is not None and failures > 0:
                 parts.append(f"Failures: {failures}")
