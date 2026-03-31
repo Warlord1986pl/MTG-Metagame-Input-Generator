@@ -234,18 +234,25 @@ class ApiStatusWorker(QObject):
         self._backup_url = backup_url  # already stripped of trailing slash
 
     def run(self) -> None:
-        # 1. Probe original API (HEAD-like lightweight GET)
+        # 1. Probe original API — any HTTP response (even 4xx) means the server
+        #    is reachable; only a network-level error means truly offline.
         original_ok = False
         try:
-            req = __import__("urllib.request", fromlist=["Request"]).Request(
+            from urllib.error import HTTPError as _HTTPError
+            from urllib.request import Request as _Request
+            req = _Request(
                 _ORIGINAL_API_PROBE,
                 headers={"User-Agent": "MTG-Status-Check/1.0"},
                 method="HEAD",
             )
-            with urlopen(req, timeout=5):
+            try:
+                with urlopen(req, timeout=5):
+                    original_ok = True
+            except _HTTPError:
+                # Got an HTTP response (e.g. 404/405) — server is up
                 original_ok = True
         except Exception:
-            pass
+            pass  # URLError / timeout — genuinely unreachable
 
         # 2. Fetch backup /health
         backup_data: Optional[dict] = None
