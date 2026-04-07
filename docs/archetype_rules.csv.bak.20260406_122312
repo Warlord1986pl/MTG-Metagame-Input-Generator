@@ -21,7 +21,6 @@ Burn,Aggro,exact,1
 Death's Shadow,Aggro,exact,1
 Devoted Combo,Combo,exact,1
 Dimir Midrange,Midrange,exact,1
-Dimir Murktide,Midrange,exact,1
 Dimir Reanimator,Graveyard,exact,1
 Dimir Tezzerator,Midrange,exact,1
 Domain Zoo,Midrange,exact,1
@@ -29,7 +28,6 @@ Eldrazi,Ramp,exact,1
 Eldrazi Ramp,Ramp,exact,1
 Eldrazi Tron,Ramp,exact,1
 Esper Blink,Blink,exact,1
-Esper Control,Control,exact,1
 Esper GenericBlink,Blink,exact,1
 Esper Midrange,Midrange,exact,1
 Esper Reanimator,Graveyard,exact,1
@@ -42,7 +40,6 @@ Gruul Basking Broodscale Combo,Combo,exact,1
 Gruul Midrange,Midrange,exact,1
 Gruul Prowess,Aggro,exact,1
 Hammer Time,Combo,exact,1
-Hardened Scales,Aggro,exact,1
 Hollow One,Graveyard,exact,1
 Humans,Aggro,exact,1
 Indomitable Creativity,Combo,exact,1
