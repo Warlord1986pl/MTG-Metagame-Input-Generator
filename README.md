@@ -2,19 +2,18 @@
 
 Standalone data-generation tool for MTG metagame analysis.
 
-This project fetches metagame and matchup data, normalizes deck names/archetypes, and exports ready-to-analyze files for local workflows.
+Fetches metagame and matchup data from the Videre Project API, normalizes deck names and archetypes, tracks Challenge tournament history, and exports ready-to-analyze files and charts for local workflows.
 
 ## What This Project Does
 
-- Fetches metagame data from API
-- Builds `Deck`, `Meta`, `Winrate`, `Archetype`, `My Deck Winrate`
-- Adds sample-size columns:
-  - `Winrate Game Count`
-  - `My Deck Winrate Game Count`
-- Applies canonical name and archetype mapping rules
+- Fetches metagame data from primary API with automatic fallback to a configurable backup server
+- Builds `Deck`, `Meta`, `Winrate`, `Archetype`, `My Deck Winrate` columns
+- Adds sample-size columns: `Winrate Game Count`, `My Deck Winrate Game Count`
+- Applies canonical name and archetype mapping rules from `docs/`
 - Supports configurable Rogue threshold (`--rogue-threshold`)
 - Exports both standard and Rogue-grouped outputs
-- Organizes outputs into date-range folders
+- **Challenge Analytics** – fetches all Challenge events in the selected date window, builds a persistent history CSV, and generates statistics + charts (see below)
+- Organizes all outputs into weekly date-range folders under `outputs/`
 
 ## Quick Start
 
@@ -34,7 +33,8 @@ python src/metagame_input_generator.py \
   --my-deck "Domain Zoo" \
   --my-window-days 90 \
   --my-fallback-window-days 180 \
-  --rogue-threshold 0.5
+  --rogue-threshold 0.5 \
+  --include-challenge-decklist
 ```
 
 Or use one-command launchers (PowerShell):
@@ -56,69 +56,82 @@ Desktop GUI (PySide6):
 run_gui.bat
 ```
 
-What preset mode gives you:
+## GUI Overview
 
-- asks where to create workspace folder structure,
-- lets you create presets like `Modern_Domain_Zoo` or `Modern_Jeskai_Control`,
-- keeps separate `configs`, `outputs`, and `history` per preset,
-- on next run, lets you pick an existing preset and generate weekly/history snapshots quickly.
+### Generation tab
 
-What GUI mode gives you:
+- Form for format, date range, deck name, and core generator parameters
+- One-click weekly snapshot generation
+- Live execution log inside the window
+- Quick open for output folder and main XLSX
+- Clickable list of generated files
 
-- form for format, date range, deck name, and core generator parameters,
-- one-click weekly snapshot generation,
-- live execution log inside the window,
-- quick open for output folder and main XLSX,
-- clickable list of generated files.
-- built-in editor for canonical deck names and archetype assignment.
-- one-click "Regenerate Grouped Now" from the editor tab.
+### Backup server
 
-GUI editor mode gives you:
+The GUI header contains a **Backup URL** field. If the primary Videre API is unreachable, the generator falls back to the configured backup server automatically. The backup URL is saved in QSettings (persists between sessions). On startup, the app silently tests the backup server and shows the result in the status label — no need to click "Test Backup" manually every time.
 
-- loads the latest generated `metagame_input.csv` into a table,
-- lets you reclassify a deck into an archetype from a dropdown,
-- lets you type your own custom archetype and save it into a separate catalog,
-- lets you rename canonical deck names and persist exact alias + mapping rules,
-- writes changes back to config CSVs in `docs/`.
+### Editor tab
 
-Default GUI generation profile is now streamlined for analysis:
+- Loads the selected `metagame_input.csv` or Challenge decklist into an editable table
+- Reclassify deck → archetype via dropdown
+- Rename canonical deck names; changes persist as exact alias + mapping rules in `docs/`
+- Source selector lets you switch between Meta and Challenge CSV sources from any run
 
-- input file: `metagame_input.csv` (clean, per-deck rows),
-- final grouped output: `metagame_input_grouped.xlsx`.
+### Review Queue
 
-Use CLI `--output-profile full` when you want all auxiliary reports/files.
+- Automatically surfaces rows with unknown archetype, unrecognized deck names, or first-seen names
+- Save individual rows or all rows at once
+- Saved rows disappear from the queue immediately (no revert)
+- Works for both Meta and Challenge sources with separate mapping files
 
-### 3) Check outputs
+### Challenge Analytics tab
 
-Standard weekly output:
+- Generates charts and an Excel workbook from the persistent challenge history
+- Uses the **same selected date window** as meta stats
+- **Challenge vs Meta** – compares Top32/Top8 event frequency against meta share; same encounter-probability cutoff as Encounter Probability charts (only decks above the threshold are shown)
+- **Delta Ranking** – shows Top32 event frequency minus meta share for all decks that meet the encounter-probability threshold (same deck set as Challenge vs Meta — no arbitrary top-8/bottom-8 split)
+- **Conversion Matrix** – Top32 / Top8 / Winner event frequency heatmap
+- All charts use the same filtered deck set for consistency
 
-- `outputs/YYYY-MM-DD_to_YYYY-MM-DD/`
+## Outputs
 
-History output:
+Standard weekly output is organized as:
 
-- `outputs/history/YYYY-MM-DD_to_YYYY-MM-DD/`
+```
+outputs/
+  YYYY/MM/WYYYY-MM-DD_to_YYYY-MM-DD/
+    metagame_input.csv
+    metagame_input.xlsx
+    metagame_input_rogue_grouped.xlsx
+    unknown_archetypes.csv
+    alias_suggestions.csv
+    challenge_C64_YYYY-MM-DD_decklist.csv   (one per event)
+    challenge_C32_YYYY-MM-DD_decklist.csv
+    challenge_statistics.xlsx
+    challenge_vs_meta_decks.png
+    challenge_vs_meta_archetypes.png
+    challenge_delta_ranking_decks.png
+    challenge_delta_ranking_archetypes.png
+    challenge_conversion_matrix_decks.png
+    challenge_conversion_matrix_archetypes.png
+  challenge_history_modern.csv              (persistent, all time)
+```
 
-Generated files include:
+## Configuration Files
 
-- `metagame_input.xlsx`
-- `metagame_input.csv`
-- `metagame_input_rogue_grouped.xlsx`
-- `metagame_input_rogue_grouped.csv`
-- `unknown_archetypes.csv`
-- `alias_suggestions.csv`
+| File | Purpose |
+|---|---|
+| `docs/archetype_rules.csv` | Rules mapping deck names → archetypes |
+| `docs/deck_aliases.csv` | Alias rules for canonicalizing deck names |
+| `docs/user_deck_mapping.csv` | Manual overrides for Meta deck names |
+| `docs/challenge_deck_mapping.csv` | Manual overrides for Challenge deck names (separate from Meta) |
+| `docs/archetype_catalog.csv` | Known archetype list |
 
 ## User Guide
 
 Guide for non-technical users:
 
 - `docs/DATA_GENERATOR_GUIDE.md`
-
-## Configuration Files
-
-- `docs/archetype_rules.csv`
-- `docs/deck_aliases.csv`
-- `docs/user_deck_mapping.csv`
-- `docs/archetype_catalog.csv`
 
 ## License
 

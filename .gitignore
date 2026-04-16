@@ -19,3 +19,6 @@ outputs/**
 
 # Logs
 *.log
+
+# Backup files created by mapping editor
+docs/*.bak.*

@@ -12,6 +12,8 @@ import xml.etree.ElementTree as ET
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from html import unescape
+from io import StringIO
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urlencode
@@ -21,14 +23,65 @@ from urllib.request import Request, urlopen
 import pandas as pd
 from openpyxl.styles import PatternFill
 
+try:
+    from challenge_history_engine import append_to_challenge_history, run_challenge_statistics
+except ImportError:
+    try:
+        from .challenge_history_engine import append_to_challenge_history, run_challenge_statistics
+    except ImportError:
+        append_to_challenge_history = None  # type: ignore[assignment]
+        run_challenge_statistics = None  # type: ignore[assignment]
+
 
 API_BASE = "https://api.videreproject.com"
+MTGO_BASE = "https://www.mtgo.com"
+MTG_GOLDFISH_BASE = "https://www.mtggoldfish.com"
 API_RETRY_ATTEMPTS = 3
 API_RETRY_DELAYS_SECONDS = [1, 2, 4]
 
-# Optional fallback chain — set MTG_BACKUP_URL env var to point at your VPS
-# e.g. export MTG_BACKUP_URL=http://your-mikrus:8080
-BACKUP_SERVER_URL: Optional[str] = os.environ.get("MTG_BACKUP_URL") or None
+# Optional fallback chain.
+# Preferred source is --backup-url / GUI settings, with MTG_BACKUP_URL left as a
+# secondary fallback for CLI/manual use.
+# The code will try both:
+#   <base>/<endpoint>
+#   <base>/api/<endpoint>
+# so the configured URL can point either at the host root or the API root.
+
+_CONFIGURED_BACKUP_SERVER_URL: Optional[str] = None
+
+
+def configure_backup_server_url(value: Optional[str]) -> None:
+    global _CONFIGURED_BACKUP_SERVER_URL
+    normalized = str(value or "").strip().rstrip("/")
+    _CONFIGURED_BACKUP_SERVER_URL = normalized or None
+
+
+def _get_backup_server_url() -> Optional[str]:
+    if _CONFIGURED_BACKUP_SERVER_URL:
+        return _CONFIGURED_BACKUP_SERVER_URL
+
+    value = str(os.environ.get("MTG_BACKUP_URL") or "").strip().rstrip("/")
+    return value or None
+
+
+def _candidate_backup_urls(endpoint: str, qs: str) -> List[str]:
+    base = _get_backup_server_url()
+    if not base:
+        return []
+
+    base = base.rstrip("/")
+    candidates: List[str] = [f"{base}/{endpoint}?{qs}"]
+    if not base.lower().endswith("/api"):
+        candidates.append(f"{base}/api/{endpoint}?{qs}")
+
+    seen: set[str] = set()
+    deduped: List[str] = []
+    for url in candidates:
+        if url in seen:
+            continue
+        seen.add(url)
+        deduped.append(url)
+    return deduped
 
 # Local JSON cache lives next to outputs/ in the repo root
 _CACHE_DIR: Path = Path(__file__).resolve().parent.parent / "outputs" / "cache"
@@ -102,6 +155,12 @@ class GenerationRunResult:
     rogue_xml_path: Optional[Path] = None
     unknown_output_path: Optional[Path] = None
     alias_suggestions_path: Optional[Path] = None
+    challenge_decklist_path: Optional[Path] = None
+    challenge_compare_path: Optional[Path] = None
+    challenge_event_url: Optional[str] = None
+    challenge_history_path: Optional[Path] = None
+    challenge_stats_path: Optional[Path] = None
+    challenge_events_fetched: int = 0
 
 
 def parse_date(value: str) -> date:
@@ -150,8 +209,26 @@ def parse_count(value) -> int:
         return 0
 
 
+def _api_fetch_once(url: str) -> Dict[str, object]:
+    """Single HTTP GET, no retries. Used for backup candidates."""
+    req = Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "MTG-Metagame-Analyzer/1.0 (+https://github.com)",
+        },
+    )
+    try:
+        with urlopen(req, timeout=15) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except HTTPError as err:
+        raise RuntimeError(f"HTTP {err.code}: {url}") from err
+    except URLError as err:
+        raise RuntimeError(f"Connection error: {err}") from err
+
+
 def _api_fetch(url: str) -> Dict[str, object]:
-    """Single HTTP GET with retries. Raises RuntimeError on final failure."""
+    """Single HTTP GET with retries. Always raises RuntimeError on final failure."""
     req = Request(
         url,
         headers={
@@ -161,7 +238,7 @@ def _api_fetch(url: str) -> Dict[str, object]:
     )
     for attempt in range(API_RETRY_ATTEMPTS):
         try:
-            with urlopen(req, timeout=90) as response:
+            with urlopen(req, timeout=15) as response:
                 return json.loads(response.read().decode("utf-8"))
         except HTTPError as err:
             if err.code >= 500 and attempt < API_RETRY_ATTEMPTS - 1:
@@ -172,9 +249,9 @@ def _api_fetch(url: str) -> Dict[str, object]:
                 )
                 time.sleep(delay)
                 continue
-            if err.code >= 500:
-                raise RuntimeError(f"HTTP {err.code}: {url}") from err
-            raise
+            # Convert all HTTP errors (including 4xx) to RuntimeError so callers
+            # can rely on a single exception type for fallback decisions.
+            raise RuntimeError(f"HTTP {err.code}: {url}") from err
         except URLError as err:
             if attempt < API_RETRY_ATTEMPTS - 1:
                 delay = API_RETRY_DELAYS_SECONDS[min(attempt, len(API_RETRY_DELAYS_SECONDS) - 1)]
@@ -198,19 +275,20 @@ def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
         data = _api_fetch(f"{API_BASE}/{endpoint}?{qs}")
         _save_cache(cache_path, data)  # update local cache on every success
         return data
-    except RuntimeError as primary_err:
+    except (RuntimeError, HTTPError, URLError) as primary_err:
         print(f"[WARN] Primary API failed for '{endpoint}': {primary_err}")
 
-    # 2. Try backup VPS (if MTG_BACKUP_URL is set)
-    if BACKUP_SERVER_URL:
-        backup_url = f"{BACKUP_SERVER_URL.rstrip('/')}/{endpoint}?{qs}"
-        try:
-            data = _api_fetch(backup_url)
-            print(f"[INFO] Using backup server data for '{endpoint}'.")
-            _save_cache(cache_path, data)  # keep local cache current
-            return data
-        except RuntimeError as backup_err:
-            print(f"[WARN] Backup server failed for '{endpoint}': {backup_err}")
+    # 2. Try backup VPS (if configured)
+    backup_candidates = _candidate_backup_urls(endpoint, qs)
+    if backup_candidates:
+        for backup_url in backup_candidates:
+            try:
+                data = _api_fetch_once(backup_url)
+                print(f"[INFO] Using backup server data for '{endpoint}' via {backup_url}.")
+                _save_cache(cache_path, data)  # keep local cache current
+                return data
+            except (RuntimeError, HTTPError, URLError) as backup_err:
+                print(f"[WARN] Backup server failed for '{endpoint}' via {backup_url}: {backup_err}")
 
     # 3. Fall back to local cache
     cached = _load_cache(cache_path)
@@ -222,6 +300,332 @@ def api_get(endpoint: str, params: Dict[str, object]) -> Dict[str, object]:
         "API temporary error. Please try again later. "
         f"Endpoint='{endpoint}'. No backup server or local cache available."
     )
+
+
+def _fetch_text(url: str, timeout: int = 45) -> str:
+    req = Request(
+        url,
+        headers={
+            "Accept": "text/html,application/xhtml+xml",
+            "User-Agent": "MTG-Metagame-Input-Generator/1.0 (+https://github.com)",
+        },
+    )
+    with urlopen(req, timeout=timeout) as response:
+        return response.read().decode("utf-8", errors="replace")
+
+
+def _strip_html(text: str) -> str:
+    plain = re.sub(r"<[^>]+>", " ", str(text))
+    plain = unescape(plain)
+    plain = re.sub(r"\s+", " ", plain).strip()
+    return plain
+
+
+def _format_slug_for_url(format_name: str) -> str:
+    return normalize_name(format_name).replace(" ", "-")
+
+
+def _find_challenges_in_window(
+    format_name: str, start_date: date, end_date: date
+) -> List[dict]:
+    """Return all MTGO Challenges (any size) for *format_name* whose event_date
+    falls within the closed interval [start_date, end_date].
+
+    A dict per challenge is returned, sorted by (event_date DESC, challenge_size DESC).
+    When the same (event_date, challenge_size) pair appears with different numeric IDs
+    (reruns / corrections on MTGO) the highest numeric_id wins.
+    """
+    html = _fetch_text(f"{MTGO_BASE}/decklists")
+    format_slug = _format_slug_for_url(format_name)
+
+    pattern = re.compile(
+        rf'href="/decklist/({re.escape(format_slug)}-challenge-(\d+)-(\d{{4}}-\d{{2}}-\d{{2}})(\d+))"',
+        flags=re.IGNORECASE,
+    )
+
+    # key = (event_date_str, challenge_size) → best candidate dict
+    seen: dict = {}
+    for match in pattern.finditer(html):
+        slug = match.group(1)
+        challenge_size = int(match.group(2))
+        event_date_str = match.group(3)
+        numeric_id = int(match.group(4))
+
+        try:
+            ev_date = date.fromisoformat(event_date_str)
+        except ValueError:
+            continue
+
+        if not (start_date <= ev_date <= end_date):
+            continue
+
+        key = (event_date_str, challenge_size)
+        if key not in seen or numeric_id > seen[key]["_numeric_id"]:
+            seen[key] = {
+                "slug": slug,
+                "challenge_size": challenge_size,
+                "event_date": event_date_str,
+                "mtgo_url": f"{MTGO_BASE}/decklist/{slug}",
+                "_numeric_id": numeric_id,
+            }
+
+    results = []
+    for info in seen.values():
+        clean = {k: v for k, v in info.items() if k != "_numeric_id"}
+        results.append(clean)
+    results.sort(key=lambda x: (x["event_date"], x["challenge_size"]), reverse=True)
+    return results
+
+
+def _find_latest_mtgo_challenge(format_name: str) -> Optional[dict]:
+    """Legacy wrapper – returns the single most recent challenge in the past 30 days."""
+    results = _find_challenges_in_window(
+        format_name,
+        start_date=date.today() - timedelta(days=30),
+        end_date=date.today(),
+    )
+    return results[0] if results else None
+
+
+def _build_mtggoldfish_challenge_url(format_name: str, challenge_size: int, event_date: str) -> str:
+    format_slug = _format_slug_for_url(format_name)
+    return f"{MTG_GOLDFISH_BASE}/tournament/{format_slug}-challenge-{challenge_size}-{event_date}#online"
+
+
+def _parse_mtggoldfish_challenge_rows(html: str) -> List[dict]:
+    rows: List[dict] = []
+    row_pattern = re.compile(r"<tr[^>]*>(.*?)</tr>", flags=re.IGNORECASE | re.DOTALL)
+    cell_pattern = re.compile(r"<td[^>]*>(.*?)</td>", flags=re.IGNORECASE | re.DOTALL)
+
+    for row_html in row_pattern.findall(html):
+        cells_html = cell_pattern.findall(row_html)
+        if len(cells_html) < 3:
+            continue
+
+        raw_place = _strip_html(cells_html[0])
+        place_match = re.fullmatch(r"(\d+)(?:st|nd|rd|th)", raw_place.lower())
+        if not place_match:
+            continue
+
+        raw_deck = _strip_html(cells_html[1])
+        raw_deck = re.sub(r"\s*mana cost\s*:.*$", "", raw_deck, flags=re.IGNORECASE)
+        raw_deck = raw_deck.strip()
+        pilot = _strip_html(cells_html[2])
+
+        if not raw_deck or not pilot:
+            continue
+
+        rows.append(
+            {
+                "Place": int(place_match.group(1)),
+                "Deck": raw_deck,
+                "Pilot": pilot,
+            }
+        )
+
+    rows.sort(key=lambda item: item["Place"])
+    return rows
+
+
+def fetch_latest_challenge_decks_from_mtggoldfish(format_name: str) -> tuple[dict, pd.DataFrame]:
+    """Legacy wrapper: fetch the single most-recent Challenge. Uses _parse_single_challenge internally."""
+    latest = _find_latest_mtgo_challenge(format_name)
+    if not latest:
+        raise RuntimeError(f"No recent {format_name} Challenge found on MTGO decklists index.")
+    return _parse_single_challenge(latest, format_name)
+
+
+def _parse_single_challenge(
+    challenge_info: dict, format_name: str
+) -> tuple[dict, pd.DataFrame]:
+    """Fetch and parse one challenge from MTGGoldfish given its MTGO info dict.
+
+    Returns (event_info, df) where df has columns: Place, Deck, Pilot.
+    Raises RuntimeError if parsing fails.
+    """
+    goldfish_url = _build_mtggoldfish_challenge_url(
+        format_name=format_name,
+        challenge_size=int(challenge_info["challenge_size"]),
+        event_date=str(challenge_info["event_date"]),
+    )
+    html = _fetch_text(goldfish_url)
+    parsed_rows = _parse_mtggoldfish_challenge_rows(html)
+
+    if not parsed_rows:
+        # Fallback: pandas read_html
+        try:
+            candidate_tables = pd.read_html(StringIO(html))
+        except ValueError:
+            candidate_tables = []
+        for table in candidate_tables:
+            lowered = [str(col).strip().lower() for col in table.columns]
+            if not {"place", "deck", "pilot"}.issubset(set(lowered)):
+                continue
+            renamed = table.rename(columns={
+                table.columns[lowered.index("place")]: "Place",
+                table.columns[lowered.index("deck")]: "Deck",
+                table.columns[lowered.index("pilot")]: "Pilot",
+            })
+            rows: List[dict] = []
+            for _, row in renamed.iterrows():
+                place_raw = str(row.get("Place") or "").strip().lower()
+                place_match = re.fullmatch(r"(\d+)(?:st|nd|rd|th)", place_raw)
+                if not place_match:
+                    continue
+                deck_name = re.sub(
+                    r"\s*mana cost\s*:.*$", "",
+                    str(row.get("Deck") or "").strip(), flags=re.IGNORECASE,
+                ).strip()
+                pilot_name = str(row.get("Pilot") or "").strip()
+                if not deck_name or not pilot_name:
+                    continue
+                rows.append({"Place": int(place_match.group(1)), "Deck": deck_name, "Pilot": pilot_name})
+            if rows:
+                parsed_rows = sorted(rows, key=lambda item: item["Place"])
+                break
+
+    if not parsed_rows:
+        raise RuntimeError(f"Could not parse deck rows from MTGGoldfish: {goldfish_url}")
+
+    df = pd.DataFrame(parsed_rows)
+    df = df.drop_duplicates(subset=["Place", "Deck", "Pilot"]).sort_values("Place").reset_index(drop=True)
+    event_info = {
+        "format": format_name,
+        "event_date": str(challenge_info["event_date"]),
+        "challenge_size": int(challenge_info["challenge_size"]),
+        "mtgo_url": str(challenge_info["mtgo_url"]),
+        "mtggoldfish_url": goldfish_url,
+    }
+    return event_info, df
+
+
+def fetch_challenges_in_window_from_mtggoldfish(
+    format_name: str,
+    start_date: date,
+    end_date: date,
+    aliases: Optional[List[DeckAliasRule]] = None,
+    rules: Optional[List[ArchetypeRule]] = None,
+    challenge_mappings: Optional[List[UserDeckMapping]] = None,
+) -> List[tuple[dict, pd.DataFrame]]:
+    """Fetch ALL challenges (C32 and C64) within [start_date, end_date] from MTGGoldfish.
+
+    Returns a list of (event_info, df) tuples, one per event.
+    Each df has columns: Place, Deck, Archetype, Pilot.
+    If *aliases* and *rules* are provided, Deck names are canonicalised and
+    Archetype is assigned; otherwise they pass through raw.
+    """
+    challenges = _find_challenges_in_window(format_name, start_date, end_date)
+    if not challenges:
+        raise RuntimeError(
+            f"No {format_name} Challenges found on MTGO between "
+            f"{start_date} and {end_date}."
+        )
+
+    results: List[tuple[dict, pd.DataFrame]] = []
+    mapping_lookup_exact: Dict[str, UserDeckMapping] = {}
+    for mapping in challenge_mappings or []:
+        key = normalize_name(mapping.raw_name)
+        if key and key not in mapping_lookup_exact:
+            mapping_lookup_exact[key] = mapping
+
+    for info in challenges:
+        try:
+            event_info, df = _parse_single_challenge(info, format_name)
+        except Exception:
+            continue  # skip events that fail to parse; caller gets the rest
+
+        # First pass: explicit challenge-only overrides (separate history/mapping space).
+        if mapping_lookup_exact:
+            def _apply_challenge_mapping(raw_name: str) -> tuple[str, Optional[str]]:
+                key = normalize_name(str(raw_name))
+                mapping = mapping_lookup_exact.get(key)
+                if mapping is None:
+                    return str(raw_name), None
+                return mapping.canonical_name, mapping.archetype
+
+            mapped_values = df["Deck"].apply(_apply_challenge_mapping)
+            df["Deck"] = mapped_values.apply(lambda x: x[0])
+            df["Archetype"] = mapped_values.apply(lambda x: x[1] if x[1] else "")
+        else:
+            df["Archetype"] = ""
+
+        if aliases is not None:
+            df["Deck"] = df["Deck"].apply(
+                lambda name: canonicalize_deck_name(str(name), aliases)
+            )
+        if rules is not None:
+            df["Archetype"] = df.apply(
+                lambda row: str(row.get("Archetype") or "").strip()
+                or classify_archetype(str(row.get("Deck") or ""), rules),
+                axis=1,
+            )
+        else:
+            df["Archetype"] = df.apply(
+                lambda row: str(row.get("Archetype") or "").strip()
+                or heuristic_archetype(str(row.get("Deck") or "")),
+                axis=1,
+            )
+
+        results.append((event_info, df))
+
+    return results
+
+
+def build_challenge_vs_metagame_report(
+    challenge_df: pd.DataFrame,
+    metagame_df: pd.DataFrame,
+    aliases: List[DeckAliasRule],
+    rules: List[ArchetypeRule],
+) -> pd.DataFrame:
+    if challenge_df.empty:
+        return pd.DataFrame(
+            columns=[
+                "Deck",
+                "Archetype",
+                "Challenge Count",
+                "Challenge Share %",
+                "Meta Share %",
+                "Delta pp",
+            ]
+        )
+
+    challenge_norm = challenge_df.copy()
+    challenge_norm["Deck"] = challenge_norm["Deck"].apply(lambda name: canonicalize_deck_name(str(name), aliases))
+    challenge_summary = (
+        challenge_norm.groupby("Deck", as_index=False)
+        .size()
+        .rename(columns={"size": "Challenge Count"})
+    )
+    total_decks = int(challenge_summary["Challenge Count"].sum())
+    challenge_summary["Challenge Share %"] = (
+        (challenge_summary["Challenge Count"] / max(total_decks, 1)) * 100.0
+    ).round(2)
+
+    meta_summary = aggregate_by_deck(metagame_df)
+    if "Deck" not in meta_summary.columns:
+        meta_summary = pd.DataFrame(columns=["Deck", "Meta"])
+    meta_summary = meta_summary[["Deck", "Meta"]].copy()
+    meta_summary["Meta Share %"] = pd.to_numeric(meta_summary["Meta"], errors="coerce").fillna(0).round(2)
+    meta_summary = meta_summary.drop(columns=["Meta"])
+
+    merged = challenge_summary.merge(meta_summary, on="Deck", how="outer")
+    merged["Challenge Count"] = pd.to_numeric(merged["Challenge Count"], errors="coerce").fillna(0).astype(int)
+    merged["Challenge Share %"] = pd.to_numeric(merged["Challenge Share %"], errors="coerce").fillna(0).round(2)
+    merged["Meta Share %"] = pd.to_numeric(merged["Meta Share %"], errors="coerce").fillna(0).round(2)
+    merged["Delta pp"] = (merged["Challenge Share %"] - merged["Meta Share %"]).round(2)
+    merged["Archetype"] = merged["Deck"].apply(lambda deck: classify_archetype(str(deck), rules))
+
+    merged = merged[
+        [
+            "Deck",
+            "Archetype",
+            "Challenge Count",
+            "Challenge Share %",
+            "Meta Share %",
+            "Delta pp",
+        ]
+    ].sort_values(["Challenge Count", "Challenge Share %", "Meta Share %"], ascending=[False, False, False])
+    return merged.reset_index(drop=True)
 
 
 def normalize_name(name: str) -> str:
@@ -1040,6 +1444,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Twoj plik mapowan: raw_name, canonical_name, archetype",
     )
     parser.add_argument(
+        "--challenge-mapping-file",
+        default="docs/challenge_deck_mapping.csv",
+        help="Osobny plik mapowan dla danych Challenge: raw_name, canonical_name, archetype",
+    )
+    parser.add_argument(
         "--output-csv",
         default="outputs/metagame_input.csv",
     )
@@ -1072,6 +1481,23 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         choices=["full", "analysis"],
         default="full",
         help="full: all outputs, analysis: base CSV + grouped XLSX",
+    )
+    parser.add_argument(
+        "--include-challenge-decklist",
+        action="store_true",
+        help="Pobiera wszystkie Challenge (C32+C64) z MTGGoldfish w oknie metagame i zapisuje raporty + historię + statystyki.",
+    )
+    parser.add_argument(
+        "--challenge-history-events",
+        type=int,
+        default=8,
+        metavar="N",
+        help="Ile ostatnich eventów (per rozmiar) użyć do obliczania statystyk historii Challenge (default: 8).",
+    )
+    parser.add_argument(
+        "--backup-url",
+        default="",
+        help="Stały URL backup API; może wskazywać host root albo /api.",
     )
     return parser.parse_args(argv)
 
@@ -1142,11 +1568,22 @@ def interactive_menu() -> argparse.Namespace:
 
 
 def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunResult]:
+    configure_backup_server_url(getattr(args, "backup_url", ""))
     windows = resolve_windows(args)
 
     rules = load_rules(Path(args.rules_file))
     aliases = load_aliases(Path(args.aliases_file))
     user_mappings = load_user_deck_mappings(Path(args.user_mapping_file))
+    challenge_extra_mappings = load_user_deck_mappings(Path(getattr(args, "challenge_mapping_file", "docs/challenge_deck_mapping.csv")))
+    # Keep naming consistent across Meta and Challenge: base mapping is shared.
+    # Challenge mapping file is treated as optional additive extension only.
+    challenge_mappings = list(user_mappings)
+    known_raw = {normalize_name(m.raw_name) for m in challenge_mappings if normalize_name(m.raw_name)}
+    for mapping in challenge_extra_mappings:
+        key = normalize_name(mapping.raw_name)
+        if key and key not in known_raw:
+            challenge_mappings.append(mapping)
+            known_raw.add(key)
     user_mapping = mapping_lookup(user_mappings)
     output_profile = getattr(args, "output_profile", "full")
     analysis_mode = output_profile == "analysis"
@@ -1158,6 +1595,11 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         outputs_base = Path(args.history_output_dir).parent
 
     log(f"[OK] User mapping rows loaded: {len(user_mappings)}")
+    if challenge_extra_mappings:
+        log(
+            f"[OK] Challenge extra mapping rows loaded: {len(challenge_extra_mappings)} "
+            f"(effective shared+extra: {len(challenge_mappings)})"
+        )
     results: List[GenerationRunResult] = []
 
     for idx, (week_start, week_end) in enumerate(windows, start=1):
@@ -1216,10 +1658,99 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         grouped_xml = None
         final_unknown = None
         final_alias_suggestions = None
+        challenge_decklist_path: Optional[Path] = None
+        challenge_compare_path: Optional[Path] = None
+        challenge_event_url: Optional[str] = None
+        challenge_history_path: Optional[Path] = None
+        challenge_stats_path: Optional[Path] = None
+        challenge_events_fetched: int = 0
+
         if not analysis_mode:
             grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
             final_unknown = export_unknown_archetypes(dataset, path=unknown_output)
             final_alias_suggestions = export_alias_suggestions(dataset, aliases=aliases, path=alias_suggestions_output)
+
+        if bool(getattr(args, "include_challenge_decklist", False)):
+            try:
+                # Fetch ALL challenges (C32 + C64) within the metagame window
+                challenge_events = fetch_challenges_in_window_from_mtggoldfish(
+                    format_name=args.format_name,
+                    start_date=week_start,
+                    end_date=week_end,
+                    aliases=aliases,
+                    rules=rules,
+                    challenge_mappings=challenge_mappings,
+                )
+                challenge_events_fetched = len(challenge_events)
+                log(f"[OK] Fetched {challenge_events_fetched} challenge event(s) from MTGGoldfish")
+
+                # History CSV stored at repo level (not inside a weekly run dir)
+                _format_slug_hist = _format_slug_for_url(args.format_name)
+                challenge_history_csv = outputs_base / f"challenge_history_{_format_slug_hist}.csv"
+
+                for event_info, ch_df in challenge_events:
+                    c_size = event_info["challenge_size"]
+                    c_date = event_info["event_date"]
+                    c_label = f"C{c_size}_{c_date}"
+                    c_slug = event_info.get("slug", c_label)
+
+                    # Raw decklist CSV (with Deck/Archetype/Pilot columns)
+                    ch_csv_path = _safe_to_csv(
+                        ch_df,
+                        run_dir / f"challenge_{c_label}_decklist.csv",
+                    )
+                    if challenge_decklist_path is None:
+                        challenge_decklist_path = ch_csv_path
+                    if challenge_event_url is None:
+                        challenge_event_url = str(event_info.get("mtggoldfish_url") or "")
+
+                    # Per-event comparison vs metagame
+                    compare_df = build_challenge_vs_metagame_report(
+                        challenge_df=ch_df,
+                        metagame_df=dataset,
+                        aliases=aliases,
+                        rules=rules,
+                    )
+                    cmp_csv = _safe_to_csv(
+                        compare_df,
+                        run_dir / f"challenge_{c_label}_vs_metagame.csv",
+                    )
+                    if challenge_compare_path is None:
+                        challenge_compare_path = cmp_csv
+
+                    log(f"[OK] Challenge {c_label}: {len(ch_df)} decks → {ch_csv_path}")
+                    log(f"[OK] Challenge {c_label} vs metagame → {cmp_csv}")
+
+                    # Append to persistent challenge history
+                    if append_to_challenge_history is not None:
+                        event_info_for_hist = dict(event_info)
+                        event_info_for_hist.setdefault("slug", c_slug)
+                        append_to_challenge_history(
+                            history_csv=challenge_history_csv,
+                            event_info=event_info_for_hist,
+                            decklist_df=ch_df,
+                            log=log,
+                        )
+                        challenge_history_path = challenge_history_csv
+
+                # Compute challenge statistics from history
+                if run_challenge_statistics is not None and challenge_history_path is not None:
+                    last_n = int(getattr(args, "challenge_history_events", 8))
+                    challenge_stats_dir = run_dir / "statistics" / "challenges"
+                    ch_stats_result = run_challenge_statistics(
+                        history_csv=challenge_history_path,
+                        output_dir=challenge_stats_dir,
+                        format_name=args.format_name,
+                        last_n_events=last_n,
+                        week_start=week_start,
+                        week_end=week_end,
+                        metagame_df=dataset,
+                        log=log,
+                    )
+                    challenge_stats_path = ch_stats_result.excel_path
+
+            except Exception as challenge_err:
+                log(f"[WARN] Challenge report skipped: {challenge_err}")
 
         log(
             f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
@@ -1240,6 +1771,16 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             log(f"[OK] Unknown archetypes report: {final_unknown}")
         if final_alias_suggestions is not None:
             log(f"[OK] Alias suggestions report: {final_alias_suggestions}")
+        if challenge_decklist_path is not None:
+            log(f"[OK] Challenge decklist(s) (MTGGoldfish): {challenge_decklist_path.parent}")
+        if challenge_compare_path is not None:
+            log(f"[OK] Challenge vs metagame: {challenge_compare_path.parent}")
+        if challenge_event_url:
+            log(f"[OK] Challenge source URL: {challenge_event_url}")
+        if challenge_history_path is not None:
+            log(f"[OK] Challenge history: {challenge_history_path}")
+        if challenge_stats_path is not None:
+            log(f"[OK] Challenge statistics: {challenge_stats_path}")
         log(f"[OK] Output dir: {run_dir}")
 
         results.append(
@@ -1260,6 +1801,12 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 rogue_xml_path=grouped_xml,
                 unknown_output_path=final_unknown,
                 alias_suggestions_path=final_alias_suggestions,
+                challenge_decklist_path=challenge_decklist_path,
+                challenge_compare_path=challenge_compare_path,
+                challenge_event_url=challenge_event_url,
+                challenge_history_path=challenge_history_path,
+                challenge_stats_path=challenge_stats_path,
+                challenge_events_fetched=challenge_events_fetched,
             )
         )
 

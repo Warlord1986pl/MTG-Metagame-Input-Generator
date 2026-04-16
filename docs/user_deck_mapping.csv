@@ -9,12 +9,13 @@ Asmo Food,Asmo Food,Combo
 Azorius Control,Azorius Control,Control
 Azorius GenericBlink,Azorius Blink,Blink
 Belcher,Belcher,Combo
-BG,BG,Midrange
+BG,Yawgmoth,Midrange
 Bogles,Bogles,Aggro
 Boros Energy,Boros Energy,Aggro
 Boros Midrange,Boros Midrange,Midrange
-BR,BR,Graveyard
+BR,Rakdos Aggro,Aggro
 BRG,BRG,Midrange
+Broodscale Combo,Broodscale Combo,Combo
 Death's Shadow,Death's Shadow,Aggro
 Devoted Combo,Devoted Combo,Combo
 Dimir Control,Dimir Control,Control
@@ -64,6 +65,7 @@ Kethis Combo,Kethis Combo,Combo
 Land Destruction,Land Destruction,Control
 Lantern,Lantern,Control
 Living End,Living End,Graveyard
+Mardu Blink,Mardu Blink,Blink
 Mardu Energy,Mardu Energy,Aggro
 Mardu GenericBlink,Mardu Blink,Blink
 Merfolk,Merfolk,Aggro
@@ -81,8 +83,11 @@ Naya Burn,Naya Burn,Aggro
 Naya Energy,Naya Energy,Aggro
 Necrodominance,Necrodominance,Combo
 Neobrand,Neobrand,Combo
+Orzhov Blink,Orzhov Blink,Blink
 Orzhov GenericBlink,Orzhov Blink,Blink
 Orzhov Midrange,Orzhov Midrange,Midrange
+Prowess,Prowess,Aggro
+Rakdos Aggro,Rakdos Aggro,Aggro
 Rakdos Delirium,Rakdos Delirium,Aggro
 Rakdos Midrange,Rakdos Midrange,Midrange
 RG,RG,Ramp
@@ -94,13 +99,16 @@ Simic Basking Broodscale Combo,Broodscale Combo,Combo
 Simic Midrange,Simic Midrange,Midrange
 Simic Ritual,Simic Ritual,Aggro
 Sultai Midrange,Sultai Ritual,Midrange
+Sultai Murktide,Sultai Murktide,Tempo
+Sultai Ritual,Sultai Ritual,Midrange
 Tameshi Belcher,Tameshi Belcher,Combo
+Temur Breach,Temur Breach,Combo
 Temur Prowess,Prowess,Aggro
 Temur Scapeshift,Temur Scapeshift,Ramp
 The Rock,The Rock,Midrange
 Through the Breach,Through the Breach,Combo
 Tron,Tron,Ramp
-UB,UB,Control
+UB,Dimir Control,Control
 UBR,UBR,Midrange
 UBRG,UBRG,Control
 UG,UG,Combo
@@ -109,7 +117,7 @@ URG,URG,Midrange
 W,W,Aggro
 WBR,WBR,Midrange
 WG,WG,Aggro
-WR,WR,Aggro
+WR,Boros Energy,Aggro
 WRG,WRG,Combo
 WU,Azorius Control,Control
 WUBR,WUBR,Control
@@ -117,4 +125,4 @@ WUBRG,WUBRG,Control
 WUG,WUG,Midrange
 WUR,WUR,Midrange
 WURG,WURG,Control
-Yawgmoth,Yawgmoth,Combo
+Yawgmoth,Yawgmoth,Midrange
