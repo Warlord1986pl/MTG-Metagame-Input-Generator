@@ -1464,6 +1464,23 @@ def run_challenge_statistics(
         )
         return ChallengeStatisticsResult(output_dir, history_csv, output_dir / "challenge_statistics.xlsx", 0, 0, [])
 
+    # Rows still stuck at NEEDS_MANUAL_REVIEW (classifier could not confidently place them, and no
+    # human resolution has been applied yet) are NOT dropped from the stats tables and NOT silently
+    # merged into whatever real deck/archetype the classifier guessed second-best -- they get their
+    # own explicit "Unknown" row, so sum(Top32EntryCount) == 32 * event_count always holds and the
+    # gap is visible in the data instead of absorbed. This relabel is local to the stats tables
+    # only -- the underlying history_csv keeps the literal NEEDS_MANUAL_REVIEW marker untouched, so
+    # the review/rescan workflow (challenge_mtgo_source.py) still finds these rows correctly.
+    unresolved_mask = hist_window["Deck"] == "NEEDS_MANUAL_REVIEW"
+    n_unresolved = int(unresolved_mask.sum())
+    if n_unresolved:
+        hist_window.loc[unresolved_mask, "Deck"] = "Unknown"
+        hist_window.loc[unresolved_mask, "Archetype"] = "Unknown"
+        emit(
+            f"[challenge-stats] {n_unresolved} still-unresolved deck(s) (NEEDS_MANUAL_REVIEW) bucketed "
+            "under an explicit 'Unknown' row in the stats tables, not dropped."
+        )
+
     tiers = sorted(hist_window["ChallengeSize"].unique(), key=lambda s: int(s) if str(s).isdigit() else -1)
 
     n_tier: Dict[str, int] = {}
