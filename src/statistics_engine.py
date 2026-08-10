@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from math import comb
 from pathlib import Path
 from typing import Optional
+import shutil
 import re
 
 import matplotlib
@@ -304,7 +305,7 @@ def _aggregate_by_archetype(df_results: pd.DataFrame) -> pd.DataFrame:
 
 def _create_encounter_chart(
     df: pd.DataFrame,
-    week_index: int,
+    file_tag: str,
     total_players: int,
     chart_type: str,
     output_dir: Path,
@@ -353,7 +354,7 @@ def _create_encounter_chart(
     ax.spines["bottom"].set_visible(False)
     ax.set_ylabel("Encounter Probability", fontsize=14)
     threshold_text = f" (min. {min_encounter_threshold:.1%})" if min_encounter_threshold > 0 else ""
-    ax.set_title(f"Encounter Probability ({chart_type}){threshold_text} (N={total_players}) - Week {week_index}", fontsize=16, pad=20)
+    ax.set_title(f"Encounter Probability ({chart_type}){threshold_text} (N={total_players}) - {file_tag}", fontsize=16, pad=20)
     ax.set_ylim(0, 1.05)
 
     perf_patches = [
@@ -383,145 +384,7 @@ def _create_encounter_chart(
 
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.45, right=0.85)
-    out_path = output_dir / f"encounter_prob_{chart_type}_W{week_index}.png"
-    plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
-    return out_path
-
-
-def _create_my_deck_chart(
-    df_results: pd.DataFrame,
-    week_index: int,
-    total_players: int,
-    output_dir: Path,
-    min_encounter_threshold: float,
-    player_deck_name: str,
-    performance_colors: dict[str, str],
-    deck_colors: dict[str, str],
-    legend_colors: dict[str, str],
-) -> Optional[Path]:
-    if "My Deck Winrate" not in df_results.columns:
-        return None
-
-    df_my = df_results[df_results["My Deck Winrate"].notna()].copy()
-    if df_my.empty:
-        return None
-
-    games_col = None
-    for candidate in ["My Deck Winrate Game Count", "Winrate Game Count", "Match Count", "Matches", "Games"]:
-        if candidate in df_my.columns:
-            games_col = candidate
-            break
-    if games_col is None:
-        return None
-    df_my["_games"] = pd.to_numeric(df_my[games_col], errors="coerce").fillna(0)
-    df_my = df_my[df_my["_games"] >= MIN_GAMES_FOR_WINRATE_CHARTS].copy()
-    if df_my.empty:
-        return None
-
-    show_df = df_my[df_my["Encounter Probability"] >= min_encounter_threshold].copy()
-    if show_df.empty:
-        return None
-
-    show_df["Problem Score"] = show_df["Encounter Probability"] * (1 - pd.to_numeric(show_df["My Deck Winrate"], errors="coerce").fillna(0.5))
-    show_df = show_df.sort_values("Problem Score", ascending=False).reset_index(drop=True)
-
-    fig, ax = plt.subplots(figsize=(max(14, len(show_df) * 1.3), 10))
-    wr_vals = pd.to_numeric(show_df["My Deck Winrate"], errors="coerce").fillna(0.5)
-    colors = []
-    norm = plt.Normalize(vmin=0, vmax=1)
-    cmap = plt.cm.RdYlGn
-    for _, row in show_df.iterrows():
-        wr = float(pd.to_numeric(row.get("My Deck Winrate"), errors="coerce") or 0.5)
-        colors.append(cmap(norm(wr)))
-
-    bars = ax.bar(
-        range(len(show_df)),
-        show_df["Encounter Probability"],
-        color=colors,
-        edgecolor="black",
-        linewidth=0.6,
-        alpha=0.92,
-    )
-
-    for bar, enc_prob, my_wr in zip(bars, show_df["Encounter Probability"], wr_vals):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            float(bar.get_height()) + 0.018,
-            f"{float(enc_prob):.1%}",
-            ha="center",
-            va="bottom",
-            fontsize=10,
-            fontweight="bold",
-            color="black",
-        )
-        bar_h = float(bar.get_height())
-        if bar_h > 0.07:
-            text_color = "white" if (float(my_wr) < 0.3 or float(my_wr) > 0.72) else "black"
-            ax.text(
-                bar.get_x() + bar.get_width() / 2,
-                bar_h / 2,
-                f"WR: {float(my_wr):.0%}",
-                ha="center",
-                va="center",
-                fontsize=9,
-                fontweight="bold",
-                color=text_color,
-            )
-
-    rotation_angle = 30 if len(show_df) < 12 else 45 if len(show_df) < 20 else 60
-    for i, (deck, perf, games) in enumerate(zip(show_df["Deck Display Name"], show_df["Performance Label"], show_df["_games"])):
-        status = _trust_label(games)
-        ax.text(
-            i,
-            -0.03,
-            f"{str(deck)}\n(n={int(games)}, {status})",
-            ha="right",
-            va="top",
-            fontsize=9,
-            rotation=rotation_angle,
-            color=_legend_color(str(perf), legend_colors, performance_colors.get(str(perf), "black")),
-        )
-
-    ax.tick_params(axis="x", which="both", length=0, labelbottom=False)
-    ax.spines["bottom"].set_visible(False)
-    ax.set_ylabel("Encounter Probability", fontsize=13)
-    ax.set_ylim(0, 1.15)
-    ax.set_title(
-        (
-            f"{player_deck_name} Performance vs Metagame - Week {week_index}\n"
-            f"Sorted by Problem Score (Encounter Prob x Loss Rate) | N={total_players} | min {MIN_GAMES_FOR_WINRATE_CHARTS} games | Trusted >= {MIN_GAMES_FOR_TRUSTED}"
-        ),
-        fontsize=14,
-        pad=20,
-    )
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-    cbar = plt.colorbar(sm, ax=ax, orientation="vertical", fraction=0.025, pad=0.02)
-    cbar.set_label("My Winrate Against This Deck", fontsize=11)
-    cbar.set_ticks([0, 0.25, 0.5, 0.75, 1.0])
-    cbar.set_ticklabels(["0% (0-X)", "25%", "50%", "75%", "100% (X-0)"])
-
-    perf_patches = [
-        Patch(
-            facecolor=_legend_color("Underplayed Winner", legend_colors, performance_colors["Underplayed Winner"]),
-            label="Underplayed Winner",
-        ),
-        Patch(
-            facecolor=_legend_color("Popular Trap", legend_colors, performance_colors["Popular Trap"]),
-            label="Popular Trap",
-        ),
-        Patch(
-            facecolor=_legend_color("Neutral", legend_colors, performance_colors["Neutral"]),
-            label="Neutral",
-        ),
-    ]
-    ax.legend(handles=perf_patches, title="Deck Performance (meta)", loc="upper right", fontsize=9)
-
-    plt.tight_layout()
-    plt.subplots_adjust(bottom=0.38, right=0.88)
-
-    out_path = output_dir / f"my_deck_performance_W{week_index}.png"
+    out_path = output_dir / f"encounter_prob_{chart_type}_{file_tag}.png"
     plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return out_path
@@ -531,7 +394,7 @@ def _create_record_probability_chart(
     player_winrate: float,
     df_results: pd.DataFrame,
     rounds: int,
-    week_index: int,
+    file_tag: str,
     output_dir: Path,
     player_deck_name: str,
     deck_colors: dict[str, str],
@@ -542,7 +405,7 @@ def _create_record_probability_chart(
     probs = list(records.values())
 
     fig, axes = plt.subplots(1, 2, figsize=(20, 9))
-    fig.suptitle(f"Record Probability Analysis - Week {week_index} ({rounds}-round event)", fontsize=15, y=1.01)
+    fig.suptitle(f"Record Probability Analysis - {file_tag} ({rounds}-round event)", fontsize=15, y=1.01)
 
     ax1 = axes[0]
     bar_colors_left = plt.cm.RdYlGn(np.linspace(0, 1, len(labels)))
@@ -655,7 +518,7 @@ def _create_record_probability_chart(
 
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.15)
-    out_path = output_dir / f"record_probability_W{week_index}.png"
+    out_path = output_dir / f"record_probability_{file_tag}.png"
     plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return out_path
@@ -663,19 +526,24 @@ def _create_record_probability_chart(
 
 def _build_record_probability_excel(
     df_results: pd.DataFrame,
-    player_winrate: float,
     rounds: int,
-    week_index: int,
+    file_tag: str,
     output_dir: Path,
 ) -> Path:
     labels = [f"{w}-{rounds - w}" for w in range(rounds, -1, -1)]
     rows: list[dict[str, str]] = []
 
-    player_probs = calculate_binomial_records(player_winrate, rounds)
-    you_row = {"Deck": "YOU (overall winrate)", "Meta": "", "Deck Winrate": f"{player_winrate:.1%}"}
+    field_winrates = pd.to_numeric(df_results.get("Winrate"), errors="coerce").dropna()
+    field_median_wr = float(field_winrates.median()) if not field_winrates.empty else 0.5
+    field_probs = calculate_binomial_records(field_median_wr, rounds)
+    field_row = {
+        "Deck": "Field Median (median deck winrate, this window)",
+        "Meta": "",
+        "Deck Winrate": f"{field_median_wr:.1%}",
+    }
     for label in labels:
-        you_row[label] = f"{player_probs.get(label, 0.0):.1%}"
-    rows.append(you_row)
+        field_row[label] = f"{field_probs.get(label, 0.0):.1%}"
+    rows.append(field_row)
 
     for _, row in df_results.sort_values("Meta", ascending=False).iterrows():
         wr = float(pd.to_numeric(row.get("Winrate"), errors="coerce") or 0.5)
@@ -689,7 +557,7 @@ def _build_record_probability_excel(
             item[label] = f"{probs.get(label, 0.0):.1%}"
         rows.append(item)
 
-    out_path = output_dir / f"record_probabilities_W{week_index}.xlsx"
+    out_path = output_dir / f"record_probabilities_{file_tag}.xlsx"
     pd.DataFrame(rows).to_excel(out_path, index=False)
     return out_path
 
@@ -699,6 +567,7 @@ def _create_trend_chart(
     df_current: pd.DataFrame,
     weeks_back: int,
     week_index: int,
+    file_tag: str,
     chart_type: str,
     output_dir: Path,
     trend_colors: dict[str, str],
@@ -772,7 +641,7 @@ def _create_trend_chart(
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.12, right=0.82)
 
-    out_path = output_dir / f"meta_trend_{chart_type}_W{week_index}_last{weeks_back}w.png"
+    out_path = output_dir / f"meta_trend_{chart_type}_{file_tag}_last{weeks_back}w.png"
     plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return out_path
@@ -813,6 +682,14 @@ def run_statistics(
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    for child in list(output_dir.iterdir()):
+        try:
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink(missing_ok=True)
+        except Exception:
+            pass
     emit(f"[stats] Loading input: {input_excel}")
 
     df_new = pd.read_excel(input_excel)
@@ -865,6 +742,7 @@ def run_statistics(
         else:
             week_index = 1
     emit(f"[stats] Week index: {week_index}")
+    file_tag = f"{week_start_tag}_to_{week_end_tag}" if (week_start_tag and week_end_tag) else f"W{week_index:02d}"
     emit(f"[stats] Output profile: {normalized_profile}")
     emit(f"[stats] Palette: {palette_name}")
     if normalized_deck_colors:
@@ -928,10 +806,10 @@ def run_statistics(
     df_history = pd.concat([df_history, df_arch], ignore_index=True)
 
     emit("[stats] Saving tabular outputs...")
-    deck_excel = output_dir / f"deck_analysis_W{week_index}.xlsx"
-    arch_excel = output_dir / f"deck_analysis_ARCHETYPE_W{week_index}.xlsx"
-    df_results_with_trend = output_dir / f"deck_analysis_WITH_TRENDS_W{week_index}.xlsx"
-    history_out = output_dir / f"Metagame_History_W{week_index}.csv"
+    deck_excel = output_dir / f"deck_analysis_{file_tag}.xlsx"
+    arch_excel = output_dir / f"deck_analysis_ARCHETYPE_{file_tag}.xlsx"
+    df_results_with_trend = output_dir / f"deck_analysis_WITH_TRENDS_{file_tag}.xlsx"
+    history_out = output_dir / f"Metagame_History_{file_tag}.csv"
 
     if normalized_profile == "full":
         df_new.to_excel(deck_excel, index=False)
@@ -948,7 +826,7 @@ def run_statistics(
 
     deck_chart = _create_encounter_chart(
         df_new,
-        week_index,
+        file_tag,
         total_players,
         "Deck",
         output_dir,
@@ -957,22 +835,10 @@ def run_statistics(
         normalized_deck_colors,
         normalized_legend_colors,
     )
-    my_deck_chart = _create_my_deck_chart(
-        df_new,
-        week_index,
-        total_players,
-        output_dir,
-        min_encounter_threshold,
-        player_deck_name,
-        performance_colors,
-        normalized_deck_colors,
-        normalized_legend_colors,
-    )
-
     if normalized_profile == "full":
         arch_chart = _create_encounter_chart(
             df_arch,
-            week_index,
+            file_tag,
             total_players,
             "Archetype",
             output_dir,
@@ -985,18 +851,18 @@ def run_statistics(
             player_winrate,
             df_new,
             rounds,
-            week_index,
+            file_tag,
             output_dir,
             player_deck_name,
             normalized_deck_colors,
             normalized_legend_colors,
         )
-        record_excel = _build_record_probability_excel(df_new, player_winrate, rounds, week_index, output_dir)
-        for maybe in [deck_chart, arch_chart, my_deck_chart, record_chart, record_excel]:
+        record_excel = _build_record_probability_excel(df_new, rounds, file_tag, output_dir)
+        for maybe in [deck_chart, arch_chart, record_chart, record_excel]:
             if maybe is not None:
                 files.append(maybe)
     else:
-        for maybe in [deck_chart, my_deck_chart]:
+        for maybe in [deck_chart]:
             if maybe is not None:
                 files.append(maybe)
 
@@ -1008,6 +874,7 @@ def run_statistics(
             df_new,
             weeks_back,
             week_index,
+            file_tag,
             "Deck",
             output_dir,
             trend_colors,
@@ -1020,6 +887,7 @@ def run_statistics(
                 df_arch,
                 weeks_back,
                 week_index,
+                file_tag,
                 "Archetype",
                 output_dir,
                 trend_colors,
@@ -1088,7 +956,7 @@ def rebuild_history_from_dirs(
             emit(f"[rebuild] Skip W{seq:02d} {run_dir.name}: metagame_input_grouped.xlsx not found")
             continue
 
-        stats_dir = run_dir / "statistics"
+        stats_dir = run_dir / "statistics" / "metagame"
         emit(f"[rebuild] W{seq:02d} {run_dir.name}")
         try:
             run_statistics(
