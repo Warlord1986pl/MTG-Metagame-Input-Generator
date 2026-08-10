@@ -1,31 +1,44 @@
 raw_name,canonical_name,archetype
-4/5c Omnath,4/5c Omnath,Control
+4/5c Omnath,4/5c Omnath,Midrange
 4c Control,4c Control,Control
+4c Energy,4C Energy,Aggro
+4c HollowOne,4c HollowOne,Graveyard
 4c Midrange,4c Midrange,Midrange
+4c Omnath,4c Omnath,Midrange
 5c Midrange,5c Midrange,Midrange
 Affinity,Affinity,Aggro
 Amulet Titan,Amulet Titan,Combo
 Asmo Food,Asmo Food,Combo
+Azorius Blink,Azorius Blink,Blink
 Azorius Control,Azorius Control,Control
+Azorius Energy,UW Control,Control
 Azorius GenericBlink,Azorius Blink,Blink
+Bant GenericBlink,Bant Blink,Blink
 Belcher,Belcher,Combo
 BG,Yawgmoth,Midrange
 Bogles,Bogles,Aggro
+Boros Burn,Boros Burn,Aggro
 Boros Energy,Boros Energy,Aggro
 Boros Midrange,Boros Midrange,Midrange
+Boros Ponza,Land Destruction,Control
 BR,Rakdos Aggro,Aggro
 BRG,BRG,Midrange
 Broodscale Combo,Broodscale Combo,Combo
+Burn,Burn,Aggro
+Crashing Footfalls,Crashing Footfalls,Combo
+Death & Taxes,Death & Taxes,Control
 Death's Shadow,Death's Shadow,Aggro
 Devoted Combo,Devoted Combo,Combo
 Dimir Control,Dimir Control,Control
+Dimir Faeries,Dimir Faeries,Aggro
 Dimir Frog,Dimir Frog,Midrange
 Dimir Midrange,Dimir Midrange,Midrange
+Dimir Mill,Dimir Mill,Combo
 Dimir Murktide,Dimir Murktide,Midrange
 Dimir Reanimator,Dimir Reanimator,Graveyard
 Dimir Tezzerator,Dimir Tezzerator,Midrange
 Domain Zoo,Domain Zoo,Midrange
-Eldrazi,Eldrazi Tron,Ramp
+Eldrazi,Broodscale Combo,Combo
 Eldrazi Aggro,Eldrazi Aggro,Aggro
 Eldrazi Bloodchief,Eldrazi Bloodchief,Combo
 Eldrazi Ramp,Eldrazi Ramp,Ramp
@@ -34,14 +47,22 @@ Esper Blink,Esper Blink,Blink
 Esper Control,Esper Control,Control
 Esper GenericBlink,Esper Blink,Blink
 Esper Midrange,Esper Midrange,Midrange
+Esper Mill,Esper Mill,Combo
 Esper Murktide,Esper Murktide,Midrange
-Esper Reanimator,Esper Reanimator,Reanimator
+Esper Reanimator,Esper Reanimator,Graveyard
+G,G,Ramp
 Generic Ragavan,Ragavan,Aggro
+Goblins,Goblins,Aggro
+Golgari Basking Broodscale Combo,Golgari Basking Broodscale Combo,Combo
 Golgari Yawgmoth,Golgari Yawgmoth,Midrange
 Goryo's Vengeance,Goryo's Vengeance,Graveyard
+Green Devotion,Green Devotion,Ramp
 Grinding Emry,Grinding Emry,Combo
 Grixis Control,Grixis Control,Control
+Grixis Cutter,Grixis Cutter,Aggro
 Grixis Midrange,Grixis Midrange,Midrange
+Grixis Murktide,Grixis Murktide,Midrange
+Grixis Prowess,Prowess,Aggro
 Grixis Reanimator,Grixis Reanimator,Graveyard
 Gruul Basking Broodscale Combo,Broodscale Combo,Combo
 Gruul Midrange,Gruul Midrange,Midrange
@@ -52,7 +73,9 @@ Hollow One,Hollow One,Graveyard
 Humans,Humans,Aggro
 Indomitable Creativity,Indomitable Creativity,Combo
 Infect,Infect,Aggro
+Izzet Cutter,Prowess,Aggro
 Izzet Metalcraft,Izzet Metalcraft,Midrange
+Izzet Phoenix,Izzet Phoenix,Aggro
 Izzet Prowess,Prowess,Aggro
 Izzet Splinter Twin,Izzet Splinter Twin,Combo
 Izzet Steel-Cutter,Prowess,Aggro
@@ -60,7 +83,8 @@ IzzetControl,Izzet Control,Control
 Jeskai Blink,Jeskai Blink,Blink
 Jeskai Control,Jeskai Control,Control
 Jeskai Energy,Jeskai Energy,Aggro
-Jeskai Steel-Cutter,Jeskai Steel-Cutter,Aggro
+Jeskai Steel-Cutter,Prowess,Aggro
+Jeskai Stoneblade,Jeskai Stoneblade,Control
 Jund,Jund,Midrange
 Jund Saga,Jund Saga,Midrange
 Kethis Combo,Kethis Combo,Combo
@@ -72,37 +96,45 @@ Mardu Energy,Mardu Energy,Aggro
 Mardu GenericBlink,Mardu Blink,Blink
 Merfolk,Merfolk,Aggro
 Mill,Mill,Combo
-Miracles,Miracles,Combo
+Miracles,Miracles,Control
 Mono Blue Tron,Mono Blue Tron,Ramp
 Mono-Black Midrange,Mono-Black Midrange,Midrange
 Mono-Blue Tron,Mono-Blue Tron,Ramp
 Mono-Green Basking Broodscale Combo,Broodscale Combo,Combo
+Mono-Green Eldrazi,Mono-Green Eldrazi,Ramp
 Mono-Green Midrange,Mono-Green Midrange,Midrange
 Mono-Green Tron,Mono-Green Tron,Ramp
-Mono-Red Artifact Reanimation,Mono-Red Artifact Reanimation,Combo
+Mono-Red Artifact Reanimation,Mono-Red Artifact Reanimation,Graveyard
 Mono-Red Burn,Burn,Aggro
 Mono-White Control,Mono-White Control,Control
 Naya Burn,Naya Burn,Aggro
 Naya Energy,Naya Energy,Aggro
+Naya Scapeshift,Naya Scapeshift,Ramp
 Necrodominance,Necrodominance,Combo
 Neobrand,Neobrand,Combo
 Orzhov Blink,Orzhov Blink,Blink
 Orzhov GenericBlink,Orzhov Blink,Blink
 Orzhov Midrange,Orzhov Midrange,Midrange
 Prowess,Prowess,Aggro
+R,R,Aggro
 Rakdos Aggro,Rakdos Aggro,Aggro
+Rakdos Burn,Rakdos Burn,Aggro
 Rakdos Delirium,Rakdos Delirium,Aggro
+Rakdos HollowOne,Rakdos HollowOne,Graveyard
 Rakdos Midrange,Rakdos Midrange,Midrange
 RG,RG,Ramp
 Ruby Storm,Ruby Storm,Combo
 Sam Combo,Sam Combo,Combo
 Samwise Combo,Samwise Combo,Combo
 Selective Oracle,Selective Oracle,Combo
+Selesnya Energy,Selesnya Energy,Aggro
+Selesnya GenericBlink,Selesnya Blink,Blink
 Simic Basking Broodscale Combo,Broodscale Combo,Combo
 Simic Midrange,Simic Midrange,Midrange
 Simic Ritual,Simic Ritual,Aggro
+Song of Creation,Song of Creation,Combo
 Sultai Midrange,Sultai Ritual,Midrange
-Sultai Murktide,Sultai Murktide,Tempo
+Sultai Murktide,Sultai Murktide,Midrange
 Sultai Ritual,Sultai Ritual,Midrange
 Tameshi Belcher,Tameshi Belcher,Combo
 Temur Breach,Temur Breach,Combo
@@ -118,11 +150,14 @@ UG,UG,Combo
 UR,Prowess,Aggro
 URG,URG,Midrange
 W,W,Aggro
+WBG,WBG,Midrange
 WBR,WBR,Midrange
+WBRG,WBRG,Control
 WG,WG,Aggro
-WR,Boros Energy,Aggro
+WR,Land Destruction,Control
 WRG,WRG,Combo
 WU,Azorius Control,Control
+WUB,Esper Blink,Blink
 WUBR,WUBR,Control
 WUBRG,WUBRG,Control
 WUG,WUG,Midrange

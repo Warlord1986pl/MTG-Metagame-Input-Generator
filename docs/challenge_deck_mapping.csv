@@ -1,40 +1,106 @@
 raw_name,canonical_name,archetype
+4c HollowOne,4c HollowOne,Graveyard
+5c Midrange,Domain Zoo,Midrange
+5c Omnath,5c Omnath,Control
 Affinity,Affinity,Aggro
 Amulet Titan,Amulet Titan,Combo
+Azorius Blink,Azorius Blink,Blink
 Azorius Control,Azorius Control,Control
+Azorius Energy,UW Control,Control
 Belcher,Belcher,Combo
 BG,Yawgmoth,Midrange
+Boros Burn,Boros Burn,Aggro
 Boros Energy,Boros Energy,Aggro
+Boros Ponza,Boros Ponza,Control
+BRG,BRG,Midrange
 Broodscale Combo,Broodscale Combo,Combo
+Burn,Burn,Aggro
+Cheeri0s,Cheeri0s,Aggro
+Crashing Footfalls,Crashing Footfalls,Combo
+Death & Taxes,Death & Taxes,Control
 Dimir Control,Dimir Control,Control
+Dimir Death's Shadow,Dimir Death's Shadow,Aggro
 Dimir Midrange,Dimir Midrange,Midrange
+Dimir Mill,Dimir Mill,Combo
 Domain Zoo,Domain Zoo,Midrange
+Eldrazi,Broodscale Combo,Combo
 Eldrazi Ramp,Eldrazi Ramp,Ramp
 Eldrazi Tron,Eldrazi Tron,Ramp
 Esper Blink,Esper Blink,Blink
 Esper Control,Esper Control,Control
+Esper Energy,Esper Energy,Aggro
 Esper Midrange,Esper Midrange,Midrange
+Esper Mill,Esper Mill,Combo
+Esper Murktide,Esper Murktide,Midrange
+Esper Reanimator,Esper Reanimator,Graveyard
+G,G,Ramp
 Goryo's Vengeance,Goryo's Vengeance,Graveyard
+Grixis Cutter,Prowess,Aggro
 Grixis Death's Shadow,Grixis Death's Shadow,Aggro
 Grixis Midrange,Grixis Midrange,Midrange
 Grixis Reanimator,Grixis Reanimator,Graveyard
+Gruul Hardened Scales,Gruul Hardened Scales,Combo
+Hammer Time,Hammer Time,Combo
 Indomitable Creativity,Indomitable Creativity,Combo
+Izzet,Prowess,Aggro
+Izzet Cutter,Prowess,Aggro
+Izzet Phoenix,Izzet Phoenix,Aggro
+Izzet Splinter Twin,Izzet Splinter Twin,Combo
 Jeskai Blink,Jeskai Blink,Blink
 Jeskai Control,Jeskai Control,Control
 Jeskai Energy,Jeskai Energy,Aggro
+Jeskai Stoneblade,Jeskai Stoneblade,Control
+Jund,Jund,Midrange
 Kethis Combo,Kethis Combo,Combo
+Land Destruction,Land Destruction,Control
 Living End,Living End,Graveyard
 Mardu Blink,Mardu Blink,Blink
+Mardu Energy,Mardu Energy,Aggro
+Mardu HollowOne,Mardu HollowOne,Graveyard
+Miracles,Miracles,Control
 Mono-Black Midrange,Mono-Black Midrange,Midrange
+Mono-Blue Tron,Mono-Blue Tron,Ramp
+Mono-Green Eldrazi,Mono-Green Eldrazi,Ramp
+Mono-Green Hardened Scales,Mono-Green Hardened Scales,Combo
+Mono-Green Midrange,Mono-Green Midrange,Midrange
+Naya Energy,Naya Energy,Aggro
 Neobrand,Neobrand,Combo
 Orzhov Blink,Orzhov Blink,Blink
+Orzhov Stoneblade,Orzhov Stoneblade,Combo
 Prowess,Prowess,Aggro
+R,R,Aggro
 Rakdos Aggro,Rakdos Aggro,Aggro
+Rakdos Death's Shadow,Rakdos Death's Shadow,Aggro
+Rakdos Delirium,Rakdos Delirium,Aggro
+Rakdos HollowOne,Rakdos HollowOne,Graveyard
+Rakdos Midrange,Rakdos Midrange,Midrange
+RG,RG,Ramp
 Ruby Storm,Ruby Storm,Combo
 Sam Combo,Sam Combo,Combo
+Selesnya Energy,Selesnya Energy,Aggro
+Song of Creation,Song of Creation,Combo
 Sultai Ritual,Sultai Ritual,Midrange
 Temur Breach,Temur Breach,Combo
 The Rock,The Rock,Midrange
 Through the Breach,Through the Breach,Combo
+U,U,Control
 UB,UB,Control
+UBR,UBR,Midrange
+UG,UG,Combo
+URG,URG,Midrange
+W,W,Aggro
+WB,WB,Blink
+WBG,WBG,Midrange
+WBR,WBR,Midrange
+WBRG,WBRG,Control
+WG,WG,Aggro
+WRG,WRG,Combo
+WUB,WUB,Midrange
+WUBG,WUBG,Control
+WUBRG,WUBRG,Control
+WUG,WUG,Midrange
+WUR,Jeskai Blink,Midrange
+WURG,4c Control,Control
 Yawgmoth,Yawgmoth,Midrange
+Temur Cutter,Prowess,Aggro
+Mono-Red Cutter,Prowess,Aggro

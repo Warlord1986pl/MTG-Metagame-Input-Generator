@@ -8,12 +8,15 @@ import re
 import shutil
 import sys
 import time
+import traceback
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from dataclasses import dataclass
+from dataclasses import field as dataclasses_field
 from datetime import UTC, date, datetime, timedelta
 from html import unescape
 from io import StringIO
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urlencode
@@ -24,18 +27,36 @@ import pandas as pd
 from openpyxl.styles import PatternFill
 
 try:
-    from challenge_history_engine import append_to_challenge_history, run_challenge_statistics
+    from challenge_history_engine import (
+        append_to_challenge_history,
+        run_challenge_statistics,
+        sync_challenge_history_window,
+    )
 except ImportError:
     try:
-        from .challenge_history_engine import append_to_challenge_history, run_challenge_statistics
+        from .challenge_history_engine import (
+            append_to_challenge_history,
+            run_challenge_statistics,
+            sync_challenge_history_window,
+        )
     except ImportError:
         append_to_challenge_history = None  # type: ignore[assignment]
         run_challenge_statistics = None  # type: ignore[assignment]
+        sync_challenge_history_window = None  # type: ignore[assignment]
+
+try:
+    from statistics_engine import run_statistics
+except ImportError:
+    try:
+        from .statistics_engine import run_statistics
+    except ImportError:
+        run_statistics = None  # type: ignore[assignment]
 
 
 API_BASE = "https://api.videreproject.com"
 MTGO_BASE = "https://www.mtgo.com"
 MTG_GOLDFISH_BASE = "https://www.mtggoldfish.com"
+CENSUS_BASE = "https://census.daybreakgames.com"
 API_RETRY_ATTEMPTS = 3
 API_RETRY_DELAYS_SECONDS = [1, 2, 4]
 
@@ -159,8 +180,10 @@ class GenerationRunResult:
     challenge_compare_path: Optional[Path] = None
     challenge_event_url: Optional[str] = None
     challenge_history_path: Optional[Path] = None
+    premier_history_path: Optional[Path] = None
     challenge_stats_path: Optional[Path] = None
     challenge_events_fetched: int = 0
+    challenge_review_items: List[dict] = dataclasses_field(default_factory=list)
 
 
 def parse_date(value: str) -> date:
@@ -325,16 +348,43 @@ def _format_slug_for_url(format_name: str) -> str:
     return normalize_name(format_name).replace(" ", "-")
 
 
-def _find_challenges_in_window(
+def _normalize_format_token(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", normalize_name(value))
+
+
+def _calendar_rows_for_window(start_date: date, end_date: date, page_limit: int = 1000) -> List[dict]:
+    start_dt = datetime.combine(start_date, datetime.min.time()).replace(tzinfo=UTC)
+    end_dt = datetime.combine(end_date + timedelta(days=1), datetime.min.time()).replace(tzinfo=UTC) - timedelta(
+        milliseconds=1
+    )
+    start_ms = int(start_dt.timestamp() * 1000)
+    end_ms = int(end_dt.timestamp() * 1000)
+
+    rows: List[dict] = []
+    offset = 0
+    while True:
+        params = {
+            "c:limit": page_limit,
+            "c:start": offset,
+            "starttime": f"]{start_ms}",
+            "endtime": f"[{end_ms}",
+        }
+        url = f"{CENSUS_BASE}/s:dgc/get/mtgo/tournament_calendar?{urlencode(params)}"
+        payload = _api_fetch_once(url)
+        batch = payload.get("tournament_calendar_list")
+        if not isinstance(batch, list) or not batch:
+            break
+        rows.extend(batch)
+        if len(batch) < page_limit:
+            break
+        offset += len(batch)
+
+    return rows
+
+
+def _find_challenges_from_decklists_index(
     format_name: str, start_date: date, end_date: date
 ) -> List[dict]:
-    """Return all MTGO Challenges (any size) for *format_name* whose event_date
-    falls within the closed interval [start_date, end_date].
-
-    A dict per challenge is returned, sorted by (event_date DESC, challenge_size DESC).
-    When the same (event_date, challenge_size) pair appears with different numeric IDs
-    (reruns / corrections on MTGO) the highest numeric_id wins.
-    """
     html = _fetch_text(f"{MTGO_BASE}/decklists")
     format_slug = _format_slug_for_url(format_name)
 
@@ -343,7 +393,6 @@ def _find_challenges_in_window(
         flags=re.IGNORECASE,
     )
 
-    # key = (event_date_str, challenge_size) → best candidate dict
     seen: dict = {}
     for match in pattern.finditer(html):
         slug = match.group(1)
@@ -369,12 +418,89 @@ def _find_challenges_in_window(
                 "_numeric_id": numeric_id,
             }
 
-    results = []
+    results: List[dict] = []
     for info in seen.values():
         clean = {k: v for k, v in info.items() if k != "_numeric_id"}
         results.append(clean)
     results.sort(key=lambda x: (x["event_date"], x["challenge_size"]), reverse=True)
     return results
+
+
+def _find_challenges_in_window(
+    format_name: str, start_date: date, end_date: date
+) -> List[dict]:
+    """Return all MTGO Challenges (any size) for *format_name* whose event_date
+    falls within the closed interval [start_date, end_date].
+
+    A dict per challenge is returned, sorted by (event_date DESC, challenge_size DESC).
+    When the same (event_date, challenge_size) pair appears with different numeric IDs
+    (reruns / corrections on MTGO) the highest numeric_id wins.
+    """
+    format_slug = _format_slug_for_url(format_name)
+    normalized_target_format = _normalize_format_token(format_name)
+    challenge_desc_re = re.compile(r"^(?P<fmt>.+?)\s+challenge(?:\s+(?P<size>\d+))?$", flags=re.IGNORECASE)
+
+    try:
+        calendar_rows = _calendar_rows_for_window(start_date, end_date)
+    except Exception as err:
+        print(f"[WARN] MTGO calendar fetch failed for challenge discovery: {err}. Falling back to /decklists index.")
+        return _find_challenges_from_decklists_index(format_name, start_date, end_date)
+
+    seen: Dict[tuple[str, int, str], dict] = {}
+    for row in calendar_rows:
+        description = str(row.get("description") or "").strip()
+        match = challenge_desc_re.match(description)
+        if not match:
+            continue
+
+        row_format = _normalize_format_token(match.group("fmt") or "")
+        if row_format != normalized_target_format:
+            continue
+
+        size_raw = match.group("size") or row.get("minimumplayers")
+        try:
+            challenge_size = int(str(size_raw).strip())
+        except (TypeError, ValueError):
+            continue
+        if challenge_size <= 0:
+            continue
+
+        starttime = str(row.get("starttime") or "").strip()
+        if len(starttime) < 10:
+            continue
+        event_date_str = starttime[:10]
+        try:
+            ev_date = date.fromisoformat(event_date_str)
+        except ValueError:
+            continue
+        if not (start_date <= ev_date <= end_date):
+            continue
+
+        tournament_id_raw = str(row.get("tournamentid") or "").strip()
+        if not tournament_id_raw.isdigit():
+            continue
+        numeric_id = int(tournament_id_raw)
+        slug = f"{format_slug}-challenge-{challenge_size}-{event_date_str}{numeric_id}"
+
+        key = (event_date_str, challenge_size, tournament_id_raw)
+        if key not in seen:
+            seen[key] = {
+                "slug": slug,
+                "challenge_size": challenge_size,
+                "event_date": event_date_str,
+                "mtgo_url": f"{MTGO_BASE}/decklist/{slug}",
+            }
+
+    results: List[dict] = []
+    for info in seen.values():
+        results.append(info)
+    results.sort(key=lambda x: (x["event_date"], x["challenge_size"]), reverse=True)
+
+    if results:
+        return results
+
+    print("[WARN] MTGO calendar returned no matching challenge events; falling back to /decklists index.")
+    return _find_challenges_from_decklists_index(format_name, start_date, end_date)
 
 
 def _find_latest_mtgo_challenge(format_name: str) -> Optional[dict]:
@@ -499,6 +625,21 @@ def _parse_single_challenge(
     return event_info, df
 
 
+def roster_content_signature(df: pd.DataFrame) -> str:
+    """Order-independent identity of a Challenge roster: hash of sorted (pilot, deck) pairs.
+
+    Two events with the same signature had the identical set of pilots/decks, which is how we
+    detect MTGO republishing the same tournament under a second tournament_id (same MTGGoldfish
+    page gets scraped twice) rather than trusting the discovery-layer (date, size) key alone.
+    """
+    pairs = sorted(
+        (normalize_name(p), normalize_name(d))
+        for p, d in zip(df.get("Pilot", []), df.get("Deck", []))
+    )
+    canonical = "|".join(f"{p}::{d}" for p, d in pairs)
+    return hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:12]
+
+
 def fetch_challenges_in_window_from_mtggoldfish(
     format_name: str,
     start_date: date,
@@ -528,12 +669,48 @@ def fetch_challenges_in_window_from_mtggoldfish(
         if key and key not in mapping_lookup_exact:
             mapping_lookup_exact[key] = mapping
 
+    parsed: List[tuple[dict, pd.DataFrame]] = []
     for info in challenges:
         try:
             event_info, df = _parse_single_challenge(info, format_name)
         except Exception:
             continue  # skip events that fail to parse; caller gets the rest
+        parsed.append((event_info, df))
 
+    # Dedup by roster content, grouped by (event_date, challenge_size). MTGO sometimes lists the
+    # same tournament twice under different tournament_ids; since the MTGGoldfish scrape URL only
+    # depends on (format, size, date), both entries fetch the identical page. A content-signature
+    # mismatch within a group means a genuine same-day/same-tier collision MTGGoldfish itself can't
+    # disambiguate (known source limitation) -- still counted as one event, but flagged.
+    groups: Dict[tuple[str, int], List[tuple[dict, pd.DataFrame]]] = defaultdict(list)
+    for event_info, df in parsed:
+        key = (str(event_info["event_date"]), int(event_info["challenge_size"]))
+        groups[key].append((event_info, df))
+
+    deduped: List[tuple[dict, pd.DataFrame]] = []
+    for (event_date_str, challenge_size), entries in groups.items():
+        if len(entries) == 1:
+            deduped.append(entries[0])
+            continue
+
+        entries_sorted = sorted(entries, key=lambda item: str(item[0].get("slug") or ""))
+        signatures = [roster_content_signature(df) for _, df in entries_sorted]
+        kept_event_info, kept_df = entries_sorted[0]
+
+        if len(set(signatures)) == 1:
+            print(
+                f"[challenge-dedup] Merged {len(entries_sorted)} duplicate publication(s) of "
+                f"C{challenge_size} {event_date_str} (identical roster, MTGO republish)"
+            )
+        else:
+            print(
+                f"[WARN] [challenge-dedup] C{challenge_size} {event_date_str} has "
+                f"{len(entries_sorted)} same-day/same-tier entries with differing rosters; "
+                "MTGGoldfish cannot disambiguate them (known source limitation) -- counted as 1 event."
+            )
+        deduped.append((kept_event_info, kept_df))
+
+    for event_info, df in deduped:
         # First pass: explicit challenge-only overrides (separate history/mapping space).
         if mapping_lookup_exact:
             def _apply_challenge_mapping(raw_name: str) -> tuple[str, Optional[str]]:
@@ -747,7 +924,7 @@ def heuristic_archetype(deck_name: str) -> str:
         (r"\b(control|azorius|jeskai control|dimir control|uw control|esper control)\b", "Control"),
         (r"\b(combo|storm|belcher|twin|neoform|oops|creativity|ad nauseam|yawgmoth|amulet)\b", "Combo"),
         (r"\b(ramp|tron|titan|eldrazi ramp|scapeshift)\b", "Ramp"),
-        (r"\b(tempo|delver|murktide)\b", "Tempo"),
+        (r"\b(tempo|delver|murktide)\b", "Midrange"),
         (r"\b(prison|lantern|lock)\b", "Prison"),
         (r"\b(reanimator|goryo|living end|dredge)\b", "Graveyard"),
     ]
@@ -1000,9 +1177,75 @@ def build_dataset(
             }
         )
 
-    df = pd.DataFrame(rows)
-    df = df.dropna(subset=["Deck", "Meta", "Winrate"]).copy()
-    df["Source Deck Names"] = df["Raw Deck"].astype(str)
+    df_raw = pd.DataFrame(rows)
+    df_raw = df_raw.dropna(subset=["Deck", "Meta", "Winrate"]).copy()
+    if df_raw.empty:
+        raise RuntimeError("Brak poprawnych rekordow metagame po normalizacji.")
+
+    dup_counts = df_raw.groupby("Deck").size()
+    dup_decks = dup_counts[dup_counts > 1]
+    if not dup_decks.empty:
+        sample = ", ".join(dup_decks.index[:8])
+        print(
+            "[WARN] API returned duplicate metagame rows for canonical decks: "
+            f"{sample}. Aggregating duplicates by deck."
+        )
+
+    grouped_rows: List[Dict[str, object]] = []
+    for deck_name, grp in df_raw.groupby("Deck", sort=False):
+        grp = grp.copy()
+        grp["Winrate Game Count"] = pd.to_numeric(grp["Winrate Game Count"], errors="coerce").fillna(0).astype(int)
+        grp["Winrate"] = pd.to_numeric(grp["Winrate"], errors="coerce")
+        grp["My Deck Winrate"] = pd.to_numeric(grp["My Deck Winrate"], errors="coerce")
+
+        games_total = int(grp["Winrate Game Count"].sum())
+        if games_total > 0:
+            weighted_winrate = float((grp["Winrate"] * grp["Winrate Game Count"]).sum() / games_total)
+        else:
+            weighted_winrate = float(grp["Winrate"].mean())
+
+        meta_share = float(pd.to_numeric(grp["Meta"], errors="coerce").fillna(0).sum())
+
+        sources = grp["My Deck Winrate Source"].astype(str)
+        if (sources == "primary").any():
+            my_wr_source = "primary"
+        elif (sources == "fallback").any():
+            my_wr_source = "fallback"
+        else:
+            my_wr_source = "none"
+
+        if my_wr_source == "primary":
+            wr_slice = grp.loc[sources == "primary", "My Deck Winrate"]
+            wr_games_slice = grp.loc[sources == "primary", "My Deck Winrate Game Count"]
+        elif my_wr_source == "fallback":
+            wr_slice = grp.loc[sources == "fallback", "My Deck Winrate"]
+            wr_games_slice = grp.loc[sources == "fallback", "My Deck Winrate Game Count"]
+        else:
+            wr_slice = pd.Series([], dtype=float)
+            wr_games_slice = pd.Series([], dtype=float)
+
+        my_wr_value = float(wr_slice.dropna().mean()) if not wr_slice.dropna().empty else pd.NA
+        my_wr_games = int(pd.to_numeric(wr_games_slice, errors="coerce").fillna(0).max()) if not wr_games_slice.empty else 0
+
+        archetypes = [normalize_archetype_label(str(a)) for a in grp["Archetype"].tolist()]
+        archetype = pd.Series(archetypes).mode().iloc[0] if archetypes else "Unknown"
+
+        source_names = sorted({str(v).strip() for v in grp["Raw Deck"].tolist() if str(v).strip()})
+        grouped_rows.append(
+            {
+                "Deck": deck_name,
+                "Source Deck Names": " | ".join(source_names),
+                "Meta": meta_share,
+                "Winrate": weighted_winrate,
+                "Winrate Game Count": games_total,
+                "Archetype": archetype,
+                "My Deck Winrate": my_wr_value,
+                "My Deck Winrate Game Count": my_wr_games,
+                "My Deck Winrate Source": my_wr_source,
+            }
+        )
+
+    df = pd.DataFrame(grouped_rows)
     source = df["My Deck Winrate Source"].copy()
     df = df[
         [
@@ -1054,12 +1297,28 @@ def _remove_if_exists(path: Path) -> None:
         pass
 
 
-def _clear_previous_run_outputs(run_dir: Path) -> None:
+def _clear_previous_run_outputs(run_dir: Path, clear_challenge_outputs: bool = True) -> None:
     if not run_dir.exists():
         return
 
     for child in run_dir.iterdir():
         try:
+            if not clear_challenge_outputs:
+                if child.is_dir() and child.name == "statistics":
+                    challenge_dir = child / "challenges"
+                    if challenge_dir.exists() and challenge_dir.is_dir():
+                        # Keep challenge statistics; clear only non-challenge statistics.
+                        for stats_child in child.iterdir():
+                            if stats_child.resolve() == challenge_dir.resolve():
+                                continue
+                            if stats_child.is_dir():
+                                shutil.rmtree(stats_child, ignore_errors=True)
+                            else:
+                                stats_child.unlink(missing_ok=True)
+                        continue
+                if child.name.startswith("challenge_"):
+                    continue
+
             if child.is_dir():
                 shutil.rmtree(child, ignore_errors=True)
             else:
@@ -1499,6 +1758,14 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default="",
         help="Stały URL backup API; może wskazywać host root albo /api.",
     )
+    parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help=(
+            "Gdy okno Challenge jest niekompletne (rejestr mtgo.com != dane pobrane), zapisz mimo to "
+            "challenge_statistics_PARTIAL.xlsx zamiast pomijać zapis (domyślnie: nie zapisuj)."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -1567,6 +1834,43 @@ def interactive_menu() -> argparse.Namespace:
     return args
 
 
+def _write_challenge_failure_status(run_dir: Path, week_start: date, week_end: date, reason: str, log) -> None:
+    """Fail-closed status.json for the case where the Challenge step blew up before it could even
+    build a completeness signal (registry fetch threw, sync threw, anything unexpected). Every
+    count is null (never 0, never silently "complete") -- same shape as
+    challenge_mtgo_source.unavailable_completeness_summary(), duplicated here (not imported) to
+    avoid this module depending on challenge_mtgo_source at import time.
+    """
+    status_dir = run_dir / "statistics" / "challenges"
+    try:
+        status_dir.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "complete": False,
+            "registry_count": None,
+            "fetched_count": None,
+            "missing": [],
+            "window_start": week_start.isoformat() if week_start else None,
+            "window_end": week_end.isoformat() if week_end else None,
+            "league_window_start": None,
+            "league_window_end": None,
+            "window_consistent": None,
+            "tier_counts_registry": {},
+            "tier_counts_fetched": {},
+            "premier_checked": False,
+            "premier_count": None,
+            "premier_events": [],
+            "premier_note": "Premier scan did not complete",
+            "partial": False,
+            "failure_reason": reason,
+        }
+        (status_dir / "challenge_statistics.status.json").write_text(
+            json.dumps(payload, indent=2), encoding="utf-8"
+        )
+        log(f"[ERROR] Wrote fail-closed status.json (complete=false) -> {status_dir / 'challenge_statistics.status.json'}")
+    except Exception as write_err:
+        log(f"[ERROR] Could not even write the fail-closed status.json: {write_err}")
+
+
 def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunResult]:
     configure_backup_server_url(getattr(args, "backup_url", ""))
     windows = resolve_windows(args)
@@ -1620,7 +1924,10 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
 
         run_dir = compute_run_dir(outputs_base, week_start, week_end)
         run_dir.mkdir(parents=True, exist_ok=True)
-        _clear_previous_run_outputs(run_dir)
+        _clear_previous_run_outputs(
+            run_dir,
+            clear_challenge_outputs=bool(getattr(args, "include_challenge_decklist", False)),
+        )
 
         output_csv = run_dir / "metagame_input.csv"
         output_xlsx = run_dir / "metagame_input.xlsx"
@@ -1662,8 +1969,11 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         challenge_compare_path: Optional[Path] = None
         challenge_event_url: Optional[str] = None
         challenge_history_path: Optional[Path] = None
+        premier_history_path: Optional[Path] = None
         challenge_stats_path: Optional[Path] = None
+        metagame_stats_path: Optional[Path] = None
         challenge_events_fetched: int = 0
+        challenge_review_items: List[dict] = []
 
         if not analysis_mode:
             grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
@@ -1672,71 +1982,151 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
 
         if bool(getattr(args, "include_challenge_decklist", False)):
             try:
-                # Fetch ALL challenges (C32 + C64) within the metagame window
-                challenge_events = fetch_challenges_in_window_from_mtggoldfish(
+                from challenge_mtgo_source import (
+                    ChallengeSourceError,
+                    build_challenge_dataset,
+                    write_challenge_manifest,
+                    write_event_status_manifest,
+                    write_premier_events_csv,
+                    write_review_items_csv,
+                )
+
+                _format_slug_hist = _format_slug_for_url(args.format_name)
+                cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_hist
+                challenge_history_csv = outputs_base / f"challenge_history_{_format_slug_hist}.csv"
+                premier_history_csv = outputs_base / f"premier_history_{_format_slug_hist}.csv"
+
+                challenge_dataset = build_challenge_dataset(
                     format_name=args.format_name,
                     start_date=week_start,
                     end_date=week_end,
                     aliases=aliases,
                     rules=rules,
                     challenge_mappings=challenge_mappings,
+                    cache_dir=cache_dir,
+                    log=log,
+                    challenge_history_csv=challenge_history_csv,
+                    premier_history_csv=premier_history_csv,
                 )
-                challenge_events_fetched = len(challenge_events)
-                log(f"[OK] Fetched {challenge_events_fetched} challenge event(s) from MTGGoldfish")
+                challenge_events_fetched = len(challenge_dataset.challenge_events)
+                log(
+                    f"[OK] Fetched {challenge_events_fetched} challenge event(s) and "
+                    f"{len(challenge_dataset.premier_events)} premier event(s) from mtgo.com"
+                )
 
-                # History CSV stored at repo level (not inside a weekly run dir)
-                _format_slug_hist = _format_slug_for_url(args.format_name)
-                challenge_history_csv = outputs_base / f"challenge_history_{_format_slug_hist}.csv"
+                window_label = f"{week_start.isoformat()}_to_{week_end.isoformat()}"
+                write_challenge_manifest(challenge_dataset, run_dir / f"challenge_manifest_{window_label}.csv", log=log)
+                write_premier_events_csv(
+                    challenge_dataset, _format_slug_hist, run_dir / f"premier_events_{window_label}.csv", log=log
+                )
 
-                for event_info, ch_df in challenge_events:
-                    c_size = event_info["challenge_size"]
-                    c_date = event_info["event_date"]
-                    c_label = f"C{c_size}_{c_date}"
-                    c_slug = event_info.get("slug", c_label)
-
-                    # Raw decklist CSV (with Deck/Archetype/Pilot columns)
-                    ch_csv_path = _safe_to_csv(
-                        ch_df,
-                        run_dir / f"challenge_{c_label}_decklist.csv",
+                # Completeness gate: registry_count (everything mtgo.com listed for the window) vs
+                # fetched_count (what actually got parsed). Never narrows the window to match what
+                # was fetched -- a shortfall is reported (event manifest + log + stats stamp), not hidden.
+                completeness = write_event_status_manifest(
+                    challenge_dataset, run_dir / f"challenge_event_status_{window_label}.csv", log=log,
+                    format_name=args.format_name,
+                )
+                if not completeness.complete:
+                    log(
+                        f"[WARN] Challenge window INCOMPLETE: {completeness.fetched_count}/"
+                        f"{completeness.registry_count} event(s) fetched for "
+                        f"{week_start.isoformat()}..{week_end.isoformat()}; missing "
+                        f"{[(m.event_id, m.date, m.status) for m in completeness.missing]}"
                     )
+                if challenge_dataset.review_items:
+                    review_path = write_review_items_csv(
+                        challenge_dataset, run_dir / f"challenge_needs_review_{window_label}.csv", log=log
+                    )
+                    log(
+                        f"[WARN] {len(challenge_dataset.review_items)} deck(s) could not be confidently "
+                        f"labeled -> {review_path}"
+                    )
+                    challenge_review_items = [
+                        {
+                            "event_id": item.event_id,
+                            "date": item.date,
+                            "format": item.format_name,
+                            "kind": item.kind,
+                            "tier": item.size,
+                            "place": item.place,
+                            "pilot": item.pilot,
+                            "reason": item.reason,
+                            "nearest_label": item.nearest_label or "",
+                            "nearest_sim": item.nearest_sim,
+                            "second_label": item.second_label or "",
+                            "second_sim": item.second_sim,
+                            "key_cards": ", ".join(f"{name} x{qty}" for name, qty in item.key_cards),
+                            "event_url": item.url,
+                        }
+                        for item in challenge_dataset.review_items
+                    ]
+
+                for event in challenge_dataset.challenge_events:
+                    ev_rows = challenge_dataset.event_rows.get(event.event_id, [])
+                    ch_df = pd.DataFrame(
+                        [{"Place": r.place, "Deck": r.deck, "Archetype": r.archetype, "Pilot": r.pilot} for r in ev_rows]
+                    ).sort_values("Place")
+                    c_label = f"C{event.size}_{event.date}_{event.event_id}"
+
+                    ch_csv_path = _safe_to_csv(ch_df, run_dir / f"challenge_{c_label}_decklist.csv")
                     if challenge_decklist_path is None:
                         challenge_decklist_path = ch_csv_path
                     if challenge_event_url is None:
-                        challenge_event_url = str(event_info.get("mtggoldfish_url") or "")
+                        challenge_event_url = event.url
 
-                    # Per-event comparison vs metagame
                     compare_df = build_challenge_vs_metagame_report(
                         challenge_df=ch_df,
                         metagame_df=dataset,
                         aliases=aliases,
                         rules=rules,
                     )
-                    cmp_csv = _safe_to_csv(
-                        compare_df,
-                        run_dir / f"challenge_{c_label}_vs_metagame.csv",
-                    )
+                    cmp_csv = _safe_to_csv(compare_df, run_dir / f"challenge_{c_label}_vs_metagame.csv")
                     if challenge_compare_path is None:
                         challenge_compare_path = cmp_csv
 
-                    log(f"[OK] Challenge {c_label}: {len(ch_df)} decks → {ch_csv_path}")
-                    log(f"[OK] Challenge {c_label} vs metagame → {cmp_csv}")
+                    log(f"[OK] Challenge {c_label}: {len(ch_df)} decks -> {ch_csv_path}")
 
-                    # Append to persistent challenge history
-                    if append_to_challenge_history is not None:
-                        event_info_for_hist = dict(event_info)
-                        event_info_for_hist.setdefault("slug", c_slug)
-                        append_to_challenge_history(
-                            history_csv=challenge_history_csv,
-                            event_info=event_info_for_hist,
-                            decklist_df=ch_df,
-                            log=log,
-                        )
-                        challenge_history_path = challenge_history_csv
+                # History CSV stored at repo level (not inside a weekly run dir); the window is
+                # synced (old rows for these dates purged, fresh EventID-keyed rows inserted), not
+                # appended -- so re-running a window can never leave stale/contaminated rows behind.
+                if sync_challenge_history_window is not None:
+                    sync_challenge_history_window(
+                        history_csv=challenge_history_csv,
+                        format_name=args.format_name,
+                        start_date=week_start,
+                        end_date=week_end,
+                        dataset=challenge_dataset,
+                        log=log,
+                    )
+                    challenge_history_path = challenge_history_csv
 
-                # Compute challenge statistics from history
-                if run_challenge_statistics is not None and challenge_history_path is not None:
+                # Premier events never enter the Challenge history/stats, but they get their own
+                # parallel history file (same EventID-keyed sync) so manual review corrections for
+                # them have somewhere permanent to land -- not just the per-run premier_events csv.
+                if sync_challenge_history_window is not None and challenge_dataset.premier_events:
+                    premier_dataset_view = SimpleNamespace(
+                        challenge_events=challenge_dataset.premier_events,
+                        event_rows=challenge_dataset.premier_rows,
+                    )
+                    sync_challenge_history_window(
+                        history_csv=premier_history_csv,
+                        format_name=args.format_name,
+                        start_date=week_start,
+                        end_date=week_end,
+                        dataset=premier_dataset_view,
+                        log=log,
+                    )
+                    premier_history_path = premier_history_csv
+
+                if (
+                    run_challenge_statistics is not None
+                    and challenge_history_path is not None
+                    and not getattr(args, "skip_challenge_stats", False)
+                ):
                     last_n = int(getattr(args, "challenge_history_events", 8))
                     challenge_stats_dir = run_dir / "statistics" / "challenges"
+                    premier_event_ids = {e.event_id for e in challenge_dataset.premier_events}
                     ch_stats_result = run_challenge_statistics(
                         history_csv=challenge_history_path,
                         output_dir=challenge_stats_dir,
@@ -1746,11 +2136,52 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         week_end=week_end,
                         metagame_df=dataset,
                         log=log,
+                        premier_event_ids=premier_event_ids,
+                        completeness=completeness,
+                        allow_partial=bool(getattr(args, "allow_partial", False)),
                     )
                     challenge_stats_path = ch_stats_result.excel_path
 
+            except ChallengeSourceError as challenge_err:
+                log(f"[ERROR] Challenge report STOPPED (not a silent skip): {challenge_err}")
+                _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
             except Exception as challenge_err:
-                log(f"[WARN] Challenge report skipped: {challenge_err}")
+                # Deliberately NOT a silent skip: this is an *unexpected* failure (anything not
+                # already raised as the structured ChallengeSourceError above), which previously
+                # logged as a mere [WARN] and left no durable trace at all -- the same failure
+                # pattern as the old "complete: true, registry_count: null" bug, just one level up
+                # (no status.json ever written instead of one wrongly claiming success). It is
+                # still caught here (a broken Challenge step must not abort the rest of the weekly
+                # run -- metagame stats, etc. still need to run), but it is now always logged at
+                # ERROR with a full traceback and always leaves a fail-closed status.json behind.
+                log(f"[ERROR] Challenge report FAILED (not swallowed): {challenge_err}")
+                log(traceback.format_exc())
+                _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
+
+        # Generate metagame statistics
+        if run_statistics is not None and grouped_xlsx is not None:
+            try:
+                metagame_stats_dir = run_dir / "statistics" / "metagame"
+                metagame_stats_result = run_statistics(
+                    input_excel=grouped_xlsx,
+                    output_dir=metagame_stats_dir,
+                    history_csv=outputs_base / f"metagame_history_{_format_slug_for_url(args.format_name)}.csv",
+                    total_players=1000,
+                    rounds=5,
+                    min_encounter_pct=5.0,
+                    player_deck_name=args.my_deck or "My Deck",
+                    player_winrate=0.5,
+                    weeks_back=4,
+                    output_profile="full",
+                    palette_name="classic",
+                    deck_colors=None,
+                    legend_colors=None,
+                    log=log,
+                )
+                xlsx_files = [f for f in metagame_stats_result.files if f.suffix == ".xlsx"]
+                metagame_stats_path = xlsx_files[0] if xlsx_files else metagame_stats_dir
+            except Exception as metagame_err:
+                log(f"[WARN] Metagame statistics skipped: {metagame_err}")
 
         log(
             f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
@@ -1781,6 +2212,8 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             log(f"[OK] Challenge history: {challenge_history_path}")
         if challenge_stats_path is not None:
             log(f"[OK] Challenge statistics: {challenge_stats_path}")
+        if metagame_stats_path is not None:
+            log(f"[OK] Metagame statistics: {metagame_stats_path}")
         log(f"[OK] Output dir: {run_dir}")
 
         results.append(
@@ -1805,8 +2238,10 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 challenge_compare_path=challenge_compare_path,
                 challenge_event_url=challenge_event_url,
                 challenge_history_path=challenge_history_path,
+                premier_history_path=premier_history_path,
                 challenge_stats_path=challenge_stats_path,
                 challenge_events_fetched=challenge_events_fetched,
+                challenge_review_items=challenge_review_items,
             )
         )
 

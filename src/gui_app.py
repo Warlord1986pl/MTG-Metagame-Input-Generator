@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 import traceback
 from argparse import Namespace
-from datetime import date
+from datetime import date, datetime
 from html import escape
 from pathlib import Path
 from typing import List, Optional
@@ -49,9 +50,21 @@ from PySide6.QtWidgets import (
 )
 
 try:
-    from metagame_input_generator import GenerationRunResult, fetch_available_decks, parse_args, run_generation
+    from metagame_input_generator import (
+        GenerationRunResult,
+        fetch_available_decks,
+        normalize_name,
+        parse_args,
+        run_generation,
+    )
 except ModuleNotFoundError:
-    from .metagame_input_generator import GenerationRunResult, fetch_available_decks, parse_args, run_generation
+    from .metagame_input_generator import (
+        GenerationRunResult,
+        fetch_available_decks,
+        normalize_name,
+        parse_args,
+        run_generation,
+    )
 
 try:
     from statistics_engine import StatisticsRunResult, rebuild_history_from_dirs, run_statistics
@@ -59,9 +72,17 @@ except ModuleNotFoundError:
     from .statistics_engine import StatisticsRunResult, rebuild_history_from_dirs, run_statistics
 
 try:
-    from challenge_history_engine import rebuild_challenge_history_from_dirs
+    from challenge_history_engine import (
+        load_challenge_history,
+        rebuild_challenge_history_from_dirs,
+        run_challenge_statistics,
+    )
 except ModuleNotFoundError:
-    from .challenge_history_engine import rebuild_challenge_history_from_dirs
+    from .challenge_history_engine import (
+        load_challenge_history,
+        rebuild_challenge_history_from_dirs,
+        run_challenge_statistics,
+    )
 
 try:
     from change_model import ChangeModel, ConfigPaths, load_archetype_catalog, remove_archetype, upsert_archetype_catalog
@@ -231,6 +252,132 @@ class StatisticsWorker(QObject):
             self.failed.emit(details)
             return
         self.finished.emit(result)
+
+
+class ChallengeStatisticsWorker(QObject):
+    progress = Signal(str)
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(
+        self,
+        history_csv: Path,
+        output_dir: Path,
+        format_name: str,
+        last_n_events: int,
+        week_start,
+        week_end,
+    ) -> None:
+        super().__init__()
+        self._history_csv = history_csv
+        self._output_dir = output_dir
+        self._format_name = format_name
+        self._last_n_events = last_n_events
+        self._week_start = week_start
+        self._week_end = week_end
+
+    def run(self) -> None:
+        try:
+            completeness = None
+            if self._week_start is not None and self._week_end is not None:
+                # This is a "recompute stats only" path -- it never re-fetches Challenge
+                # decklists, so it has no completeness signal of its own. Previously it called
+                # run_challenge_statistics() without one at all, which silently defaulted to
+                # complete=true (the exact bug this now guards against: a status.json claiming
+                # success while having verified nothing). verify_registry_against_history() is
+                # cheap -- one mtgo.com registry-index fetch, no per-event decklist fetch -- and
+                # gives a real signal by diffing the registry against what's actually already in
+                # history_csv for this window.
+                try:
+                    from challenge_mtgo_source import verify_registry_against_history
+                except ModuleNotFoundError:
+                    from .challenge_mtgo_source import verify_registry_against_history
+                self.progress.emit("[challenge-stats] verifying window against mtgo.com registry...")
+                completeness = verify_registry_against_history(
+                    format_name=self._format_name,
+                    start_date=self._week_start,
+                    end_date=self._week_end,
+                    history_csv=self._history_csv,
+                    log=self.progress.emit,
+                )
+            result = run_challenge_statistics(
+                history_csv=self._history_csv,
+                output_dir=self._output_dir,
+                format_name=self._format_name,
+                last_n_events=self._last_n_events,
+                week_start=self._week_start,
+                week_end=self._week_end,
+                log=self.progress.emit,
+                completeness=completeness,
+            )
+        except Exception as err:
+            details = "\n".join([str(err).strip(), "", traceback.format_exc().strip()]).strip()
+            self.failed.emit(details)
+            return
+        self.finished.emit(result)
+
+
+class ChallengeRescanWorker(QObject):
+    """Scans both persisted history files for any Deck==NEEDS_MANUAL_REVIEW row, from any source
+    (a normal run, a migration script, a manual edit) -- not just the most recently completed run.
+    """
+    progress = Signal(str)
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(
+        self,
+        challenge_history_csv: Path,
+        premier_history_csv: Optional[Path],
+        cache_dir: Path,
+        format_name: str,
+        rules_csv: Path,
+        challenge_mapping_csv: Path,
+    ) -> None:
+        super().__init__()
+        self._challenge_history_csv = challenge_history_csv
+        self._premier_history_csv = premier_history_csv
+        self._cache_dir = cache_dir
+        self._format_name = format_name
+        self._rules_csv = rules_csv
+        self._challenge_mapping_csv = challenge_mapping_csv
+
+    def run(self) -> None:
+        try:
+            try:
+                from challenge_mtgo_source import scan_all_history_for_review
+                from metagame_input_generator import load_rules, load_user_deck_mappings
+            except ModuleNotFoundError:
+                from .challenge_mtgo_source import scan_all_history_for_review
+                from .metagame_input_generator import load_rules, load_user_deck_mappings
+
+            rules = load_rules(self._rules_csv)
+            challenge_mappings = load_user_deck_mappings(self._challenge_mapping_csv)
+            items = scan_all_history_for_review(
+                self._challenge_history_csv,
+                self._premier_history_csv,
+                self._cache_dir,
+                self._format_name,
+                rules,
+                challenge_mappings,
+                log=self.progress.emit,
+            )
+            review_items = [
+                {
+                    "event_id": it.event_id, "date": it.date, "format": it.format_name, "kind": it.kind,
+                    "tier": it.size, "place": it.place, "pilot": it.pilot, "reason": it.reason,
+                    "nearest_label": it.nearest_label or "", "nearest_sim": it.nearest_sim,
+                    "second_label": it.second_label or "", "second_sim": it.second_sim,
+                    "key_cards": ", ".join(f"{name} x{qty}" for name, qty in it.key_cards),
+                    "event_url": it.url,
+                }
+                for it in items
+            ]
+        except Exception as err:
+            details = "\n".join([str(err).strip(), "", traceback.format_exc().strip()]).strip()
+            self.failed.emit(details)
+            return
+        self.finished.emit(review_items)
 
 
 class ReviewQueueDialog(QDialog):
@@ -411,6 +558,276 @@ class ReviewQueueDialog(QDialog):
         self.saveRequested.emit(self._all_current_payloads())
 
 
+class ChallengeReviewDialog(QDialog):
+    """Decks the mtgo.com maindeck-signature classifier could not confidently label (place-1
+    winners always land here, plus anything below the similarity/neighbor-agreement thresholds).
+    Fill in Deck per row and Save -- writes straight into challenge_history_<format>.csv, no CSV
+    export/import round trip needed.
+    """
+
+    HEADERS = ["Kind", "Date", "Tier", "Place", "Pilot", "Reason", "Nearest Guess", "Key Cards", "Deck"]
+
+    def __init__(
+        self,
+        review_items: List[dict],
+        deck_options: List[str],
+        history_csv: Path,
+        premier_history_csv: Optional[Path] = None,
+        parent: Optional[QWidget] = None,
+    ) -> None:
+        super().__init__(parent)
+        self._review_items = list(review_items)
+        self._deck_options = deck_options
+        self._history_csv = history_csv
+        self._premier_history_csv = premier_history_csv
+        self.setWindowTitle("Challenge Review Queue")
+        self.resize(1150, 600)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        info = QLabel(
+            "Decks the classifier couldn't confidently label. Use Key Cards / Nearest Guess to identify "
+            "the deck, fill in the Deck field, then Save & Apply. Rows you leave blank stay flagged for next time."
+        )
+        info.setWordWrap(True)
+        layout.addWidget(info)
+
+        self.table = QTableWidget(0, len(self.HEADERS))
+        self.table.setHorizontalHeaderLabels(self.HEADERS)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.verticalHeader().setVisible(False)
+        self.table.verticalHeader().setDefaultSectionSize(30)
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(7, QHeaderView.Stretch)
+        header.setSectionResizeMode(8, QHeaderView.ResizeToContents)
+        layout.addWidget(self.table, 1)
+
+        button_row = QHBoxLayout()
+        self.save_button = QPushButton("Save && Apply")
+        self.save_button.clicked.connect(self._apply)
+        button_row.addWidget(self.save_button)
+        button_row.addStretch(1)
+        self.close_button = QPushButton("Close")
+        self.close_button.clicked.connect(self.close)
+        button_row.addWidget(self.close_button)
+        layout.addLayout(button_row)
+
+        self._populate()
+
+    def _populate(self) -> None:
+        self.table.setRowCount(len(self._review_items))
+        for i, item in enumerate(self._review_items):
+            kind = str(item.get("kind") or "challenge")
+            kind_item = QTableWidgetItem(kind)
+            if kind == "premier":
+                kind_item.setBackground(QColor("#e0e8ff"))
+            self.table.setItem(i, 0, kind_item)
+            self.table.setItem(i, 1, QTableWidgetItem(str(item.get("date") or "")))
+            self.table.setItem(i, 2, QTableWidgetItem(str(item.get("tier") or "")))
+            place_item = QTableWidgetItem(str(item.get("place") or ""))
+            place_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.table.setItem(i, 3, place_item)
+            self.table.setItem(i, 4, QTableWidgetItem(str(item.get("pilot") or "")))
+            reason_item = QTableWidgetItem(str(item.get("reason") or ""))
+            if str(item.get("place") or "") == "1":
+                reason_item.setBackground(QColor("#fff6bf"))
+            self.table.setItem(i, 5, reason_item)
+
+            nearest = str(item.get("nearest_label") or "")
+            second = str(item.get("second_label") or "")
+            hint = nearest if nearest and nearest == second else f"{nearest} / {second}".strip(" /")
+            self.table.setItem(i, 6, QTableWidgetItem(hint))
+            self.table.setItem(i, 7, QTableWidgetItem(str(item.get("key_cards") or "")))
+
+            deck_combo = QComboBox()
+            deck_combo.setEditable(True)
+            deck_combo.addItem("")
+            deck_combo.addItems(self._deck_options)
+            # Only pre-fill when both neighbors agreed (the classifier declined purely on
+            # similarity, not on disagreement) -- a reasonable starting guess, never for place 1.
+            if nearest and nearest == second and str(item.get("place") or "") != "1":
+                deck_combo.setCurrentText(nearest)
+            else:
+                deck_combo.setCurrentText("")
+            self.table.setCellWidget(i, 8, deck_combo)
+        self.table.resizeColumnsToContents()
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(7, QHeaderView.Stretch)
+
+    def _apply(self) -> None:
+        try:
+            from challenge_history_engine import apply_challenge_review_selections
+        except ModuleNotFoundError:
+            from .challenge_history_engine import apply_challenge_review_selections
+
+        selections_by_kind: dict[str, List[dict]] = {"challenge": [], "premier": []}
+        for i, item in enumerate(self._review_items):
+            widget = self.table.cellWidget(i, 8)
+            deck_text = widget.currentText().strip() if isinstance(widget, QComboBox) else ""
+            if deck_text:
+                kind = str(item.get("kind") or "challenge")
+                selections_by_kind.setdefault(kind, []).append(
+                    {"event_id": str(item.get("event_id") or ""), "pilot": str(item.get("pilot") or ""), "resolved_deck": deck_text}
+                )
+
+        if not any(selections_by_kind.values()):
+            QMessageBox.information(self, "Challenge Review", "No Deck values filled in -- nothing to apply.")
+            return
+
+        targets = {"challenge": self._history_csv, "premier": self._premier_history_csv}
+        applied_keys: set[str] = set()
+        msg_lines: List[str] = []
+        had_error = False
+
+        for kind, selections in selections_by_kind.items():
+            if not selections:
+                continue
+            target_csv = targets.get(kind)
+            if target_csv is None:
+                msg_lines.append(f"{len(selections)} {kind} row(s) skipped: no history file configured for this kind.")
+                had_error = True
+                continue
+            if not target_csv.exists():
+                msg_lines.append(f"{len(selections)} {kind} row(s) skipped: history file does not exist ({target_csv}).")
+                had_error = True
+                continue
+            try:
+                result = apply_challenge_review_selections(selections, target_csv, log=None)
+            except Exception as exc:
+                msg_lines.append(f"{len(selections)} {kind} row(s) FAILED to save: {type(exc).__name__}: {exc}")
+                had_error = True
+                continue
+
+            failed_keys = set(result["not_found"])
+            for amb in result["ambiguous"]:
+                failed_keys.add(amb.split(" (")[0])
+            applied_keys |= {f"event_id={s['event_id']} pilot={s['pilot']!r}" for s in selections} - failed_keys
+
+            msg_lines.append(f"{kind}: applied {result['applied']} correction(s) to {target_csv.name}.")
+            if result["not_found"]:
+                msg_lines.append(f"  {len(result['not_found'])} {kind} row(s) had no matching history row.")
+            if result["ambiguous"]:
+                msg_lines.append(f"  {len(result['ambiguous'])} {kind} row(s) matched more than one history row.")
+
+        msg_lines.append("Re-run Challenge Statistics to refresh the xlsx with these corrections.")
+        (QMessageBox.warning if had_error else QMessageBox.information)(self, "Challenge Review", "\n".join(msg_lines))
+
+        remaining = [
+            item for item in self._review_items
+            if f"event_id={item.get('event_id') or ''} pilot={item.get('pilot') or ''!r}" not in applied_keys
+        ]
+        self._review_items = remaining
+        self._populate()
+        if not remaining:
+            QMessageBox.information(self, "Challenge Review", "All flagged decks resolved.")
+            self.close()
+
+
+class UnknownArchetypeDialog(QDialog):
+    """Modal shown before stats when the input XLSX contains Unknown archetypes."""
+
+    def __init__(
+        self,
+        unknown_rows: List[dict],
+        archetype_options: List[str],
+        parent: Optional[QWidget] = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Unknown Archetypes — Review Before Statistics")
+        self.resize(720, 460)
+        self._rows = [dict(r) for r in unknown_rows]
+        self._archetype_options = archetype_options
+        self._skip_requested = False
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(10)
+
+        header = QLabel(
+            f"<b>{len(unknown_rows)} deck(s) have Unknown archetype</b> and would appear as 'Unknown' in statistics charts.<br>"
+            "Assign archetypes below, then click <b>Save &amp; Continue</b> — assignments are saved to config and applied to the data file."
+        )
+        header.setWordWrap(True)
+        layout.addWidget(header)
+
+        self.table = QTableWidget(len(self._rows), 3)
+        self.table.setHorizontalHeaderLabels(["Deck", "Meta %", "Archetype"])
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.verticalHeader().setDefaultSectionSize(32)
+        hdr = self.table.horizontalHeader()
+        hdr.setSectionResizeMode(0, QHeaderView.Stretch)
+        hdr.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        hdr.setSectionResizeMode(2, QHeaderView.Stretch)
+
+        for row_idx, row in enumerate(self._rows):
+            deck_item = QTableWidgetItem(str(row.get("deck") or ""))
+            meta_item = QTableWidgetItem(str(row.get("meta") or ""))
+            meta_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.table.setItem(row_idx, 0, deck_item)
+            self.table.setItem(row_idx, 1, meta_item)
+
+            combo = QComboBox()
+            combo.setEditable(True)
+            combo.addItems(self._archetype_options)
+            combo.setCurrentText("Unknown")
+            combo.setStyleSheet("QComboBox { background-color: #fff6bf; }")
+            combo.currentTextChanged.connect(
+                lambda text, idx=row_idx: self._on_archetype_changed(idx, text)
+            )
+            self.table.setCellWidget(row_idx, 2, combo)
+
+        layout.addWidget(self.table, 1)
+
+        btn_row = QHBoxLayout()
+        save_btn = QPushButton("Save Assignments & Continue")
+        save_btn.setObjectName("primaryButton")
+        save_btn.clicked.connect(self.accept)
+        skip_btn = QPushButton("Continue Without Saving")
+        skip_btn.clicked.connect(self._do_skip)
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(save_btn)
+        btn_row.addWidget(skip_btn)
+        btn_row.addStretch(1)
+        btn_row.addWidget(cancel_btn)
+        layout.addLayout(btn_row)
+
+    def _do_skip(self) -> None:
+        self._skip_requested = True
+        self.accept()
+
+    def _on_archetype_changed(self, row_idx: int, text: str) -> None:
+        self._rows[row_idx]["archetype"] = str(text).strip()
+        widget = self.table.cellWidget(row_idx, 2)
+        if isinstance(widget, QComboBox):
+            if str(text).strip().lower() in {"unknown", ""}:
+                widget.setStyleSheet("QComboBox { background-color: #fff6bf; }")
+            else:
+                widget.setStyleSheet("")
+
+    def get_assignments(self) -> List[dict]:
+        result = []
+        for row_idx in range(len(self._rows)):
+            widget = self.table.cellWidget(row_idx, 2)
+            archetype = self._rows[row_idx].get("archetype", "Unknown")
+            if isinstance(widget, QComboBox):
+                archetype = widget.currentText().strip()
+            if archetype and archetype.lower() not in {"unknown", ""}:
+                result.append({
+                    "deck": str(self._rows[row_idx].get("deck") or ""),
+                    "archetype": archetype,
+                })
+        return result
+
+    @property
+    def skip_requested(self) -> bool:
+        return self._skip_requested
+
+
 _ORIGINAL_API_PROBE = "https://api.videreproject.com"
 
 
@@ -485,6 +902,397 @@ def _candidate_backup_health_urls(backup_url: str) -> List[str]:
     return deduped
 
 
+class GlobalSearchDialog(QDialog):
+    """Search and edit across ALL CSV source files from the editor combo simultaneously.
+
+    Table uses plain QTableWidgetItem (fast, no per-row widgets). Editing happens in a
+    side panel that appears when a row is selected — one set of widgets, not thousands.
+    """
+
+    navigate_to = Signal(str)
+    save_changes = Signal(list)  # list of {raw_deck, deck, archetype, csv_path, is_challenge}
+
+    _MAX_DISPLAY = 500  # cap rows shown without a search query to avoid initial freeze
+
+    def __init__(
+        self,
+        sources: List[tuple],
+        archetype_options: List[str],
+        deck_options: List[str],
+        config_dir: Path,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self.setWindowTitle("Szukaj i edytuj we wszystkich plikach historii")
+        self.setMinimumSize(1100, 620)
+        self._sources = sources
+        self._archetype_options = archetype_options
+        self._deck_options = deck_options
+        self._config_dir = config_dir
+        self._all_rows: List[tuple] = []  # (label, csv_path_str, row_dict)
+        self._result_rows: List[tuple] = []
+        # table_row_idx → {deck, archetype} overrides
+        self._modifications: dict[int, dict] = {}
+        self._load_all()
+        self._build_ui()
+
+    def _load_all(self) -> None:
+        for label, csv_path_str in self._sources:
+            path = Path(csv_path_str)
+            if not path.exists():
+                continue
+            try:
+                with path.open("r", encoding="utf-8", newline="") as fh:
+                    reader = csv.DictReader(fh)
+                    for row in reader:
+                        self._all_rows.append((label, csv_path_str, {
+                            "raw_deck": str(
+                                row.get("Source Deck Names") or row.get("Raw Deck") or row.get("Deck") or ""
+                            ).strip(),
+                            "deck": str(row.get("Deck") or "").strip(),
+                            "archetype": str(row.get("Archetype") or "").strip(),
+                            "meta": str(row.get("Meta") or "").strip(),
+                        }))
+            except Exception:
+                pass
+
+    def _build_ui(self) -> None:
+        root = QHBoxLayout(self)
+        root.setSpacing(12)
+
+        # ── Left: search + table ──────────────────────────────────────────
+        left = QVBoxLayout()
+        left.setSpacing(6)
+
+        search_row = QHBoxLayout()
+        search_lbl = QLabel("Szukaj:")
+        search_lbl.setFixedWidth(52)
+        self._search_input = QLineEdit()
+        self._search_input.setPlaceholderText("Deck, raw name, archetype…  (wpisz min. 1 znak)")
+        self._search_input.textChanged.connect(self._do_search)
+        clear_btn = QPushButton("✕")
+        clear_btn.setFixedWidth(30)
+        clear_btn.setToolTip("Wyczyść")
+        clear_btn.clicked.connect(self._search_input.clear)
+        self._match_label = QLabel("")
+        self._match_label.setFixedWidth(100)
+        search_row.addWidget(search_lbl)
+        search_row.addWidget(self._search_input, 1)
+        search_row.addWidget(clear_btn)
+        search_row.addWidget(self._match_label)
+        left.addLayout(search_row)
+
+        filter_row = QHBoxLayout()
+        filter_lbl = QLabel("Archetype:")
+        filter_lbl.setFixedWidth(52)
+        self._archetype_filter_combo = QComboBox()
+        self._archetype_filter_combo.addItem("(wszystkie)")
+        self._archetype_filter_combo.addItems(sorted(self._archetype_options))
+        self._archetype_filter_combo.setToolTip("Filtruj wyniki do jednego archetypu (działa też bez wpisanej frazy)")
+        self._archetype_filter_combo.currentTextChanged.connect(lambda _text: self._do_search())
+        filter_row.addWidget(filter_lbl)
+        filter_row.addWidget(self._archetype_filter_combo, 1)
+        left.addLayout(filter_row)
+
+        self._table = QTableWidget()
+        self._table.setColumnCount(5)
+        self._table.setHorizontalHeaderLabels(["Raw Name", "Deck", "Archetype", "Meta %", "Źródło"])
+        self._table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self._table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self._table.setAlternatingRowColors(True)
+        hh = self._table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.Interactive)
+        hh.setSectionResizeMode(1, QHeaderView.Interactive)
+        hh.setSectionResizeMode(2, QHeaderView.Interactive)
+        hh.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        hh.setSectionResizeMode(4, QHeaderView.Stretch)
+        self._table.setSortingEnabled(True)
+        self._table.setColumnWidth(0, 200)
+        self._table.setColumnWidth(1, 180)
+        self._table.setColumnWidth(2, 150)
+        self._table.itemSelectionChanged.connect(lambda: self._on_row_selected(self._table.currentRow()))
+        left.addWidget(self._table, 1)
+
+        btn_row = QHBoxLayout()
+        self._modified_label = QLabel("")
+        self._modified_label.setFixedWidth(130)
+        save_btn = QPushButton("Zapisz zmiany")
+        save_btn.setObjectName("primaryButton")
+        save_btn.setToolTip("Zapisz wszystkie zmodyfikowane wiersze do plików config")
+        save_btn.clicked.connect(self._on_save_changes)
+        go_btn = QPushButton("Przejdź do źródła")
+        go_btn.setToolTip("Załaduj plik źródłowy wybranego wiersza w edytorze głównym")
+        go_btn.clicked.connect(self._on_navigate)
+        close_btn = QPushButton("Zamknij")
+        close_btn.clicked.connect(self.close)
+        btn_row.addWidget(self._modified_label)
+        btn_row.addWidget(save_btn)
+        btn_row.addWidget(go_btn)
+        btn_row.addStretch()
+        btn_row.addWidget(close_btn)
+        left.addLayout(btn_row)
+
+        root.addLayout(left, 3)
+
+        # ── Right: edit panel ─────────────────────────────────────────────
+        edit_box = QGroupBox("Edycja zaznaczonego wiersza")
+        edit_box.setFixedWidth(300)
+        edit_layout = QVBoxLayout(edit_box)
+        edit_layout.setSpacing(10)
+
+        self._edit_raw_label = QLabel("—")
+        self._edit_raw_label.setWordWrap(True)
+        self._edit_raw_label.setObjectName("muted")
+
+        self._edit_deck_combo = QComboBox()
+        self._edit_deck_combo.setEditable(True)
+        self._edit_deck_combo.addItems(self._deck_options)
+
+        self._edit_arch_combo = QComboBox()
+        self._edit_arch_combo.setEditable(True)
+        self._edit_arch_combo.addItems(self._archetype_options)
+        self._edit_arch_combo.currentTextChanged.connect(self._on_edit_arch_changed)
+
+        self._edit_source_label = QLabel("—")
+        self._edit_source_label.setWordWrap(True)
+        self._edit_source_label.setObjectName("muted")
+
+        apply_btn = QPushButton("Zastosuj do zaznaczonego")
+        apply_btn.setToolTip("Zapisz edycję do listy zmian (jeszcze nie do pliku)")
+        apply_btn.clicked.connect(self._apply_edit_to_row)
+
+        apply_visible_btn = QPushButton("Przypisz archetype do wszystkich widocznych")
+        apply_visible_btn.setToolTip("Przypisze wybrany archetype do wszystkich wierszy w tabeli")
+        apply_visible_btn.clicked.connect(self._apply_arch_to_all_visible)
+
+        form = QFormLayout()
+        form.setSpacing(8)
+        form.addRow("Raw Name:", self._edit_raw_label)
+        form.addRow("Deck:", self._edit_deck_combo)
+        form.addRow("Archetype:", self._edit_arch_combo)
+        form.addRow("Źródło:", self._edit_source_label)
+        edit_layout.addLayout(form)
+        edit_layout.addWidget(apply_btn)
+        edit_layout.addWidget(apply_visible_btn)
+        edit_layout.addStretch()
+
+        hint = QLabel("Zaznacz wiersz w tabeli, zmień pola, kliknij 'Zastosuj'. Potem 'Zapisz zmiany'.")
+        hint.setWordWrap(True)
+        hint.setObjectName("muted")
+        edit_layout.addWidget(hint)
+
+        root.addWidget(edit_box, 0)
+
+        self._do_search("")
+
+    def _populate_table(self, matches: List[tuple]) -> None:
+        self._table.setSortingEnabled(False)
+        self._table.setRowCount(len(matches))
+        for i, (label, path, row) in enumerate(matches):
+            arch_val = row.get("archetype", "")
+            mod = self._modifications.get(i, {})
+
+            raw_item = QTableWidgetItem(row.get("raw_deck", ""))
+            raw_item.setData(Qt.UserRole, path)
+            self._table.setItem(i, 0, raw_item)
+
+            deck_display = mod.get("deck", row.get("deck", ""))
+            deck_item = QTableWidgetItem(deck_display)
+            if "deck" in mod:
+                deck_item.setForeground(QColor("#0055cc"))
+            self._table.setItem(i, 1, deck_item)
+
+            arch_display = mod.get("archetype", arch_val)
+            arch_item = QTableWidgetItem(arch_display)
+            if arch_display.strip().lower() in ("unknown", ""):
+                arch_item.setBackground(QColor("#fff3cd"))
+            if "archetype" in mod:
+                arch_item.setForeground(QColor("#0055cc"))
+            self._table.setItem(i, 2, arch_item)
+
+            self._table.setItem(i, 3, QTableWidgetItem(row.get("meta", "")))
+            self._table.setItem(i, 4, QTableWidgetItem(label))
+
+        self._table.setSortingEnabled(True)
+
+    def _do_search(self, query: str = "") -> None:
+        q = (query or self._search_input.text()).strip().lower()
+        archetype_filter = self._archetype_filter_combo.currentText()
+        if archetype_filter == "(wszystkie)":
+            archetype_filter = ""
+        self._modifications.clear()
+        self._modified_label.setText("")
+
+        if not q and not archetype_filter:
+            # Show nothing until user types or picks an archetype — avoids rendering thousands of rows
+            self._result_rows = []
+            self._match_label.setText(f"Wpisz frazę ({len(self._all_rows)} wierszy łącznie)")
+            self._table.setRowCount(0)
+            self._clear_edit_panel()
+            return
+
+        matches = [
+            (label, path, row) for label, path, row in self._all_rows
+            if (
+                not q
+                or q in row.get("deck", "").lower()
+                or q in row.get("raw_deck", "").lower()
+                or q in row.get("archetype", "").lower()
+            )
+            and (
+                not archetype_filter
+                or row.get("archetype", "").strip().lower() == archetype_filter.strip().lower()
+            )
+        ]
+        capped = matches[: self._MAX_DISPLAY]
+        self._result_rows = capped
+
+        total = len(matches)
+        shown = len(capped)
+        if total > shown:
+            self._match_label.setText(f"{shown}/{total} (cap {self._MAX_DISPLAY})")
+        else:
+            self._match_label.setText(f"{shown}/{len(self._all_rows)}")
+
+        self._populate_table(capped)
+        self._clear_edit_panel()
+
+    def _clear_edit_panel(self) -> None:
+        self._edit_raw_label.setText("—")
+        self._edit_deck_combo.blockSignals(True)
+        self._edit_deck_combo.setCurrentText("")
+        self._edit_deck_combo.blockSignals(False)
+        self._edit_arch_combo.blockSignals(True)
+        self._edit_arch_combo.setCurrentText("")
+        self._edit_arch_combo.blockSignals(False)
+        self._edit_source_label.setText("—")
+
+    def _on_row_selected(self, row_idx: int) -> None:
+        if row_idx < 0 or row_idx >= len(self._result_rows):
+            self._clear_edit_panel()
+            return
+        _, path, row = self._result_rows[row_idx]
+        mod = self._modifications.get(row_idx, {})
+        self._edit_raw_label.setText(row.get("raw_deck", "—"))
+        self._edit_deck_combo.blockSignals(True)
+        self._edit_deck_combo.setCurrentText(mod.get("deck", row.get("deck", "")))
+        self._edit_deck_combo.blockSignals(False)
+        self._edit_arch_combo.blockSignals(True)
+        self._edit_arch_combo.setCurrentText(mod.get("archetype", row.get("archetype", "")))
+        self._edit_arch_combo.blockSignals(False)
+        self._on_edit_arch_changed(self._edit_arch_combo.currentText())
+        self._edit_source_label.setText(Path(path).name)
+
+    def _on_edit_arch_changed(self, text: str) -> None:
+        if text.strip().lower() in ("unknown", ""):
+            self._edit_arch_combo.setStyleSheet("background-color: #fff3cd;")
+        else:
+            self._edit_arch_combo.setStyleSheet("")
+
+    def _apply_edit_to_row(self) -> None:
+        row_idx = self._table.currentRow()
+        if row_idx < 0 or row_idx >= len(self._result_rows):
+            QMessageBox.information(self, "Global Search", "Zaznacz najpierw wiersz w tabeli.")
+            return
+        _, _, orig = self._result_rows[row_idx]
+        new_deck = self._edit_deck_combo.currentText().strip()
+        new_arch = self._edit_arch_combo.currentText().strip()
+
+        changed = {}
+        if new_deck and new_deck != orig.get("deck", ""):
+            changed["deck"] = new_deck
+        if new_arch and new_arch != orig.get("archetype", ""):
+            changed["archetype"] = new_arch
+
+        if changed:
+            self._modifications[row_idx] = changed
+        elif row_idx in self._modifications:
+            del self._modifications[row_idx]
+
+        # Refresh just this row in the table
+        _, path, row = self._result_rows[row_idx]
+        mod = self._modifications.get(row_idx, {})
+        deck_display = mod.get("deck", row.get("deck", ""))
+        deck_item = QTableWidgetItem(deck_display)
+        if "deck" in mod:
+            deck_item.setForeground(QColor("#0055cc"))
+        self._table.setSortingEnabled(False)
+        self._table.setItem(row_idx, 1, deck_item)
+        arch_display = mod.get("archetype", row.get("archetype", ""))
+        arch_item = QTableWidgetItem(arch_display)
+        if arch_display.strip().lower() in ("unknown", ""):
+            arch_item.setBackground(QColor("#fff3cd"))
+        if "archetype" in mod:
+            arch_item.setForeground(QColor("#0055cc"))
+        self._table.setItem(row_idx, 2, arch_item)
+        self._table.setSortingEnabled(True)
+        self._update_modified_label()
+
+    def _apply_arch_to_all_visible(self) -> None:
+        new_arch = self._edit_arch_combo.currentText().strip()
+        if not new_arch:
+            QMessageBox.warning(self, "Global Search", "Wybierz najpierw archetype w panelu po prawej.")
+            return
+        count = 0
+        self._table.setSortingEnabled(False)
+        for i in range(len(self._result_rows)):
+            _, _, orig = self._result_rows[i]
+            if new_arch != orig.get("archetype", ""):
+                if i not in self._modifications:
+                    self._modifications[i] = {}
+                self._modifications[i]["archetype"] = new_arch
+                arch_item = QTableWidgetItem(new_arch)
+                arch_item.setForeground(QColor("#0055cc"))
+                self._table.setItem(i, 2, arch_item)
+                count += 1
+        self._table.setSortingEnabled(True)
+        self._update_modified_label()
+        if count:
+            QMessageBox.information(self, "Global Search", f"Przypisano archetype '{new_arch}' do {count} wierszy. Kliknij 'Zapisz zmiany' aby zapisać.")
+
+    def _update_modified_label(self) -> None:
+        n = len(self._modifications)
+        self._modified_label.setText(f"Zmieniono: {n}" if n else "")
+
+    def _on_save_changes(self) -> None:
+        if not self._modifications:
+            QMessageBox.information(self, "Global Search", "Brak zmian do zapisania.")
+            return
+        changes = []
+        for row_idx, mods in self._modifications.items():
+            if row_idx >= len(self._result_rows):
+                continue
+            label, csv_path_str, orig = self._result_rows[row_idx]
+            raw_deck = orig.get("raw_deck", "").strip()
+            if not raw_deck:
+                continue
+            new_deck = mods.get("deck", orig.get("deck", "")).strip()
+            new_arch = mods.get("archetype", orig.get("archetype", "")).strip()
+            is_challenge = Path(csv_path_str).name.startswith("challenge_")
+            changes.append({
+                "raw_deck": raw_deck,
+                "deck": new_deck,
+                "archetype": new_arch,
+                "csv_path": csv_path_str,
+                "is_challenge": is_challenge,
+            })
+        if changes:
+            self.save_changes.emit(changes)
+
+    def _on_navigate(self) -> None:
+        row = self._table.currentRow()
+        if row < 0:
+            return
+        item = self._table.item(row, 0)
+        if not item:
+            return
+        path = item.data(Qt.UserRole)
+        if path:
+            self.navigate_to.emit(str(path))
+            self.close()
+
+
 class StudioWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -495,6 +1303,10 @@ class StudioWindow(QMainWindow):
         self.deck_worker: Optional[DeckListWorker] = None
         self.stats_thread: Optional[QThread] = None
         self.stats_worker: Optional[StatisticsWorker] = None
+        self.challenge_stats_thread: Optional[QThread] = None
+        self.challenge_stats_worker: Optional[ChallengeStatisticsWorker] = None
+        self.rescan_thread: Optional[QThread] = None
+        self.rescan_worker: Optional[ChallengeRescanWorker] = None
         self.last_results: List[GenerationRunResult] = []
         self.last_stats_result: Optional[StatisticsRunResult] = None
         self.deck_refresh_pending = False
@@ -504,6 +1316,7 @@ class StudioWindow(QMainWindow):
         self.current_editor_source: Optional[Path] = None
         self._deck_catalog_cache: List[str] = []
         self.review_queue_dialog: Optional[ReviewQueueDialog] = None
+        self.challenge_review_dialog: Optional[ChallengeReviewDialog] = None
 
         self._api_status_thread: Optional[QThread] = None
         self._api_status_worker: Optional[ApiStatusWorker] = None
@@ -519,10 +1332,16 @@ class StudioWindow(QMainWindow):
         self._api_status_timer.start(5 * 60 * 1000)
         QTimer.singleShot(2000, self._refresh_api_status)
 
+    def _on_anchor_date_changed(self, anchor: "QDate") -> None:
+        self.week_end_edit.setDate(anchor)
+        self.week_start_edit.setDate(anchor.addDays(-13))
+        self.refresh_deck_list()
+
     def _on_history_points_changed(self, value: int) -> None:
         single = value == 1
-        self.week_start_edit.setEnabled(single)
-        self.week_end_edit.setEnabled(single)
+        self.anchor_date_edit.setEnabled(single)
+        if value > 1:
+            self.stats_weeks_back_spin.setValue(value)
         if single:
             self.generate_button.setText("Generate Snapshot")
         else:
@@ -555,6 +1374,7 @@ class StudioWindow(QMainWindow):
         args.output_profile = "analysis"
         args.include_challenge_decklist = self.include_challenge_check.isChecked()
         args.challenge_history_events = self.challenge_history_events_spin.value()
+        args.skip_challenge_stats = True  # challenge stats are generated from Statistics tab
         args.backup_url = self._backup_url()
         return args
 
@@ -737,12 +1557,19 @@ class StudioWindow(QMainWindow):
         self.week_start_edit = QDateEdit()
         self.week_start_edit.setCalendarPopup(True)
         self.week_start_edit.setDisplayFormat("yyyy-MM-dd")
-        self.week_start_edit.dateChanged.connect(self.refresh_deck_list)
 
         self.week_end_edit = QDateEdit()
         self.week_end_edit.setCalendarPopup(True)
         self.week_end_edit.setDisplayFormat("yyyy-MM-dd")
-        self.week_end_edit.dateChanged.connect(self.refresh_deck_list)
+
+        self.anchor_date_edit = QDateEdit()
+        self.anchor_date_edit.setCalendarPopup(True)
+        self.anchor_date_edit.setDisplayFormat("yyyy-MM-dd")
+        self.anchor_date_edit.setToolTip(
+            "Anchor date (Sunday) — Week Start is auto-set to 13 days before.\n"
+            "Ignored when History Points > 1 (dates computed automatically)."
+        )
+        self.anchor_date_edit.dateChanged.connect(self._on_anchor_date_changed)
 
         self.my_window_spin = QSpinBox()
         self.my_window_spin.setRange(1, 365)
@@ -797,8 +1624,7 @@ class StudioWindow(QMainWindow):
         form.addRow("My Deck", deck_row)
         form.addRow("Deck Mode", self.deck_mode_label)
         form.addRow("History Points", self.history_points_spin)
-        form.addRow("Week Start", self.week_start_edit)
-        form.addRow("Week End", self.week_end_edit)
+        form.addRow("Anchor Date", self.anchor_date_edit)
         form.addRow("My WR Window", self.my_window_spin)
         form.addRow("Fallback Window", self.my_fallback_spin)
 
@@ -887,12 +1713,10 @@ class StudioWindow(QMainWindow):
         except ModuleNotFoundError:
             from .metagame_input_generator import parse_args
         defaults = parse_args([])
-        # Domyślne daty: week_end = wczoraj, week_start = 6 dni przed wczoraj
-        end_date = QDate.currentDate().addDays(-1)
-        start_date = end_date.addDays(-6)
+        # Anchor date: suggest based on latest history, fallback = last Sunday
+        anchor_date = self._suggest_anchor_date()
         self.format_combo.setCurrentIndex(self.format_combo.findText(defaults.format_name) if self.format_combo.findText(defaults.format_name) >= 0 else 0)
-        self.week_start_edit.setDate(start_date)
-        self.week_end_edit.setDate(end_date)
+        self.anchor_date_edit.setDate(anchor_date)
         self.my_window_spin.setValue(getattr(defaults, "my_window_days", 90))
         self.my_fallback_spin.setValue(getattr(defaults, "my_fallback_window_days", 180))
         self.rogue_spin.setValue(getattr(defaults, "rogue_threshold", 0.5))
@@ -943,6 +1767,32 @@ class StudioWindow(QMainWindow):
         self.editor_source_label = QLabel("Source: not loaded")
         self.editor_source_label.setWordWrap(True)
         self.editor_source_label.setObjectName("muted")
+        left_layout.addWidget(self.editor_source_label)
+
+        # Search / filter bar
+        search_row = QHBoxLayout()
+        search_row.setSpacing(6)
+        search_lbl = QLabel("Szukaj:")
+        search_lbl.setFixedWidth(52)
+        self.editor_search_input = QLineEdit()
+        self.editor_search_input.setPlaceholderText("Filtruj po nazwie decku lub archetypie…")
+        self.editor_search_input.textChanged.connect(self._filter_editor_table)
+        search_clear_btn = QPushButton("✕")
+        search_clear_btn.setFixedWidth(30)
+        search_clear_btn.setToolTip("Wyczyść filtr")
+        search_clear_btn.clicked.connect(self.editor_search_input.clear)
+        self.editor_match_label = QLabel("")
+        self.editor_match_label.setObjectName("muted")
+        self.editor_match_label.setFixedWidth(80)
+        search_row.addWidget(search_lbl)
+        search_row.addWidget(self.editor_search_input, 1)
+        search_row.addWidget(search_clear_btn)
+        search_row.addWidget(self.editor_match_label)
+        global_search_btn = QPushButton("We wszystkich")
+        global_search_btn.setToolTip("Przeszukaj wszystkie pliki historii naraz (otwiera osobne okno)")
+        global_search_btn.clicked.connect(self._open_global_search)
+        search_row.addWidget(global_search_btn)
+        left_layout.addLayout(search_row)
 
         self.editor_table = QTableWidget(0, len(RESULT_TABLE_HEADERS))
         self.editor_table.setHorizontalHeaderLabels(RESULT_TABLE_HEADERS)
@@ -994,9 +1844,26 @@ class StudioWindow(QMainWindow):
         custom_layout.addWidget(self.add_archetype_button)
         custom_layout.addWidget(self.delete_archetype_button)
 
+        bulk_apply_row = QHBoxLayout()
+        bulk_apply_row.setSpacing(6)
+        self.bulk_apply_button = QPushButton("Przypisz do wszystkich widocznych")
+        self.bulk_apply_button.setToolTip(
+            "Zastosuj wybrany Archetype do wszystkich wierszy pasujących do aktualnego filtru wyszukiwania.\n"
+            "Następnie użyj 'Save All' aby zapisać do plików config."
+        )
+        self.bulk_apply_button.clicked.connect(self._apply_archetype_to_visible)
+        self.bulk_apply_and_save_button = QPushButton("Przypisz i zapisz")
+        self.bulk_apply_and_save_button.setToolTip(
+            "Zastosuj wybrany Archetype do wszystkich widocznych wierszy i natychmiast zapisz do config."
+        )
+        self.bulk_apply_and_save_button.clicked.connect(self._apply_archetype_to_visible_and_save)
+        bulk_apply_row.addWidget(self.bulk_apply_button)
+        bulk_apply_row.addWidget(self.bulk_apply_and_save_button)
+
         edit_form.addRow("Raw Name", self.raw_name_value)
         edit_form.addRow("Canonical Deck", self.editor_canonical_input)
         edit_form.addRow("Archetype", self.editor_archetype_combo)
+        edit_form.addRow("Bulk Assign", bulk_apply_row)
         edit_form.addRow("New Archetype", custom_row)
         right_layout.addLayout(edit_form)
 
@@ -1005,37 +1872,77 @@ class StudioWindow(QMainWindow):
         self.editor_status_label.setObjectName("muted")
         right_layout.addWidget(self.editor_status_label)
 
-        button_row = QHBoxLayout()
-        button_row.setSpacing(10)
-        self.save_mapping_button = QPushButton("Save Mapping")
+        # Row 1: saving and deck management
+        button_row1 = QHBoxLayout()
+        button_row1.setSpacing(8)
+
+        self.save_mapping_button = QPushButton("Save Selected")
         self.save_mapping_button.setObjectName("primaryButton")
+        self.save_mapping_button.setToolTip("Save the selected row's mapping to config files (user_deck_mapping, deck_aliases, archetype_rules).")
         self.save_mapping_button.clicked.connect(self._save_editor_changes)
 
-        self.save_all_mappings_button = QPushButton("Save All Mappings")
+        self.save_all_mappings_button = QPushButton("Save All")
+        self.save_all_mappings_button.setToolTip("Save all editor rows to config files.")
         self.save_all_mappings_button.clicked.connect(self._save_all_editor_changes)
 
-        self.regenerate_grouped_button = QPushButton("Regenerate Grouped Now")
-        self.regenerate_grouped_button.clicked.connect(self._regenerate_from_editor)
+        self.add_mapping_button = QPushButton("Add Mapping")
+        self.add_mapping_button.setToolTip("Manually add a new deck → canonical name + archetype mapping to config files.")
+        self.add_mapping_button.clicked.connect(self._add_deck_mapping)
 
-        self.review_queue_button = QPushButton("Open Review Queue")
+        self.remove_mapping_button = QPushButton("Remove Mapping")
+        self.remove_mapping_button.setToolTip("Remove the selected row's mapping from config files (user_deck_mapping, deck_aliases, archetype_rules).")
+        self.remove_mapping_button.clicked.connect(self._remove_deck_mapping)
+
+        button_row1.addWidget(self.save_mapping_button)
+        button_row1.addWidget(self.save_all_mappings_button)
+        button_row1.addWidget(self.add_mapping_button)
+        button_row1.addWidget(self.remove_mapping_button)
+
+        # Row 2: review, regenerate, utilities
+        button_row2 = QHBoxLayout()
+        button_row2.setSpacing(8)
+
+        self.review_queue_button = QPushButton("Review Queue")
+        self.review_queue_button.setToolTip("Open the Review Queue — shows rows with Unknown archetypes, short names, or first-seen decks.")
         self.review_queue_button.clicked.connect(self._open_review_queue)
-        self.review_all_runs_check = QCheckBox("Review all runs")
+
+        self.challenge_rescan_button = QPushButton("Challenge Review Queue")
+        self.challenge_rescan_button.setToolTip(
+            "Scans challenge_history_<format>.csv and premier_history_<format>.csv for ANY "
+            "NEEDS_MANUAL_REVIEW row (from any run or migration, not just the last one) and "
+            "reclassifies against the full history as reference."
+        )
+        self.challenge_rescan_button.clicked.connect(self._start_challenge_rescan)
+
+        self.review_all_runs_check = QCheckBox("All runs")
         self.review_all_runs_check.setToolTip("If enabled, Review Queue scans all run directories of the same source type.")
 
         self.reload_archetypes_button = QPushButton("Reload Archetypes")
         self.reload_archetypes_button.clicked.connect(self._refresh_archetype_combo)
 
+        self.regenerate_grouped_button = QPushButton("Re-Generate (re-fetch API)")
+        self.regenerate_grouped_button.setToolTip(
+            "Runs a full re-generation for the current date range:\n"
+            "• Re-fetches metagame data from the Videre API\n"
+            "• Re-applies all saved mapping rules\n"
+            "• Regenerates all output files\n\n"
+            "Save your mappings first (Save Selected / Save All), then use this\n"
+            "to see the effect in the output files."
+        )
+        self.regenerate_grouped_button.clicked.connect(self._regenerate_from_editor)
+
         self.open_configs_button = QPushButton("Open Config Folder")
         self.open_configs_button.clicked.connect(lambda: self._open_path(self.config_dir))
 
-        button_row.addWidget(self.save_mapping_button)
-        button_row.addWidget(self.save_all_mappings_button)
-        button_row.addWidget(self.regenerate_grouped_button)
-        button_row.addWidget(self.review_queue_button)
-        button_row.addWidget(self.review_all_runs_check)
-        button_row.addWidget(self.reload_archetypes_button)
-        button_row.addWidget(self.open_configs_button)
-        right_layout.addLayout(button_row)
+        button_row2.addWidget(self.review_queue_button)
+        button_row2.addWidget(self.challenge_rescan_button)
+        button_row2.addWidget(self.review_all_runs_check)
+        button_row2.addWidget(self.reload_archetypes_button)
+        button_row2.addWidget(self.regenerate_grouped_button)
+        button_row2.addWidget(self.open_configs_button)
+
+        right_layout.addLayout(button_row1)
+        right_layout.addLayout(button_row2)
         right_layout.addStretch(1)
 
         layout.addWidget(left_box, 0, 0)
@@ -1245,6 +2152,16 @@ class StudioWindow(QMainWindow):
         self.stats_color_tabs.addTab(deck_tab, "Decks & Archetypes")
         self.stats_color_tabs.addTab(legend_tab, "Legend")
 
+        self.stats_type_combo = QComboBox()
+        self.stats_type_combo.addItems(["Liga", "Challenge", "Oba"])
+        self.stats_type_combo.setToolTip(
+            "Liga — statystyki metagame z XLSX\n"
+            "Challenge — statystyki turniejowe z challenge_history_<format>.csv\n"
+            "Oba — najpierw Liga, potem Challenge"
+        )
+        self.stats_type_combo.currentTextChanged.connect(self._on_stats_type_changed)
+
+        form.addRow("Tryb statystyk", self.stats_type_combo)
         form.addRow("Input Grouped XLSX", input_row)
         form.addRow("History CSV", history_row)
         form.addRow("Players (N)", self.stats_total_players_spin)
@@ -1567,7 +2484,84 @@ class StudioWindow(QMainWindow):
         self.settings.setValue("stats_legend_colors", self.stats_legend_colors_text.toPlainText())
 
     def _default_statistics_history_path(self) -> Path:
-        return self.repo_root / "outputs" / "metagame_history.csv"
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        slug = "-".join(format_name.lower().split())
+        return self.repo_root / "outputs" / f"metagame_history_{slug}.csv"
+
+    def _default_challenge_history_path(self) -> Path:
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        slug = "-".join(format_name.lower().split())
+        return self.repo_root / "outputs" / f"challenge_history_{slug}.csv"
+
+    def _default_premier_history_path(self) -> Path:
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        slug = "-".join(format_name.lower().split())
+        return self.repo_root / "outputs" / f"premier_history_{slug}.csv"
+
+    def _current_stats_run_dir(self) -> Optional[Path]:
+        """Weekly run dir that Challenge statistics should be written under.
+
+        Prefers the run dir behind the currently selected Liga input file (keeps
+        Liga + Challenge aligned to the same week in 'Oba' mode), else falls back
+        to the newest run dir found under outputs/.
+        """
+        input_text = self.stats_input_edit.text().strip()
+        if input_text:
+            candidate = Path(input_text)
+            if candidate.exists():
+                return candidate.parent
+
+        from metagame_input_generator import scan_run_dirs
+
+        runs = scan_run_dirs(self.repo_root / "outputs")
+        if not runs:
+            return None
+        return sorted(runs, key=lambda x: x[0])[-1][2]
+
+    def _challenge_stats_output_dir(self) -> Path:
+        run_dir = self._current_stats_run_dir()
+        if run_dir is not None:
+            return run_dir / "statistics" / "challenges"
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        slug = "-".join(format_name.lower().split())
+        return self.repo_root / "outputs" / "challenge_statistics" / slug
+
+    def _challenge_stats_window(self) -> tuple[Optional[date], Optional[date]]:
+        """WeekStart/WeekEnd for the Challenge statistics run -- same single source of truth as
+        the output dir (_challenge_stats_output_dir): the week encoded in the currently selected
+        run dir's folder name (Wnn_YYYY-MM-DD_to_YYYY-MM-DD), falling back to the app's own
+        week_start_edit/week_end_edit pickers if no run dir is resolved.
+
+        Passing (None, None) into run_challenge_statistics() makes it fall back to a "last N*2
+        distinct event dates" trim over the *entire* history file, unrelated to any selected week
+        -- that mismatch (output path says one week, data was an arbitrary trailing slice) was the
+        root cause of Challenge stats over-counting events from an adjacent week. Always resolve
+        an explicit window here instead.
+        """
+        run_dir = self._current_stats_run_dir()
+        if run_dir is not None:
+            import re as _re
+
+            match = _re.search(r"(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})", run_dir.name)
+            if match:
+                try:
+                    return date.fromisoformat(match.group(1)), date.fromisoformat(match.group(2))
+                except ValueError:
+                    pass
+        if self.week_end_edit.date() < self.week_start_edit.date():
+            return None, None
+        return (
+            date.fromisoformat(self.week_start_edit.date().toString("yyyy-MM-dd")),
+            date.fromisoformat(self.week_end_edit.date().toString("yyyy-MM-dd")),
+        )
+
+    def _on_stats_type_changed(self, mode: str) -> None:
+        is_liga = mode in ("Liga", "Oba")
+        self.stats_input_edit.setEnabled(is_liga)
+        self.stats_pick_input_button.setEnabled(is_liga)
+        self.stats_use_latest_button.setEnabled(is_liga)
+        self.stats_history_edit.setEnabled(is_liga)
+        self.stats_pick_history_button.setEnabled(is_liga)
 
     def _find_latest_grouped_input(self) -> Optional[Path]:
         # Always scan disk for the newest run dir — do NOT rely on self.last_results
@@ -2150,17 +3144,538 @@ class StudioWindow(QMainWindow):
             out[label_name] = f"#{hex_part.lower()}"
         return out
 
+    # ------------------------------------------------------------------
+    # Unknown archetype pre-stats check
+    # ------------------------------------------------------------------
+
+    def _find_unknown_archetypes_in_input(self, input_path: Path) -> List[dict]:
+        """Read grouped XLSX and return rows where Archetype is Unknown."""
+        try:
+            df = pd.read_excel(input_path)
+        except Exception:
+            return []
+        if "Archetype" not in df.columns or "Deck" not in df.columns:
+            return []
+        rows = []
+        for _, row in df.iterrows():
+            arch = str(row.get("Archetype") or "").strip().lower()
+            if arch in {"unknown", "unkown", ""}:
+                meta_val = row.get("Meta")
+                try:
+                    meta_str = f"{float(meta_val):.2f}"
+                except Exception:
+                    meta_str = str(meta_val or "")
+                rows.append({
+                    "deck": str(row.get("Deck") or "").strip(),
+                    "meta": meta_str,
+                    "archetype": "Unknown",
+                })
+        return rows
+
+    def _save_archetype_assignments(self, assignments: List[dict], input_path: Path) -> int:
+        """Save archetype assignments to archetype_rules.csv and patch the XLSX in place."""
+        if not assignments:
+            return 0
+
+        model = ChangeModel(paths=ConfigPaths.from_config_dir(self.config_dir))
+        for item in assignments:
+            deck = str(item.get("deck") or "").strip()
+            archetype = str(item.get("archetype") or "").strip()
+            if not deck or not archetype or archetype.lower() == "unknown":
+                continue
+            upsert_archetype_catalog(self.config_dir, archetype)
+            model.queue_archetype_rule(deck, archetype, match_type="exact", priority=1)
+
+        saved = 0
+        if model.has_changes():
+            model.apply(create_backup=True)
+            saved = len(assignments)
+
+        # Patch the XLSX in place so the stats run immediately uses clean data
+        try:
+            df = pd.read_excel(input_path)
+            assignment_map = {
+                str(item["deck"]).strip().lower(): str(item["archetype"]).strip()
+                for item in assignments
+                if str(item.get("archetype") or "").strip().lower() not in {"", "unknown"}
+            }
+            if assignment_map and "Archetype" in df.columns and "Deck" in df.columns:
+                def _remap(row):
+                    key = str(row["Deck"] or "").strip().lower()
+                    return assignment_map.get(key, str(row["Archetype"] or "").strip())
+                df["Archetype"] = df.apply(_remap, axis=1)
+                df.to_excel(input_path, index=False, engine="openpyxl")
+        except Exception as err:
+            self._append_stats_log(f"[WARN] Could not patch XLSX in place: {err}")
+
+        return saved
+
+    def _find_unknown_archetypes_in_challenge_history(
+        self, history_csv: Path, format_name: str, last_n_events: int
+    ) -> List[dict]:
+        """Return decks with Unknown archetype within the same event window that
+        run_challenge_statistics will actually chart (mirrors its _trim() logic:
+        last_n_events*2 most recent event dates, across both challenge sizes)."""
+        try:
+            hist = load_challenge_history(history_csv)
+        except Exception:
+            return []
+        if hist.empty or "Deck" not in hist.columns or "Archetype" not in hist.columns:
+            return []
+
+        fmt_norm = normalize_name(format_name)
+        hist = hist[hist["Format"].astype(str).apply(normalize_name) == fmt_norm].copy()
+        if hist.empty:
+            return []
+
+        hist["EventDate"] = hist["EventDate"].astype(str).str.strip()
+        dates = sorted(hist["EventDate"].unique(), reverse=True)[: max(1, last_n_events * 2)]
+        hist = hist[hist["EventDate"].isin(dates)]
+        total = len(hist)
+        if total == 0:
+            return []
+
+        hist["Archetype"] = hist["Archetype"].astype(str).str.strip().replace("", "Unknown")
+        unknown = hist[hist["Archetype"].str.lower().isin(["unknown", "unkown"])]
+        if unknown.empty:
+            return []
+
+        counts = unknown.groupby("Deck").size().sort_values(ascending=False)
+        return [
+            {"deck": str(deck), "meta": f"{(count / total * 100):.2f}", "archetype": "Unknown"}
+            for deck, count in counts.items()
+        ]
+
+    def _save_challenge_archetype_assignments(self, assignments: List[dict], history_csv: Path) -> int:
+        """Save archetype assignments for Challenge decks: adds an archetype_rules.csv
+        rule (so future fetches classify correctly) and patches the persistent
+        challenge history CSV in place (so the stats run about to happen is clean)."""
+        if not assignments:
+            return 0
+
+        model = ChangeModel(paths=ConfigPaths.from_config_dir(self.config_dir))
+        assignment_map: dict[str, str] = {}
+        for item in assignments:
+            deck = str(item.get("deck") or "").strip()
+            archetype = str(item.get("archetype") or "").strip()
+            if not deck or not archetype or archetype.lower() in ("unknown", "unkown"):
+                continue
+            upsert_archetype_catalog(self.config_dir, archetype)
+            model.queue_archetype_rule(deck, archetype, match_type="exact", priority=1)
+            assignment_map[deck.lower()] = archetype
+
+        if model.has_changes():
+            model.apply(create_backup=True)
+
+        if assignment_map and history_csv.exists():
+            try:
+                df = pd.read_csv(history_csv)
+                if "Deck" in df.columns and "Archetype" in df.columns:
+                    def _remap(row):
+                        key = str(row["Deck"] or "").strip().lower()
+                        return assignment_map.get(key, row["Archetype"])
+                    df["Archetype"] = df.apply(_remap, axis=1)
+                    df.to_csv(history_csv, index=False)
+            except Exception as err:
+                self._append_stats_log(f"[WARN] Could not patch challenge history CSV in place: {err}")
+
+        return len(assignment_map)
+
+    # ------------------------------------------------------------------
+    # Add / Remove mapping
+    # ------------------------------------------------------------------
+
+    def _add_deck_mapping(self) -> None:
+        """Open a dialog to manually add a deck mapping to config files."""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Add Deck Mapping")
+        dialog.resize(440, 180)
+        form = QFormLayout(dialog)
+        form.setContentsMargins(16, 16, 16, 16)
+        form.setSpacing(10)
+
+        raw_input = QLineEdit()
+        raw_input.setPlaceholderText("Raw deck name (as returned by API)")
+        canonical_input = QLineEdit()
+        canonical_input.setPlaceholderText("Canonical deck name")
+        archetype_combo = QComboBox()
+        archetype_combo.setEditable(True)
+        archetype_combo.addItems(load_archetype_catalog(self.config_dir))
+
+        form.addRow("Raw Name", raw_input)
+        form.addRow("Canonical Name", canonical_input)
+        form.addRow("Archetype", archetype_combo)
+
+        btn_row = QHBoxLayout()
+        ok_btn = QPushButton("Add")
+        ok_btn.setObjectName("primaryButton")
+        ok_btn.clicked.connect(dialog.accept)
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(dialog.reject)
+        btn_row.addWidget(ok_btn)
+        btn_row.addStretch(1)
+        btn_row.addWidget(cancel_btn)
+        btn_widget = QWidget()
+        btn_widget.setLayout(btn_row)
+        form.addRow("", btn_widget)
+
+        if dialog.exec() != QDialog.Accepted:
+            return
+
+        raw_name = raw_input.text().strip()
+        canonical_name = canonical_input.text().strip()
+        archetype = archetype_combo.currentText().strip() or "Unknown"
+
+        if not raw_name or not canonical_name:
+            QMessageBox.warning(self, APP_NAME, "Raw name and canonical name are required.")
+            return
+
+        upsert_archetype_catalog(self.config_dir, archetype)
+        model = ChangeModel(paths=ConfigPaths.from_config_dir(self.config_dir))
+        model.queue_mapping(raw_name, canonical_name, archetype)
+        model.queue_alias(raw_name, canonical_name, match_type="exact", priority=1)
+        model.queue_archetype_rule(raw_name, archetype, match_type="exact", priority=1)
+        model.queue_archetype_rule(canonical_name, archetype, match_type="exact", priority=1)
+        if model.has_changes():
+            model.apply(create_backup=True)
+
+        # Insert at top of editor table for immediate visibility
+        self.editor_rows.insert(0, {
+            "raw_deck": raw_name,
+            "deck": canonical_name,
+            "archetype": archetype,
+            "meta": "",
+            "my_wr": "",
+        })
+        self._populate_editor_table()
+        self.editor_table.selectRow(0)
+        self._refresh_archetype_combo()
+        self.editor_status_label.setText(
+            f"Added mapping: '{raw_name}' → '{canonical_name}' ({archetype})"
+        )
+        self._append_log(f"[OK] Added mapping: '{raw_name}' → '{canonical_name}', archetype='{archetype}'")
+
+    def _remove_deck_mapping(self) -> None:
+        """Remove the selected editor row's mapping from config files."""
+        row_index = self.editor_table.currentRow()
+        if row_index < 0 or row_index >= len(self.editor_rows):
+            QMessageBox.warning(self, APP_NAME, "Select a row in the editor table first.")
+            return
+
+        row = self.editor_rows[row_index]
+        raw_name = str(row.get("raw_deck") or "").strip()
+        deck_name = str(row.get("deck") or "").strip()
+        if not raw_name:
+            QMessageBox.warning(self, APP_NAME, "Selected row has no raw name — nothing to remove from config.")
+            return
+
+        confirm = QMessageBox.question(
+            self,
+            APP_NAME,
+            f"Remove mapping for '{raw_name}' → '{deck_name}' from config files?\n\n"
+            "This removes the entry from user_deck_mapping.csv, deck_aliases.csv, and archetype_rules.csv.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if confirm != QMessageBox.Yes:
+            return
+
+        # Multiple raw names can be pipe-separated in grouped rows — remove each
+        raw_names = self._split_raw_names(raw_name) or [raw_name]
+        total_removed = 0
+        for rn in raw_names:
+            total_removed += self._remove_from_mapping_csv(self.config_dir / "user_deck_mapping.csv", "raw_name", rn)
+            self._remove_from_mapping_csv(self.config_dir / "deck_aliases.csv", "pattern", rn)
+            self._remove_from_mapping_csv(self.config_dir / "archetype_rules.csv", "pattern", rn)
+
+        self.editor_rows.pop(row_index)
+        self._populate_editor_table()
+        new_idx = min(row_index, len(self.editor_rows) - 1)
+        if new_idx >= 0:
+            self.editor_table.selectRow(new_idx)
+
+        self.editor_status_label.setText(
+            f"Removed mapping for '{raw_name}' from config files (entries removed: {total_removed})."
+        )
+        self._append_log(f"[OK] Removed mapping: '{raw_name}' from config CSVs.")
+
+    def _remove_from_mapping_csv(self, path: Path, key_column: str, key_value: str) -> int:
+        """Remove rows where key_column matches key_value from a CSV. Returns count removed."""
+        if not path.exists():
+            return 0
+        key_norm = key_value.strip().lower()
+        rows_keep = []
+        removed = 0
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fieldnames = list(reader.fieldnames or [])
+            for row in reader:
+                if str(row.get(key_column) or "").strip().lower() == key_norm:
+                    removed += 1
+                else:
+                    rows_keep.append(row)
+        if removed > 0:
+            import shutil as _shutil
+            backup = path.with_suffix(f".bak{path.suffix}")
+            _shutil.copy2(path, backup)
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows_keep)
+        return removed
+
+    # ------------------------------------------------------------------
+    # Search / filter
+    # ------------------------------------------------------------------
+
+    def _filter_editor_table(self) -> None:
+        """Show only rows matching the search query (deck name, raw name, or archetype)."""
+        query = self.editor_search_input.text().strip().lower()
+        visible = 0
+        total = self.editor_table.rowCount()
+        for row_idx in range(total):
+            if not query:
+                self.editor_table.setRowHidden(row_idx, False)
+                visible += 1
+                continue
+            row = self.editor_rows[row_idx] if row_idx < len(self.editor_rows) else {}
+            deck = str(row.get("deck") or "").lower()
+            raw = str(row.get("raw_deck") or "").lower()
+            archetype = str(row.get("archetype") or "").lower()
+            match = query in deck or query in raw or query in archetype
+            self.editor_table.setRowHidden(row_idx, not match)
+            if match:
+                visible += 1
+        if query:
+            self.editor_match_label.setText(f"{visible}/{total}")
+        else:
+            self.editor_match_label.setText("")
+
+    def _visible_row_indices(self) -> List[int]:
+        """Return indices of editor_rows that are currently visible (not hidden by filter)."""
+        return [
+            idx for idx in range(min(self.editor_table.rowCount(), len(self.editor_rows)))
+            if not self.editor_table.isRowHidden(idx)
+        ]
+
+    def _open_global_search(self) -> None:
+        """Open GlobalSearchDialog with all CSV sources from the editor combo."""
+        sources: List[tuple] = []
+        for i in range(self.editor_source_combo.count()):
+            label = self.editor_source_combo.itemText(i)
+            data = self.editor_source_combo.itemData(i)
+            if data:
+                sources.append((label, str(data)))
+        if not sources:
+            QMessageBox.information(self, APP_NAME, "Brak plików źródłowych. Wygeneruj najpierw dane.")
+            return
+        dlg = GlobalSearchDialog(
+            sources=sources,
+            archetype_options=load_archetype_catalog(self.config_dir),
+            deck_options=self._load_deck_catalog(),
+            config_dir=self.config_dir,
+            parent=self,
+        )
+        dlg.navigate_to.connect(self._navigate_to_global_result)
+        dlg.save_changes.connect(self._handle_global_search_save)
+        dlg.exec()
+
+    def _navigate_to_global_result(self, csv_path_str: str) -> None:
+        """Select the matching source file in the combo and load it in the editor."""
+        for i in range(self.editor_source_combo.count()):
+            if str(self.editor_source_combo.itemData(i)) == csv_path_str:
+                self.editor_source_combo.setCurrentIndex(i)
+                return
+        QMessageBox.warning(self, APP_NAME, f"Nie znaleziono wpisu dla:\n{csv_path_str}")
+
+    def _handle_global_search_save(self, changes: list) -> None:
+        """Save edits from GlobalSearchDialog to config CSVs, then propagate them into
+        already-generated grouped XLSX / history CSV / challenge decklists across every
+        week — otherwise the config change never reaches the files stats charts read."""
+        meta_changes = [c for c in changes if not c["is_challenge"]]
+        challenge_changes = [c for c in changes if c["is_challenge"]]
+
+        saved_meta = 0
+        saved_challenge = 0
+        meta_payloads: List[tuple[List[str], str, str]] = []
+        challenge_payloads: List[tuple[List[str], str, str]] = []
+
+        if meta_changes:
+            model = ChangeModel(paths=ConfigPaths.from_config_dir(self.config_dir))
+            for c in meta_changes:
+                raw = c["raw_deck"]
+                deck = c["deck"]
+                arch = c["archetype"]
+                if not raw or not deck or not arch:
+                    continue
+                model.queue_mapping(raw, deck, arch)
+                model.queue_alias(raw, deck, match_type="exact", priority=1)
+                model.queue_archetype_rule(raw, arch, match_type="exact", priority=1)
+                model.queue_archetype_rule(deck, arch, match_type="exact", priority=1)
+                meta_payloads.append(([raw], deck, arch))
+                saved_meta += 1
+            if model.has_changes():
+                model.apply(create_backup=True)
+
+        if challenge_changes:
+            path = self._challenge_mapping_csv_path()
+            existing: dict[str, dict] = {}
+            if path.exists():
+                with path.open("r", encoding="utf-8", newline="") as fh:
+                    for row in csv.DictReader(fh):
+                        k = str(row.get("raw_name") or "").strip().lower()
+                        if k:
+                            existing[k] = {"raw_name": row.get("raw_name", ""), "canonical_name": row.get("canonical_name", ""), "archetype": row.get("archetype", "")}
+            for c in challenge_changes:
+                raw = c["raw_deck"]
+                deck = c["deck"]
+                arch = c["archetype"]
+                if not raw or not deck or not arch:
+                    continue
+                existing[raw.lower()] = {"raw_name": raw, "canonical_name": deck, "archetype": arch}
+                challenge_payloads.append(([raw], deck, arch))
+                saved_challenge += 1
+            if existing:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("w", encoding="utf-8", newline="") as fh:
+                    writer = csv.DictWriter(fh, fieldnames=["raw_name", "canonical_name", "archetype"])
+                    writer.writeheader()
+                    writer.writerows(existing.values())
+
+        backfill_files = 0
+        backfill_rows = 0
+        if meta_payloads:
+            f, r = self._propagate_mappings_to_history(meta_payloads, None)
+            backfill_files += f
+            backfill_rows += r
+        if challenge_payloads:
+            f, r = self._propagate_mappings_to_challenge_decklists(challenge_payloads, None)
+            backfill_files += f
+            backfill_rows += r
+
+        self._refresh_archetype_combo()
+        if saved_meta or saved_challenge:
+            self._append_log(
+                f"[OK] Global Search — zapisano: meta={saved_meta}, challenge={saved_challenge} wpisów do plików config. "
+                f"Zaktualizowano {backfill_files} plik(ów) danych ({backfill_rows} wiersz(y)) we wszystkich tygodniach."
+            )
+        else:
+            self._append_log("[WARN] Global Search — brak prawidłowych zmian do zapisania (brak raw/deck/archetype).")
+
+    def _apply_archetype_to_visible(self) -> None:
+        """Apply current archetype selection to all rows visible in the filtered table."""
+        archetype = self.editor_archetype_combo.currentText().strip()
+        if not archetype:
+            QMessageBox.warning(self, APP_NAME, "Wybierz najpierw archetype w polu 'Archetype'.")
+            return
+        indices = self._visible_row_indices()
+        if not indices:
+            QMessageBox.information(self, APP_NAME, "Brak widocznych wierszy pasujących do filtru.")
+            return
+        for idx in indices:
+            self.editor_rows[idx]["archetype"] = archetype
+            widget = self.editor_table.cellWidget(idx, 2)
+            if isinstance(widget, QComboBox):
+                widget.blockSignals(True)
+                widget.setCurrentText(archetype)
+                widget.blockSignals(False)
+                self._apply_unknown_archetype_style(widget, archetype)
+        # Update right-panel form if current row is one of the affected ones
+        current = self.editor_table.currentRow()
+        if current in indices:
+            self._select_archetype(archetype)
+            self._apply_unknown_archetype_style(self.editor_archetype_combo, archetype)
+        self.editor_status_label.setText(
+            f"Przypisano archetype '{archetype}' do {len(indices)} wiersz(y). "
+            "Użyj 'Save All' aby zapisać do plików config."
+        )
+
+    def _apply_archetype_to_visible_and_save(self) -> None:
+        """Apply archetype to all visible rows and immediately save to config files."""
+        archetype = self.editor_archetype_combo.currentText().strip()
+        if not archetype:
+            QMessageBox.warning(self, APP_NAME, "Wybierz najpierw archetype w polu 'Archetype'.")
+            return
+        indices = self._visible_row_indices()
+        if not indices:
+            QMessageBox.information(self, APP_NAME, "Brak widocznych wierszy pasujących do filtru.")
+            return
+
+        # Apply in-memory
+        self._apply_archetype_to_visible()
+
+        # Save all affected rows to config
+        if self._is_current_source_challenge():
+            payloads = self._collect_mapping_payloads(indices)
+            upserts = self._upsert_challenge_mapping_payloads(payloads)
+            self._save_rows_to_config(indices)
+            backfill_files, backfill_rows = self._propagate_mappings_to_challenge_decklists(
+                payloads, self._current_editor_week_end()
+            )
+            self.editor_status_label.setText(
+                f"Zapisano archetype '{archetype}' dla {upserts} wiersz(y) Challenge. "
+                f"Zaktualizowano {backfill_files} plik(ów) challenge, {backfill_rows} wiersz(y)."
+            )
+        else:
+            processed, source_names, verified, summary, skipped = self._save_rows_to_config(indices)
+            payloads = self._collect_mapping_payloads(indices)
+            backfill_files, backfill_rows = self._propagate_mappings_to_history(
+                payloads, self._current_editor_week_end()
+            )
+            self.editor_status_label.setText(
+                f"Zapisano archetype '{archetype}' dla {processed} wiersz(y). "
+                f"Zaktualizowano {backfill_files} plik(ów) historii, {backfill_rows} wiersz(y)."
+            )
+        self._refresh_archetype_combo()
+
     def start_statistics(self) -> None:
-        if self.stats_thread is not None:
+        if self.stats_thread is not None or self.challenge_stats_thread is not None:
             QMessageBox.information(self, APP_NAME, "Statistics analysis is already running.")
             return
 
+        mode = self.stats_type_combo.currentText()
+
+        self.stats_run_button.setEnabled(False)
+        self.stats_open_folder_button.setEnabled(False)
+        self.stats_files_list.clear()
+        self.stats_log_output.clear()
+        self.last_stats_result = None
+
+        if mode in ("Liga", "Oba"):
+            self._start_liga_statistics(run_challenge_after=(mode == "Oba"))
+        else:
+            self._start_challenge_statistics()
+
+    def _start_liga_statistics(self, run_challenge_after: bool = False) -> None:
         self._sync_text_from_color_tables()
 
         input_path = Path(self.stats_input_edit.text().strip())
         if not input_path.exists():
-            QMessageBox.warning(self, APP_NAME, "Choose an existing grouped XLSX input file first.")
+            QMessageBox.warning(self, APP_NAME, "Wybierz plik grouped XLSX dla trybu Liga.")
+            self.stats_run_button.setEnabled(True)
             return
+
+        # --- Pre-stats unknown archetype check ---
+        unknown_rows = self._find_unknown_archetypes_in_input(input_path)
+        if unknown_rows:
+            dlg = UnknownArchetypeDialog(
+                unknown_rows,
+                archetype_options=load_archetype_catalog(self.config_dir),
+                parent=self,
+            )
+            result = dlg.exec()
+            if result == QDialog.Rejected:
+                self.stats_run_button.setEnabled(True)
+                return
+            if not dlg.skip_requested:
+                assignments = dlg.get_assignments()
+                if assignments:
+                    saved = self._save_archetype_assignments(assignments, input_path)
+                    self._append_stats_log(
+                        f"[OK] Saved {saved} archetype assignment(s) — config and XLSX updated."
+                    )
+                    self._refresh_archetype_combo()
+        # --- end pre-check ---
 
         history_text = self.stats_history_edit.text().strip()
         history_path = Path(history_text) if history_text else self._default_statistics_history_path()
@@ -2170,16 +3685,8 @@ class StudioWindow(QMainWindow):
         output_profile = self.stats_output_profile_combo.currentText().strip().lower() or "full"
         palette_name = self.stats_palette_combo.currentText().strip().lower() or "classic"
 
-        self.stats_run_button.setEnabled(False)
-        self.stats_open_folder_button.setEnabled(False)
-        self.stats_files_list.clear()
-        self.stats_log_output.clear()
-        self.last_stats_result = None
-
-        self.stats_summary_label.setText("Running statistics analysis...")
-        self._append_stats_log(f"[stats] Starting analysis for: {input_path}")
-        self._append_stats_log(f"[stats] Profile={output_profile}, palette={palette_name}, custom deck colors={len(deck_colors)}")
-        self._append_stats_log(f"[stats] Custom legend colors={len(legend_colors)}")
+        self.stats_summary_label.setText("Generowanie statystyk: Liga…")
+        self._append_stats_log(f"[liga] Analiza: {input_path}")
 
         self.stats_thread = QThread(self)
         self.stats_worker = StatisticsWorker(
@@ -2204,44 +3711,158 @@ class StudioWindow(QMainWindow):
         self.stats_worker.failed.connect(self._handle_statistics_failure)
         self.stats_worker.finished.connect(self.stats_thread.quit)
         self.stats_worker.failed.connect(self.stats_thread.quit)
+        if run_challenge_after:
+            self.stats_worker.finished.connect(self._on_liga_finished_run_challenge)
+            self.stats_worker.failed.connect(self._on_liga_failed_after_oba)
         self.stats_thread.finished.connect(self._cleanup_statistics_worker)
         self.stats_thread.start()
+
+    def _on_liga_finished_run_challenge(self, _result) -> None:
+        """'Oba' mode: chain into Challenge stats after Liga finishes.
+
+        Must be a bound method (not a lambda) — self.stats_worker lives in a
+        background QThread, and PySide can only auto-queue a cross-thread signal
+        onto the GUI thread when the receiver is a QObject's bound method. A bare
+        lambda has no thread affinity, so it would run _start_challenge_statistics()
+        (which builds/execs a QDialog) directly on the worker thread and freeze the app.
+        """
+        self._start_challenge_statistics()
+
+    def _on_liga_failed_after_oba(self, _details: str) -> None:
+        self.stats_run_button.setEnabled(True)
+
+    def _start_challenge_statistics(self) -> None:
+        history_path = self._default_challenge_history_path()
+        if not history_path.exists():
+            self._append_stats_log(
+                f"[challenge] Brak pliku historii: {history_path}\n"
+                "Wygeneruj dane z włączoną opcją 'Challenge Window' lub kliknij 'Rebuild Challenge History'."
+            )
+            self.stats_run_button.setEnabled(True)
+            self.stats_summary_label.setText("Brak danych challenge. Wygeneruj najpierw historię challenge.")
+            return
+
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        last_n = self.challenge_history_events_spin.value()
+
+        # --- Pre-stats unknown archetype check (mirrors Liga flow) ---
+        unknown_rows = self._find_unknown_archetypes_in_challenge_history(history_path, format_name, last_n)
+        if unknown_rows:
+            dlg = UnknownArchetypeDialog(
+                unknown_rows,
+                archetype_options=load_archetype_catalog(self.config_dir),
+                parent=self,
+            )
+            result = dlg.exec()
+            if result == QDialog.Rejected:
+                self.stats_run_button.setEnabled(True)
+                return
+            if not dlg.skip_requested:
+                assignments = dlg.get_assignments()
+                if assignments:
+                    saved = self._save_challenge_archetype_assignments(assignments, history_path)
+                    self._append_stats_log(
+                        f"[OK] Saved {saved} archetype assignment(s) for Challenge — "
+                        "config and history CSV updated."
+                    )
+                    self._refresh_archetype_combo()
+        # --- end pre-check ---
+
+        output_dir = self._challenge_stats_output_dir()
+        week_start, week_end = self._challenge_stats_window()
+
+        self.stats_summary_label.setText("Generowanie statystyk: Challenge…")
+        if week_start is not None and week_end is not None:
+            self._append_stats_log(
+                f"[challenge] Historia: {history_path}, last_n={last_n}, "
+                f"window={week_start.isoformat()}..{week_end.isoformat()}"
+            )
+        else:
+            self._append_stats_log(
+                f"[challenge] Historia: {history_path}, last_n={last_n} "
+                "(no week window resolved -- falling back to last-N-dates trim; this can pull in "
+                "extra events from an adjacent week, see _challenge_stats_window)"
+            )
+
+        self.challenge_stats_thread = QThread(self)
+        self.challenge_stats_worker = ChallengeStatisticsWorker(
+            history_csv=history_path,
+            output_dir=output_dir,
+            format_name=format_name,
+            last_n_events=last_n,
+            week_start=week_start,
+            week_end=week_end,
+        )
+        self.challenge_stats_worker.moveToThread(self.challenge_stats_thread)
+        self.challenge_stats_thread.started.connect(self.challenge_stats_worker.run)
+        self.challenge_stats_worker.progress.connect(self._append_stats_log)
+        self.challenge_stats_worker.finished.connect(self._handle_challenge_statistics_success)
+        self.challenge_stats_worker.failed.connect(self._handle_challenge_statistics_failure)
+        self.challenge_stats_worker.finished.connect(self.challenge_stats_thread.quit)
+        self.challenge_stats_worker.failed.connect(self.challenge_stats_thread.quit)
+        self.challenge_stats_thread.finished.connect(self._cleanup_challenge_statistics_worker)
+        self.challenge_stats_thread.start()
 
     def _append_stats_log(self, line: str) -> None:
         self.stats_log_output.append(line)
 
-    def _handle_statistics_success(self, result: StatisticsRunResult) -> None:
+    def _handle_statistics_success(self, result) -> None:
         self.last_stats_result = result
-        self.stats_run_button.setEnabled(True)
+        mode = self.stats_type_combo.currentText()
+        if mode != "Oba":
+            self.stats_run_button.setEnabled(True)
         self.stats_open_folder_button.setEnabled(True)
 
         self.stats_history_edit.setText(str(result.history_csv))
         self.stats_summary_label.setText(
-            "\n".join(
-                [
-                    f"Week index: {result.week_index}",
-                    f"Deck rows: {result.deck_rows}",
-                    f"Archetype rows: {result.archetype_rows}",
-                    f"Output folder: {result.output_dir}",
-                ]
-            )
+            "\n".join([
+                f"Liga — Week index: {result.week_index}",
+                f"Deck rows: {result.deck_rows}",
+                f"Archetype rows: {result.archetype_rows}",
+                f"Output: {result.output_dir}",
+            ])
         )
 
-        self.stats_files_list.clear()
         for path in result.files:
-            item = QListWidgetItem(path.name)
+            item = QListWidgetItem(f"[Liga] {path.name}")
             item.setData(Qt.UserRole, str(path))
             self.stats_files_list.addItem(item)
 
-        self._append_stats_log("[stats] Analysis completed.")
+        self._append_stats_log("[liga] Analiza zakończona.")
 
     def _handle_statistics_failure(self, details: str) -> None:
-        self.stats_run_button.setEnabled(True)
+        mode = self.stats_type_combo.currentText()
+        if mode != "Oba":
+            self.stats_run_button.setEnabled(True)
         self.stats_open_folder_button.setEnabled(False)
-        self.stats_summary_label.setText("Statistics analysis failed.")
-        self._append_stats_log("[stats][error] Analysis failed.")
+        self.stats_summary_label.setText("Statystyki Liga — błąd.")
+        self._append_stats_log("[liga][error] Analiza nieudana.")
         self._append_stats_log(details)
-        QMessageBox.critical(self, APP_NAME, details.splitlines()[0] if details else "Statistics analysis failed.")
+        QMessageBox.critical(self, APP_NAME, details.splitlines()[0] if details else "Statystyki Liga nieudane.")
+
+    def _handle_challenge_statistics_success(self, result) -> None:
+        self.stats_run_button.setEnabled(True)
+        self.stats_open_folder_button.setEnabled(True)
+        self.stats_summary_label.setText(
+            self.stats_summary_label.text().rstrip() + f"\nChallenge — pliki: {result.output_dir}"
+        )
+        for path in getattr(result, "files", []):
+            item = QListWidgetItem(f"[Challenge] {path.name}")
+            item.setData(Qt.UserRole, str(path))
+            self.stats_files_list.addItem(item)
+        excel = getattr(result, "excel_path", None)
+        if excel and Path(excel).exists():
+            item = QListWidgetItem(f"[Challenge] {Path(excel).name}")
+            item.setData(Qt.UserRole, str(excel))
+            self.stats_files_list.addItem(item)
+        self._append_stats_log("[challenge] Analiza zakończona.")
+
+    def _handle_challenge_statistics_failure(self, details: str) -> None:
+        self.stats_run_button.setEnabled(True)
+        self.stats_summary_label.setText(self.stats_summary_label.text() + "\nChallenge — błąd.")
+        self._append_stats_log("[challenge][error] Analiza nieudana.")
+        self._append_stats_log(details)
+        QMessageBox.critical(self, APP_NAME, details.splitlines()[0] if details else "Statystyki Challenge nieudane.")
 
     def _cleanup_statistics_worker(self) -> None:
         if self.stats_worker is not None:
@@ -2250,6 +3871,14 @@ class StudioWindow(QMainWindow):
             self.stats_thread.deleteLater()
         self.stats_worker = None
         self.stats_thread = None
+
+    def _cleanup_challenge_statistics_worker(self) -> None:
+        if self.challenge_stats_worker is not None:
+            self.challenge_stats_worker.deleteLater()
+        if self.challenge_stats_thread is not None:
+            self.challenge_stats_thread.deleteLater()
+        self.challenge_stats_worker = None
+        self.challenge_stats_thread = None
 
     def _build_args(self) -> Namespace:
         args = self._build_generator_args()
@@ -2410,6 +4039,111 @@ class StudioWindow(QMainWindow):
             self._append_log("[INFO] Auto-run Statistics is enabled. Starting statistics analysis...")
             self.start_statistics()
 
+        all_review_items = [item for r in results for item in getattr(r, "challenge_review_items", [])]
+        if all_review_items and latest.challenge_history_path is not None:
+            self._append_log(
+                f"[WARN] {len(all_review_items)} Challenge deck(s) need manual review before they count "
+                "toward the statistics."
+            )
+            answer = QMessageBox.question(
+                self,
+                APP_NAME,
+                f"{len(all_review_items)} Challenge deck(s) could not be confidently labeled "
+                "(place-1 winners, and any borderline archetype matches).\n\n"
+                "Open the Challenge Review Queue now?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if answer == QMessageBox.Yes:
+                self._open_challenge_review_queue(
+                    all_review_items, latest.challenge_history_path, latest.premier_history_path
+                )
+
+    def _open_challenge_review_queue(
+        self, review_items: List[dict], history_csv: Path, premier_history_csv: Optional[Path] = None
+    ) -> None:
+        if self.challenge_review_dialog is None:
+            self.challenge_review_dialog = ChallengeReviewDialog(
+                review_items,
+                deck_options=self._load_deck_catalog(),
+                history_csv=history_csv,
+                premier_history_csv=premier_history_csv,
+                parent=self,
+            )
+        else:
+            self.challenge_review_dialog._review_items = list(review_items)
+            self.challenge_review_dialog._history_csv = history_csv
+            self.challenge_review_dialog._premier_history_csv = premier_history_csv
+            self.challenge_review_dialog._deck_options = self._load_deck_catalog()
+            self.challenge_review_dialog._populate()
+        self.challenge_review_dialog.show()
+        self.challenge_review_dialog.raise_()
+        self.challenge_review_dialog.activateWindow()
+
+    def _start_challenge_rescan(self) -> None:
+        if self.rescan_thread is not None:
+            QMessageBox.information(self, APP_NAME, "A rescan is already running.")
+            return
+
+        challenge_history_csv = self._default_challenge_history_path()
+        premier_history_csv = self._default_premier_history_path()
+        if not challenge_history_csv.exists():
+            QMessageBox.information(
+                self, APP_NAME, f"No Challenge history file yet:\n{challenge_history_csv}"
+            )
+            return
+
+        format_name = self.format_combo.currentText().strip() or "Modern"
+        cache_dir = self.repo_root / "outputs" / "cache" / "mtgo_json" / "-".join(format_name.lower().split())
+        rules_csv = self.config_dir / "archetype_rules.csv"
+        challenge_mapping_csv = self.config_dir / "challenge_deck_mapping.csv"
+
+        self.challenge_rescan_button.setEnabled(False)
+        self._append_log(f"[rescan] Scanning {challenge_history_csv.name} and {premier_history_csv.name} for unresolved decks...")
+
+        self.rescan_thread = QThread(self)
+        self.rescan_worker = ChallengeRescanWorker(
+            challenge_history_csv=challenge_history_csv,
+            premier_history_csv=premier_history_csv if premier_history_csv.exists() else None,
+            cache_dir=cache_dir,
+            format_name=format_name,
+            rules_csv=rules_csv,
+            challenge_mapping_csv=challenge_mapping_csv,
+        )
+        self.rescan_worker.moveToThread(self.rescan_thread)
+        self.rescan_thread.started.connect(self.rescan_worker.run)
+        self.rescan_worker.progress.connect(self._append_log)
+        self.rescan_worker.finished.connect(self._handle_rescan_success)
+        self.rescan_worker.failed.connect(self._handle_rescan_failure)
+        self.rescan_worker.finished.connect(self.rescan_thread.quit)
+        self.rescan_worker.failed.connect(self.rescan_thread.quit)
+        self.rescan_thread.finished.connect(self._cleanup_rescan_worker)
+        self.rescan_thread.start()
+
+    def _handle_rescan_success(self, review_items: List[dict]) -> None:
+        self.challenge_rescan_button.setEnabled(True)
+        self._append_log(f"[rescan] Done. {len(review_items)} deck(s) still need manual review.")
+        if not review_items:
+            QMessageBox.information(self, APP_NAME, "No unresolved decks found across the persisted history files.")
+            return
+        self._open_challenge_review_queue(
+            review_items, self._default_challenge_history_path(), self._default_premier_history_path()
+        )
+
+    def _handle_rescan_failure(self, details: str) -> None:
+        self.challenge_rescan_button.setEnabled(True)
+        self._append_log("[rescan] FAILED.")
+        self._append_log(details)
+        QMessageBox.critical(self, APP_NAME, details.splitlines()[0] if details else "Rescan failed.")
+
+    def _cleanup_rescan_worker(self) -> None:
+        if self.rescan_worker is not None:
+            self.rescan_worker.deleteLater()
+        if self.rescan_thread is not None:
+            self.rescan_thread.deleteLater()
+        self.rescan_worker = None
+        self.rescan_thread = None
+
     def _handle_failure(self, details: str) -> None:
         self.summary_label.setText("Generation failed.")
         self.generate_button.setEnabled(True)
@@ -2449,6 +4183,12 @@ class StudioWindow(QMainWindow):
                 paths.append(extra)
             for extra in sorted(result.run_dir.glob("challenge_*.png")):
                 paths.append(extra)
+            for extra in sorted(result.run_dir.glob("challenge_manifest_*.csv")):
+                paths.append(extra)
+            for extra in sorted(result.run_dir.glob("premier_events_*.csv")):
+                paths.append(extra)
+            for extra in sorted(result.run_dir.glob("challenge_needs_review_*.csv")):
+                paths.append(extra)
 
         seen: set[str] = set()
         for path in paths:
@@ -2477,6 +4217,33 @@ class StudioWindow(QMainWindow):
         return runs[-1][2]  # newest (week_start, week_end, path)
 
     def _latest_output_dir(self) -> Optional[Path]:
+        # TODO: Implement actual logic. Temporary fix to avoid IndentationError.
+        return None
+
+    def _suggest_anchor_date(self) -> "QDate":
+        """Return the suggested anchor date (Sunday) based on the latest run in outputs/.
+        If the latest run ended on date D, the next anchor is the first Sunday >= D + 7.
+        Falls back to last Sunday if no history found."""
+        today = QDate.currentDate()
+        last_sunday = today.addDays(-(today.dayOfWeek() % 7))
+        try:
+            from metagame_input_generator import scan_run_dirs
+            runs = scan_run_dirs(self.repo_root / "outputs")
+            if runs:
+                _ws, week_end, _path = runs[-1]
+                last_end = QDate.fromString(str(week_end), "yyyy-MM-dd")
+                if last_end.isValid():
+                    # Next Sunday = last_end + (7 - last_end.dayOfWeek() % 7) days
+                    days_to_sunday = 7 - (last_end.dayOfWeek() % 7)
+                    if days_to_sunday == 7:
+                        days_to_sunday = 0
+                    candidate = last_end.addDays(days_to_sunday + 7)
+                    # Don't suggest a date in the future beyond today+7
+                    if candidate <= today.addDays(7):
+                        return candidate
+        except Exception:
+            pass
+        return last_sunday
         if self.last_results:
             return self.last_results[-1].run_dir
         return self._find_latest_range_dir(self.repo_root / "outputs")
@@ -2564,6 +4331,13 @@ class StudioWindow(QMainWindow):
         self._load_editor_from_combo()
 
     def _load_editor_from_csv(self, csv_path: Path) -> None:
+        if hasattr(self, 'editor_search_input'):
+            self.editor_search_input.blockSignals(True)
+            self.editor_search_input.clear()
+            self.editor_search_input.blockSignals(False)
+        if hasattr(self, 'editor_match_label'):
+            self.editor_match_label.setText("")
+
         if not csv_path.exists():
             self.editor_rows = []
             self.current_editor_source = None
@@ -3367,7 +5141,9 @@ class StudioWindow(QMainWindow):
             if not canonical_name or not archetype or not raw_name:
                 continue
             raw_names = self._split_raw_names(raw_name)
-            if not raw_names:
+            # Safety: grouped rows (multiple source names joined by '|') are
+            # ambiguous and must not be propagated as one mapping payload.
+            if len(raw_names) != 1:
                 continue
             payloads.append((raw_names, canonical_name, archetype))
         return payloads
@@ -3481,6 +5257,82 @@ class StudioWindow(QMainWindow):
                 writer.writerows(rows)
             files_updated += 1
 
+        # metagame_input.csv is the raw per-deck source; the *grouped* XLSX files are a
+        # separate materialized aggregate that run_statistics() actually reads for charts,
+        # so an archetype edit has to be patched there too or it never shows up on charts.
+        grouped_files, grouped_rows = self._propagate_mappings_to_grouped_xlsx(payloads, limit_week_end)
+        files_updated += grouped_files
+        rows_updated += grouped_rows
+
+        return files_updated, rows_updated
+
+    def _propagate_mappings_to_grouped_xlsx(
+        self, payloads: List[tuple[List[str], str, str]], limit_week_end: Optional[date]
+    ) -> tuple[int, int]:
+        """Patch Deck/Archetype in already-generated grouped XLSX files (matched via
+        their 'Source Deck Names' column) so archetype/deck edits appear immediately
+        in stats charts, without waiting for a full re-generate."""
+        if not payloads:
+            return 0, 0
+
+        exact_map: dict[str, tuple[str, str]] = {}
+        for raw_names, canonical_name, archetype in payloads:
+            for raw_name in raw_names:
+                key = raw_name.strip().lower()
+                if key:
+                    exact_map[key] = (canonical_name, archetype)
+        if not exact_map:
+            return 0, 0
+
+        files_updated = 0
+        rows_updated = 0
+        for week_end, run_dir in self._iter_run_dirs_with_week_end():
+            if limit_week_end is not None and week_end is not None and week_end > limit_week_end:
+                continue
+
+            for xlsx_name in ("metagame_input_grouped.xlsx", "metagame_input_rogue_grouped.xlsx"):
+                xlsx_path = run_dir / xlsx_name
+                if not xlsx_path.exists():
+                    continue
+                try:
+                    df = pd.read_excel(xlsx_path)
+                except Exception:
+                    continue
+                if "Archetype" not in df.columns or "Deck" not in df.columns:
+                    continue
+                source_col = "Source Deck Names" if "Source Deck Names" in df.columns else "Deck"
+
+                file_changed = False
+                for idx in df.index:
+                    raw_candidates = self._split_raw_names(str(df.at[idx, source_col] or ""))
+                    target: Optional[tuple[str, str]] = None
+                    for candidate in raw_candidates:
+                        mapped = exact_map.get(candidate.strip().lower())
+                        if mapped is not None:
+                            target = mapped
+                            break
+                    if target is None:
+                        continue
+
+                    target_deck, target_archetype = target
+                    if (
+                        str(df.at[idx, "Deck"] or "").strip() == target_deck
+                        and str(df.at[idx, "Archetype"] or "").strip() == target_archetype
+                    ):
+                        continue
+
+                    df.at[idx, "Deck"] = target_deck
+                    df.at[idx, "Archetype"] = target_archetype
+                    rows_updated += 1
+                    file_changed = True
+
+                if file_changed:
+                    try:
+                        df.to_excel(xlsx_path, index=False, engine="openpyxl")
+                        files_updated += 1
+                    except Exception as err:
+                        self._append_log(f"[WARN] Could not patch {xlsx_path.name} in place: {err}")
+
         return files_updated, rows_updated
 
     def _propagate_mappings_to_challenge_decklists(
@@ -3569,6 +5421,15 @@ class StudioWindow(QMainWindow):
             upsert_archetype_catalog(self.config_dir, archetype)
             raw_names = self._split_raw_names(raw_name)
             if not raw_names:
+                continue
+
+            # Safety: do not write config rules from grouped rows like
+            # "A | B | C" because that can corrupt multiple unrelated decks.
+            if len(raw_names) != 1:
+                skipped_existing += len(raw_names)
+                self._append_log(
+                    f"[WARN] Skipped ambiguous row (multiple source names): raw='{raw_name}'"
+                )
                 continue
 
             for source_name in raw_names:
@@ -3765,18 +5626,13 @@ class StudioWindow(QMainWindow):
         )
 
     def _regenerate_from_editor(self) -> None:
-        if self.editor_rows:
-            if self._is_current_source_challenge():
-                payloads = self._collect_mapping_payloads(list(range(len(self.editor_rows))))
-                if payloads:
-                    self._upsert_challenge_mapping_payloads(payloads)
-                    self._save_rows_to_config(list(range(len(self.editor_rows))))
-                    self._propagate_mappings_to_challenge_decklists(payloads, self._current_editor_week_end())
-            else:
-                # Regenerate should always run on latest editor state, not only the last manually saved row.
-                _processed_rows, _total_source_names, _verified, summary, _skipped_existing = self._save_rows_to_config(list(range(len(self.editor_rows))))
-                if summary is not None:
-                    self._refresh_archetype_combo()
+        # Important safety rule:
+        # Regenerate must NOT auto-save editor rows into mapping CSVs.
+        # Users should explicitly use Save Mapping / Save All Mappings first.
+        # This avoids accidental corruption when editing historical grouped rows.
+        self.editor_status_label.setText(
+            "Regenerating using currently saved mappings only (no auto-save from editor rows)."
+        )
 
         if self.current_editor_source is not None:
             # Extract dates from run dir name — supports both:
@@ -3790,16 +5646,15 @@ class StudioWindow(QMainWindow):
                     start_qdate = QDate.fromString(m.group(1), "yyyy-MM-dd")
                     end_qdate = QDate.fromString(m.group(2), "yyyy-MM-dd")
                     if start_qdate.isValid() and end_qdate.isValid():
-                        self.week_start_edit.setDate(start_qdate)
-                        self.week_end_edit.setDate(end_qdate)
                         self.history_points_spin.setValue(1)
+                        self.anchor_date_edit.setDate(end_qdate)
                 except Exception:
                     pass
 
         if self.week_end_edit.date() < self.week_start_edit.date():
             QMessageBox.warning(self, APP_NAME, "Week end must be greater than or equal to week start.")
             return
-        self.editor_status_label.setText("Regenerating grouped outputs using current generator settings...")
+        self.editor_status_label.setText("Regenerating grouped outputs using currently saved mapping files...")
         self.start_generation()
 
     def open_result_item(self, item: QListWidgetItem) -> None:
@@ -3838,10 +5693,36 @@ class StudioWindow(QMainWindow):
         if self.stats_thread is not None:
             self.stats_thread.quit()
             self.stats_thread.wait(3000)
+        if self.challenge_stats_thread is not None:
+            self.challenge_stats_thread.quit()
+            self.challenge_stats_thread.wait(3000)
         super().closeEvent(event)
 
 
+def _install_crash_logger() -> None:
+    """Log unhandled exceptions to a file — pythonw.exe has no console, so without
+    this any exception raised inside a Qt slot (e.g. a button click handler) is
+    silently discarded and the app just appears to do nothing."""
+    repo_root = Path(__file__).resolve().parents[1]
+    log_path = repo_root / "outputs" / "gui_error.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    default_hook = sys.excepthook
+
+    def _hook(exc_type, exc_value, exc_tb) -> None:
+        try:
+            with log_path.open("a", encoding="utf-8") as fh:
+                fh.write(f"\n--- {datetime.now().isoformat()} ---\n")
+                traceback.print_exception(exc_type, exc_value, exc_tb, file=fh)
+        except Exception:
+            pass
+        default_hook(exc_type, exc_value, exc_tb)
+
+    sys.excepthook = _hook
+
+
 def main() -> int:
+    _install_crash_logger()
     app = QApplication([])
     app.setApplicationName(APP_NAME)
     app.setOrganizationName(ORG_NAME)
