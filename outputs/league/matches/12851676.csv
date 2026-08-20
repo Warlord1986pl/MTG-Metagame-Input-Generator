@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851676,2026-08-16,C64,Challenge,QF,Xenowan,2614008,yolad,3342362,2,0,4c HollowOne,Grixis Reanimator
+12851676,2026-08-16,C64,Challenge,QF,thodoris17,2119308,SanPop,2621451,2,0,Esper Blink,Mono-Black Midrange
+12851676,2026-08-16,C64,Challenge,QF,JahBoodle,3150061,acelerado440,3358375,2,1,Esper Blink,Esper Blink
+12851676,2026-08-16,C64,Challenge,QF,ryuumei,933670,STURSY,3273156,2,0,Domain Zoo,Sultai Ritual
+12851676,2026-08-16,C64,Challenge,SF,Xenowan,2614008,ryuumei,933670,2,0,4c HollowOne,Domain Zoo
+12851676,2026-08-16,C64,Challenge,SF,thodoris17,2119308,JahBoodle,3150061,2,1,Esper Blink,Esper Blink
+12851676,2026-08-16,C64,Challenge,F,Xenowan,2614008,thodoris17,2119308,2,0,4c HollowOne,Esper Blink

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848199,2026-07-25,C64,Challenge,QF,oinkmage22,2858193,Sarlanga,643454,2,1,Dimir Midrange,Boros Energy
+12848199,2026-07-25,C64,Challenge,QF,zturchan,476834,MeninoNey,2903591,2,1,Devoted Combo,Living End
+12848199,2026-07-25,C64,Challenge,QF,ShadowTitan1,2130633,jps_17,1066436,2,1,Domain Zoo,Eldrazi Tron
+12848199,2026-07-25,C64,Challenge,QF,RNicoF,2753736,Bigatti,2869870,2,1,Eldrazi Ramp,Jeskai Energy
+12848199,2026-07-25,C64,Challenge,SF,oinkmage22,2858193,zturchan,476834,2,1,Dimir Midrange,Devoted Combo
+12848199,2026-07-25,C64,Challenge,SF,ShadowTitan1,2130633,RNicoF,2753736,2,0,Domain Zoo,Eldrazi Ramp
+12848199,2026-07-25,C64,Challenge,F,oinkmage22,2858193,ShadowTitan1,2130633,2,1,Dimir Midrange,Domain Zoo

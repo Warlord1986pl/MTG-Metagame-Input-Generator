@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848206,2026-07-25,C64,Challenge,QF,pete2fiddy,2942810,levunga21,494936,2,0,Amulet Titan,Song of Creation
+12848206,2026-07-25,C64,Challenge,QF,1OR513N86,614372,Kritik,2707200,2,0,Dimir Midrange,Land Destruction
+12848206,2026-07-25,C64,Challenge,QF,Stanners,2895362,UnbanOko,3044837,2,1,4c HollowOne,Belcher
+12848206,2026-07-25,C64,Challenge,QF,StormQrow,1928132,Terribad,850543,2,0,Mono-Green Eldrazi,BRG
+12848206,2026-07-25,C64,Challenge,SF,StormQrow,1928132,Stanners,2895362,2,0,Mono-Green Eldrazi,4c HollowOne
+12848206,2026-07-25,C64,Challenge,SF,pete2fiddy,2942810,1OR513N86,614372,2,0,Amulet Titan,Dimir Midrange
+12848206,2026-07-25,C64,Challenge,F,pete2fiddy,2942810,StormQrow,1928132,2,0,Amulet Titan,Mono-Green Eldrazi

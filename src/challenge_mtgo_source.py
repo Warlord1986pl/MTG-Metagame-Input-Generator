@@ -96,8 +96,13 @@ class MtgoRegistryEvent:
     date: str
     slug: str
     kind: str  # "challenge" | "premier" | "ignored"
-    size: Optional[int]
+    size: Optional[int]  # tier label (32/64/96/...), NOT attendance -- see player_count
     url: str
+    # Actual headcount from the event JSON's player_count.players, set after fetch (registry
+    # discovery happens before any per-event fetch, so this starts None and is filled in by
+    # build_challenge_dataset once the JSON is in hand). None means not yet fetched/unavailable --
+    # never guessed, never defaulted to the tier size.
+    player_count: Optional[int] = None
 
 
 def _months_between(start_date: date, end_date: date) -> List[Tuple[int, int]]:
@@ -414,6 +419,18 @@ def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
     return decks
 
 
+def _extract_player_count(data: dict) -> Optional[int]:
+    """The real headcount (e.g. the page header's "77 PLAYERS"), from the same JSON blob already
+    fetched for decklists/standings/brackets -- no separate request. Returns None, never 0 or a
+    guess, when the field is absent or unparseable.
+    """
+    raw = (data.get("player_count") or {}).get("players")
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
 def multiset_similarity(a: Dict[str, int], b: Dict[str, int]) -> float:
     keys = set(a) | set(b)
     if not keys:
@@ -721,6 +738,7 @@ def build_challenge_dataset(
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
             mtgo_decks_by_event[c.event_id] = parse_mtgo_event(data)
+            c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
             skipped_events.append(SkippedEvent(c.event_id, c.date, c.size, "challenge", c.url, "PENDING", str(exc)))
             emit(f"[mtgo-dataset] PENDING C{c.size} {c.date} ({c.event_id}): {exc}")
@@ -752,6 +770,12 @@ def build_challenge_dataset(
     event_rows: Dict[str, List[ChallengeEventRow]] = {}
 
     def ingest_labeled_event(c: MtgoRegistryEvent, mg_df: pd.DataFrame, mtgo_decks: List[MtgoEventDeck]) -> None:
+        # Deliberately name-keyed: this is the one place loginid gets *discovered* in the first
+        # place, by correlating MTGGoldfish's roster (mg_df, source of Pilot for this event) against
+        # mtgo.com's roster (mtgo_decks, source of loginid) via normalized display name -- there is
+        # no id to key on yet. This is a same-event, same-moment correlation between two live
+        # fetches, not an identity lookup across time, so it doesn't carry the rename risk that
+        # name-keying history/the league table would.
         mtgo_by_pilot = {normalize_name(d.player): d for d in mtgo_decks}
         rows: List[ChallengeEventRow] = []
         for _, row in mg_df.iterrows():
@@ -812,6 +836,7 @@ def build_challenge_dataset(
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
             decks = parse_mtgo_event(data)
+            c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
             skipped_events.append(SkippedEvent(c.event_id, c.date, c.size, "premier", c.url, "PENDING", str(exc)))
             emit(f"[mtgo-dataset] PENDING premier {c.date} ({c.event_id}): {exc}")
@@ -1195,6 +1220,11 @@ def _build_library_from_history_files(
                 if log:
                     log(f"[rescan] library: could not load cached event {event_id}: {exc}")
                 continue
+            # Deliberately name-keyed: correlates one already-persisted history row's frozen Pilot
+            # against that SAME event's cached JSON to find its deck signature. Same-event lookup,
+            # not a cross-time identity match -- LoginID isn't needed here even though it's
+            # available in `decks`, because nothing here is trying to track this pilot across
+            # different events.
             decks_by_pilot = {normalize_name(d.player): d for d in decks}
             for _, row in group.iterrows():
                 deck_obj = decks_by_pilot.get(normalize_name(str(row["Pilot"])))
@@ -1251,7 +1281,7 @@ def rescan_history_for_unresolved(
         if not event_id:
             continue
         row0 = group.iloc[0]
-        slug, event_date, tier_raw = str(row0["EventSlug"]), str(row0["EventDate"]), str(row0["ChallengeSize"])
+        slug, event_date, tier_raw = str(row0["EventSlug"]), str(row0["EventDate"]), str(row0["Tier"])
         try:
             size = int(tier_raw)
         except ValueError:
@@ -1263,6 +1293,10 @@ def rescan_history_for_unresolved(
         except Exception as exc:
             emit(f"[rescan] could not fetch event {event_id} ({url}): {exc}")
             continue
+        # Deliberately name-keyed, same-event correlation as above -- this rescan only ever writes
+        # Deck/Archetype (see hist.loc[idx, "Deck"]/["Archetype"] below), never Pilot or LoginID,
+        # so a stale/renamed name here just means the row is skipped ("not found in mtgo.com
+        # roster"), not silently mis-corrected.
         decks_by_pilot = {normalize_name(d.player): d for d in decks}
 
         for idx, row in group.iterrows():

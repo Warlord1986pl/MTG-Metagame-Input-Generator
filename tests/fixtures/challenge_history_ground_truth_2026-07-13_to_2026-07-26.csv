@@ -1,4 +1,4 @@
-﻿EventDate,Format,ChallengeSize,EventSlug,EventID,Place,Deck,Archetype,Pilot
+﻿EventDate,Format,Tier,EventSlug,EventID,Place,Deck,Archetype,Pilot
 2026-07-26,Modern,64,modern-challenge-64,12848217,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,MLGSKELETONS
 2026-07-26,Modern,64,modern-challenge-64,12848217,2,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Dreddybajs
 2026-07-26,Modern,64,modern-challenge-64,12848217,3,UBRG,Control,MahfuzVanGogh

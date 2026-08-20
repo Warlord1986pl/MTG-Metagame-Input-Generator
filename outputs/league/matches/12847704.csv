@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847704,2026-07-19,C64,Challenge,QF,eclipse4343,2714224,joelstephens94,3488580,2,0,UW Control,Eldrazi Tron
+12847704,2026-07-19,C64,Challenge,QF,jessy_samek,922706,iomatic,900413,2,1,Tron,The Rock
+12847704,2026-07-19,C64,Challenge,QF,kennydarko,2096186,Lightspirit,3222070,2,0,Azorius Blink,Eldrazi Ramp
+12847704,2026-07-19,C64,Challenge,QF,EsperWTB,3144094,kasiso,2257869,2,1,Ruby Storm,Boros Energy
+12847704,2026-07-19,C64,Challenge,SF,EsperWTB,3144094,kennydarko,2096186,2,0,Ruby Storm,Azorius Blink
+12847704,2026-07-19,C64,Challenge,SF,eclipse4343,2714224,jessy_samek,922706,2,1,UW Control,Tron
+12847704,2026-07-19,C64,Challenge,F,eclipse4343,2714224,EsperWTB,3144094,2,1,UW Control,Ruby Storm

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847717,2026-07-20,C64,Challenge,QF,Calambity,979328,Scorpion100,2872570,2,1,Ruby Storm,Neobrand
+12847717,2026-07-20,C64,Challenge,QF,percussion_mike,3085850,MTGeeGee,2812852,2,1,4c HollowOne,Broodscale Combo
+12847717,2026-07-20,C64,Challenge,QF,ejk,1952341,Stealthmagician,2334451,2,1,Domain Zoo,Tron
+12847717,2026-07-20,C64,Challenge,QF,sultai4lyfe,1614331,azpharot,3023527,2,1,Broodscale Combo,Boros Energy
+12847717,2026-07-20,C64,Challenge,SF,percussion_mike,3085850,ejk,1952341,2,0,4c HollowOne,Domain Zoo
+12847717,2026-07-20,C64,Challenge,SF,Calambity,979328,sultai4lyfe,1614331,2,0,Ruby Storm,Broodscale Combo
+12847717,2026-07-20,C64,Challenge,F,percussion_mike,3085850,Calambity,979328,2,0,4c HollowOne,Ruby Storm

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12850696,2026-08-05,C32,Challenge,QF,FynnOfBlood,2799885,YungDingo,2928451,2,0,Eldrazi Tron,Eldrazi Ramp
+12850696,2026-08-05,C32,Challenge,QF,BowBloBiw,2768190,GregorV,3333240,2,0,Prowess,Belcher
+12850696,2026-08-05,C32,Challenge,QF,JustAnotherGuy83,2691811,ShadowTitan1,2130633,2,1,Belcher,Domain Zoo
+12850696,2026-08-05,C32,Challenge,QF,lilcreacher,3447454,Rashek,2702005,2,0,Azorius Blink,Boros Energy
+12850696,2026-08-05,C32,Challenge,SF,BowBloBiw,2768190,FynnOfBlood,2799885,2,1,Prowess,Eldrazi Tron
+12850696,2026-08-05,C32,Challenge,SF,JustAnotherGuy83,2691811,lilcreacher,3447454,2,0,Belcher,Azorius Blink
+12850696,2026-08-05,C32,Challenge,F,BowBloBiw,2768190,JustAnotherGuy83,2691811,2,0,Prowess,Belcher

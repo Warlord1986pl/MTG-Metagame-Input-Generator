@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848246,2026-07-28,C64,Challenge,QF,FranBenitez91,319589,Omegauo,30930,2,1,Goryo's Vengeance,Esper Blink
+12848246,2026-07-28,C64,Challenge,QF,manohito,2908947,Bezerra_da_Silva,3169903,2,0,Broodscale Combo,4c HollowOne
+12848246,2026-07-28,C64,Challenge,QF,selesneal,1618758,Capitano_CL,535716,2,0,Devoted Combo,Boros Energy
+12848246,2026-07-28,C64,Challenge,QF,nahuel10,1942357,MVRS,3482156,2,0,Prowess,Goryo's Vengeance
+12848246,2026-07-28,C64,Challenge,SF,nahuel10,1942357,manohito,2908947,2,1,Prowess,Broodscale Combo
+12848246,2026-07-28,C64,Challenge,SF,selesneal,1618758,FranBenitez91,319589,2,0,Devoted Combo,Goryo's Vengeance
+12848246,2026-07-28,C64,Challenge,F,nahuel10,1942357,selesneal,1618758,2,1,Prowess,Devoted Combo

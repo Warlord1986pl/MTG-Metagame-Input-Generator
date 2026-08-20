@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851632,2026-08-13,C64,Challenge,QF,eswaff,3135877,DskBayWolf,3220713,2,0,Goryo's Vengeance,Goryo's Vengeance
+12851632,2026-08-13,C64,Challenge,QF,fazparte,3106246,manohito,2908947,2,0,Boros Energy,Broodscale Combo
+12851632,2026-08-13,C64,Challenge,QF,MercurialChemister,2839061,TSPJendrek,1205798,2,1,Domain Zoo,Esper Blink
+12851632,2026-08-13,C64,Challenge,QF,Scappie,1129308,The_Yoda,1197356,2,0,Eldrazi Tron,Yawgmoth
+12851632,2026-08-13,C64,Challenge,SF,eswaff,3135877,MercurialChemister,2839061,2,0,Goryo's Vengeance,Domain Zoo
+12851632,2026-08-13,C64,Challenge,SF,fazparte,3106246,Scappie,1129308,2,1,Boros Energy,Eldrazi Tron
+12851632,2026-08-13,C64,Challenge,F,eswaff,3135877,fazparte,3106246,2,0,Goryo's Vengeance,Boros Energy

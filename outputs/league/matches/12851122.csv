@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851122,2026-08-10,C96,Challenge,QF,RespectTheCat,2788118,JustAnotherGuy83,2691811,2,1,Esper Blink,Belcher
+12851122,2026-08-10,C96,Challenge,QF,ziofrancone,2676196,_bwonsamdi_,2868980,2,0,Broodscale Combo,Ruby Storm
+12851122,2026-08-10,C96,Challenge,QF,solaec0501,1773910,RCMerriam,1041920,2,1,Affinity,Broodscale Combo
+12851122,2026-08-10,C96,Challenge,QF,Sven745,3035942,nightwitch,1780347,2,0,Prowess,Devoted Combo
+12851122,2026-08-10,C96,Challenge,SF,Sven745,3035942,solaec0501,1773910,2,0,Prowess,Affinity
+12851122,2026-08-10,C96,Challenge,SF,ziofrancone,2676196,RespectTheCat,2788118,2,0,Broodscale Combo,Esper Blink
+12851122,2026-08-10,C96,Challenge,F,Sven745,3035942,ziofrancone,2676196,2,0,Prowess,Broodscale Combo

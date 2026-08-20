@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848164,2026-07-22,C96,Challenge,QF,4FunNoWin,3479773,Thunus,3076886,2,1,4c HollowOne,Broodscale Combo
+12848164,2026-07-22,C96,Challenge,QF,Xerk,1089456,Hongfu_Eureka,3070695,2,1,Yawgmoth,Goryo's Vengeance
+12848164,2026-07-22,C96,Challenge,QF,pedronavaja,3540949,Andeloth,2107460,2,0,Affinity,UBR
+12848164,2026-07-22,C96,Challenge,QF,HuUeBR,2981401,justFeather,2446403,2,1,Eldrazi Tron,Mono-Green Eldrazi
+12848164,2026-07-22,C96,Challenge,SF,Xerk,1089456,HuUeBR,2981401,2,0,Yawgmoth,Eldrazi Tron
+12848164,2026-07-22,C96,Challenge,SF,4FunNoWin,3479773,pedronavaja,3540949,2,0,4c HollowOne,Affinity
+12848164,2026-07-22,C96,Challenge,F,Xerk,1089456,4FunNoWin,3479773,2,0,Yawgmoth,4c HollowOne

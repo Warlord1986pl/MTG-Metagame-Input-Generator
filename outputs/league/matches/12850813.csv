@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12850813,2026-08-07,C64,Challenge,QF,eclipse4343,2714224,JuanmaAT,2695862,2,0,UW Control,Dimir Midrange
+12850813,2026-08-07,C64,Challenge,QF,klien7,2564773,Sarlanga,643454,2,1,Grixis Reanimator,Boros Energy
+12850813,2026-08-07,C64,Challenge,QF,Mtyrant,3023075,Laplasjan,1706283,2,1,WUBRG,Devoted Combo
+12850813,2026-08-07,C64,Challenge,QF,_Batutinha_,453404,scipios,2454058,2,1,Esper Blink,Devoted Combo
+12850813,2026-08-07,C64,Challenge,SF,_Batutinha_,453404,Mtyrant,3023075,2,0,Esper Blink,WUBRG
+12850813,2026-08-07,C64,Challenge,SF,eclipse4343,2714224,klien7,2564773,2,0,UW Control,Grixis Reanimator
+12850813,2026-08-07,C64,Challenge,F,eclipse4343,2714224,_Batutinha_,453404,2,0,UW Control,Esper Blink

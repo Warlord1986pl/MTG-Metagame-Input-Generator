@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849451,2026-07-31,C64,Challenge,QF,lunaloveee,2886236,moviemaker,992526,2,0,Goryo's Vengeance,Broodscale Combo
+12849451,2026-07-31,C64,Challenge,QF,Univerce,2926088,Lapsy,2939619,2,0,Broodscale Combo,BRG
+12849451,2026-07-31,C64,Challenge,QF,_Batutinha_,453404,sokos13,486439,2,0,Esper Blink,Esper Blink
+12849451,2026-07-31,C64,Challenge,QF,FranBenitez91,319589,Based,943247,2,1,Goryo's Vengeance,Boros Energy
+12849451,2026-07-31,C64,Challenge,SF,Univerce,2926088,_Batutinha_,453404,2,0,Broodscale Combo,Esper Blink
+12849451,2026-07-31,C64,Challenge,SF,lunaloveee,2886236,FranBenitez91,319589,2,1,Goryo's Vengeance,Goryo's Vengeance
+12849451,2026-07-31,C64,Challenge,F,lunaloveee,2886236,Univerce,2926088,2,0,Goryo's Vengeance,Broodscale Combo

@@ -99,7 +99,7 @@ def test_challenge_stats_matches_frozen_ground_truth() -> None:
         pilots = xl.parse("BestPilots")
         assert int(pilots["Wins"].sum()) == EXPECTED_TOTAL_TROPHIES
         assert int(pilots["Top8"].sum()) == EXPECTED_TOTAL_TOP8_ENTRIES
-        assert int(pilots["Appearances"].sum()) == EXPECTED_TOTAL_TOP32_ENTRIES
+        assert int(pilots["Top32"].sum()) == EXPECTED_TOTAL_TOP32_ENTRIES
 
         # No C96 sheet used to exist at all (Phase 2a/2b gap) -- lock in that it does now.
         assert "C96_Decks" in xl.sheet_names

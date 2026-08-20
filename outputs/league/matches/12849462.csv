@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849462,2026-08-01,C32,Challenge,QF,RAND0MSLAY3R,3260512,CrownedRuti,2710270,2,1,Devoted Combo,Amulet Titan
+12849462,2026-08-01,C32,Challenge,QF,surgetemelo,3473231,reidq7,3155916,2,1,Goryo's Vengeance,Amulet Titan
+12849462,2026-08-01,C32,Challenge,QF,StormQrow,1928132,kyporioth,1713588,2,1,Mono-Green Eldrazi,4c HollowOne
+12849462,2026-08-01,C32,Challenge,QF,Lightspirit,3222070,Rashek,2702005,2,1,Eldrazi Ramp,Living End
+12849462,2026-08-01,C32,Challenge,SF,Lightspirit,3222070,StormQrow,1928132,2,1,Eldrazi Ramp,Mono-Green Eldrazi
+12849462,2026-08-01,C32,Challenge,SF,RAND0MSLAY3R,3260512,surgetemelo,3473231,2,1,Devoted Combo,Goryo's Vengeance
+12849462,2026-08-01,C32,Challenge,F,Lightspirit,3222070,RAND0MSLAY3R,3260512,2,1,Eldrazi Ramp,Devoted Combo

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847169,2026-07-14,C64,Challenge,QF,xl_snapcaster,2232658,Martin_Dominguez,1755256,2,0,Jeskai Energy,Jeskai Energy
+12847169,2026-07-14,C64,Challenge,QF,sgcyrus,434546,Loreington,1994102,2,0,Eldrazi Ramp,Ruby Storm
+12847169,2026-07-14,C64,Challenge,QF,Cqt,784348,VizosMTG,3474034,2,1,Boros Energy,Boros Energy
+12847169,2026-07-14,C64,Challenge,QF,Ashigaruu,2891700,Oscar_Franco,2114194,2,1,Broodscale Combo,Ruby Storm
+12847169,2026-07-14,C64,Challenge,SF,xl_snapcaster,2232658,Ashigaruu,2891700,2,1,Jeskai Energy,Broodscale Combo
+12847169,2026-07-14,C64,Challenge,SF,sgcyrus,434546,Cqt,784348,2,1,Eldrazi Ramp,Boros Energy
+12847169,2026-07-14,C64,Challenge,F,sgcyrus,434546,xl_snapcaster,2232658,2,0,Eldrazi Ramp,Jeskai Energy

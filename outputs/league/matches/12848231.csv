@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848231,2026-07-27,C96,Challenge,QF,JPA93,1181017,yunyu1234,3253656,2,0,Grixis Reanimator,Goryo's Vengeance
+12848231,2026-07-27,C96,Challenge,QF,Kritik,2707200,Nblearchange1,2627221,2,1,Land Destruction,Ragavan
+12848231,2026-07-27,C96,Challenge,QF,Porks,2796105,avelazquez14,2155428,2,0,Eldrazi Tron,Dimir Midrange
+12848231,2026-07-27,C96,Challenge,QF,Serosocram,3477626,yriel,2537131,2,1,Esper Reanimator,Esper Blink
+12848231,2026-07-27,C96,Challenge,SF,Kritik,2707200,Porks,2796105,2,1,Land Destruction,Eldrazi Tron
+12848231,2026-07-27,C96,Challenge,SF,JPA93,1181017,Serosocram,3477626,2,1,Grixis Reanimator,Esper Reanimator
+12848231,2026-07-27,C96,Challenge,F,JPA93,1181017,Kritik,2707200,2,0,Grixis Reanimator,Land Destruction

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848248,2026-07-29,C32,Challenge,QF,jvidarte,2651868,ChuChuMTFKR,2886707,2,1,Prowess,Domain Zoo
+12848248,2026-07-29,C32,Challenge,QF,angelsjeffrey,2079715,thatguy_champ,2917923,2,0,Boros Energy,Azorius Control
+12848248,2026-07-29,C32,Challenge,QF,dramaticRoyalty,3353395,JustAnotherGuy83,2691811,2,0,Boros Energy,Neobrand
+12848248,2026-07-29,C32,Challenge,QF,Venom01,3535587,hugofreitas1,1997683,2,0,Broodscale Combo,Ruby Storm
+12848248,2026-07-29,C32,Challenge,SF,dramaticRoyalty,3353395,Venom01,3535587,2,1,Boros Energy,Broodscale Combo
+12848248,2026-07-29,C32,Challenge,SF,jvidarte,2651868,angelsjeffrey,2079715,2,1,Prowess,Boros Energy
+12848248,2026-07-29,C32,Challenge,F,dramaticRoyalty,3353395,jvidarte,2651868,2,0,Boros Energy,Prowess

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848190,2026-07-24,C64,Challenge,QF,mikeleee,2708396,KingHairy,2185747,2,1,Dimir Midrange,Neobrand
+12848190,2026-07-24,C64,Challenge,QF,Aldreen,1074736,Jumba,2618500,2,0,BRG,Eldrazi Tron
+12848190,2026-07-24,C64,Challenge,QF,May_Chang,2671586,Dioferreira,1950164,2,1,UW Control,Dimir Midrange
+12848190,2026-07-24,C64,Challenge,QF,Alakai,676549,TheRussianGuy,3251344,2,1,Neobrand,Land Destruction
+12848190,2026-07-24,C64,Challenge,SF,Aldreen,1074736,Alakai,676549,2,0,BRG,Neobrand
+12848190,2026-07-24,C64,Challenge,SF,May_Chang,2671586,mikeleee,2708396,2,1,UW Control,Dimir Midrange
+12848190,2026-07-24,C64,Challenge,F,Aldreen,1074736,May_Chang,2671586,2,1,BRG,UW Control

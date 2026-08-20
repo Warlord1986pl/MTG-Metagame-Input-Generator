@@ -111,7 +111,7 @@ def test_fail_closed() -> None:
         cli_history = tmp_dir / "cli_outputs" / "challenge_history_modern.csv"
         cli_history.parent.mkdir(parents=True, exist_ok=True)
         cli_history.write_text(
-            "EventDate,Format,ChallengeSize,EventSlug,EventID,Place,Deck,Archetype,Pilot\n"
+            "EventDate,Format,Tier,EventSlug,EventID,Place,Deck,Archetype,Pilot\n"
             "2026-08-03,Modern,64,modern-challenge-64,1,1,DeckA,ArchA,PilotA\n",
             encoding="utf-8",
         )
@@ -174,7 +174,7 @@ def test_premier_none_explicit() -> None:
     try:
         history_csv = tmp_dir / "challenge_history_modern.csv"
         history_csv.write_text(
-            "EventDate,Format,ChallengeSize,EventSlug,EventID,Place,Deck,Archetype,Pilot\n", encoding="utf-8"
+            "EventDate,Format,Tier,EventSlug,EventID,Place,Deck,Archetype,Pilot\n", encoding="utf-8"
         )
 
         def fake_registry_no_premier(format_name, start_date, end_date, log=None):

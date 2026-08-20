@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847150,2026-07-13,C64,Challenge,QF,Kollslaw,3311758,UnusualAnt,3275763,2,0,Amulet Titan,Boros Energy
+12847150,2026-07-13,C64,Challenge,QF,jayrod115,2760324,gazmon48,1636994,2,1,Boros Energy,Affinity
+12847150,2026-07-13,C64,Challenge,QF,bananadisaster,3442638,pedronavaja,3540949,2,0,Broodscale Combo,Affinity
+12847150,2026-07-13,C64,Challenge,QF,yeojlil,3183766,MC_amp2267,2729232,2,0,Boros Energy,Broodscale Combo
+12847150,2026-07-13,C64,Challenge,SF,yeojlil,3183766,bananadisaster,3442638,2,1,Boros Energy,Broodscale Combo
+12847150,2026-07-13,C64,Challenge,SF,Kollslaw,3311758,jayrod115,2760324,2,0,Amulet Titan,Boros Energy
+12847150,2026-07-13,C64,Challenge,F,Kollslaw,3311758,yeojlil,3183766,2,0,Amulet Titan,Boros Energy

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847708,2026-07-19,C32,Challenge,QF,CrownedRuti,2710270,sioutis_kk,3499660,2,1,Amulet Titan,Affinity
+12847708,2026-07-19,C32,Challenge,QF,Lollopollo2001,2373595,TomBombadi1,2607787,2,1,Boros Energy,Broodscale Combo
+12847708,2026-07-19,C32,Challenge,QF,NuBlkAu,1719515,AeonLock,3469304,2,1,Domain Zoo,Belcher
+12847708,2026-07-19,C32,Challenge,QF,JAJC,2915741,jvidarte,2651868,1,0,Prowess,Prowess
+12847708,2026-07-19,C32,Challenge,SF,NuBlkAu,1719515,Lollopollo2001,2373595,2,1,Domain Zoo,Boros Energy
+12847708,2026-07-19,C32,Challenge,SF,JAJC,2915741,CrownedRuti,2710270,2,1,Prowess,Amulet Titan
+12847708,2026-07-19,C32,Challenge,F,JAJC,2915741,NuBlkAu,1719515,2,0,Prowess,Domain Zoo

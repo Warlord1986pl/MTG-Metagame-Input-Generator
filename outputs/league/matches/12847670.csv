@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,QF,lgqueiroz3,2011282,Pigprob,3448603,2,0,Grixis Reanimator,Through the Breach
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,QF,Sven745,3035942,vento1223,3381476,2,1,Prowess,Boros Energy
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,QF,felider,2322146,PJKP,3400071,2,0,Goryo's Vengeance,4c HollowOne
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,QF,Curtisaxel,1911445,VampireDiaries,2283377,2,1,Boros Energy,Goryo's Vengeance
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,SF,felider,2322146,Curtisaxel,1911445,2,0,Goryo's Vengeance,Boros Energy
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,SF,Sven745,3035942,lgqueiroz3,2011282,2,0,Prowess,Grixis Reanimator
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,F,felider,2322146,Sven745,3035942,2,0,Goryo's Vengeance,Prowess

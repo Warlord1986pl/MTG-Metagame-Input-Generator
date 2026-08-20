@@ -1,0 +1,7 @@
+# League data is version-controlled (see .gitignore) and written as UTF-8 without BOM,
+# LF line endings, by league_engine._write_csv_lf. Keep it that way on every platform/checkout.
+outputs/league/results/*.csv text eol=lf
+outputs/league/pilot_league_*.csv text eol=lf
+outputs/league/season_config.csv text eol=lf
+outputs/league/matches/*.csv text eol=lf
+tests/fixtures/league/*.csv text eol=lf

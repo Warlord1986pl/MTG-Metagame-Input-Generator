@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849507,2026-08-04,C64,Challenge,QF,Alico,2640770,NathanOfTheGiltLeaf,2968680,2,0,Grixis Reanimator,Mardu Energy
+12849507,2026-08-04,C64,Challenge,QF,Omegauo,30930,minimiz,2495727,2,0,Esper Blink,Dimir Murktide
+12849507,2026-08-04,C64,Challenge,QF,Rashek,2702005,oinkmage22,2858193,2,1,Boros Energy,Dimir Midrange
+12849507,2026-08-04,C64,Challenge,QF,Dydyk95,2940494,VizosMTG,3474034,2,0,Devoted Combo,Dimir Midrange
+12849507,2026-08-04,C64,Challenge,SF,Alico,2640770,Omegauo,30930,2,1,Grixis Reanimator,Esper Blink
+12849507,2026-08-04,C64,Challenge,SF,Rashek,2702005,Dydyk95,2940494,2,0,Boros Energy,Devoted Combo
+12849507,2026-08-04,C64,Challenge,F,Rashek,2702005,Alico,2640770,2,1,Boros Energy,Grixis Reanimator

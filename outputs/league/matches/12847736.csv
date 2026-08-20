@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847736,2026-07-21,C64,Challenge,QF,hugofreitas1,1997683,Jagger002,3157320,2,0,Ruby Storm,Azorius Blink
+12847736,2026-07-21,C64,Challenge,QF,JustAnotherGuy83,2691811,Slyvester3,2204017,2,1,Neobrand,Jeskai Energy
+12847736,2026-07-21,C64,Challenge,QF,yriel,2537131,Cachorrowo,2720911,2,0,Esper Blink,Ruby Storm
+12847736,2026-07-21,C64,Challenge,QF,jussupinator,880239,WaffleWiz,3254787,2,1,Goryo's Vengeance,Broodscale Combo
+12847736,2026-07-21,C64,Challenge,SF,JustAnotherGuy83,2691811,yriel,2537131,2,0,Neobrand,Esper Blink
+12847736,2026-07-21,C64,Challenge,SF,jussupinator,880239,hugofreitas1,1997683,2,0,Goryo's Vengeance,Ruby Storm
+12847736,2026-07-21,C64,Challenge,F,JustAnotherGuy83,2691811,jussupinator,880239,2,1,Neobrand,Goryo's Vengeance

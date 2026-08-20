@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849474,2026-08-02,C64,Challenge,QF,timotomat0,903565,YungDingo,2928451,2,1,Boros Energy,Eldrazi Ramp
+12849474,2026-08-02,C64,Challenge,QF,ipadkid,3560747,adebevoise,2224096,2,1,Dimir Midrange,Dimir Murktide
+12849474,2026-08-02,C64,Challenge,QF,Lollopollo2001,2373595,ShadowTitan1,2130633,2,0,Boros Energy,Domain Zoo
+12849474,2026-08-02,C64,Challenge,QF,PETRICHOR21,2769869,scipios,2454058,2,1,Yawgmoth,Devoted Combo
+12849474,2026-08-02,C64,Challenge,SF,Lollopollo2001,2373595,PETRICHOR21,2769869,2,1,Boros Energy,Yawgmoth
+12849474,2026-08-02,C64,Challenge,SF,ipadkid,3560747,timotomat0,903565,1,0,Dimir Midrange,Boros Energy
+12849474,2026-08-02,C64,Challenge,F,Lollopollo2001,2373595,ipadkid,3560747,2,0,Boros Energy,Dimir Midrange

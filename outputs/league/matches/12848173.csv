@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848173,2026-07-23,C64,Challenge,QF,moon11,1471145,Polikasoll,2237473,2,1,Domain Zoo,Ruby Storm
+12848173,2026-07-23,C64,Challenge,QF,NuBlkAu,1719515,Alico,2640770,2,0,Domain Zoo,UW Control
+12848173,2026-07-23,C64,Challenge,QF,GWT,3544040,Tinker_deck,2981803,2,1,Azorius Control,Eldrazi Tron
+12848173,2026-07-23,C64,Challenge,QF,yulinl,2918398,Jumba,2618500,2,1,Dimir Midrange,Eldrazi Tron
+12848173,2026-07-23,C64,Challenge,SF,yulinl,2918398,GWT,3544040,2,1,Dimir Midrange,Azorius Control
+12848173,2026-07-23,C64,Challenge,SF,NuBlkAu,1719515,moon11,1471145,2,0,Domain Zoo,Domain Zoo
+12848173,2026-07-23,C64,Challenge,F,NuBlkAu,1719515,yulinl,2918398,2,0,Domain Zoo,Dimir Midrange

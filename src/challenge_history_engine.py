@@ -9,8 +9,9 @@ from __future__ import annotations
 import csv
 import json
 import re
+import shutil
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional
 from math import comb
@@ -27,13 +28,27 @@ import pandas as pd
 HISTORY_COLS: List[str] = [
     "EventDate",
     "Format",
-    "ChallengeSize",
+    "Tier",
+    # Tier (32/64/96/...) is the prize-structure label, not attendance -- Wizards documents e.g.
+    # Small Challenges as 32-128 players, so the tier alone says almost nothing about how many
+    # people actually played. PlayerCount is the real headcount from the event page/JSON, kept as
+    # a separate column rather than derived from Tier. Only backfilled from 2026-07-13 onward
+    # (where EventID -- and therefore the cached mtgo.com JSON -- is available); empty ("") means
+    # "not available", which must never be confused with 0.
+    "PlayerCount",
     "EventSlug",
     "EventID",
     "Place",
     "Deck",
     "Archetype",
     "Pilot",
+    # The stable per-account id from the mtgo.com JSON (decklists[]/standings[]/final_rank[]
+    # loginid) -- survives an account rename, unlike Pilot. This is the identity key everything
+    # downstream of history (the league table) should group on; Pilot is a display label, frozen
+    # at first capture same as everywhere else in this file. Only backfilled from 2026-07-13
+    # onward, same rule and same reason as PlayerCount -- empty means not available, never 0 or
+    # "unknown". Backfilling this column never re-derives Pilot for an existing row.
+    "LoginID",
 ]
 
 RECON_DECKLIST_RE = re.compile(
@@ -43,6 +58,20 @@ RECON_DECKLIST_RE = re.compile(
 
 def normalize_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
+
+
+def _identity_key(login_id: object, pilot: str) -> str:
+    """Same convention as league_engine._identity_key (duplicated, not imported -- league_engine
+    is a *consumer* of this module, not the other way around): LoginID when available, falling
+    back to the display name otherwise, with an "id:"/"name:" prefix so the two kinds of key can
+    never collide even if a LoginID string happened to equal some pilot's display name. Used by
+    _pilot_table (BestPilots) and _presence_table (DistinctPilots/TopPilotShare) so a renamed
+    account is one identity, not two, in the metagame-analysis sheets too.
+    """
+    lid = str(login_id or "").strip()
+    if lid:
+        return f"id:{lid}"
+    return f"name:{str(pilot or '').strip()}"
 
 
 def _clean_history_df_before_write(df: pd.DataFrame) -> pd.DataFrame:
@@ -66,6 +95,38 @@ class ChallengeStatisticsResult:
     deck_rows: int
     chart_paths: list[Path]
     complete: bool = False
+    finalists_csv: Optional[Path] = None
+
+
+def backup_history_file(
+    history_csv: Path, log: Optional[Callable[[str], None]] = None, keep: int = 20
+) -> Optional[Path]:
+    """Copies *history_csv* to backups/history/<filename>.<timestamp>.bak before any write to it.
+
+    challenge_history_modern.csv and premier_history_modern.csv cannot be regenerated: rebuilding
+    either from a fresh fetch would re-derive every Pilot name from whatever account name mtgo.com/
+    MTGGoldfish currently shows, silently rewriting history (see the note at the Pilot write in
+    sync_challenge_history_window). This backup is how a bad write gets undone, not routine hygiene.
+
+    Keeps only the most recent *keep* backups per filename (the timestamp format sorts
+    lexicographically == chronologically, so pruning is a plain filename sort). Returns the backup
+    path, or None if *history_csv* didn't exist yet (nothing to back up on first-ever creation).
+    """
+    if not history_csv.exists():
+        return None
+    backup_dir = history_csv.resolve().parent.parent / "backups" / "history"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    backup_path = backup_dir / f"{history_csv.name}.{timestamp}.bak"
+    shutil.copy2(history_csv, backup_path)
+    if log is not None:
+        log(f"[history-backup] {history_csv.name} -> {backup_path}")
+
+    existing = sorted(backup_dir.glob(f"{history_csv.name}.*.bak"), key=lambda p: p.name)
+    for stale in existing[:-keep]:
+        stale.unlink()
+
+    return backup_path
 
 
 def load_challenge_history(history_csv: Path) -> pd.DataFrame:
@@ -102,16 +163,24 @@ def append_to_challenge_history(
             {
                 "EventDate": event_date,
                 "Format": fmt,
-                "ChallengeSize": str(challenge_size),
+                "Tier": str(challenge_size),
+                # No player_count field available from this legacy local-recon path (it reads
+                # already-saved per-run decklist CSVs, not the mtgo.com JSON) -- left blank, same
+                # as any pre-2026-07-13 row, rather than guessed.
+                "PlayerCount": "",
                 "EventSlug": slug,
                 "EventID": str(event_info.get("event_id") or ""),
                 "Place": str(row.get("Place") or ""),
                 "Deck": str(row.get("Deck") or "").strip(),
                 "Archetype": str(row.get("Archetype") or "").strip(),
                 "Pilot": str(row.get("Pilot") or "").strip(),
+                # No loginid available from this legacy local-recon path either -- same reasoning
+                # as PlayerCount above.
+                "LoginID": "",
             }
         )
 
+    backup_history_file(history_csv, log=log)
     existing = load_challenge_history(history_csv)
     if not existing.empty:
         existing = existing[existing["EventSlug"].astype(str).str.strip() != slug]
@@ -210,22 +279,48 @@ def sync_challenge_history_window(
             if key in preserved:
                 deck, archetype = preserved[key]
                 preserved_count += 1
+            player_count = getattr(event, "player_count", None)
             new_rows.append(
                 {
                     "EventDate": event.date,
                     "Format": format_name,
-                    "ChallengeSize": str(event.size),
+                    "Tier": str(event.size),
+                    "PlayerCount": str(player_count) if player_count is not None else "",
                     "EventSlug": event.slug,
                     "EventID": event.event_id,
                     "Place": str(row.place),
                     "Deck": deck,
                     "Archetype": archetype,
+                    # PILOT NAMES ARE FROZEN AT FIRST CAPTURE. mtgo.com (and MTGGoldfish, which
+                    # most Challenge rows' Pilot actually comes from via _parse_single_challenge --
+                    # the mtgo.com JSON here is only used for loginid/deck-signature lookup on the
+                    # "clean" path; premier rows and collision-losing Challenge rows DO come
+                    # straight from the mtgo.com JSON via _classify_event_decks) shows whatever an
+                    # account is CURRENTLY named, not what it was named when the event was played.
+                    # A fresh fetch of a July 2026 event today can legitimately return a different
+                    # Pilot at the same placement than what's already in this file -- confirmed:
+                    # justAlice -> justFeather (5 events) and MARZIANO -> surgetemelo (1 event),
+                    # renamed on mtgo.com's side between 2026-07-23 and 2026-07-27, while these
+                    # rows kept whatever name was captured before that. That's correct, not a bug.
+                    #
+                    # This is why sync_challenge_history_window only ever purges+rebuilds rows for
+                    # events still present in *this run's* fresh registry/window (see to_drop
+                    # above) -- a normal weekly run's window never overlaps an already-synced one,
+                    # so an already-written row is never revisited. Re-running this function over
+                    # an ALREADY-SYNCED window (e.g. an intentional backfill) WILL re-derive Pilot
+                    # from a fresh fetch and can silently rename rows throughout the file. Do not
+                    # add a "refresh existing rows" path without deliberately deciding to do so --
+                    # Pilot is a display label, not identity; LoginID (below) is the identity key
+                    # everything downstream (the league table) groups on, and is itself never
+                    # re-derived for an existing row either, for the same reason.
                     "Pilot": row.pilot,
+                    "LoginID": row.loginid,
                 }
             )
     if preserved_count:
         emit(f"[challenge-history] Restored {preserved_count} previously-resolved deck(s) that the fresh classification alone would have re-flagged")
 
+    backup_history_file(history_csv, log=log)
     combined = pd.concat([existing, pd.DataFrame(new_rows, columns=HISTORY_COLS)], ignore_index=True)
     history_csv.parent.mkdir(parents=True, exist_ok=True)
     combined = _clean_history_df_before_write(combined)
@@ -329,6 +424,7 @@ def apply_challenge_review_selections(
 
     if applied:
         hist = _clean_history_df_before_write(hist)
+        backup_history_file(history_csv, log=log)
         hist.to_csv(history_csv, index=False, encoding="utf-8-sig")
         emit(f"[apply-review] Wrote {applied} correction(s) to {history_csv}")
     if not_found:
@@ -365,7 +461,7 @@ def apply_review_corrections(
 def find_same_day_tier_collisions(
     history_csv: Path, format_name: Optional[str] = None
 ) -> pd.DataFrame:
-    """Scan the full persisted history for (EventDate, ChallengeSize) groups that contain more
+    """Scan the full persisted history for (EventDate, Tier) groups that contain more
     than one distinct EventSlug, across all tiers -- not just C32/C64.
 
     For each colliding group, reconstructs each slug's roster and compares content signatures
@@ -373,7 +469,7 @@ def find_same_day_tier_collisions(
     safe-to-merge MTGO republish duplicate (matching rosters) or a genuine collision that needs
     manual review (differing rosters). Read-only: does not modify *history_csv*.
 
-    Returns a DataFrame with columns: EventDate, ChallengeSize, SlugCount, EventSlugs,
+    Returns a DataFrame with columns: EventDate, Tier, SlugCount, EventSlugs,
     ContentHashesMatch, Signatures.
     """
     try:
@@ -384,7 +480,7 @@ def find_same_day_tier_collisions(
     hist = load_challenge_history(history_csv)
     if hist.empty:
         return pd.DataFrame(
-            columns=["EventDate", "ChallengeSize", "SlugCount", "EventSlugs", "ContentHashesMatch", "Signatures"]
+            columns=["EventDate", "Tier", "SlugCount", "EventSlugs", "ContentHashesMatch", "Signatures"]
         )
 
     if format_name is not None:
@@ -392,11 +488,11 @@ def find_same_day_tier_collisions(
         hist = hist[hist["Format"].astype(str).apply(normalize_name) == fmt_norm].copy()
 
     hist["EventDate"] = hist["EventDate"].astype(str).str.strip()
-    hist["ChallengeSize"] = hist["ChallengeSize"].astype(str).str.strip()
+    hist["Tier"] = hist["Tier"].astype(str).str.strip()
     hist["EventSlug"] = hist["EventSlug"].astype(str).str.strip()
 
     rows: list[dict] = []
-    for (event_date, challenge_size), group in hist.groupby(["EventDate", "ChallengeSize"], sort=True):
+    for (event_date, challenge_size), group in hist.groupby(["EventDate", "Tier"], sort=True):
         slugs = sorted(group["EventSlug"].unique())
         if len(slugs) <= 1:
             continue
@@ -408,7 +504,7 @@ def find_same_day_tier_collisions(
         rows.append(
             {
                 "EventDate": event_date,
-                "ChallengeSize": challenge_size,
+                "Tier": challenge_size,
                 "SlugCount": len(slugs),
                 "EventSlugs": ", ".join(slugs),
                 "ContentHashesMatch": len(set(signatures)) == 1,
@@ -417,7 +513,7 @@ def find_same_day_tier_collisions(
         )
 
     return pd.DataFrame(
-        rows, columns=["EventDate", "ChallengeSize", "SlugCount", "EventSlugs", "ContentHashesMatch", "Signatures"]
+        rows, columns=["EventDate", "Tier", "SlugCount", "EventSlugs", "ContentHashesMatch", "Signatures"]
     )
 
 
@@ -445,10 +541,14 @@ def _presence_table(df: pd.DataFrame, group_col: str, total_events: int) -> pd.D
     best_place = grp["Place"].min()
     top8_count = grp["Place"].apply(lambda s: int((s <= 8).sum()))
     top16_count = grp["Place"].apply(lambda s: int((s <= 16).sum()))
+    top4_count = grp["Place"].apply(lambda s: int((s <= 4).sum()))
+    top2_count = grp["Place"].apply(lambda s: int((s <= 2).sum()))
     winner_count = grp["Place"].apply(lambda s: int((s == 1).sum()))
 
     top8_events = work[work["Place"] <= 8].groupby(group_col)["EventID"].nunique()
     top16_events = work[work["Place"] <= 16].groupby(group_col)["EventID"].nunique()
+    top4_events = work[work["Place"] <= 4].groupby(group_col)["EventID"].nunique()
+    top2_events = work[work["Place"] <= 2].groupby(group_col)["EventID"].nunique()
     winner_events = work[work["Place"] == 1].groupby(group_col)["EventID"].nunique()
 
     stats = pd.DataFrame({
@@ -459,8 +559,36 @@ def _presence_table(df: pd.DataFrame, group_col: str, total_events: int) -> pd.D
         "BestPlace": best_place.values,
         "Top8Count": top8_count.values,
         "Top16Count": top16_count.values,
+        "Top4Count": top4_count.values,
+        "Top2Count": top2_count.values,
         "WinnerCount": winner_count.values,
     })
+
+    # DistinctPilots / TopPilotShare: how many different pilots fed this deck/archetype's Top 32
+    # entries in THIS tier, and what fraction of those entries its single most frequent pilot
+    # holds. Keyed on identity (_identity_key: LoginID when available, else the display name --
+    # same convention as _pilot_table/the league), so an account rename never inflates the count
+    # by splitting one pilot into two rows here.
+    #
+    # Deliberately NOT additive across tiers -- the same pilot can play the same deck in more than
+    # one tier, so summing this column the way _TIER_COUNT_COLS gets summed into ALL_Decks/
+    # ALL_Archetypes would double-count them. It is intentionally excluded from _TIER_COUNT_COLS
+    # for exactly this reason; a combined figure, if ever wanted, must be recomputed from the
+    # underlying rows (all tiers pooled, THEN grouped by identity), not summed from these columns.
+    if "LoginID" in work.columns or "Pilot" in work.columns:
+        login_ids = work["LoginID"].astype(str).str.strip() if "LoginID" in work.columns else pd.Series([""] * len(work), index=work.index)
+        pilots_col = work["Pilot"].astype(str).str.strip() if "Pilot" in work.columns else pd.Series([""] * len(work), index=work.index)
+        work["_PilotKey"] = [_identity_key(lid, p) for lid, p in zip(login_ids, pilots_col)]
+        distinct_pilots = work.groupby(group_col)["_PilotKey"].nunique()
+        pilot_counts = work.groupby([group_col, "_PilotKey"]).size()
+        top_pilot_count = pilot_counts.groupby(level=0).max()
+        stats["DistinctPilots"] = stats[group_col].map(distinct_pilots).fillna(0).astype(int)
+        stats["TopPilotShare"] = (
+            stats[group_col].map(top_pilot_count).fillna(0) / stats["Appearances"].clip(lower=1)
+        ).round(4)
+    else:
+        stats["DistinctPilots"] = 0
+        stats["TopPilotShare"] = 0.0
 
     stats["PresencePct"] = (stats["Events"] / total_events * 100.0).round(2)
     stats["Top32EventCount"] = stats["Events"]
@@ -468,11 +596,17 @@ def _presence_table(df: pd.DataFrame, group_col: str, total_events: int) -> pd.D
     stats["Top32EventFreqPct"] = stats["PresencePct"]
     stats["Top8EventCount"] = stats[group_col].map(top8_events).fillna(0).astype(int)
     stats["Top16EventCount"] = stats[group_col].map(top16_events).fillna(0).astype(int)
+    stats["Top4EventCount"] = stats[group_col].map(top4_events).fillna(0).astype(int)
+    stats["Top2EventCount"] = stats[group_col].map(top2_events).fillna(0).astype(int)
     stats["WinnerEventCount"] = stats[group_col].map(winner_events).fillna(0).astype(int)
     stats["Top8PresencePct"] = (stats["Top8EventCount"] / total_events * 100.0).round(2)
     stats["Top16PresencePct"] = (stats["Top16EventCount"] / total_events * 100.0).round(2)
     stats["Top8EventFreqPct"] = stats["Top8PresencePct"]
     stats["Top16EventFreqPct"] = stats["Top16PresencePct"]
+    # Unrounded by design (unlike the sibling *EventFreqPct columns above) -- rounding happens
+    # downstream, not in the stored file.
+    stats["Top4EventFreqPct"] = stats["Top4EventCount"] / total_events * 100.0
+    stats["Top2EventFreqPct"] = stats["Top2EventCount"] / total_events * 100.0
     stats["WinnerEventFreqPct"] = (stats["WinnerEventCount"] / total_events * 100.0).round(2)
 
     # Rates by appearances are bounded [0, 100]
@@ -557,8 +691,19 @@ def _sum_tier_tables(tier_tables: Dict[str, pd.DataFrame], group_col: str, n_all
     return stats
 
 
-def _pilot_table(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute per-pilot metrics: wins, top-8, top-16, appearances, best deck."""
+def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) -> pd.DataFrame:
+    """Compute per-pilot metrics: wins, top-8, top-32 (appearances), decks played, winning decks.
+
+    Keyed on identity (_identity_key: LoginID when available, the display name otherwise -- see
+    that function's docstring), not on the raw Pilot column. BestDeck (a single field) could not
+    represent a pilot who won with two different decks -- it just silently attributed both wins to
+    whichever deck happened to come from the pilot's single best-placed row. DecksPlayed/
+    WinningDecks replace it: WinningDecks is a semicolon-separated list of every deck this identity
+    actually won with (empty if they have no wins), computed per result row, not per pilot.
+
+    Pilot in the output is the display name from this identity's most recent result in the window
+    (by EventDate) -- same "latest name wins" rule as the league's season table.
+    """
     if df.empty or "Pilot" not in df.columns:
         return pd.DataFrame()
 
@@ -570,36 +715,61 @@ def _pilot_table(df: pd.DataFrame) -> pd.DataFrame:
     if work.empty:
         return pd.DataFrame()
 
-    grp = work.groupby("Pilot")
+    if "LoginID" not in work.columns:
+        work["LoginID"] = ""
+    work["LoginID"] = work["LoginID"].astype(str).str.strip()
+    work["_Key"] = [_identity_key(lid, p) for lid, p in zip(work["LoginID"], work["Pilot"])]
+    work["_EventDate_dt"] = pd.to_datetime(work.get("EventDate"), errors="coerce")
+
+    grp = work.groupby("_Key")
     wins = grp["Place"].apply(lambda s: int((s == 1).sum()))
     top8 = grp["Place"].apply(lambda s: int((s <= 8).sum()))
-    top16 = grp["Place"].apply(lambda s: int((s <= 16).sum()))
-    appearances = grp["Place"].count()
+    top32 = grp["Place"].count()
     avg_place = grp["Place"].mean().round(1)
     best_place = grp["Place"].min().fillna(999).astype(int)
+    decks_played = grp["Deck"].nunique() if "Deck" in work.columns else pd.Series(dtype=int)
 
-    def _best_deck(sub: pd.DataFrame) -> str:
-        if "Deck" not in sub.columns or sub.empty:
-            return ""
-        best_row = sub.loc[sub["Place"].idxmin()] if sub["Place"].notna().any() else sub.iloc[0]
-        return str(best_row.get("Deck", "")).strip()
+    if "Deck" in work.columns:
+        winning_decks = (
+            work[work["Place"] == 1]
+            .groupby("_Key")["Deck"]
+            .apply(lambda s: ";".join(sorted(set(str(d).strip() for d in s if str(d).strip()))))
+        )
+    else:
+        winning_decks = pd.Series(dtype=str)
 
-    best_deck = grp.apply(_best_deck)
+    dated = work.dropna(subset=["_EventDate_dt"])
+    latest_idx = dated.groupby("_Key")["_EventDate_dt"].idxmax()
+    display_pilot = work.loc[latest_idx.values].set_index(latest_idx.index)["Pilot"]
+    first_pilot = work.groupby("_Key")["Pilot"].first()
+    login_id_by_key = work.groupby("_Key")["LoginID"].first()
 
+    idx = wins.index
     stats = pd.DataFrame({
-        "Pilot": wins.index,
+        "_Key": idx,
+        "Pilot": [display_pilot.get(k, first_pilot.get(k, "")) for k in idx],
+        "LoginID": [login_id_by_key.get(k, "") for k in idx],
         "Wins": wins.values,
         "Top8": top8.values,
-        "Top16": top16.values,
-        "Appearances": appearances.values,
+        "Top32": top32.values,
         "AvgPlace": avg_place.values,
         "BestPlace": best_place.values,
-        "BestDeck": best_deck.values,
+        "DecksPlayed": decks_played.reindex(idx).fillna(0).astype(int).values,
+        "WinningDecks": winning_decks.reindex(idx).fillna("").values,
     })
-    stats = stats.sort_values(["Wins", "Top8", "Top16", "Appearances"], ascending=[False, False, False, False])
+    stats = stats.sort_values(["Wins", "Top8", "Top32"], ascending=[False, False, False], kind="mergesort")
     stats = stats.reset_index(drop=True)
     stats.insert(0, "Rank", range(1, len(stats) + 1))
-    return stats
+
+    if log is not None and not stats.empty:
+        is_fallback = stats["_Key"].astype(str).str.startswith("name:")
+        n_id = int((~is_fallback).sum())
+        n_name = int(is_fallback.sum())
+        log(f"[challenge-stats] BestPilots identity coverage: {n_id} keyed by LoginID, {n_name} fell back to display name")
+        if n_name:
+            log(f"[challenge-stats]   name-keyed (no LoginID) fallback pilot(s): {sorted(stats.loc[is_fallback, 'Pilot'].tolist())}")
+
+    return stats.drop(columns=["_Key"])
 
 
 def _trend_table(df: pd.DataFrame, group_col: str) -> pd.DataFrame:
@@ -816,6 +986,9 @@ def _chart_delta_ranking(
     total_encounter_players: int = 1000,
     sample_size: int = 5,
     min_encounter_pct: float = 5.0,
+    show_median_line: bool = False,
+    median_restrict_to_universe_a: bool = True,
+    log: Optional[Callable[[str], None]] = None,
 ) -> Optional[Path]:
     """Vertical ranking of delta between Top32 event frequency and metagame share.
     
@@ -874,6 +1047,33 @@ def _chart_delta_ranking(
         va = "bottom" if val >= 0 else "top"
         offset = 0.8 if val >= 0 else -0.8
         ax.text(i, float(val) + offset, f"{val:+.1f}", ha="center", va=va, fontsize=8)
+
+    if show_median_line:
+        def emit(msg: str) -> None:
+            if log is not None:
+                log(msg)
+
+        median_population = plot_df["Delta pp"] if median_restrict_to_universe_a else df["Delta pp"]
+        n_median = len(median_population)
+        if n_median < 4:
+            emit(
+                f"[delta-median] {title}: skipping median line, only {n_median} data point(s) "
+                "(<4, not enough to be meaningful)"
+            )
+        else:
+            median_val = float(median_population.median())
+            label_prefix = "Median (Universe A)" if median_restrict_to_universe_a else "Median"
+            ax.axhline(
+                median_val,
+                color="#555555",
+                linestyle="--",
+                linewidth=1.2,
+                alpha=0.85,
+                zorder=5,
+                label=f"{label_prefix}: {median_val:+.1f} pp",
+            )
+            ax.legend(loc="upper right", fontsize=8, framealpha=0.85)
+            emit(f"[delta-median] {title}: median={median_val:+.1f} pp over n={n_median}")
 
     return _safe_chart(fig, out_path)
 
@@ -1261,7 +1461,7 @@ def _check_challenge_invariants(
             problems.append(f"event {eid}: Place values are not exactly 1..32 (got {places})")
 
     # 9: no event_id in more than one tier
-    tier_per_event = work.groupby("EventID")["ChallengeSize"].nunique()
+    tier_per_event = work.groupby("EventID")["Tier"].nunique()
     bad_tier = tier_per_event[tier_per_event > 1]
     if not bad_tier.empty:
         problems.append(f"event_id(s) present in more than one tier: {list(bad_tier.index)}")
@@ -1316,6 +1516,51 @@ def _check_challenge_invariants(
                     f"C{tier}_{label}: {len(bad_rows2)} row(s) violate WinnerCount<=Top8Count<=Top32EntryCount"
                 )
 
+            # 16/17/18: DistinctPilots/TopPilotShare, independently re-derived from this tier's own
+            # raw rows (not read back out of _presence_table's own output) -- same identity-key
+            # convention as _presence_table itself, so a rename can't inflate DistinctPilots here
+            # either.
+            group_col_name = "Deck" if label == "Decks" else "Archetype"
+            if "DistinctPilots" in tbl.columns and "TopPilotShare" in tbl.columns and group_col_name in tbl.columns:
+                tier_rows = work[work["Tier"].astype(str).str.strip() == str(tier)]
+                lids_t = tier_rows["LoginID"].astype(str).str.strip() if "LoginID" in tier_rows.columns else pd.Series([""] * len(tier_rows), index=tier_rows.index)
+                pilots_t = tier_rows["Pilot"].astype(str).str.strip() if "Pilot" in tier_rows.columns else pd.Series([""] * len(tier_rows), index=tier_rows.index)
+                tier_rows = tier_rows.assign(_PilotKey=[_identity_key(lid, p) for lid, p in zip(lids_t, pilots_t)])
+                pilot_counts_check = tier_rows.groupby([group_col_name, "_PilotKey"]).size()
+                sum_pilot_counts = pilot_counts_check.groupby(level=0).sum()
+
+                bad_dp = tbl[tbl["DistinctPilots"] > tbl["Top32EntryCount"]]  # 16
+                if not bad_dp.empty:
+                    problems.append(
+                        f"C{tier}_{label}: {len(bad_dp)} row(s) have DistinctPilots > Top32EntryCount: "
+                        f"{bad_dp[[group_col_name, 'DistinctPilots', 'Top32EntryCount']].to_dict('records')}"
+                    )
+
+                bad_share = tbl[(tbl["TopPilotShare"] < 0) | (tbl["TopPilotShare"] > 1)]  # 17a
+                if not bad_share.empty:
+                    problems.append(
+                        f"C{tier}_{label}: {len(bad_share)} row(s) have TopPilotShare outside [0,1]: "
+                        f"{bad_share[[group_col_name, 'TopPilotShare']].to_dict('records')}"
+                    )
+                mismatch_one = tbl[  # 17b -- TopPilotShare==1 iff DistinctPilots==1
+                    ((tbl["DistinctPilots"] == 1) & (tbl["TopPilotShare"] != 1))
+                    | ((tbl["DistinctPilots"] != 1) & (tbl["TopPilotShare"] == 1))
+                ]
+                if not mismatch_one.empty:
+                    problems.append(
+                        f"C{tier}_{label}: {len(mismatch_one)} row(s) violate TopPilotShare==1 iff DistinctPilots==1: "
+                        f"{mismatch_one[[group_col_name, 'DistinctPilots', 'TopPilotShare']].to_dict('records')}"
+                    )
+
+                expected_sum = tbl.set_index(group_col_name)["Top32EntryCount"]  # 18
+                bad_pilot_sum = {}
+                for key, total in sum_pilot_counts.items():
+                    exp = expected_sum.get(key)
+                    if exp is None or int(exp) != int(total):
+                        bad_pilot_sum[key] = {"sum_pilot_counts": int(total), "Top32EntryCount": (None if exp is None else int(exp))}
+                if bad_pilot_sum:
+                    problems.append(f"C{tier}_{label}: sum(per-pilot entry counts) != Top32EntryCount: {bad_pilot_sum}")
+
             if n > 0:  # 7 -- grid check against the unrounded ratio; 0.01 accounts for the
                        # display .round(2), not for a denominator bug (which misses by whole points)
                 for pct_col, count_col in (
@@ -1353,26 +1598,139 @@ def _check_challenge_invariants(
     if not pilot_df.empty:  # 11
         sum_wins = int(pilot_df["Wins"].sum())
         sum_top8_pilots = int(pilot_df["Top8"].sum())
-        sum_appear = int(pilot_df["Appearances"].sum())
+        sum_top32_pilots = int(pilot_df["Top32"].sum())
         if sum_wins != n_all:
             problems.append(f"BestPilots: sum(Wins)={sum_wins} != N_all={n_all}")
         if sum_top8_pilots != 8 * n_all:
             problems.append(f"BestPilots: sum(Top8)={sum_top8_pilots} != 8*N_all={8 * n_all}")
-        if sum_appear != 32 * n_all:
-            problems.append(f"BestPilots: sum(Appearances)={sum_appear} != 32*N_all={32 * n_all}")
+        if sum_top32_pilots != 32 * n_all:
+            problems.append(f"BestPilots: sum(Top32)={sum_top32_pilots} != 32*N_all={32 * n_all}")
 
-        if not deck_all.empty:
-            winners_by_deck = work[work["Place"] == 1].groupby("Deck").size()
-            deck_winner_count = deck_all.set_index("Deck")["WinnerCount"]
-            for deck, expected_winners in winners_by_deck.items():
-                actual = int(deck_winner_count.get(deck, 0))
-                if actual != int(expected_winners):
-                    problems.append(
-                        f"BestPilots/ALL_Decks mismatch for deck {deck!r}: raw winner rows={expected_winners} "
-                        f"vs ALL_Decks WinnerCount={actual}"
-                    )
+        # This is the check the whole rebuild exists for: wins attributed to a deck ACROSS ALL
+        # PILOTS (every raw winning row, whichever pilot it belongs to -- not read back out of
+        # pilot_df's WinningDecks, which is deliberately deduplicated per pilot and would
+        # undercount a pilot who won twice with the same deck) must equal that deck's WinnerCount,
+        # summed from the per-tier tabs (never ALL_Decks, per this task's constraint -- see the 8b
+        # check above for why ALL_* is not trusted as a source here either). Printed explicitly,
+        # per-deck, rather than a single pass/fail bit, precisely because this is the check that
+        # silently held wrong before LoginID existed to key pilot identity correctly.
+        winner_count_by_deck_from_tiers: Dict[str, int] = {}
+        for t in tier_deck_tables.values():
+            if t is None or t.empty:
+                continue
+            for deck, wc in zip(t["Deck"], t["WinnerCount"]):
+                winner_count_by_deck_from_tiers[deck] = winner_count_by_deck_from_tiers.get(deck, 0) + int(wc)
+        winners_by_deck = work[work["Place"] == 1].groupby("Deck").size()
+        bad_decks = {}
+        for deck, expected_winners in winners_by_deck.items():
+            actual = winner_count_by_deck_from_tiers.get(deck, 0)
+            if actual != int(expected_winners):
+                bad_decks[deck] = {"wins_from_raw_rows": int(expected_winners), "tier_summed_WinnerCount": actual}
+        if bad_decks:
+            problems.append(f"BestPilots/tier-table win attribution mismatch: {bad_decks}")
+
+        # 14: per pilot, Wins <= Top8 <= Top32
+        bad_pilot_rows = pilot_df[(pilot_df["Wins"] > pilot_df["Top8"]) | (pilot_df["Top8"] > pilot_df["Top32"])]
+        if not bad_pilot_rows.empty:
+            problems.append(
+                f"BestPilots: {len(bad_pilot_rows)} row(s) violate Wins<=Top8<=Top32: "
+                f"{bad_pilot_rows[['Pilot', 'LoginID', 'Wins', 'Top8', 'Top32']].to_dict('records')}"
+            )
+
+        # 15: no LoginID appears under two different display names within a single event -- a
+        # genuine parsing/correlation error, not a rename (a rename spans different events by
+        # definition; two names for one loginid inside ONE event means something matched wrong).
+        if "LoginID" in work.columns:
+            work_with_lid = work[work["LoginID"].astype(str).str.strip() != ""]
+            if not work_with_lid.empty:
+                per_event_lid = work_with_lid.groupby(["EventID", "LoginID"])["Pilot"].nunique()
+                bad_lid = per_event_lid[per_event_lid > 1]
+                if not bad_lid.empty:
+                    problems.append(f"BestPilots: LoginID mapped to more than one Pilot name within a single event: {bad_lid.to_dict()}")
 
     return problems, warnings
+
+
+def _check_top4_top2_invariants(
+    n_all: int,
+    tier_deck_tables: Dict[str, pd.DataFrame],
+    tier_arch_tables: Dict[str, pd.DataFrame],
+    finalists_df: pd.DataFrame,
+    deck_all: pd.DataFrame,
+) -> None:
+    """Hard-fail sanity checks for the Top4/Top2 columns and the finalists export.
+
+    Unlike _check_challenge_invariants (which collects problems and skips the xlsx write), these
+    raise immediately: a failure here means the Top4/Top2 wiring itself is broken, not a
+    data-quality issue worth reporting and moving past.
+    """
+
+    def _fail(message: str, offending: object) -> None:
+        print(f"[challenge-stats][top4top2] ASSERTION FAILED: {message} -- offending value: {offending!r}")
+        raise AssertionError(f"{message} (offending value: {offending!r})")
+
+    def _sum_over_tiers(tables: Dict[str, pd.DataFrame], col: str) -> int:
+        return sum(int(t[col].sum()) for t in tables.values() if t is not None and not t.empty)
+
+    for label, tables in (("Decks", tier_deck_tables), ("Archetypes", tier_arch_tables)):
+        for col, expected in (
+            ("WinnerCount", n_all),
+            ("Top2Count", 2 * n_all),
+            ("Top4Count", 4 * n_all),
+            ("Top8Count", 8 * n_all),
+        ):
+            total = _sum_over_tiers(tables, col)
+            if total != expected:
+                _fail(f"sum({col}) over all per-tier {label} tabs != {expected}", total)
+
+        for tier, tbl in tables.items():
+            if tbl is None or tbl.empty:
+                continue
+            bad_counts = tbl[
+                (tbl["WinnerCount"] > tbl["Top2Count"])
+                | (tbl["Top2Count"] > tbl["Top4Count"])
+                | (tbl["Top4Count"] > tbl["Top8Count"])
+                | (tbl["Top8Count"] > tbl["Top32EntryCount"])
+            ]
+            if not bad_counts.empty:
+                _fail(
+                    f"C{tier}_{label}: WinnerCount<=Top2Count<=Top4Count<=Top8Count<=Top32EntryCount violated",
+                    bad_counts.to_dict(orient="records"),
+                )
+            bad_events = tbl[
+                (tbl["WinnerEventCount"] > tbl["Top2EventCount"])
+                | (tbl["Top2EventCount"] > tbl["Top4EventCount"])
+                | (tbl["Top4EventCount"] > tbl["Top8EventCount"])
+                | (tbl["Top8EventCount"] > tbl["Top32EventCount"])
+            ]
+            if not bad_events.empty:
+                _fail(
+                    f"C{tier}_{label}: WinnerEventCount<=Top2EventCount<=Top4EventCount<=Top8EventCount"
+                    "<=Top32EventCount violated",
+                    bad_events.to_dict(orient="records"),
+                )
+
+    # A mirror final (both finalists piloting the same deck) gives that deck only 1 event of
+    # presence in the top 2 (EventID nunique), not 2 -- so the deck-level sum can dip as low as
+    # n_all (every final a mirror) without ever exceeding 2*n_all (no mirrors at all).
+    sum_top2_events_decks = _sum_over_tiers(tier_deck_tables, "Top2EventCount")
+    if not (n_all <= sum_top2_events_decks <= 2 * n_all):
+        _fail(
+            f"sum(Top2EventCount) over all per-tier Decks tabs must be within [{n_all}, {2 * n_all}]",
+            sum_top2_events_decks,
+        )
+
+    if len(finalists_df) != n_all:
+        _fail("finalists CSV row count != number of events", len(finalists_df))
+
+    if not finalists_df.empty:
+        if deck_all.empty:
+            _fail("ALL_Decks table is empty, cannot verify FirstDeck has WinnerCount>=1", None)
+        winner_lookup = deck_all.set_index("Deck")["WinnerCount"]
+        for deck in sorted(finalists_df["FirstDeck"].astype(str).unique()):
+            wc = int(winner_lookup.get(deck, 0))
+            if wc < 1:
+                _fail(f"FirstDeck {deck!r} from finalists CSV has WinnerCount<1 in the deck tabs", wc)
 
 
 def run_challenge_statistics(
@@ -1424,7 +1782,7 @@ def run_challenge_statistics(
         metagame_df = local_metagame_df
 
     hist["EventDate"] = hist["EventDate"].astype(str).str.strip()
-    hist["ChallengeSize"] = hist["ChallengeSize"].astype(str).str.strip()
+    hist["Tier"] = hist["Tier"].astype(str).str.strip()
     hist["EventID"] = hist["EventID"].astype(str).str.strip().str.replace(r"\.0$", "", regex=True)
     hist["Deck"] = hist["Deck"].astype(str).str.strip()
     hist["Archetype"] = hist["Archetype"].astype(str).str.strip().replace("", "Unknown")
@@ -1481,22 +1839,22 @@ def run_challenge_statistics(
             "under an explicit 'Unknown' row in the stats tables, not dropped."
         )
 
-    tiers = sorted(hist_window["ChallengeSize"].unique(), key=lambda s: int(s) if str(s).isdigit() else -1)
+    tiers = sorted(hist_window["Tier"].unique(), key=lambda s: int(s) if str(s).isdigit() else -1)
 
     n_tier: Dict[str, int] = {}
     tier_deck_tables: Dict[str, pd.DataFrame] = {}
     tier_arch_tables: Dict[str, pd.DataFrame] = {}
     for tier in tiers:
-        tier_df = hist_window[hist_window["ChallengeSize"] == tier].copy()
+        tier_df = hist_window[hist_window["Tier"] == tier].copy()
         n = int(tier_df["EventID"].nunique())
         n_tier[tier] = n
 
         deck_tbl = _presence_table(tier_df, "Deck", n)
         arch_tbl = _presence_table(tier_df, "Archetype", n)
         if not deck_tbl.empty:
-            deck_tbl["ChallengeSize"] = tier
+            deck_tbl["Tier"] = tier
         if not arch_tbl.empty:
-            arch_tbl["ChallengeSize"] = tier
+            arch_tbl["Tier"] = tier
         tier_deck_tables[tier] = deck_tbl
         tier_arch_tables[tier] = arch_tbl
 
@@ -1507,11 +1865,38 @@ def run_challenge_statistics(
     deck_all = _sum_tier_tables(tier_deck_tables, "Deck", n_all)
     arch_all = _sum_tier_tables(tier_arch_tables, "Archetype", n_all)
     if not deck_all.empty:
-        deck_all["ChallengeSize"] = "ALL"
+        deck_all["Tier"] = "ALL"
     if not arch_all.empty:
-        arch_all["ChallengeSize"] = "ALL"
+        arch_all["Tier"] = "ALL"
 
-    pilot_df = _pilot_table(all_df)
+    pilot_df = _pilot_table(all_df, log=emit)
+
+    # Finalists export: one row per event, First/Second = Place 1/2. Built straight off all_df
+    # (same rows the per-tier tables are built from), not a separate query -- so it can never
+    # drift out of sync with what WinnerCount/Top2Count above actually counted.
+    finalists_source = all_df.copy()
+    finalists_source["Place"] = _normalize_numeric(finalists_source["Place"])
+    finalist_rows: List[dict] = []
+    for eid, grp in finalists_source.groupby("EventID", sort=False):
+        first_rows = grp[grp["Place"] == 1]
+        second_rows = grp[grp["Place"] == 2]
+        if first_rows.empty or second_rows.empty:
+            continue
+        first_row = first_rows.iloc[0]
+        second_row = second_rows.iloc[0]
+        finalist_rows.append({
+            "EventID": eid,
+            "EventDate": first_row["EventDate"],
+            "Tier": first_row["Tier"],
+            "FirstDeck": first_row["Deck"],
+            "FirstPilot": first_row.get("Pilot", ""),
+            "SecondDeck": second_row["Deck"],
+            "SecondPilot": second_row.get("Pilot", ""),
+        })
+    finalists_df = pd.DataFrame(
+        finalist_rows,
+        columns=["EventID", "EventDate", "Tier", "FirstDeck", "FirstPilot", "SecondDeck", "SecondPilot"],
+    )
 
     deck_trend = _trend_table(all_df, "Deck")
     arch_trend = _trend_table(all_df, "Archetype")
@@ -1564,6 +1949,14 @@ def run_challenge_statistics(
             encoding="utf-8",
         )
         return ChallengeStatisticsResult(output_dir, history_csv, output_dir / "challenge_statistics.xlsx", 0, 0, [])
+
+    _check_top4_top2_invariants(
+        n_all=n_all,
+        tier_deck_tables=tier_deck_tables,
+        tier_arch_tables=tier_arch_tables,
+        finalists_df=finalists_df,
+        deck_all=deck_all,
+    )
 
     # --- Completeness / window-consistency gate -----------------------------------------------
     # completeness omitted entirely is fail-closed INCOMPLETE, never silently upgraded to true.
@@ -1679,6 +2072,15 @@ def run_challenge_statistics(
     )
 
     excel_path = output_dir / ("challenge_statistics_PARTIAL.xlsx" if partial else "challenge_statistics.xlsx")
+
+    if week_start is not None and week_end is not None:
+        window_label = f"{week_start.isoformat()}_to_{week_end.isoformat()}"
+    else:
+        window_dates = sorted(hist_window["EventDate"].astype(str).unique())
+        window_label = f"{window_dates[0]}_to_{window_dates[-1]}" if window_dates else "window"
+    finalists_path = output_dir / f"finalists_{window_label}.csv"
+    _clean_history_df_before_write(finalists_df).to_csv(finalists_path, index=False, encoding="utf-8-sig")
+    emit(f"[challenge-stats] Finalists: {len(finalists_df)} event(s) -> {finalists_path}")
 
     with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
         pd.DataFrame([{
@@ -1797,6 +2199,9 @@ def run_challenge_statistics(
         total_encounter_players=total_encounter_players,
         sample_size=sample_size,
         min_encounter_pct=min_encounter_pct,
+        show_median_line=True,
+        median_restrict_to_universe_a=True,
+        log=emit,
     )
     if p is not None:
         chart_paths.append(p)
@@ -1809,6 +2214,9 @@ def run_challenge_statistics(
         total_encounter_players=total_encounter_players,
         sample_size=sample_size,
         min_encounter_pct=min_encounter_pct,
+        show_median_line=True,
+        median_restrict_to_universe_a=False,
+        log=emit,
     )
     if p is not None:
         chart_paths.append(p)
@@ -1828,4 +2236,5 @@ def run_challenge_statistics(
         deck_rows=deck_rows,
         chart_paths=chart_paths,
         complete=is_complete,
+        finalists_csv=finalists_path,
     )

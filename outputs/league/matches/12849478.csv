@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849478,2026-08-02,C64,Challenge,QF,Ghianda,2641070,MyrRetriever,3006274,2,0,Prowess,Broodscale Combo
+12849478,2026-08-02,C64,Challenge,QF,MayoDominaria,1112102,olbeda,2679433,2,1,Boros Energy,Esper Blink
+12849478,2026-08-02,C64,Challenge,QF,Retrisma,2700947,ls149950,1862893,2,0,Yawgmoth,Broodscale Combo
+12849478,2026-08-02,C64,Challenge,QF,Atticus1806,3139369,Sarlanga,643454,2,1,Amulet Titan,Boros Energy
+12849478,2026-08-02,C64,Challenge,SF,MayoDominaria,1112102,Retrisma,2700947,2,0,Boros Energy,Yawgmoth
+12849478,2026-08-02,C64,Challenge,SF,Ghianda,2641070,Atticus1806,3139369,2,1,Prowess,Amulet Titan
+12849478,2026-08-02,C64,Challenge,F,Ghianda,2641070,MayoDominaria,1112102,2,0,Prowess,Boros Energy

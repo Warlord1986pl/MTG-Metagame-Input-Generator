@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848217,2026-07-26,C64,Challenge,QF,Mogged,1297262,Kritik,2707200,2,0,Affinity,Land Destruction
+12848217,2026-07-26,C64,Challenge,QF,MahfuzVanGogh,1932562,TrueHero,2569009,2,1,UBRG,Jeskai Energy
+12848217,2026-07-26,C64,Challenge,QF,Dreddybajs,559515,Radziolot,2416526,2,1,Boros Energy,UR Loki
+12848217,2026-07-26,C64,Challenge,QF,MLGSKELETONS,1213308,SPyromancer,2851835,2,0,Devoted Combo,UR Loki
+12848217,2026-07-26,C64,Challenge,SF,MLGSKELETONS,1213308,Mogged,1297262,2,0,Devoted Combo,Affinity
+12848217,2026-07-26,C64,Challenge,SF,Dreddybajs,559515,MahfuzVanGogh,1932562,2,1,Boros Energy,UBRG
+12848217,2026-07-26,C64,Challenge,F,MLGSKELETONS,1213308,Dreddybajs,559515,2,1,Devoted Combo,Boros Energy

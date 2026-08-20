@@ -17,8 +17,46 @@ Thumbs.db
 outputs/**
 !outputs/.gitkeep
 
+# League data is accumulated across a season and cannot be regenerated without
+# re-fetching every event (unlike the per-window metagame outputs), so it is
+# tracked. Parent directories must be re-included explicitly too, or the file
+# negations below are silently ignored.
+!outputs/league/
+!outputs/league/results/
+!outputs/league/results/*.csv
+!outputs/league/pilot_league_*.csv
+!outputs/league/season_config.csv
+!outputs/league/matches/
+!outputs/league/matches/*.csv
+!outputs/league/matches/_no_bracket.csv
+
+# Summer 2026 is the one season whose table on disk is known partial (data only
+# starts 2026-07-13, six weeks into a season that starts 2026-06-01 -- see the
+# PARTIAL warning league_engine prints on every run). A derived, rebuild-from-
+# scratch file with a season name that promises more than it contains is worse
+# than no file; every season from Autumn 2026 onward stays tracked normally via
+# the pilot_league_*.csv rule above.
+outputs/league/pilot_league_Summer_2026.csv
+
+# The two history CSVs are the only irreplaceable data in this project: regenerating either from
+# a fresh fetch would re-derive Pilot from whatever name mtgo.com/MTGGoldfish currently show,
+# silently rewriting history (see CLAUDE.md, "Pilot names ... are frozen at first capture").
+# Small enough to track directly, unlike the rest of outputs/, which is regenerable and stays
+# ignored via the blanket outputs/** rule above.
+!outputs/challenge_history_modern.csv
+!outputs/premier_history_modern.csv
+
 # Logs
 *.log
 
 # Backup files created by mapping editor
 docs/*.bak.*
+
+# Manual pre-fix backups
+backups/
+
+# Rolling backups of the two history CSVs (backup_history_file() in challenge_history_engine.py,
+# created before every write, most recent 20 kept per file). Already covered by the blanket
+# backups/ rule above, but named explicitly since these specifically document the account-rename
+# mechanism (see CLAUDE.md) and should stay excluded even if that blanket rule is ever narrowed.
+backups/history/*.bak

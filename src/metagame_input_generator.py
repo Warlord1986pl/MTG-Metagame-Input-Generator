@@ -52,6 +52,14 @@ except ImportError:
     except ImportError:
         run_statistics = None  # type: ignore[assignment]
 
+try:
+    from league_engine import run_league_update
+except ImportError:
+    try:
+        from .league_engine import run_league_update
+    except ImportError:
+        run_league_update = None  # type: ignore[assignment]
+
 
 API_BASE = "https://api.videreproject.com"
 MTGO_BASE = "https://www.mtgo.com"
@@ -1971,6 +1979,7 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         challenge_history_path: Optional[Path] = None
         premier_history_path: Optional[Path] = None
         challenge_stats_path: Optional[Path] = None
+        league_results_path: Optional[Path] = None
         metagame_stats_path: Optional[Path] = None
         challenge_events_fetched: int = 0
         challenge_review_items: List[dict] = []
@@ -2142,6 +2151,22 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     )
                     challenge_stats_path = ch_stats_result.excel_path
 
+                if run_league_update is not None and challenge_history_path is not None:
+                    league_dir = outputs_base / "league"
+                    league_summary = run_league_update(
+                        history_csv=challenge_history_path,
+                        league_dir=league_dir,
+                        format_name=args.format_name,
+                        start_date=week_start,
+                        end_date=week_end,
+                        as_of=date.today(),
+                        premier_history_csv=premier_history_csv,
+                        mtgo_json_cache_dir=cache_dir,
+                        log=log,
+                    )
+                    if league_summary["written_event_ids"]:
+                        league_results_path = league_dir / "results"
+
             except ChallengeSourceError as challenge_err:
                 log(f"[ERROR] Challenge report STOPPED (not a silent skip): {challenge_err}")
                 _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
@@ -2212,6 +2237,8 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             log(f"[OK] Challenge history: {challenge_history_path}")
         if challenge_stats_path is not None:
             log(f"[OK] Challenge statistics: {challenge_stats_path}")
+        if league_results_path is not None:
+            log(f"[OK] League results: {league_results_path}")
         if metagame_stats_path is not None:
             log(f"[OK] Metagame statistics: {metagame_stats_path}")
         log(f"[OK] Output dir: {run_dir}")

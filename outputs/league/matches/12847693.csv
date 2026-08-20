@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847693,2026-07-18,C32,Challenge,QF,Polikasoll,2237473,touto_Isle,1439480,2,0,Ruby Storm,Living End
+12847693,2026-07-18,C32,Challenge,QF,jev_,2878060,_Falcon_,2498069,2,1,Boros Energy,Mardu Energy
+12847693,2026-07-18,C32,Challenge,QF,Juintatz,3020696,GieralK,3331554,2,1,Amulet Titan,Broodscale Combo
+12847693,2026-07-18,C32,Challenge,QF,NickBolas90,2921975,E_Kaminuma,2707045,2,0,Yawgmoth,Mono-Green Eldrazi
+12847693,2026-07-18,C32,Challenge,SF,jev_,2878060,NickBolas90,2921975,2,1,Boros Energy,Yawgmoth
+12847693,2026-07-18,C32,Challenge,SF,Juintatz,3020696,Polikasoll,2237473,2,1,Amulet Titan,Ruby Storm
+12847693,2026-07-18,C32,Challenge,F,Juintatz,3020696,jev_,2878060,2,1,Amulet Titan,Boros Energy

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847683,2026-07-17,C64,Challenge,QF,Pleyboy,2822464,Porks,2796105,2,1,Domain Zoo,Eldrazi Tron
+12847683,2026-07-17,C64,Challenge,QF,roter_Erzengel,319713,kasiso,2257869,2,1,UW Control,Boros Energy
+12847683,2026-07-17,C64,Challenge,QF,Corkyboyy,2699441,Gxs3v3n,2861105,2,0,Naya Scapeshift,Esper Blink
+12847683,2026-07-17,C64,Challenge,QF,MeninoNey,2903591,Retrisma,2700947,2,0,Living End,Affinity
+12847683,2026-07-17,C64,Challenge,SF,Corkyboyy,2699441,roter_Erzengel,319713,2,0,Naya Scapeshift,UW Control
+12847683,2026-07-17,C64,Challenge,SF,MeninoNey,2903591,Pleyboy,2822464,2,0,Living End,Domain Zoo
+12847683,2026-07-17,C64,Challenge,F,Corkyboyy,2699441,MeninoNey,2903591,2,0,Naya Scapeshift,Living End

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849492,2026-08-03,C96,Challenge,QF,DskBayWolf,3220713,MayoDominaria,1112102,2,1,Goryo's Vengeance,Boros Energy
+12849492,2026-08-03,C96,Challenge,QF,sokos13,486439,Gerschi,1084298,2,1,Esper Blink,WBRG
+12849492,2026-08-03,C96,Challenge,QF,oosunq,1155358,Alico,2640770,2,1,Goryo's Vengeance,Grixis Reanimator
+12849492,2026-08-03,C96,Challenge,QF,reidq7,3155916,ipadkid,3560747,2,0,Amulet Titan,Dimir Midrange
+12849492,2026-08-03,C96,Challenge,SF,oosunq,1155358,sokos13,486439,2,1,Goryo's Vengeance,Esper Blink
+12849492,2026-08-03,C96,Challenge,SF,DskBayWolf,3220713,reidq7,3155916,2,0,Goryo's Vengeance,Amulet Titan
+12849492,2026-08-03,C96,Challenge,F,DskBayWolf,3220713,oosunq,1155358,1,0,Goryo's Vengeance,Goryo's Vengeance

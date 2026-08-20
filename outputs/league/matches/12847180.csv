@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847180,2026-07-15,C96,Challenge,QF,leandru,1546166,ParinorMTG,3388464,2,0,Eldrazi Tron,Land Destruction
+12847180,2026-07-15,C96,Challenge,QF,chuyingfei,691553,Deathmaxx,2995055,2,1,Affinity,Affinity
+12847180,2026-07-15,C96,Challenge,QF,rastaf,254536,Slyvester3,2204017,2,1,Boros Energy,Jeskai Energy
+12847180,2026-07-15,C96,Challenge,QF,Savior0117,2464763,_theMoonSage_,2001341,2,0,Belcher,Prowess
+12847180,2026-07-15,C96,Challenge,SF,chuyingfei,691553,rastaf,254536,2,1,Affinity,Boros Energy
+12847180,2026-07-15,C96,Challenge,SF,leandru,1546166,Savior0117,2464763,2,0,Eldrazi Tron,Belcher
+12847180,2026-07-15,C96,Challenge,F,chuyingfei,691553,leandru,1546166,2,1,Affinity,Eldrazi Tron

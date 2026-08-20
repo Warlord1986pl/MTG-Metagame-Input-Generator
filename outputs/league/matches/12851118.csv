@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851118,2026-08-10,C64,Challenge,QF,Venom01,3535587,felider,2322146,2,1,Dimir Midrange,Domain Zoo
+12851118,2026-08-10,C64,Challenge,QF,toothymtg,3087786,duke12,6062,2,1,Prowess,Eldrazi Ramp
+12851118,2026-08-10,C64,Challenge,QF,Martin_Dominguez,1755256,fuya,2428351,2,1,Esper Blink,Boros Energy
+12851118,2026-08-10,C64,Challenge,QF,oinkmage22,2858193,auzzie51,1111936,2,0,Dimir Midrange,Dimir Mill
+12851118,2026-08-10,C64,Challenge,SF,Martin_Dominguez,1755256,oinkmage22,2858193,2,0,Esper Blink,Dimir Midrange
+12851118,2026-08-10,C64,Challenge,SF,Venom01,3535587,toothymtg,3087786,2,1,Dimir Midrange,Prowess
+12851118,2026-08-10,C64,Challenge,F,Martin_Dominguez,1755256,Venom01,3535587,2,0,Esper Blink,Dimir Midrange

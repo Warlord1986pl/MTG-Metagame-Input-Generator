@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847721,2026-07-20,C96,Challenge,QF,4FunNoWin,3479773,aspiringspike,1042649,2,1,4c HollowOne,Mono-Green Eldrazi
+12847721,2026-07-20,C96,Challenge,QF,JakeTMS,2931233,Calambity,979328,2,1,Jeskai Control,Ruby Storm
+12847721,2026-07-20,C96,Challenge,QF,Selfeisek,2042214,Sven745,3035942,2,0,Mono-Black Midrange,Prowess
+12847721,2026-07-20,C96,Challenge,QF,MisterTwin,3190187,Bawer,3413765,2,0,Neobrand,4c HollowOne
+12847721,2026-07-20,C96,Challenge,SF,4FunNoWin,3479773,JakeTMS,2931233,2,1,4c HollowOne,Jeskai Control
+12847721,2026-07-20,C96,Challenge,SF,Selfeisek,2042214,MisterTwin,3190187,2,1,Mono-Black Midrange,Neobrand
+12847721,2026-07-20,C96,Challenge,F,Selfeisek,2042214,4FunNoWin,3479773,2,0,Mono-Black Midrange,4c HollowOne
