@@ -271,8 +271,13 @@
   }
 
   function movementCell(p) {
-    if (p.movement === "up") return el("span", { class: "move-up", title: "Up from #" + p.prevRank }, ["▲"]);
-    if (p.movement === "down") return el("span", { class: "move-down", title: "Down from #" + p.prevRank }, ["▼"]);
+    var delta = (p.prevRank != null) ? (p.prevRank - p.rank) : null;
+    if (p.movement === "up") {
+      return el("span", { class: "move-up", title: "Up from #" + p.prevRank }, ["▲ (+" + delta + ")"]);
+    }
+    if (p.movement === "down") {
+      return el("span", { class: "move-down", title: "Down from #" + p.prevRank }, ["▼ (" + delta + ")"]);
+    }
     if (p.movement === "same") return el("span", { class: "move-same", title: "Unchanged" }, ["—"]);
     return el("span", { class: "muted" }, [""]);
   }
