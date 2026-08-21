@@ -111,6 +111,8 @@
   .badge { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
   .badge-challenge { background: rgba(59,130,246,0.18); color: #93C5FD; }
   .badge-premier { background: rgba(245,158,11,0.18); color: #FCD34D; }
+  .meeting-line { padding: 2px 0; }
+  .meeting-line + .meeting-line { border-top: 1px solid #1c2534; }
 
   footer.site-footer {
     border-top: 1px solid var(--card-border); margin-top: 28px; padding-top: 16px;
@@ -407,25 +409,29 @@
     return tile;
   }
 
+  var ROUND_LABELS = { QF: "Top 8", SF: "Top 4", F: "Final" };
+
   // Aggregates a pilot's elimination-bracket matches (round QF/SF/F -- Top8, Top4, Top2, never
-  // Swiss) by opponent: how many times they met, and the record between them from this pilot's
-  // side. Sorted by meetings first (that is the point of the card), then by wins, then by name,
-  // so the ordering is stable when two opponents were met equally often.
+  // Swiss) by opponent: how many times they met, the record between them from this pilot's side,
+  // and every individual meeting (round, event, date, result) so a viewer can see exactly where
+  // and when each one happened, not just a count. Sorted by meetings first (that is the point of
+  // the card), then by wins, then by name, so the ordering is stable when two opponents were met
+  // equally often. Each opponent's own meetings are sorted most recent first.
   function renderOpponentsCard(bracketMatches) {
     var byOpponent = {};
     bracketMatches.forEach(function (m) {
       var o = byOpponent[m.opponentId];
       if (!o) {
-        o = { id: m.opponentId, name: m.opponentName, meetings: 0, wins: 0, losses: 0, lastDate: m.date };
+        o = { id: m.opponentId, name: m.opponentName, wins: 0, losses: 0, meetings: [] };
         byOpponent[m.opponentId] = o;
       }
-      o.meetings += 1;
       if (m.result === "W") o.wins += 1; else o.losses += 1;
-      if (m.date > o.lastDate) o.lastDate = m.date;
+      o.meetings.push(m);
     });
     var rows = Object.keys(byOpponent).map(function (k) { return byOpponent[k]; });
+    rows.forEach(function (o) { o.meetings.sort(function (a, b) { return b.date < a.date ? -1 : 1; }); });
     rows.sort(function (a, b) {
-      if (b.meetings !== a.meetings) return b.meetings - a.meetings;
+      if (b.meetings.length !== a.meetings.length) return b.meetings.length - a.meetings.length;
       if (b.wins !== a.wins) return b.wins - a.wins;
       return a.name.localeCompare(b.name);
     });
@@ -440,16 +446,23 @@
     table.appendChild(el("thead", {}, [
       el("tr", {}, [
         el("th", { style: "text-align:left;" }, ["Opponent"]), el("th", {}, ["Meetings"]),
-        el("th", {}, ["Record (W-L)"]), el("th", {}, ["Last met"]),
+        el("th", {}, ["Record (W-L)"]), el("th", { style: "text-align:left;" }, ["Met in"]),
       ]),
     ]));
     var tbody = el("tbody");
     rows.forEach(function (o) {
+      var meetingsCell = el("td", { style: "text-align:left; white-space:normal;" },
+        o.meetings.map(function (m) {
+          var label = (ROUND_LABELS[m.round] || m.round) + " " + (m.result === "W" ? "(won)" : "(lost)") +
+            " · " + m.event + " · " + m.date;
+          return el("div", { class: "meeting-line" }, [label]);
+        })
+      );
       tbody.appendChild(el("tr", {}, [
         el("td", { style: "text-align:left;" }, [el("a", { class: "pilot-link", href: pilotHash(o.id) }, [o.name])]),
-        el("td", {}, [String(o.meetings)]),
+        el("td", {}, [String(o.meetings.length)]),
         el("td", {}, [o.wins + "-" + o.losses]),
-        el("td", {}, [o.lastDate]),
+        meetingsCell,
       ]));
     });
     table.appendChild(tbody);
