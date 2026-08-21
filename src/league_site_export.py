@@ -162,6 +162,35 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
     return rows
 
 
+def _load_bracket_matches(matches_dir: Optional[Path], season_start: date, season_end: date) -> pd.DataFrame:
+    """Reads every outputs/league/matches/<EventID>.csv (elimination-bracket matches only -- Round
+    is QF/SF/F, never a Swiss round, see league_matches.py) whose EventDate falls in the season,
+    skipping the _no_bracket.csv sentinel file. Returns an empty frame (not an error) when
+    matches_dir is None or missing, or when no event in range has bracket data captured -- a
+    pilot's opponent list is simply omitted for that case, not treated as a failure.
+    """
+    cols = ["EventID", "EventDate", "Tier", "EventClass", "Round", "WinnerPilot", "WinnerLoginID",
+            "LoserPilot", "LoserLoginID", "WinnerGames", "LoserGames", "WinnerDeck", "LoserDeck"]
+    if matches_dir is None or not matches_dir.exists():
+        return pd.DataFrame(columns=cols)
+    frames = []
+    for p in sorted(matches_dir.glob("*.csv")):
+        if p.name == "_no_bracket.csv":
+            continue
+        try:
+            df = pd.read_csv(p, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+        except Exception:
+            continue
+        if not df.empty:
+            frames.append(df)
+    if not frames:
+        return pd.DataFrame(columns=cols)
+    combined = pd.concat(frames, ignore_index=True)
+    dates = pd.to_datetime(combined["EventDate"], errors="coerce").dt.date
+    in_season = ((dates >= season_start) & (dates <= season_end)).fillna(False)
+    return combined[in_season]
+
+
 def build_season_site_data(
     results_dir: Path,
     season: str,
@@ -169,6 +198,7 @@ def build_season_site_data(
     season_end: date,
     as_of: date,
     prevrank_cutoff_days: int = 7,
+    matches_dir: Optional[Path] = None,
 ) -> tuple:
     """Returns (season_doc, pilots_doc) for one season -- pure computation, no file I/O, so it can
     be unit-tested and diffed without touching disk.
@@ -253,7 +283,56 @@ def build_season_site_data(
                 "distinctDecks": distinct_decks,
             },
             "results": results_rows,
+            # Elimination-bracket opponents (Top8/Top4/Top2 matches only -- never Swiss), filled
+            # in below from outputs/league/matches/. Defaults to empty so the site never has to
+            # special-case a missing key, only an empty list (e.g. no bracket capture for any of
+            # this pilot's events, or the pilot never reached the bracket at all).
+            "bracketMatches": [],
         }
+
+    # Attach each pilot's elimination-bracket matches (see league_matches.py: Round is QF/SF/F,
+    # captured from the mtgo.com JSON cache alongside the results sync, entirely separate from
+    # this season table's Place-based scoring). Two entries per match row -- one from the winner's
+    # side, one from the loser's -- each pointing at the other as "opponent". Only pilots already
+    # in pilots_doc_entries can appear here (every bracket participant reached a Top32, so is
+    # already present), which is also what keeps a stray/corrupt LoginID in the matches file from
+    # silently fabricating a new pilot entry.
+    bracket = _load_bracket_matches(matches_dir, season_start, season_end)
+    if not bracket.empty:
+        b = bracket.copy()
+        b["_WinnerKey"] = [_pilot_key(lid, p) for lid, p in zip(b["WinnerLoginID"], b["WinnerPilot"])]
+        b["_LoserKey"] = [_pilot_key(lid, p) for lid, p in zip(b["LoserLoginID"], b["LoserPilot"])]
+        b["_Date"] = pd.to_datetime(b["EventDate"], errors="coerce")
+        b = b.sort_values(["_Date", "EventID", "Round"], ascending=[False, True, True], kind="mergesort")
+
+        for _, r in b.iterrows():
+            w_key, l_key = r["_WinnerKey"], r["_LoserKey"]
+            tier = str(r.get("Tier", "")).strip()
+            event_class = str(r.get("EventClass", "Challenge")).strip()
+            event_label = _event_label(tier, event_class)
+            date_str = str(r.get("EventDate", "")).strip()
+            round_label = str(r.get("Round", "")).strip()
+            event_id = str(r.get("EventID", "")).strip()
+            winner_deck = str(r.get("WinnerDeck", "")).strip()
+            loser_deck = str(r.get("LoserDeck", "")).strip()
+
+            w_name = names.get(w_key, {}).get("current") or str(r.get("WinnerPilot", "")).strip()
+            l_name = names.get(l_key, {}).get("current") or str(r.get("LoserPilot", "")).strip()
+
+            if w_key in pilots_doc_entries:
+                pilots_doc_entries[w_key]["bracketMatches"].append({
+                    "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
+                    "round": round_label, "result": "W",
+                    "opponentId": l_key, "opponentName": l_name,
+                    "pilotDeck": winner_deck, "opponentDeck": loser_deck,
+                })
+            if l_key in pilots_doc_entries:
+                pilots_doc_entries[l_key]["bracketMatches"].append({
+                    "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
+                    "round": round_label, "result": "L",
+                    "opponentId": w_key, "opponentName": w_name,
+                    "pilotDeck": loser_deck, "opponentDeck": winner_deck,
+                })
 
     season_doc = {
         "season": season,
@@ -294,6 +373,7 @@ def export_league_site(
             log(msg)
 
     results_dir = league_dir / "results"
+    matches_dir = league_dir / "matches"
     config_csv = league_dir / "season_config.csv"
     if not config_csv.exists():
         _write_json({"currentSeason": None, "seasons": []}, docs_data_dir / "seasons.json")
@@ -322,7 +402,8 @@ def export_league_site(
         slug = season_filename_slug(season)
 
         season_doc, pilots_doc = build_season_site_data(
-            results_dir, season, s_start, s_end, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days
+            results_dir, season, s_start, s_end, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days,
+            matches_dir=matches_dir,
         )
         _write_json(season_doc, docs_data_dir / f"season_{slug}.json")
         _write_json(pilots_doc, docs_data_dir / f"pilots_{slug}.json")

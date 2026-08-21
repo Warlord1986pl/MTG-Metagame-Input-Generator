@@ -407,6 +407,57 @@
     return tile;
   }
 
+  // Aggregates a pilot's elimination-bracket matches (round QF/SF/F -- Top8, Top4, Top2, never
+  // Swiss) by opponent: how many times they met, and the record between them from this pilot's
+  // side. Sorted by meetings first (that is the point of the card), then by wins, then by name,
+  // so the ordering is stable when two opponents were met equally often.
+  function renderOpponentsCard(bracketMatches) {
+    var byOpponent = {};
+    bracketMatches.forEach(function (m) {
+      var o = byOpponent[m.opponentId];
+      if (!o) {
+        o = { id: m.opponentId, name: m.opponentName, meetings: 0, wins: 0, losses: 0, lastDate: m.date };
+        byOpponent[m.opponentId] = o;
+      }
+      o.meetings += 1;
+      if (m.result === "W") o.wins += 1; else o.losses += 1;
+      if (m.date > o.lastDate) o.lastDate = m.date;
+    });
+    var rows = Object.keys(byOpponent).map(function (k) { return byOpponent[k]; });
+    rows.sort(function (a, b) {
+      if (b.meetings !== a.meetings) return b.meetings - a.meetings;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return a.name.localeCompare(b.name);
+    });
+
+    var card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "section-title" }, ["Most common Top 8+ opponents"]));
+    card.appendChild(el("p", { class: "note" }, [
+      "Based on elimination-bracket matches only (Top 8, Top 4, and finals), not Swiss rounds.",
+    ]));
+    var scroll = el("div", { class: "table-scroll" });
+    var table = el("table");
+    table.appendChild(el("thead", {}, [
+      el("tr", {}, [
+        el("th", { style: "text-align:left;" }, ["Opponent"]), el("th", {}, ["Meetings"]),
+        el("th", {}, ["Record (W-L)"]), el("th", {}, ["Last met"]),
+      ]),
+    ]));
+    var tbody = el("tbody");
+    rows.forEach(function (o) {
+      tbody.appendChild(el("tr", {}, [
+        el("td", { style: "text-align:left;" }, [el("a", { class: "pilot-link", href: pilotHash(o.id) }, [o.name])]),
+        el("td", {}, [String(o.meetings)]),
+        el("td", {}, [o.wins + "-" + o.losses]),
+        el("td", {}, [o.lastDate]),
+      ]));
+    });
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    card.appendChild(scroll);
+    return card;
+  }
+
   function renderProfileView(container, id) {
     var loadingNote = el("p", { class: "muted" }, ["Loading pilot…"]);
     container.appendChild(loadingNote);
@@ -516,6 +567,13 @@
       scroll.appendChild(table);
       resultsCard.appendChild(scroll);
       container.appendChild(resultsCard);
+
+      // Only worth showing once there is a real Top8+ track record with more than one bracket
+      // match on file -- below that there is nothing to call "most common," just a single game.
+      var bracketMatches = pilot.bracketMatches || [];
+      if (pilot.counts.top8 >= 1 && bracketMatches.length > 1) {
+        container.appendChild(renderOpponentsCard(bracketMatches));
+      }
     }).catch(function (err) {
       container.innerHTML = "";
       container.appendChild(el("div", { class: "card" }, [
