@@ -1,20 +1,20 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12848159,2026-07-25,modern-showcase-qualifier,Premier,ls149950,1862893,1,Broodscale Combo,8,3,15,0.63889,0.73333,0.57276
-12848159,2026-07-25,modern-showcase-qualifier,Premier,Lollopollo2001,2373595,2,Boros Energy,6,8,12,0.51111,0.57143,0.49954
-12848159,2026-07-25,modern-showcase-qualifier,Premier,wutey,2916560,3,Broodscale Combo,4,4,15,0.53889,0.68750,0.52659
-12848159,2026-07-25,modern-showcase-qualifier,Premier,yriel,2537131,4,Esper Blink,4,7,12,0.58333,0.60000,0.54706
-12848159,2026-07-25,modern-showcase-qualifier,Premier,moon11,1471145,5,Domain Zoo,2,1,15,0.69445,0.68750,0.66667
-12848159,2026-07-25,modern-showcase-qualifier,Premier,Savior0117,2464763,6,Belcher,2,2,15,0.63889,0.78571,0.55790
-12848159,2026-07-25,modern-showcase-qualifier,Premier,Dioferreira,1950164,7,Dimir Midrange,2,5,12,0.63889,0.64286,0.55139
-12848159,2026-07-25,modern-showcase-qualifier,Premier,daibloXSC,710116,8,Devoted Combo,2,6,12,0.61111,0.56250,0.61270
-12848159,2026-07-25,modern-showcase-qualifier,Premier,KelMasterP,390789,9,Land Destruction,0,9,12,0.51111,0.57143,0.48710
-12848159,2026-07-25,modern-showcase-qualifier,Premier,shenyang45,3115176,10,Grixis Reanimator,0,10,12,0.50000,0.66667,0.47033
-12848159,2026-07-25,modern-showcase-qualifier,Premier,CliffBoyardee,2908645,11,Goryo's Vengeance,0,11,12,0.48333,0.60000,0.48449
-12848159,2026-07-25,modern-showcase-qualifier,Premier,chengyiw,2405278,12,Goryo's Vengeance,0,12,12,0.45556,0.64286,0.43561
-12848159,2026-07-25,modern-showcase-qualifier,Premier,moreno13,3113973,13,Affinity,0,13,9,0.66667,0.50000,0.59246
-12848159,2026-07-25,modern-showcase-qualifier,Premier,kePs,1984508,14,Affinity,0,14,9,0.61333,0.57143,0.53364
-12848159,2026-07-25,modern-showcase-qualifier,Premier,TrueHero,2569009,15,Dimir Midrange,0,15,9,0.61111,0.46154,0.54117
-12848159,2026-07-25,modern-showcase-qualifier,Premier,ETBJezus,3040474,16,Dimir Midrange,0,16,9,0.58334,0.43750,0.57454
+12848159,2026-07-25,modern-showcase-qualifier,Premier,ls149950,1862893,1,Broodscale Combo,10,3,15,0.63889,0.73333,0.57276
+12848159,2026-07-25,modern-showcase-qualifier,Premier,Lollopollo2001,2373595,2,Boros Energy,8,8,12,0.51111,0.57143,0.49954
+12848159,2026-07-25,modern-showcase-qualifier,Premier,wutey,2916560,3,Broodscale Combo,6,4,15,0.53889,0.68750,0.52659
+12848159,2026-07-25,modern-showcase-qualifier,Premier,yriel,2537131,4,Esper Blink,6,7,12,0.58333,0.60000,0.54706
+12848159,2026-07-25,modern-showcase-qualifier,Premier,moon11,1471145,5,Domain Zoo,4,1,15,0.69445,0.68750,0.66667
+12848159,2026-07-25,modern-showcase-qualifier,Premier,Savior0117,2464763,6,Belcher,4,2,15,0.63889,0.78571,0.55790
+12848159,2026-07-25,modern-showcase-qualifier,Premier,Dioferreira,1950164,7,Dimir Midrange,4,5,12,0.63889,0.64286,0.55139
+12848159,2026-07-25,modern-showcase-qualifier,Premier,daibloXSC,710116,8,Devoted Combo,4,6,12,0.61111,0.56250,0.61270
+12848159,2026-07-25,modern-showcase-qualifier,Premier,KelMasterP,390789,9,Land Destruction,2,9,12,0.51111,0.57143,0.48710
+12848159,2026-07-25,modern-showcase-qualifier,Premier,shenyang45,3115176,10,Grixis Reanimator,2,10,12,0.50000,0.66667,0.47033
+12848159,2026-07-25,modern-showcase-qualifier,Premier,CliffBoyardee,2908645,11,Goryo's Vengeance,2,11,12,0.48333,0.60000,0.48449
+12848159,2026-07-25,modern-showcase-qualifier,Premier,chengyiw,2405278,12,Goryo's Vengeance,2,12,12,0.45556,0.64286,0.43561
+12848159,2026-07-25,modern-showcase-qualifier,Premier,moreno13,3113973,13,Affinity,2,13,9,0.66667,0.50000,0.59246
+12848159,2026-07-25,modern-showcase-qualifier,Premier,kePs,1984508,14,Affinity,2,14,9,0.61333,0.57143,0.53364
+12848159,2026-07-25,modern-showcase-qualifier,Premier,TrueHero,2569009,15,Dimir Midrange,2,15,9,0.61111,0.46154,0.54117
+12848159,2026-07-25,modern-showcase-qualifier,Premier,ETBJezus,3040474,16,Dimir Midrange,2,16,9,0.58334,0.43750,0.57454
 12848159,2026-07-25,modern-showcase-qualifier,Premier,Zoru,2808047,17,Yawgmoth,0,17,9,0.53333,0.45455,0.53238
 12848159,2026-07-25,modern-showcase-qualifier,Premier,hugeowl,3148704,18,Jeskai Ascendancy,0,18,9,0.52778,0.50000,0.49672
 12848159,2026-07-25,modern-showcase-qualifier,Premier,rerere,2298957,19,Neobrand,0,19,9,0.51111,0.53333,0.45694

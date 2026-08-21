@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modern Pilot League</title>
+<style>
+  :root {
+    --bg: #111827;
+    --card: #1F2937;
+    --card-border: #2D3748;
+    --text: #E5E7EB;
+    --text-dim: #9CA3AF;
+    --accent: #3B82F6;
+    --accent-2: #F59E0B;
+    --up: #34D399;
+    --down: #F87171;
+    --same: #6B7280;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover, a:focus { text-decoration: underline; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 16px 16px 64px; }
+  header.site-header {
+    display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
+    gap: 8px; padding: 20px 0 12px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px;
+  }
+  header.site-header h1 { font-size: 1.4rem; margin: 0; }
+  header.site-header h1 .title-link { color: var(--text); }
+  header.site-header h1 .title-link:hover { color: var(--accent); text-decoration: none; }
+  header.site-header .header-nav { display: flex; align-items: baseline; gap: 14px; font-size: 0.9rem; }
+  header.site-header .as-of { color: var(--text-dim); font-size: 0.85rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: 10px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .muted { color: var(--text-dim); }
+  .note { font-size: 0.85rem; color: var(--text-dim); margin: 8px 0 0; }
+  input[type="search"] {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--card-border);
+    background: #0B1220; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  input[type="search"]:focus { outline: 2px solid var(--accent); }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 560px; }
+  th, td { padding: 8px 10px; text-align: right; white-space: nowrap; }
+  th:nth-child(3), td:nth-child(3) { text-align: left; white-space: normal; }
+  thead th {
+    text-align: right; color: var(--text-dim); font-weight: 600; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--card-border);
+  }
+  thead th:nth-child(3) { text-align: left; }
+  tbody tr { border-bottom: 1px solid #1c2534; }
+  tbody tr:hover { background: rgba(59, 130, 246, 0.08); }
+  .rank-cell { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .move-up { color: var(--up); }
+  .move-down { color: var(--down); }
+  .move-same { color: var(--same); }
+  .pilot-link { font-weight: 600; color: var(--text); }
+  .pilot-link:hover, .pilot-link:focus { color: var(--accent); }
+  .prior-names { color: var(--text-dim); font-weight: 400; font-size: 0.85em; }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
+  .pager button {
+    background: var(--card); color: var(--text); border: 1px solid var(--card-border);
+    border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.9rem;
+  }
+  .pager button:disabled { opacity: 0.4; cursor: default; }
+  .pager button:not(:disabled):hover { border-color: var(--accent); }
+  .page-input {
+    width: 48px; text-align: center; background: #0B1220; color: var(--text);
+    border: 1px solid var(--card-border); border-radius: 6px; padding: 5px 4px; font-size: 0.9rem;
+  }
+  .page-input:focus { outline: 2px solid var(--accent); }
+  .empty-state { text-align: center; color: var(--text-dim); padding: 24px 0; }
+
+  .profile-header { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; justify-content: space-between; }
+  .profile-header h2 { margin: 0 0 4px; font-size: 1.5rem; }
+  .profile-header .loginid { color: var(--text-dim); font-size: 0.85rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .profile-header .rank-points { text-align: right; }
+  .profile-header .rank-points .big { font-size: 1.6rem; font-weight: 700; }
+  .back-link { display: inline-block; margin-bottom: 12px; font-size: 0.9rem; }
+  .counts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 10px; margin-top: 14px; }
+  .count-tile { background: #0B1220; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; text-align: center; }
+  .count-tile .n { font-size: 1.25rem; font-weight: 700; }
+  .count-tile .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }
+  .count-tile .sub-label { font-size: 0.68rem; color: var(--text-dim); margin-top: 3px; }
+  .avg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 8px; }
+  .avg-tile { background: #0B1220; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; }
+  .avg-tile .avg-label { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }
+  .avg-tile .avg-value { font-size: 1.3rem; font-weight: 700; margin: 4px 0 2px; }
+  .avg-tile .avg-ci { font-size: 0.8rem; color: var(--text-dim); }
+  .avg-tile .avg-small { font-size: 0.85rem; color: var(--text-dim); font-style: italic; }
+  .caveat-link { font-size: 0.78rem; }
+  .section-title { font-size: 1rem; margin: 22px 0 4px; color: var(--text); }
+  .card h2 { font-size: 1.1rem; margin: 0 0 10px; color: var(--text); }
+  .card p { margin: 0 0 10px; color: var(--text); }
+  .card ol { margin: 0 0 10px; padding-left: 22px; }
+  .card ol li { margin-bottom: 4px; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+  .badge-challenge { background: rgba(59,130,246,0.18); color: #93C5FD; }
+  .badge-premier { background: rgba(245,158,11,0.18); color: #FCD34D; }
+
+  footer.site-footer {
+    border-top: 1px solid var(--card-border); margin-top: 28px; padding-top: 16px;
+    color: var(--text-dim); font-size: 0.85rem;
+  }
+  footer.site-footer p { margin: 0 0 10px; }
+  #caveat { scroll-margin-top: 20px; }
+
+  @media (max-width: 560px) {
+    .profile-header { flex-direction: column; }
+    .profile-header .rank-points { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <h1><a href="#/" class="title-link">Modern Pilot League</a></h1>
+    <nav class="header-nav">
+      <a href="#/about">How it works</a>
+      <span class="as-of" id="seasonMeta"></span>
+    </nav>
+  </header>
+  <main id="app"></main>
+  <footer class="site-footer" id="siteFooter">
+    <p><a href="#/about">How the league works</a> &middot; scoring, seasons, ranking, and identity, all explained on one page.</p>
+    <p id="caveat">
+      <strong>A note on the averages:</strong> MTGO publishes standings only to 32nd place. Every
+      average on this site is therefore computed from a pilot's better results. It shows how a
+      pilot does when they do well, not how they do overall.
+    </p>
+    <p>Game win % is not a win rate: it counts individual games, not matches, and is shown only
+      as a per-event figure averaged across a pilot's recorded Top 32 results.</p>
+    <p>A pilot who would like to be removed from this public table may ask, and it will be done.</p>
+  </footer>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  var PAGE_SIZE = 50;
+  var DATA_DIR = "data";
+
+  var state = {
+    seasons: null,
+    currentSlug: null,
+    seasonDoc: null,
+    pilotsDocCache: {},
+    searchQuery: "",
+    page: 1,
+  };
+
+  // ---- small stats helpers -------------------------------------------------------------------
+
+  // Two-sided 95% critical values by degrees of freedom (n-1), falling back to the normal z-value
+  // (1.96) once df is large enough that t and z are visually indistinguishable. Used for every
+  // continuous average on the site (finish, Swiss points) since we only ever have a handful of
+  // Top 32 appearances per pilot per season -- the large-sample normal approximation alone would
+  // understate the interval for exactly the small-n pilots where it matters most.
+  var T_TABLE = {1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,
+    11:2.201,12:2.179,13:2.160,14:2.145,15:2.131,16:2.120,17:2.110,18:2.101,19:2.093,20:2.086,
+    21:2.080,22:2.074,23:2.069,24:2.064,25:2.060,26:2.056,27:2.052,28:2.048,29:2.045};
+  function criticalValue(n) {
+    var df = n - 1;
+    if (df >= 30) return 1.96;
+    return T_TABLE[Math.max(df, 1)] || 1.96;
+  }
+
+  function mean(values) {
+    return values.reduce(function (a, b) { return a + b; }, 0) / values.length;
+  }
+
+  function normalCI(values) {
+    var n = values.length;
+    var m = mean(values);
+    if (n < 2) return { mean: m, n: n, lo: null, hi: null };
+    var variance = values.reduce(function (a, v) { return a + Math.pow(v - m, 2); }, 0) / (n - 1);
+    var se = Math.sqrt(variance / n);
+    var t = criticalValue(n);
+    return { mean: m, n: n, lo: m - t * se, hi: m + t * se };
+  }
+
+  // Wilson score interval for GWP. Each pilot's per-event GWP is itself already a proportion (game
+  // wins / games played that event) -- we don't retain the underlying game W/L counts, so this
+  // treats each event's GWP figure as one observation of the pilot's "true" GWP and n = the number
+  // of events with a recorded value, which is the standard approach when only aggregated
+  // per-trial proportions are available rather than raw counts.
+  function wilsonCI(values) {
+    var n = values.length;
+    var p = mean(values);
+    if (n < 2) return { mean: p, n: n, lo: null, hi: null };
+    var z = 1.96;
+    var denom = 1 + (z * z) / n;
+    var center = (p + (z * z) / (2 * n)) / denom;
+    var margin = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / denom;
+    return { mean: p, n: n, lo: Math.max(0, center - margin), hi: Math.min(1, center + margin) };
+  }
+
+  // ---- fetch helpers --------------------------------------------------------------------------
+
+  function fetchJson(path) {
+    return fetch(path, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("Failed to load " + path + " (" + r.status + ")");
+      return r.json();
+    });
+  }
+
+  function loadSeason(slug) {
+    return fetchJson(DATA_DIR + "/season_" + slug + ".json");
+  }
+
+  function loadPilots(slug) {
+    if (state.pilotsDocCache[slug]) return Promise.resolve(state.pilotsDocCache[slug]);
+    return fetchJson(DATA_DIR + "/pilots_" + slug + ".json").then(function (doc) {
+      state.pilotsDocCache[slug] = doc;
+      return doc;
+    });
+  }
+
+  // ---- rendering: shared ----------------------------------------------------------------------
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      if (attrs[k] == null) return; // e.g. disabled: null must leave the attribute off entirely --
+      // setAttribute("disabled", null) would stringify to "disabled=\"null\"", which HTML still
+      // treats as present (any value, including the string "null", disables the element).
+      if (k === "class") node.className = attrs[k];
+      else if (k === "html") node.innerHTML = attrs[k];
+      else if (k.indexOf("on") === 0) node.addEventListener(k.slice(2), attrs[k]);
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) {
+      if (c == null) return;
+      node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return node;
+  }
+
+  function pilotHash(id) {
+    return "#/pilot/" + encodeURIComponent(id);
+  }
+
+  function fmtPct(x) {
+    return (x * 100).toFixed(1) + "%";
+  }
+
+  function movementCell(p) {
+    if (p.movement === "up") return el("span", { class: "move-up", title: "Up from #" + p.prevRank }, ["▲"]);
+    if (p.movement === "down") return el("span", { class: "move-down", title: "Down from #" + p.prevRank }, ["▼"]);
+    if (p.movement === "same") return el("span", { class: "move-same", title: "Unchanged" }, ["—"]);
+    return el("span", { class: "muted" }, [""]);
+  }
+
+  function updateHeaderMeta() {
+    var meta = document.getElementById("seasonMeta");
+    if (!state.seasonDoc) { meta.textContent = ""; return; }
+    meta.textContent = state.seasonDoc.season + " · as of " + state.seasonDoc.asOf +
+      " · " + state.seasonDoc.pilotCount + " pilots";
+  }
+
+  // ---- season table view ------------------------------------------------------------------------
+
+  function matchesSearch(p, q) {
+    if (!q) return true;
+    q = q.toLowerCase();
+    if (p.name.toLowerCase().indexOf(q) !== -1) return true;
+    return p.priorNames.some(function (n) { return n.toLowerCase().indexOf(q) !== -1; });
+  }
+
+  // The search <input> and its surrounding card are built exactly once per visit to the season
+  // view (see render()) and never touched again by a keystroke or a page-button click -- only
+  // resultsBox (the table/pager/empty-state block below the search field) gets replaced by
+  // updateSeasonResults(). Rebuilding the <input> itself on every keystroke (the first cut of
+  // this view did that, via the top-level render()) intermittently dropped focus and lost
+  // characters: removing a focused element from the document -- which is what innerHTML = ""
+  // followed by a fresh el("input", ...) amounts to -- fires a synchronous blur, so any key
+  // event still in flight for the old node landed on nothing.
+  var seasonResultsBox = null;
+
+  function updateSeasonResults() {
+    var doc = state.seasonDoc;
+    var filtered = doc.pilots.filter(function (p) { return matchesSearch(p, state.searchQuery); });
+    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (state.page > totalPages) state.page = totalPages;
+    var startIdx = (state.page - 1) * PAGE_SIZE;
+    var pageRows = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+    var box = seasonResultsBox;
+    box.innerHTML = "";
+
+    if (pageRows.length === 0) {
+      box.appendChild(el("div", { class: "empty-state" }, ["No pilots match “" + state.searchQuery + "”."]));
+    } else {
+      var tableScroll = el("div", { class: "table-scroll" });
+      var table = el("table");
+      table.appendChild(el("thead", {}, [
+        el("tr", {}, [
+          el("th", {}, ["Rank"]), el("th", {}, [""]), el("th", {}, ["Pilot"]),
+          el("th", {}, ["Points"]), el("th", {}, ["Wins"]), el("th", {}, ["Top 8"]),
+          el("th", {}, ["Top 16"]), el("th", {}, ["Starts"]),
+        ]),
+      ]));
+      var tbody = el("tbody");
+      pageRows.forEach(function (p) {
+        var nameCell = el("td", {}, [
+          el("a", { class: "pilot-link", href: pilotHash(p.id) }, [p.name]),
+          p.priorNames.length ? el("div", { class: "prior-names" }, ["formerly " + p.priorNames.join(", ")]) : null,
+        ]);
+        tbody.appendChild(el("tr", {}, [
+          el("td", { class: "rank-cell" }, [String(p.rank)]),
+          el("td", {}, [movementCell(p)]),
+          nameCell,
+          el("td", {}, [String(p.points)]),
+          el("td", {}, [String(p.wins)]),
+          el("td", {}, [String(p.top8)]),
+          el("td", {}, [String(p.top16)]),
+          el("td", {}, [String(p.starts)]),
+        ]));
+      });
+      table.appendChild(tbody);
+      tableScroll.appendChild(table);
+      box.appendChild(tableScroll);
+
+      function goToPage(n) {
+        var clamped = Math.min(Math.max(1, Math.round(n) || 1), totalPages);
+        state.page = clamped;
+        updateSeasonResults();
+      }
+
+      var pageInput = el("input", {
+        type: "number", class: "page-input", min: "1", max: String(totalPages),
+        value: String(state.page), "aria-label": "Page number",
+        onchange: function (e) { goToPage(Number(e.target.value)); },
+        onkeydown: function (e) { if (e.key === "Enter") { e.target.blur(); goToPage(Number(e.target.value)); } },
+      });
+
+      var pager = el("div", { class: "pager" }, [
+        el("button", {
+          disabled: state.page <= 1 ? "disabled" : null,
+          onclick: function () { state.page -= 1; updateSeasonResults(); },
+        }, ["← Prev"]),
+        el("span", { class: "muted" }, ["Page ", pageInput, " of " + totalPages]),
+        el("button", {
+          disabled: state.page >= totalPages ? "disabled" : null,
+          onclick: function () { state.page += 1; updateSeasonResults(); },
+        }, ["Next →"]),
+      ]);
+      box.appendChild(pager);
+    }
+  }
+
+  function renderSeasonView(container) {
+    var card = el("div", { class: "card" });
+
+    var search = el("input", {
+      type: "search",
+      placeholder: "Search by pilot name (current or earlier)…",
+      "aria-label": "Search pilots",
+      value: state.searchQuery,
+      oninput: function (e) {
+        state.searchQuery = e.target.value;
+        state.page = 1;
+        updateSeasonResults();
+      },
+    });
+    card.appendChild(search);
+
+    card.appendChild(el("p", { class: "note" },
+      ["A pilot who did not play in the last week can drop in rank without losing any points. Movement reflects rank, not points lost."]));
+
+    seasonResultsBox = el("div", {});
+    card.appendChild(seasonResultsBox);
+    container.appendChild(card);
+    updateSeasonResults();
+  }
+
+  // ---- pilot profile view -----------------------------------------------------------------------
+
+  function avgTile(label, ci, formatter, unit) {
+    var tile = el("div", { class: "avg-tile" });
+    tile.appendChild(el("div", { class: "avg-label" }, [label]));
+    if (ci.n < 3) {
+      tile.appendChild(el("div", { class: "avg-small" }, ["Sample too small (n=" + ci.n + ")"]));
+      return tile;
+    }
+    tile.appendChild(el("div", { class: "avg-value" }, [formatter(ci.mean) + (unit || "")]));
+    var ciText = (ci.lo == null)
+      ? ("n=" + ci.n)
+      : ("95% CI " + formatter(ci.lo) + (unit || "") + "-" + formatter(ci.hi) + (unit || "") + "  ·  n=" + ci.n);
+    tile.appendChild(el("div", { class: "avg-ci" }, [ciText]));
+    return tile;
+  }
+
+  function renderProfileView(container, id) {
+    var loadingNote = el("p", { class: "muted" }, ["Loading pilot…"]);
+    container.appendChild(loadingNote);
+
+    loadPilots(state.currentSlug).then(function (pilotsDoc) {
+      container.innerHTML = "";
+      var pilot = pilotsDoc.pilots[id];
+      if (!pilot) {
+        container.appendChild(el("div", { class: "card" }, [
+          el("div", { class: "empty-state" }, ["Pilot not found in " + pilotsDoc.season + "."]),
+        ]));
+        return;
+      }
+
+      container.appendChild(el("a", { class: "back-link", href: "#/" }, ["← Back to season table"]));
+
+      var headerCard = el("div", { class: "card" });
+      var nameBlock = el("div", {}, [
+        el("h2", {}, [pilot.name]),
+        pilot.loginId ? el("div", { class: "loginid" }, ["LoginID " + pilot.loginId]) : null,
+        pilot.priorNames.length ? el("div", { class: "muted" }, ["Earlier name(s) on record: " + pilot.priorNames.join(", ")]) : null,
+      ]);
+
+      // Starts/Points are combined across Challenge and premier events everywhere else on the
+      // site (a Top 8 is a Top 8 regardless of ladder), but the split is useful context on a
+      // profile, so it is derived here, on demand, straight from the results list rather than
+      // carried as its own field in the data -- one source of truth for the breakdown and the
+      // results table below.
+      var challengeResults = pilot.results.filter(function (r) { return r.eventClass !== "Premier"; });
+      var premierResults = pilot.results.filter(function (r) { return r.eventClass === "Premier"; });
+      var challengePoints = pilot.points - pilot.premierPoints;
+
+      var rankBlock = el("div", { class: "rank-points" }, [
+        el("div", { class: "big" }, ["#" + pilot.rank]),
+        el("div", { class: "muted" }, [pilot.points + " pts total"]),
+        premierResults.length
+          ? el("div", { class: "muted" }, [challengePoints + " from Challenges, " + pilot.premierPoints + " from premier events"])
+          : null,
+      ]);
+      headerCard.appendChild(el("div", { class: "profile-header" }, [nameBlock, rankBlock]));
+
+      var countsGrid = el("div", { class: "counts-grid" });
+      [
+        ["Starts", pilot.counts.starts,
+          premierResults.length ? (challengeResults.length + " Challenge, " + premierResults.length + " premier") : null],
+        ["Top 16", pilot.counts.top16, null], ["Top 8", pilot.counts.top8, null],
+        ["Top 4", pilot.counts.top4, null], ["Top 2", pilot.counts.top2, null], ["Wins", pilot.counts.wins, null],
+        ["Decks", pilot.counts.distinctDecks, null],
+      ].forEach(function (tuple) {
+        countsGrid.appendChild(el("div", { class: "count-tile" }, [
+          el("div", { class: "n" }, [String(tuple[1])]),
+          el("div", { class: "label" }, [tuple[0]]),
+          tuple[2] ? el("div", { class: "sub-label" }, [tuple[2]]) : null,
+        ]));
+      });
+      headerCard.appendChild(countsGrid);
+      container.appendChild(headerCard);
+
+      var avgCard = el("div", { class: "card" });
+      avgCard.appendChild(el("div", { class: "section-title" }, ["Averages"]));
+      var finishes = pilot.results.map(function (r) { return r.finish; }).filter(function (v) { return v != null; });
+      var swissPts = pilot.results.map(function (r) { return r.swissPoints; }).filter(function (v) { return v != null; });
+      var gwps = pilot.results.map(function (r) { return r.gwp; }).filter(function (v) { return v != null; });
+
+      var avgGrid = el("div", { class: "avg-grid" }, [
+        avgTile("Average finish (Top 32)", normalCI(finishes), function (v) { return v.toFixed(1); }, ""),
+        avgTile("Average Swiss points", normalCI(swissPts), function (v) { return v.toFixed(1); }, ""),
+        avgTile("Game win %", wilsonCI(gwps), function (v) { return (v * 100).toFixed(1); }, "%"),
+      ]);
+      avgCard.appendChild(avgGrid);
+      avgCard.appendChild(el("p", { class: "caveat-link" }, [
+        "These are best-case averages: ",
+        el("a", {
+          href: "javascript:void(0)",
+          onclick: function () {
+            var footer = document.getElementById("caveat");
+            if (footer) footer.scrollIntoView({ behavior: "smooth" });
+          },
+        }, ["see why"]),
+        ".",
+      ]));
+      container.appendChild(avgCard);
+
+      var resultsCard = el("div", { class: "card" });
+      resultsCard.appendChild(el("div", { class: "section-title" }, ["Results"]));
+      var scroll = el("div", { class: "table-scroll" });
+      var table = el("table");
+      table.appendChild(el("thead", {}, [
+        el("tr", {}, [
+          el("th", {}, ["Date"]), el("th", {}, ["Event"]), el("th", {}, ["Tier"]),
+          el("th", {}, ["Finish"]), el("th", {}, ["Deck"]), el("th", {}, ["Points"]),
+        ]),
+      ]));
+      var tbody = el("tbody");
+      pilot.results.forEach(function (r) {
+        var badge = el("span", { class: "badge " + (r.eventClass === "Premier" ? "badge-premier" : "badge-challenge") }, [r.eventClass]);
+        tbody.appendChild(el("tr", {}, [
+          el("td", {}, [r.date]),
+          el("td", { style: "text-align:left; white-space:normal;" }, [r.event + " ", badge]),
+          el("td", {}, [r.tier]),
+          el("td", {}, [r.finish != null ? String(r.finish) : "—"]),
+          el("td", { style: "text-align:left; white-space:normal;" }, [r.deck || "—"]),
+          el("td", {}, [String(r.points)]),
+        ]));
+      });
+      table.appendChild(tbody);
+      scroll.appendChild(table);
+      resultsCard.appendChild(scroll);
+      container.appendChild(resultsCard);
+    }).catch(function (err) {
+      container.innerHTML = "";
+      container.appendChild(el("div", { class: "card" }, [
+        el("div", { class: "empty-state" }, ["Could not load pilot data: " + err.message]),
+      ]));
+    });
+  }
+
+  // ---- about / how-it-works view -------------------------------------------------------------
+
+  function renderAboutView(container) {
+    container.appendChild(el("a", { class: "back-link", href: "#/" }, ["← Back to season table"]));
+
+    var scoringCard = el("div", { class: "card" });
+    scoringCard.appendChild(el("h2", {}, ["How scoring works"]));
+    scoringCard.appendChild(el("p", {}, [
+      "Every Challenge and premier event is scored the same way: 1 point for reaching the Top 16, ",
+      "1 more point for reaching the Top 8, and 1 more point for each elimination match won after that.",
+    ]));
+
+    var scoreScroll = el("div", { class: "table-scroll" });
+    var scoreTable = el("table");
+    scoreTable.appendChild(el("thead", {}, [
+      el("tr", {}, [el("th", { style: "text-align:left;" }, ["Finish"]), el("th", {}, ["Challenge points"]), el("th", {}, ["Premier points"])]),
+    ]));
+    var scoreRows = [
+      ["1st", 5, 10], ["2nd", 4, 8], ["3rd-4th", 3, 6], ["5th-8th", 2, 4],
+      ["9th-16th", 1, 2], ["17th and lower", 0, 0],
+    ];
+    var scoreBody = el("tbody");
+    scoreRows.forEach(function (row) {
+      scoreBody.appendChild(el("tr", {}, [
+        el("td", { style: "text-align:left;" }, [row[0]]),
+        el("td", {}, [String(row[1])]),
+        el("td", {}, [String(row[2])]),
+      ]));
+    });
+    scoreTable.appendChild(scoreBody);
+    scoreScroll.appendChild(scoreTable);
+    scoringCard.appendChild(scoreScroll);
+    scoringCard.appendChild(el("p", { class: "note" }, [
+      "A Challenge always distributes 31 points in total. A premier event (RC Super Qualifier, ",
+      "Showcase Qualifier, Showcase Challenge, and similar) uses the same ladder doubled, for 62 points ",
+      "in total. There is no per-event-type multiplier beyond that: every premier event type is worth the same.",
+    ]));
+    container.appendChild(scoringCard);
+
+    var seasonCard = el("div", { class: "card" });
+    seasonCard.appendChild(el("h2", {}, ["Seasons"]));
+    seasonCard.appendChild(el("p", {}, [
+      "A season is one calendar quarter: Spring (March to May), Summer (June to August), Autumn ",
+      "(September to November), or Winter (December to February, spanning the year boundary). Points reset ",
+      "to zero at the start of each season. Every pilot who reaches a Top 32 during the season appears ",
+      "in its table, including pilots on zero points.",
+    ]));
+    container.appendChild(seasonCard);
+
+    var rankCard = el("div", { class: "card" });
+    rankCard.appendChild(el("h2", {}, ["Ranking order"]));
+    rankCard.appendChild(el("p", {}, ["Pilots are ordered by, in sequence:"]));
+    var rankList = el("ol");
+    [
+      "Points",
+      "Wins",
+      "Top 2 finishes",
+      "Top 4 finishes",
+      "Top 8 finishes",
+      "Top 16 finishes",
+      "Starts (events entered)",
+      "Better average finish across Top 32 appearances",
+      "Pilot name, alphabetically",
+    ].forEach(function (item) { rankList.appendChild(el("li", {}, [item])); });
+    rankCard.appendChild(rankList);
+    rankCard.appendChild(el("p", { class: "note" }, [
+      "Average finish is deliberately second to last. Putting it higher would favor a pilot with two ",
+      "lucky appearances over one who entered fifteen events; with several hundred pilots sitting on ",
+      "zero points, Starts is what actually separates them, and that is the intended behavior.",
+    ]));
+    container.appendChild(rankCard);
+
+    var moveCard = el("div", { class: "card" });
+    moveCard.appendChild(el("h2", {}, ["Movement and identity"]));
+    moveCard.appendChild(el("p", {}, [
+      "The arrow next to a pilot's rank compares today's standings to the standings seven days earlier. ",
+      "A pilot who did not play in that week can still drop in rank as other pilots pass them; that is a ",
+      "change in rank, not a loss of points.",
+    ]));
+    moveCard.appendChild(el("p", {}, [
+      "Pilots are tracked by their MTGO account, not by display name, so a rename does not split one ",
+      "pilot's record into two. Earlier names on record are shown on a pilot's profile and are searchable ",
+      "from the season table.",
+    ]));
+    container.appendChild(moveCard);
+
+    var dataCard = el("div", { class: "card" });
+    dataCard.appendChild(el("h2", {}, ["Where the averages come from"]));
+    dataCard.appendChild(el("p", {}, [
+      "MTGO publishes standings only down to 32nd place, so every average on this site (finish, Swiss ",
+      "points, game win percentage) is computed only from a pilot's Top 32 appearances. That means the ",
+      "averages show how a pilot does when they do well, not their overall record. An average is only ",
+      "shown once at least 3 appearances are on record; below that, only the appearance count is shown.",
+    ]));
+    dataCard.appendChild(el("p", {}, [
+      "Game win percentage is a per-game figure, not a match win rate, and is never used to compute a ",
+      "conversion rate between bracket stages: with only a handful of elimination matches in a season, a ",
+      "number like 67% would read as a fact when it is really one or two matches.",
+    ]));
+    dataCard.appendChild(el("p", {}, [
+      "A pilot who would like to be removed from this public table may ask, and it will be done.",
+    ]));
+    container.appendChild(dataCard);
+  }
+
+  // ---- router ---------------------------------------------------------------------------------
+
+  function parseHash() {
+    var hash = window.location.hash || "#/";
+    var m = hash.match(/^#\/pilot\/(.+)$/);
+    if (m) return { route: "pilot", id: decodeURIComponent(m[1]) };
+    if (hash === "#/about") return { route: "about" };
+    return { route: "season" };
+  }
+
+  function render() {
+    var app = document.getElementById("app");
+    app.innerHTML = "";
+    updateHeaderMeta();
+
+    var parsed = parseHash();
+    if (parsed.route === "about") {
+      renderAboutView(app);
+      return;
+    }
+
+    if (!state.seasonDoc) {
+      app.appendChild(el("div", { class: "card" }, [el("p", { class: "muted" }, ["Loading season…"])]));
+      return;
+    }
+
+    if (parsed.route === "pilot") {
+      renderProfileView(app, parsed.id);
+    } else {
+      renderSeasonView(app);
+    }
+  }
+
+  function boot() {
+    fetchJson(DATA_DIR + "/seasons.json").then(function (seasons) {
+      state.seasons = seasons;
+      var slug = null;
+      (seasons.seasons || []).forEach(function (s) { if (s.isCurrent) slug = s.slug; });
+      if (!slug && seasons.seasons && seasons.seasons.length) {
+        slug = seasons.seasons[seasons.seasons.length - 1].slug;
+      }
+      if (!slug) {
+        document.getElementById("app").appendChild(
+          el("div", { class: "card" }, [el("p", { class: "muted" }, ["No season data published yet."])])
+        );
+        return;
+      }
+      state.currentSlug = slug;
+      return loadSeason(slug).then(function (doc) {
+        state.seasonDoc = doc;
+        render();
+      });
+    }).catch(function (err) {
+      document.getElementById("app").appendChild(
+        el("div", { class: "card" }, [el("p", { class: "muted" }, ["Could not load league data: " + err.message])])
+      );
+    });
+  }
+
+  window.addEventListener("hashchange", render);
+  boot();
+})();
+</script>
+</body>
+</html>

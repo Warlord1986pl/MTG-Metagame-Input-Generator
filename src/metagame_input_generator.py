@@ -60,6 +60,14 @@ except ImportError:
     except ImportError:
         run_league_update = None  # type: ignore[assignment]
 
+try:
+    from league_site_export import export_league_site
+except ImportError:
+    try:
+        from .league_site_export import export_league_site
+    except ImportError:
+        export_league_site = None  # type: ignore[assignment]
+
 
 API_BASE = "https://api.videreproject.com"
 MTGO_BASE = "https://www.mtgo.com"
@@ -2166,6 +2174,21 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     )
                     if league_summary["written_event_ids"]:
                         league_results_path = league_dir / "results"
+
+                    if export_league_site is not None:
+                        try:
+                            export_league_site(
+                                league_dir=league_dir,
+                                docs_data_dir=Path("docs") / "data",
+                                as_of=date.today(),
+                                log=log,
+                            )
+                        except Exception as site_err:
+                            # Site export is a read-only downstream view of data already durably
+                            # written above -- a failure here must not be mistaken for a league
+                            # sync failure (which does abort further processing, see the except
+                            # blocks below) and must not stop the rest of the weekly run either.
+                            log(f"[ERROR] [league-site] site data export FAILED (league data itself is unaffected): {site_err}")
 
             except ChallengeSourceError as challenge_err:
                 log(f"[ERROR] Challenge report STOPPED (not a silent skip): {challenge_err}")

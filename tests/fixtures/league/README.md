@@ -9,7 +9,9 @@ Output of `league_engine.run_league_update()` for Modern Challenge + premier dat
 **2026-07-13 to 2026-08-16**:
 
 - 59 Challenge events + 3 premier events (62 total)
-- 975 total points, of which 90 are premier points
+- 2015 total points, of which 186 are premier points -- reflects the 1/16/8/1-elimination-win
+  scoring scale (Top16=1, Top8=+1, Top4=+1, Top2=+1, Win=+1, so 5/4/3/3/2/2/2/2/1x8/0x16 per
+  Challenge place, doubled for premier; 31 points per Challenge event, 62 per premier event)
 
 ## Why it's incomplete, not wrong
 
@@ -22,10 +24,11 @@ and the last two weeks of its end. It is not meant to represent a real season st
 ## What it's for
 
 A known-good file to diff a real run against for **column layout, row ordering, and point
-distribution shape** (e.g. "does the header still have 11 columns in this order", "does a premier
-win still show up as a `PremierPoints` bump on a plausible row") -- not for exact numbers. The first
-real season table (Autumn 2026, starting 2026-09-01) will start from zero and accumulate its own
-real data; compare its *structure* against this fixture, not its totals.
+distribution shape** (e.g. "does the header still have 13 columns in this order, including Top16
+between Top8 and Starts", "does a premier win still show up as a `PremierPoints` bump on a
+plausible row") -- not for exact numbers. The first real season table (Autumn 2026, starting
+2026-09-01) will start from zero and accumulate its own real data; compare its *structure* against
+this fixture, not its totals.
 
 ## Format
 

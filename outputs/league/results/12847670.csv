@@ -1,20 +1,20 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,felider,2322146,1,Goryo's Vengeance,8,4,24,0.62222,0.70833,0.57157
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Sven745,3035942,2,Prowess,6,7,24,0.54356,0.68000,0.55418
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,lgqueiroz3,2011282,3,Grixis Reanimator,4,6,24,0.57531,0.73913,0.55263
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Curtisaxel,1911445,4,Boros Energy,4,8,21,0.70371,0.64000,0.61529
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,VampireDiaries,2283377,5,Goryo's Vengeance,2,1,24,0.64352,0.66667,0.57632
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,vento1223,3381476,6,Boros Energy,2,2,24,0.64321,0.69565,0.57323
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Pigprob,3448603,7,Through the Breach,2,3,24,0.62677,0.61538,0.59825
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,PJKP,3400071,8,4c HollowOne,2,5,24,0.60957,0.69565,0.55075
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Bryzem1,2306501,9,Goryo's Vengeance,0,9,21,0.68924,0.63636,0.61918
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,DFrank,2273904,10,Amulet Titan,0,10,21,0.68519,0.65217,0.58862
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,hugofreitas1,1997683,11,Ruby Storm,0,11,21,0.64374,0.64000,0.58502
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,kattsu,3405528,12,Rakdos HollowOne,0,12,21,0.62963,0.68182,0.56420
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,albybale93,1721886,13,Boros Energy,0,13,21,0.62222,0.63636,0.57129
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Manuel_Danninger,2628981,14,Goryo's Vengeance,0,14,21,0.61605,0.68182,0.57337
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,Rexplosion,1860596,15,Mono-Green Eldrazi,0,15,21,0.61266,0.60000,0.56024
-12847670,2026-07-19,modern-rc-super-qualifier,Premier,littlebinboy,3136515,16,Broodscale Combo,0,16,21,0.61111,0.66667,0.54993
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,felider,2322146,1,Goryo's Vengeance,10,4,24,0.62222,0.70833,0.57157
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Sven745,3035942,2,Prowess,8,7,24,0.54356,0.68000,0.55418
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,lgqueiroz3,2011282,3,Grixis Reanimator,6,6,24,0.57531,0.73913,0.55263
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Curtisaxel,1911445,4,Boros Energy,6,8,21,0.70371,0.64000,0.61529
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,VampireDiaries,2283377,5,Goryo's Vengeance,4,1,24,0.64352,0.66667,0.57632
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,vento1223,3381476,6,Boros Energy,4,2,24,0.64321,0.69565,0.57323
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Pigprob,3448603,7,Through the Breach,4,3,24,0.62677,0.61538,0.59825
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,PJKP,3400071,8,4c HollowOne,4,5,24,0.60957,0.69565,0.55075
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Bryzem1,2306501,9,Goryo's Vengeance,2,9,21,0.68924,0.63636,0.61918
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,DFrank,2273904,10,Amulet Titan,2,10,21,0.68519,0.65217,0.58862
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,hugofreitas1,1997683,11,Ruby Storm,2,11,21,0.64374,0.64000,0.58502
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,kattsu,3405528,12,Rakdos HollowOne,2,12,21,0.62963,0.68182,0.56420
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,albybale93,1721886,13,Boros Energy,2,13,21,0.62222,0.63636,0.57129
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Manuel_Danninger,2628981,14,Goryo's Vengeance,2,14,21,0.61605,0.68182,0.57337
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,Rexplosion,1860596,15,Mono-Green Eldrazi,2,15,21,0.61266,0.60000,0.56024
+12847670,2026-07-19,modern-rc-super-qualifier,Premier,littlebinboy,3136515,16,Broodscale Combo,2,16,21,0.61111,0.66667,0.54993
 12847670,2026-07-19,modern-rc-super-qualifier,Premier,duke12,6062,17,Neobrand,0,17,21,0.60494,0.64000,0.55179
 12847670,2026-07-19,modern-rc-super-qualifier,Premier,bananadisaster,3442638,18,Broodscale Combo,0,18,21,0.59877,0.68182,0.54048
 12847670,2026-07-19,modern-rc-super-qualifier,Premier,Ouranos139,2316177,19,Amulet Titan,0,19,21,0.59722,0.66667,0.55562

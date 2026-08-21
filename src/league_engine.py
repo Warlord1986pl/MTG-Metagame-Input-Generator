@@ -72,28 +72,32 @@ LEAGUE_RESULTS_COLS: List[str] = [
 SEASON_CONFIG_COLS: List[str] = ["Season", "StartDate", "EndDate"]
 
 PILOT_TABLE_COLS: List[str] = [
-    "Rank", "Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Starts",
-    "PrevRank", "RankChange",
+    "Rank", "Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Top16",
+    "Starts", "PrevRank", "RankChange",
 ]
 
 
 def league_points_for_place(place: object) -> int:
-    """Challenge ladder (Top8-only). Equivalently: 1 point for reaching the Top 8, +1 for each
-    elimination match won. Place 9..32 (and anything unparseable) scores 0 -- Top32 rows are kept
-    for storage completeness (see LEAGUE_RESULTS_COLS docstring at call sites), not because they
-    score. Premier events use premier_points_for_place below -- exactly double this ladder.
+    """Challenge ladder: 1 point for reaching the Top 16, 1 more for reaching the Top 8, 1 more for
+    each elimination match won. Resolves to 5/4/3/3/2/2/2/2/1x8/0x16 for places 1..32+. Place 17..32
+    (and anything unparseable) scores 0 -- Top32 rows are kept for storage completeness (see
+    LEAGUE_RESULTS_COLS docstring at call sites), not because they score. Premier events use
+    premier_points_for_place below -- exactly double this ladder. Total per Challenge event is
+    always 31 (5+4+3+3+2*4+1*8), asserted in check_league_invariants.
     """
     try:
         p = int(float(place))
     except (TypeError, ValueError):
         return 0
     if p == 1:
-        return 4
+        return 5
     if p == 2:
-        return 3
+        return 4
     if p in (3, 4):
-        return 2
+        return 3
     if 5 <= p <= 8:
+        return 2
+    if 9 <= p <= 16:
         return 1
     return 0
 
@@ -526,9 +530,9 @@ def _identity_key(login_id: str, pilot: str) -> str:
 
 
 def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
-    """Pilot, LoginID, Points, PremierPoints, Wins, Top2, Top4, Top8, Starts -- unranked, one row
-    per identity (see _identity_key: LoginID when available, the display name otherwise). Deck is
-    deliberately absent: the league tracks pilots, and a per-pilot "best/only deck" field would
+    """Pilot, LoginID, Points, PremierPoints, Wins, Top2, Top4, Top8, Top16, Starts -- unranked, one
+    row per identity (see _identity_key: LoginID when available, the display name otherwise). Deck
+    is deliberately absent: the league tracks pilots, and a per-pilot "best/only deck" field would
     repeat the same defect BestPilots.BestDeck has (collapsing a pilot who scored with two
     different decks into one).
 
@@ -540,10 +544,15 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
 
     Points is the total across both event classes. PremierPoints is the premier-only subset, so a
     reader can tell apart a pilot with two Challenge trophies from one with a single premier
-    finish, even when both reach a similar Points total. Wins/Top2/Top4/Top8/Starts count placements
-    from both classes together -- a Top 8 is a Top 8 regardless of which ladder scored it.
+    finish, even when both reach a similar Points total. Wins/Top2/Top4/Top8/Top16/Starts count
+    placements from both classes together -- a Top 8 is a Top 8 regardless of which ladder scored
+    it.
+
+    Also carries a hidden "_AvgFinish" column (mean Place across the identity's Top32 appearances)
+    used only as a rank tie-break by _rank_table -- not part of PILOT_TABLE_COLS, stripped before
+    the season table is written.
     """
-    cols = ["Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Starts"]
+    cols = ["Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
     if results_df.empty:
         return pd.DataFrame(columns=cols)
 
@@ -571,7 +580,9 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
     top2 = grp["Place"].apply(lambda s: int((s <= 2).sum()))
     top4 = grp["Place"].apply(lambda s: int((s <= 4).sum()))
     top8 = grp["Place"].apply(lambda s: int((s <= 8).sum()))
+    top16 = grp["Place"].apply(lambda s: int((s <= 16).sum()))
     starts = grp["EventID"].nunique()
+    avg_finish = grp["Place"].mean()
 
     # Display name = Pilot at this identity's latest EventDate. Rows with an unparseable date are
     # excluded from the "latest" search (never let a bad date silently win); if that leaves an
@@ -593,29 +604,42 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
         "Top2": top2.reindex(idx).values,
         "Top4": top4.reindex(idx).values,
         "Top8": top8.reindex(idx).values,
+        "Top16": top16.reindex(idx).values,
         "Starts": starts.reindex(idx).values,
+        "_AvgFinish": avg_finish.reindex(idx).values,
     })
     out["Points"] = out["Points"].astype(int)
     out["PremierPoints"] = out["PremierPoints"].astype(int)
-    return out[["_Key"] + cols]
+    return out[["_Key"] + cols + ["_AvgFinish"]]
 
 
 def _rank_table(agg: pd.DataFrame) -> pd.DataFrame:
-    """Tie-break, applied in sequence: Points, Wins, Top2, Top4, Top8, then fewer Starts, then the
-    displayed Pilot name ascending, then LoginID ascending. The Pilot/LoginID pair (not Pilot
-    alone) makes the ordering a total order -- deterministic across runs on identical data, and
-    still deterministic if two different pilots happen to share a display name (LoginID breaks
-    that tie; a name-keyed fallback row has no LoginID and sorts by the empty string, i.e. first
-    among ties, which is fine since it's merely a tie-break, not a ranking signal). PremierPoints
-    plays no part in the tie-break -- it is informational only, carried through unchanged.
+    """Tie-break, applied in sequence: Points, Wins, Top2, Top4, Top8, Top16, Starts (more is
+    better for all seven -- a pilot who has shown up to more events is not worse, on an equal
+    points/placement record, than one who has shown up to fewer), then a BETTER (lower) average
+    finish across that identity's Top32 appearances, then the displayed Pilot name ascending, then
+    LoginID ascending as a final determinism guard.
+
+    Average finish is deliberately second-to-last, after Starts and not before it: with several
+    hundred pilots sitting on zero points, Starts is what actually separates them (more events
+    entered, on an otherwise identical zero-point record, ranks higher) -- putting average finish
+    ahead of Starts would instead favour a pilot with two lucky appearances over one who entered
+    fifteen, which is the wrong story for a season-long table.
+
+    The Pilot/LoginID pair (not Pilot alone) makes the ordering a total order -- deterministic
+    across runs on identical data, and still deterministic if two different pilots happen to share
+    a display name (LoginID breaks that tie; a name-keyed fallback row has no LoginID and sorts by
+    the empty string, i.e. first among ties, which is fine since it's merely a tie-break, not a
+    ranking signal). PremierPoints plays no part in the tie-break -- it is informational only,
+    carried through unchanged.
     """
     if agg.empty:
         out = agg.copy()
         out.insert(0, "Rank", pd.Series(dtype=int))
         return out
     ranked = agg.sort_values(
-        ["Points", "Wins", "Top2", "Top4", "Top8", "Starts", "Pilot", "LoginID"],
-        ascending=[False, False, False, False, False, True, True, True],
+        ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts", "_AvgFinish", "Pilot", "LoginID"],
+        ascending=[False, False, False, False, False, False, False, True, True, True],
         kind="mergesort",
     ).reset_index(drop=True)
     ranked.insert(0, "Rank", range(1, len(ranked) + 1))
@@ -701,12 +725,18 @@ def _fail(label: str, message: str, offending: object) -> None:
 
 def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.DataFrame) -> None:
     """The invariants that must hold on every rebuild, regardless of window/season:
-      - sum(LeaguePoints) within any single Challenge event == 15
-      - sum(LeaguePoints) within any single Premier event == 30
-      - sum(LeaguePoints) over the season == 15*n_challenge + 30*n_premier for that season
+      - sum(LeaguePoints) within any single Challenge event == 31
+      - sum(LeaguePoints) within any single Premier event == 62
+      - sum(LeaguePoints) over the season == 31*n_challenge + 62*n_premier for that season
       - sum(Points) in the league table == sum(LeaguePoints) across the season results
-      - sum(PremierPoints) in the league table == 30*n_premier for that season
-      - per pilot: Wins <= Top2 <= Top4 <= Top8 <= Starts
+      - sum(PremierPoints) in the league table == 62*n_premier for that season
+      - per pilot: Wins <= Top2 <= Top4 <= Top8 <= Top16 <= Starts
+      - per pilot, Challenge-ladder points only (Points - PremierPoints) ==
+        5*Wins + 4*(Top2-Wins) + 3*(Top4-Top2) + 2*(Top8-Top4) + 1*(Top16-Top8), computed against
+        Challenge-only placement counts -- PremierPoints is checked separately above (as the
+        doubled ladder, 62*n_premier in aggregate) since a pilot's Wins/Top2/.../Top16 columns
+        count a placement once regardless of which ladder scored it, so mixing a premier win into
+        this Challenge-ladder formula would silently overcount
       - no (EventID, Place) pair appears twice
       - no EventID appears with more than one EventClass
     Raises AssertionError immediately on the first violation found.
@@ -721,7 +751,7 @@ def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.Da
         work["EventClass"] = "Challenge"
     work["EventClass"] = work["EventClass"].astype(str).str.strip()
 
-    expected_per_event = {"Challenge": 15, "Premier": 30}
+    expected_per_event = {"Challenge": 31, "Premier": 62}
     per_event = work.groupby(["EventID", "EventClass"])["LeaguePoints"].sum()
     for (eid, cls), total in per_event.items():
         expected = expected_per_event.get(cls)
@@ -735,11 +765,11 @@ def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.Da
     n_challenge = work[work["EventClass"] == "Challenge"]["EventID"].nunique()
     n_premier = work[work["EventClass"] == "Premier"]["EventID"].nunique()
     season_sum = int(work["LeaguePoints"].sum())
-    expected_season_sum = 15 * n_challenge + 30 * n_premier
+    expected_season_sum = 31 * n_challenge + 62 * n_premier
     if season_sum != expected_season_sum:
         _fail(
             "season points",
-            f"sum(LeaguePoints) over season != 15*{n_challenge} + 30*{n_premier} = {expected_season_sum}",
+            f"sum(LeaguePoints) over season != 31*{n_challenge} + 62*{n_premier} = {expected_season_sum}",
             season_sum,
         )
 
@@ -763,11 +793,11 @@ def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.Da
             )
 
         table_premier_sum = int(pd.to_numeric(league_table["PremierPoints"], errors="coerce").sum())
-        expected_premier_sum = 30 * n_premier
+        expected_premier_sum = 62 * n_premier
         if table_premier_sum != expected_premier_sum:
             _fail(
                 "premier points total",
-                f"sum(PremierPoints) in league table != 30*{n_premier} = {expected_premier_sum}",
+                f"sum(PremierPoints) in league table != 62*{n_premier} = {expected_premier_sum}",
                 table_premier_sum,
             )
 
@@ -775,13 +805,45 @@ def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.Da
             (league_table["Wins"] > league_table["Top2"])
             | (league_table["Top2"] > league_table["Top4"])
             | (league_table["Top4"] > league_table["Top8"])
-            | (league_table["Top8"] > league_table["Starts"])
+            | (league_table["Top8"] > league_table["Top16"])
+            | (league_table["Top16"] > league_table["Starts"])
         ]
         if not bad_rows.empty:
             _fail(
                 "monotonic counts",
-                "Wins<=Top2<=Top4<=Top8<=Starts violated",
-                bad_rows[["Pilot", "Wins", "Top2", "Top4", "Top8", "Starts"]].to_dict(orient="records"),
+                "Wins<=Top2<=Top4<=Top8<=Top16<=Starts violated",
+                bad_rows[["Pilot", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]].to_dict(orient="records"),
+            )
+
+        challenge_work = work[work["EventClass"] == "Challenge"].copy()
+        challenge_work["_Key"] = [
+            _identity_key(lid, p) for lid, p in zip(challenge_work.get("LoginID", ""), challenge_work.get("Pilot", ""))
+        ]
+        cgrp = challenge_work.groupby("_Key")
+        c_wins = cgrp["Place"].apply(lambda s: int((s == 1).sum()))
+        c_top2 = cgrp["Place"].apply(lambda s: int((s <= 2).sum()))
+        c_top4 = cgrp["Place"].apply(lambda s: int((s <= 4).sum()))
+        c_top8 = cgrp["Place"].apply(lambda s: int((s <= 8).sum()))
+        c_top16 = cgrp["Place"].apply(lambda s: int((s <= 16).sum()))
+        expected_challenge_points = (
+            5 * c_wins + 4 * (c_top2 - c_wins) + 3 * (c_top4 - c_top2) + 2 * (c_top8 - c_top4) + 1 * (c_top16 - c_top8)
+        )
+
+        formula_bad = []
+        for _, row in league_table.iterrows():
+            key = _identity_key(row.get("LoginID", ""), row.get("Pilot", ""))
+            challenge_points = int(row["Points"]) - int(row["PremierPoints"])
+            expected = int(expected_challenge_points.get(key, 0))
+            if challenge_points != expected:
+                formula_bad.append(
+                    {"Pilot": row["Pilot"], "challenge_points": challenge_points, "expected": expected}
+                )
+        if formula_bad:
+            _fail(
+                "points formula",
+                "Points-PremierPoints != 5*Wins+4*(Top2-Wins)+3*(Top4-Top2)+2*(Top8-Top4)+1*(Top16-Top8) "
+                "for Challenge-only placement counts",
+                formula_bad,
             )
 
 
