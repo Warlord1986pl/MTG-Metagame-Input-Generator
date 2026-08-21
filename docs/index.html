@@ -37,6 +37,11 @@
   header.site-header h1 .title-link:hover { color: var(--accent); text-decoration: none; }
   header.site-header .header-nav { display: flex; align-items: baseline; gap: 14px; font-size: 0.9rem; }
   header.site-header .as-of { color: var(--text-dim); font-size: 0.85rem; }
+  .season-picker {
+    background: #0B1220; color: var(--text); border: 1px solid var(--card-border);
+    border-radius: 6px; padding: 4px 8px; font-size: 0.85rem;
+  }
+  .season-picker:focus { outline: 2px solid var(--accent); }
   .card {
     background: var(--card); border: 1px solid var(--card-border); border-radius: 10px;
     padding: 16px; margin-bottom: 16px;
@@ -126,6 +131,7 @@
     <h1><a href="#/" class="title-link">Modern Pilot League</a></h1>
     <nav class="header-nav">
       <a href="#/about">How it works</a>
+      <select id="seasonPicker" class="season-picker" aria-label="Season" style="display:none;"></select>
       <span class="as-of" id="seasonMeta"></span>
     </nav>
   </header>
@@ -656,6 +662,45 @@
     }
   }
 
+  function populateSeasonPicker() {
+    var picker = document.getElementById("seasonPicker");
+    var seasons = (state.seasons && state.seasons.seasons) || [];
+    if (seasons.length < 2) {
+      picker.style.display = "none";
+      return;
+    }
+    var sorted = seasons.slice().sort(function (a, b) { return b.startDate < a.startDate ? -1 : 1; });
+    picker.innerHTML = "";
+    sorted.forEach(function (s) {
+      picker.appendChild(el("option", { value: s.slug }, [s.season]));
+    });
+    picker.value = state.currentSlug;
+    picker.style.display = "";
+    picker.onchange = function () {
+      switchSeason(picker.value);
+    };
+  }
+
+  function switchSeason(slug) {
+    if (slug === state.currentSlug && state.seasonDoc) return;
+    state.currentSlug = slug;
+    state.searchQuery = "";
+    state.page = 1;
+    // A pilot profile route is season-specific (a pilot's identity key is only meaningful within
+    // the season doc it came from) -- switching season while on one goes back to the table rather
+    // than showing a stale or mismatched profile.
+    if (window.location.hash.indexOf("#/pilot/") === 0) {
+      window.location.hash = "#/";
+    }
+    document.getElementById("app").innerHTML = "";
+    document.getElementById("app").appendChild(el("div", { class: "card" }, [el("p", { class: "muted" }, ["Loading season…"])]));
+    loadSeason(slug).then(function (doc) {
+      state.seasonDoc = doc;
+      populateSeasonPicker();
+      render();
+    });
+  }
+
   function boot() {
     fetchJson(DATA_DIR + "/seasons.json").then(function (seasons) {
       state.seasons = seasons;
@@ -673,6 +718,7 @@
       state.currentSlug = slug;
       return loadSeason(slug).then(function (doc) {
         state.seasonDoc = doc;
+        populateSeasonPicker();
         render();
       });
     }).catch(function (err) {
