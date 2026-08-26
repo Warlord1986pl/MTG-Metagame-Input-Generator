@@ -245,9 +245,13 @@ def build_season_site_data(
         key = _pilot_key(login_id, name)
         hist = names.get(key, {"current": name, "prior": []})
         # login_id here is already the canonical pilot_id (build_season_table/aggregate_pilot_table
-        # resolve it), and name already carries any pilot_profile.csv display_name override -- so
-        # the only thing left to do is keep that name from also showing up in "formerly ...".
-        prior_names = [n for n in hist["prior"] if n != name]
+        # resolve it). `name` may be a pilot_profile.csv display_name override, which can differ
+        # from hist["current"] (the raw account's own truly-latest name) -- so hist["current"] must
+        # be in the candidate pool too, not just hist["prior"]. Excluding it silently drops a real
+        # historical name whenever the override happens to equal one of the OTHER raw names (e.g.
+        # merging two accounts and choosing the older one's name as canonical: hist["current"] is
+        # then the newer account's raw name, genuinely distinct, and must still show up here).
+        prior_names = [n for n in [hist["current"]] + hist["prior"] if n != name]
         profile_hidden = login_id and pilot_identity.is_profile_hidden(login_id, profile_map)
         x_handle = pilot_identity.get_visible_x_handle(login_id, profile_map) if login_id else None
 
