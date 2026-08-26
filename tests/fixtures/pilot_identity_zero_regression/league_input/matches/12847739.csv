@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847739,2026-07-22,C32,Challenge,QF,Kritik,2707200,renatoaraujo,864036,2,0,Land Destruction,Grixis Reanimator
+12847739,2026-07-22,C32,Challenge,QF,niuwaid001,2372533,Aelyck,1241037,2,1,Living End,Boros Energy
+12847739,2026-07-22,C32,Challenge,QF,bananadisaster,3442638,MohammedbinSalman,2957142,2,0,Neobrand,Mono-Green Eldrazi
+12847739,2026-07-22,C32,Challenge,QF,Darkchrome6538,2877405,justFeather,2446403,2,1,Goryo's Vengeance,Mono-Green Eldrazi
+12847739,2026-07-22,C32,Challenge,SF,Darkchrome6538,2877405,niuwaid001,2372533,2,1,Goryo's Vengeance,Living End
+12847739,2026-07-22,C32,Challenge,SF,Kritik,2707200,bananadisaster,3442638,2,1,Land Destruction,Neobrand
+12847739,2026-07-22,C32,Challenge,F,Kritik,2707200,Darkchrome6538,2877405,2,1,Land Destruction,Goryo's Vengeance

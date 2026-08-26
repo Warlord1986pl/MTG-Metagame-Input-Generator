@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851108,2026-08-09,C64,Challenge,QF,Mr-Nice,3055435,manohito,2908947,2,1,Rakdos HollowOne,Broodscale Combo
+12851108,2026-08-09,C64,Challenge,QF,Xenowan,2614008,NuBlkAu,1719515,2,1,Eldrazi Ramp,Rakdos HollowOne
+12851108,2026-08-09,C64,Challenge,QF,RespectTheCat,2788118,sokos13,486439,2,0,Esper Blink,Esper Blink
+12851108,2026-08-09,C64,Challenge,QF,_Stream,1540808,Junkmener,2305332,2,1,Goryo's Vengeance,Affinity
+12851108,2026-08-09,C64,Challenge,SF,Xenowan,2614008,RespectTheCat,2788118,2,1,Eldrazi Ramp,Esper Blink
+12851108,2026-08-09,C64,Challenge,SF,Mr-Nice,3055435,_Stream,1540808,2,0,Rakdos HollowOne,Goryo's Vengeance
+12851108,2026-08-09,C64,Challenge,F,Xenowan,2614008,Mr-Nice,3055435,2,1,Eldrazi Ramp,Rakdos HollowOne

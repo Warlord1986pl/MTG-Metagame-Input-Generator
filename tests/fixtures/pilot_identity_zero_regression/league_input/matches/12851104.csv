@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851104,2026-08-09,C64,Challenge,QF,GigaChadSigmaMale,3085636,mark_68,1324666,2,0,Goryo's Vengeance,Dimir Midrange
+12851104,2026-08-09,C64,Challenge,QF,bakkenal,2677890,gazmon48,1636994,2,1,Devoted Combo,Broodscale Combo
+12851104,2026-08-09,C64,Challenge,QF,Slasher21,2522150,Kollslaw,3311758,2,1,Affinity,Goryo's Vengeance
+12851104,2026-08-09,C64,Challenge,QF,Acecalna,2919528,auzzie51,1111936,2,0,Goryo's Vengeance,Prowess
+12851104,2026-08-09,C64,Challenge,SF,Acecalna,2919528,GigaChadSigmaMale,3085636,2,0,Goryo's Vengeance,Goryo's Vengeance
+12851104,2026-08-09,C64,Challenge,SF,Slasher21,2522150,bakkenal,2677890,2,0,Affinity,Devoted Combo
+12851104,2026-08-09,C64,Challenge,F,Slasher21,2522150,Acecalna,2919528,2,0,Affinity,Goryo's Vengeance

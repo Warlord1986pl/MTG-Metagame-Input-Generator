@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849467,2026-08-01,C64,Challenge,QF,levunga21,494936,Otifex,3149769,2,0,Azorius Control,Belcher
+12849467,2026-08-01,C64,Challenge,QF,Morenothings,1105374,Trailovsky,2043520,2,1,Mono-Green Eldrazi,Boros Energy
+12849467,2026-08-01,C64,Challenge,QF,chase00111,1199408,HouseOfManaMTG,2669359,2,0,Mono-Green Eldrazi,Mono-Green Eldrazi
+12849467,2026-08-01,C64,Challenge,QF,RNicoF,2753736,oosunq,1155358,2,0,Boros Energy,Goryo's Vengeance
+12849467,2026-08-01,C64,Challenge,SF,Morenothings,1105374,levunga21,494936,2,1,Mono-Green Eldrazi,Azorius Control
+12849467,2026-08-01,C64,Challenge,SF,chase00111,1199408,RNicoF,2753736,2,0,Mono-Green Eldrazi,Boros Energy
+12849467,2026-08-01,C64,Challenge,F,Morenothings,1105374,chase00111,1199408,2,1,Mono-Green Eldrazi,Mono-Green Eldrazi

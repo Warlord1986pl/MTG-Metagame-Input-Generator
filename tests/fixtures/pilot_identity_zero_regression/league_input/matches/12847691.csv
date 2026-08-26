@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847691,2026-07-18,C64,Challenge,QF,Willthepill,999039,Lord_Beerus,1952846,2,0,Esper Blink,Living End
+12847691,2026-07-18,C64,Challenge,QF,SGMY95,2686516,MeninoNey,2903591,2,1,Yawgmoth,Living End
+12847691,2026-07-18,C64,Challenge,QF,hugofreitas1,1997683,fazparte,3106246,2,0,Ruby Storm,Boros Energy
+12847691,2026-07-18,C64,Challenge,QF,hermesthenerd,3197079,peter780108,1742159,2,0,Esper Control,Broodscale Combo
+12847691,2026-07-18,C64,Challenge,SF,hugofreitas1,1997683,Willthepill,999039,2,1,Ruby Storm,Esper Blink
+12847691,2026-07-18,C64,Challenge,SF,SGMY95,2686516,hermesthenerd,3197079,2,1,Yawgmoth,Esper Control
+12847691,2026-07-18,C64,Challenge,F,SGMY95,2686516,hugofreitas1,1997683,2,0,Yawgmoth,Ruby Storm

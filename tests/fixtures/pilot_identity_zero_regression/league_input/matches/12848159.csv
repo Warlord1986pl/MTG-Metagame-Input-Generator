@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848159,2026-07-25,modern-showcase-qualifier,Premier,QF,Lollopollo2001,2373595,moon11,1471145,2,1,Boros Energy,Domain Zoo
+12848159,2026-07-25,modern-showcase-qualifier,Premier,QF,wutey,2916560,Dioferreira,1950164,2,1,Broodscale Combo,Dimir Midrange
+12848159,2026-07-25,modern-showcase-qualifier,Premier,QF,ls149950,1862893,daibloXSC,710116,2,0,Broodscale Combo,Devoted Combo
+12848159,2026-07-25,modern-showcase-qualifier,Premier,QF,yriel,2537131,Savior0117,2464763,2,1,Esper Blink,Belcher
+12848159,2026-07-25,modern-showcase-qualifier,Premier,SF,Lollopollo2001,2373595,wutey,2916560,2,1,Boros Energy,Broodscale Combo
+12848159,2026-07-25,modern-showcase-qualifier,Premier,SF,ls149950,1862893,yriel,2537131,2,0,Broodscale Combo,Esper Blink
+12848159,2026-07-25,modern-showcase-qualifier,Premier,F,ls149950,1862893,Lollopollo2001,2373595,2,1,Broodscale Combo,Boros Energy

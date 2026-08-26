@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847698,2026-07-18,C64,Challenge,QF,bugzbugs,3486773,RandomOctopus,1800145,2,1,Belcher,Boros Energy
+12847698,2026-07-18,C64,Challenge,QF,JPA93,1181017,GLSwadow,3438702,2,1,Grixis Reanimator,Grixis Reanimator
+12847698,2026-07-18,C64,Challenge,QF,Lord_Beerus,1952846,senior_shak,3188660,2,1,Living End,Azorius Control
+12847698,2026-07-18,C64,Challenge,QF,RezerDeDog,3135969,slade8283,1229112,2,0,Azorius Blink,Eldrazi Tron
+12847698,2026-07-18,C64,Challenge,SF,RezerDeDog,3135969,bugzbugs,3486773,2,1,Azorius Blink,Belcher
+12847698,2026-07-18,C64,Challenge,SF,JPA93,1181017,Lord_Beerus,1952846,2,0,Grixis Reanimator,Living End
+12847698,2026-07-18,C64,Challenge,F,JPA93,1181017,RezerDeDog,3135969,2,0,Grixis Reanimator,Azorius Blink

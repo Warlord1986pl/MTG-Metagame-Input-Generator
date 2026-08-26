@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848213,2026-07-26,C64,Challenge,QF,ETBJezus,3040474,TheMeatMan,2901409,2,1,Dimir Midrange,Yawgmoth
+12848213,2026-07-26,C64,Challenge,QF,kcomedina,617093,paynyos0232,3501750,2,1,Goryo's Vengeance,Goryo's Vengeance
+12848213,2026-07-26,C64,Challenge,QF,ShadowTitan1,2130633,GigaChadSigmaMale,3085636,2,1,Domain Zoo,Tron
+12848213,2026-07-26,C64,Challenge,QF,XxquestionablyawesomexX,288461,FacadeJK,2916207,2,0,Dimir Murktide,Domain Zoo
+12848213,2026-07-26,C64,Challenge,SF,ETBJezus,3040474,kcomedina,617093,2,1,Dimir Midrange,Goryo's Vengeance
+12848213,2026-07-26,C64,Challenge,SF,XxquestionablyawesomexX,288461,ShadowTitan1,2130633,2,1,Dimir Murktide,Domain Zoo
+12848213,2026-07-26,C64,Challenge,F,ETBJezus,3040474,XxquestionablyawesomexX,288461,2,0,Dimir Midrange,Dimir Murktide

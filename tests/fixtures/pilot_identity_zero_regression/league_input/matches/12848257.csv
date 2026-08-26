@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12848257,2026-07-29,C96,Challenge,QF,John1111,2676588,Evariel,2709546,2,1,Devoted Combo,Miracles
+12848257,2026-07-29,C96,Challenge,QF,ResponsiblyStupid,3050181,BERNASTORRES,1049119,2,0,Mono-Green Eldrazi,Goryo's Vengeance
+12848257,2026-07-29,C96,Challenge,QF,Selfeisek,2042214,Imaeda,1304755,2,1,Mono-Black Midrange,Domain Zoo
+12848257,2026-07-29,C96,Challenge,QF,Gerardo94,2077747,KingOfGames1522,2831734,2,1,Goryo's Vengeance,Domain Zoo
+12848257,2026-07-29,C96,Challenge,SF,Gerardo94,2077747,John1111,2676588,2,0,Goryo's Vengeance,Devoted Combo
+12848257,2026-07-29,C96,Challenge,SF,ResponsiblyStupid,3050181,Selfeisek,2042214,2,0,Mono-Green Eldrazi,Mono-Black Midrange
+12848257,2026-07-29,C96,Challenge,F,ResponsiblyStupid,3050181,Gerardo94,2077747,2,1,Mono-Green Eldrazi,Goryo's Vengeance

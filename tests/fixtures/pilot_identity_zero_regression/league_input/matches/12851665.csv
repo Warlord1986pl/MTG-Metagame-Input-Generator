@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851665,2026-08-15,C64,Challenge,QF,MeninoNey,2903591,CNewman,1715380,2,1,Living End,Mono-Green Eldrazi
+12851665,2026-08-15,C64,Challenge,QF,DskBayWolf,3220713,gazmon48,1636994,2,1,Goryo's Vengeance,Tron
+12851665,2026-08-15,C64,Challenge,QF,Lightspirit,3222070,JustAnotherGuy83,2691811,2,1,Eldrazi Ramp,Belcher
+12851665,2026-08-15,C64,Challenge,QF,EnderW,2945081,acelerado440,3358375,2,1,Ruby Storm,Esper Blink
+12851665,2026-08-15,C64,Challenge,SF,MeninoNey,2903591,EnderW,2945081,2,0,Living End,Ruby Storm
+12851665,2026-08-15,C64,Challenge,SF,DskBayWolf,3220713,Lightspirit,3222070,2,1,Goryo's Vengeance,Eldrazi Ramp
+12851665,2026-08-15,C64,Challenge,F,DskBayWolf,3220713,MeninoNey,2903591,2,0,Goryo's Vengeance,Living End

@@ -74,6 +74,7 @@
   .move-same { color: var(--same); }
   .pilot-link { font-weight: 600; color: var(--text); }
   .pilot-link:hover, .pilot-link:focus { color: var(--accent); }
+  .pilot-name-plain { font-weight: 600; color: var(--text); }
   .prior-names { color: var(--text-dim); font-weight: 400; font-size: 0.85em; }
   .pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
   .pager button {
@@ -334,7 +335,7 @@
       var tbody = el("tbody");
       pageRows.forEach(function (p) {
         var nameCell = el("td", {}, [
-          el("a", { class: "pilot-link", href: pilotHash(p.id) }, [p.name]),
+          p.profileHidden ? el("span", { class: "pilot-name-plain" }, [p.name]) : el("a", { class: "pilot-link", href: pilotHash(p.id) }, [p.name]),
           p.priorNames.length ? el("div", { class: "prior-names" }, ["formerly " + p.priorNames.join(", ")]) : null,
         ]);
         tbody.appendChild(el("tr", {}, [
@@ -505,6 +506,11 @@
         el("h2", {}, [pilot.name]),
         pilot.loginId ? el("div", { class: "loginid" }, ["LoginID " + pilot.loginId]) : null,
         pilot.priorNames.length ? el("div", { class: "muted" }, ["Earlier name(s) on record: " + pilot.priorNames.join(", ")]) : null,
+        // Only ever present when the pilot opted in (see league_site_export.py -- xHandle is not
+        // serialized at all otherwise), so no consent check is needed here.
+        pilot.xHandle ? el("div", { class: "muted" }, [
+          el("a", { href: "https://x.com/" + encodeURIComponent(pilot.xHandle), target: "_blank", rel: "noopener noreferrer" }, ["@" + pilot.xHandle]),
+        ]) : null,
       ]);
 
       // Starts/Points are combined across Challenge and premier events everywhere else on the

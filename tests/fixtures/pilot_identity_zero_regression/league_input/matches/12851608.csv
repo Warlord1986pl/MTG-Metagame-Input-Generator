@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,QF,_Chamytinho_,3175692,Iaashadow,2712707,2,0,4c HollowOne,Broodscale Combo
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,QF,TrueHero,2569009,Gerschi,1084298,2,1,Jeskai Energy,WBRG Cosmogoyf
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,QF,Vrym,1760512,bestdraveneu,3569566,2,0,Prowess,Prowess
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,QF,Prim3Time,3017502,Rvng,649380,2,1,Mono-Black Midrange,Goryo's Vengeance
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,SF,_Chamytinho_,3175692,Vrym,1760512,2,0,4c HollowOne,Prowess
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,SF,TrueHero,2569009,Prim3Time,3017502,2,0,Jeskai Energy,Mono-Black Midrange
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,F,TrueHero,2569009,_Chamytinho_,3175692,2,0,Jeskai Energy,4c HollowOne

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849460,2026-08-01,C64,Challenge,QF,Jonson26,2248291,skullcrobatjoker,3104275,2,1,Esper Blink,Prowess
+12849460,2026-08-01,C64,Challenge,QF,Kollslaw,3311758,Skeptic2304,2665316,2,1,Goryo's Vengeance,Boros Energy
+12849460,2026-08-01,C64,Challenge,QF,KingHairy,2185747,Cachorrowo,2720911,2,0,Goryo's Vengeance,Devoted Combo
+12849460,2026-08-01,C64,Challenge,QF,fazparte,3106246,giraffesarentreal,2753283,2,1,Prowess,Broodscale Combo
+12849460,2026-08-01,C64,Challenge,SF,Jonson26,2248291,KingHairy,2185747,2,0,Esper Blink,Goryo's Vengeance
+12849460,2026-08-01,C64,Challenge,SF,Kollslaw,3311758,fazparte,3106246,2,0,Goryo's Vengeance,Prowess
+12849460,2026-08-01,C64,Challenge,F,Kollslaw,3311758,Jonson26,2248291,2,0,Goryo's Vengeance,Esper Blink

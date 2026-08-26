@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849488,2026-08-03,C64,Challenge,QF,MystikHawk,2626857,Tree42o,875470,2,1,Affinity,Affinity
+12849488,2026-08-03,C64,Challenge,QF,niuwaid001,2372533,Slasher21,2522150,2,1,Living End,Prowess
+12849488,2026-08-03,C64,Challenge,QF,Skeptic2304,2665316,Odin2015,3306092,2,1,Affinity,Eldrazi Tron
+12849488,2026-08-03,C64,Challenge,QF,LegacyGrinder,2604603,KingHairy,2185747,2,0,Goryo's Vengeance,Goryo's Vengeance
+12849488,2026-08-03,C64,Challenge,SF,MystikHawk,2626857,niuwaid001,2372533,2,1,Affinity,Living End
+12849488,2026-08-03,C64,Challenge,SF,LegacyGrinder,2604603,Skeptic2304,2665316,2,1,Goryo's Vengeance,Affinity
+12849488,2026-08-03,C64,Challenge,F,MystikHawk,2626857,LegacyGrinder,2604603,1,0,Affinity,Goryo's Vengeance

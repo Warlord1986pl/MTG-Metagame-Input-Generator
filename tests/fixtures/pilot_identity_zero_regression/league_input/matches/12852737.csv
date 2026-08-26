@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852737,2026-08-22,C16,Challenge,QF,soggymeatball,2127900,PesE,3145234,2,1,Grixis Reanimator,Goryo's Vengeance
+12852737,2026-08-22,C16,Challenge,QF,meanfannypack,1703735,musasabi,1210536,2,1,Devoted Combo,Devoted Combo
+12852737,2026-08-22,C16,Challenge,QF,yriel,2537131,ejk,1952341,2,0,Esper Blink,Esper Blink
+12852737,2026-08-22,C16,Challenge,QF,NotJim,3249166,Junkmener,2305332,2,0,Prowess,Prowess
+12852737,2026-08-22,C16,Challenge,SF,yriel,2537131,soggymeatball,2127900,2,1,Esper Blink,Grixis Reanimator
+12852737,2026-08-22,C16,Challenge,SF,NotJim,3249166,meanfannypack,1703735,2,0,Prowess,Devoted Combo
+12852737,2026-08-22,C16,Challenge,F,yriel,2537131,NotJim,3249166,2,1,Esper Blink,Prowess

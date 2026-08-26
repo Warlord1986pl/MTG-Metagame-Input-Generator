@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851672,2026-08-16,C64,Challenge,QF,niuwaid001,2372533,DrewEldon,1710517,2,0,Living End,Dimir Midrange
+12851672,2026-08-16,C64,Challenge,QF,eclipse4343,2714224,manohito,2908947,2,1,UW Control,Eldrazi Ramp
+12851672,2026-08-16,C64,Challenge,QF,benbot9003,1572878,emairi,2984489,2,1,Eldrazi Tron,Prowess
+12851672,2026-08-16,C64,Challenge,QF,E90_DeliveryBoy,3122660,jussupinator,880239,2,0,Belcher,Goryo's Vengeance
+12851672,2026-08-16,C64,Challenge,SF,E90_DeliveryBoy,3122660,eclipse4343,2714224,2,0,Belcher,UW Control
+12851672,2026-08-16,C64,Challenge,SF,niuwaid001,2372533,benbot9003,1572878,2,0,Living End,Eldrazi Tron
+12851672,2026-08-16,C64,Challenge,F,E90_DeliveryBoy,3122660,niuwaid001,2372533,2,0,Belcher,Living End

@@ -1,0 +1,33 @@
+EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,TrueHero,2569009,1,Jeskai Energy,10,2,24,0.68395,0.73913,0.58765
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,_Chamytinho_,3175692,2,4c HollowOne,8,1,24,0.68519,0.64000,0.59375
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Prim3Time,3017502,3,Mono-Black Midrange,6,3,24,0.65556,0.70833,0.58672
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Vrym,1760512,4,Prowess,6,5,24,0.61235,0.77273,0.57278
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,bestdraveneu,3569566,5,Prowess,4,4,24,0.63139,0.72727,0.58047
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Rvng,649380,6,Goryo's Vengeance,4,6,24,0.51975,0.77273,0.48818
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Gerschi,1084298,7,WBRG Cosmogoyf,4,7,21,0.66843,0.66667,0.61337
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Iaashadow,2712707,8,Broodscale Combo,4,8,21,0.64550,0.62500,0.56373
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Ghost11157,2690892,9,Dimir Midrange,2,9,21,0.63580,0.65217,0.57040
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,JPA93,1181017,10,Grixis Reanimator,2,10,21,0.62963,0.71429,0.56704
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Venom01,3535587,11,Dimir Midrange,2,11,21,0.62963,0.69565,0.56263
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Croco-polarbear,3279774,12,Boros Energy,2,12,21,0.62222,0.66667,0.57405
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Watchwolf92,574591,13,Esper Blink,2,13,21,0.61111,0.60870,0.59457
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,DawsonCreep,2865556,14,Grixis Reanimator,2,14,21,0.60494,0.66667,0.54052
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,surgetemelo,3473231,15,Goryo's Vengeance,2,15,21,0.59877,0.71429,0.55419
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,FranBenitez91,319589,16,Goryo's Vengeance,2,16,21,0.59877,0.66667,0.56353
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,McWinSauce,803141,17,Esper Blink,0,17,21,0.59436,0.72727,0.54722
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,GWT,3544040,18,Azorius Control,0,18,21,0.58818,0.70000,0.58294
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Ryan_39,2085661,19,Goryo's Vengeance,0,19,21,0.57284,0.71429,0.51077
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,roter_Erzengel,319713,20,Broodscale Combo,0,20,21,0.57253,0.61538,0.54362
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Kollslaw,3311758,21,Goryo's Vengeance,0,21,21,0.54938,0.60870,0.53928
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,RGNKPheonix20,1995507,22,Esper Blink,0,22,21,0.54343,0.66667,0.50768
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Durrrr89,882132,23,Neobrand,0,23,21,0.53263,0.66667,0.51918
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Tranzmaster,2947160,24,Belcher,0,24,21,0.50463,0.61538,0.50952
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,morris,1198783,25,Simic Ritual,0,25,18,0.68078,0.61905,0.56321
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Diomed_Tidid,3415205,26,Land Destruction,0,26,18,0.66667,0.66667,0.61031
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,LordEgg,964394,27,Broodscale Combo,0,27,18,0.64198,0.68421,0.56967
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,PerkyT,3142768,28,Prowess,0,28,18,0.64198,0.58333,0.57783
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,toondoslav,1712831,29,Esper Blink,0,29,18,0.63580,0.59091,0.56805
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,yriel,2537131,30,Esper Blink,0,30,18,0.63580,0.54167,0.58561
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,slade8283,1229112,31,Eldrazi Tron,0,31,18,0.63140,0.62500,0.57344
+12851608,2026-08-15,modern-rc-super-qualifier,Premier,Aced5,10594,32,Boros Energy,0,32,18,0.61574,0.54167,0.56484

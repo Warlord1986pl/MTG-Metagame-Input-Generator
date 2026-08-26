@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852747,2026-08-23,C64,Challenge,QF,MeninooNey,3263693,WaffleWiz,3254787,2,1,Living End,Dimir Control
+12852747,2026-08-23,C64,Challenge,QF,ETBJezus,3040474,gazmon48,1636994,2,1,Dimir Midrange,Tron
+12852747,2026-08-23,C64,Challenge,QF,Junkmener,2305332,Fransadness,3143623,2,1,Prowess,Goryo's Vengeance
+12852747,2026-08-23,C64,Challenge,QF,Skeptic2304,2665316,sidisi,1944075,2,0,Affinity,Affinity
+12852747,2026-08-23,C64,Challenge,SF,ETBJezus,3040474,Skeptic2304,2665316,2,0,Dimir Midrange,Affinity
+12852747,2026-08-23,C64,Challenge,SF,MeninooNey,3263693,Junkmener,2305332,2,1,Living End,Prowess
+12852747,2026-08-23,C64,Challenge,F,ETBJezus,3040474,MeninooNey,3263693,2,0,Dimir Midrange,Living End

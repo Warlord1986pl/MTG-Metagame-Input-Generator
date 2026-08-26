@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851658,2026-08-15,C64,Challenge,QF,Ashigaruu,2891700,_Batutinha_,453404,2,0,Broodscale Combo,Boros Energy
+12851658,2026-08-15,C64,Challenge,QF,nahuel10,1942357,HelpfulHobo,2063678,2,1,Prowess,Neobrand
+12851658,2026-08-15,C64,Challenge,QF,Xsper,3056706,selesneal,1618758,2,1,Prowess,Devoted Combo
+12851658,2026-08-15,C64,Challenge,QF,i_b_TRUE,750628,gazmon48,1636994,2,1,Neobrand,Prowess
+12851658,2026-08-15,C64,Challenge,SF,Ashigaruu,2891700,nahuel10,1942357,2,0,Broodscale Combo,Prowess
+12851658,2026-08-15,C64,Challenge,SF,Xsper,3056706,i_b_TRUE,750628,2,1,Prowess,Neobrand
+12851658,2026-08-15,C64,Challenge,F,Ashigaruu,2891700,Xsper,3056706,2,1,Broodscale Combo,Prowess

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12847154,2026-07-13,C96,Challenge,QF,barczek,1703237,Odin2015,3306092,2,0,Yawgmoth,Eldrazi Tron
+12847154,2026-07-13,C96,Challenge,QF,Lightspirit,3222070,eclipse4343,2714224,2,1,Eldrazi Ramp,UW Control
+12847154,2026-07-13,C96,Challenge,QF,McWinSauce,803141,Rvng,649380,2,1,Land Destruction,Goryo's Vengeance
+12847154,2026-07-13,C96,Challenge,QF,broers_,2675046,MZBlazer,2443246,2,0,Broodscale Combo,Goryo's Vengeance
+12847154,2026-07-13,C96,Challenge,SF,barczek,1703237,Lightspirit,3222070,2,1,Yawgmoth,Eldrazi Ramp
+12847154,2026-07-13,C96,Challenge,SF,broers_,2675046,McWinSauce,803141,2,1,Broodscale Combo,Land Destruction
+12847154,2026-07-13,C96,Challenge,F,broers_,2675046,barczek,1703237,2,1,Broodscale Combo,Yawgmoth

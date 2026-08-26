@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851142,2026-08-08,C64,Challenge,QF,littesir095,3034834,Jonii,3315283,2,0,Dimir Midrange,Devoted Combo
+12851142,2026-08-08,C64,Challenge,QF,yunk3r,1113267,Aldreen,1074736,2,0,Mono-Green Eldrazi,Esper Control
+12851142,2026-08-08,C64,Challenge,QF,niuwaid001,2372533,Bugsy69,2537822,2,0,Living End,4c HollowOne
+12851142,2026-08-08,C64,Challenge,QF,Trailovsky,2043520,surgetemelo,3473231,2,0,Boros Burn,UW Control
+12851142,2026-08-08,C64,Challenge,SF,Trailovsky,2043520,littesir095,3034834,2,1,Boros Burn,Dimir Midrange
+12851142,2026-08-08,C64,Challenge,SF,yunk3r,1113267,niuwaid001,2372533,2,0,Mono-Green Eldrazi,Living End
+12851142,2026-08-08,C64,Challenge,F,yunk3r,1113267,Trailovsky,2043520,2,1,Mono-Green Eldrazi,Boros Burn

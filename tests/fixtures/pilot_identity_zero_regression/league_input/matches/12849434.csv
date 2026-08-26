@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12849434,2026-07-30,C64,Challenge,QF,Uagli1,2680052,FutureExPro,3216332,2,1,Dimir Murktide,Land Destruction
+12849434,2026-07-30,C64,Challenge,QF,MeninooNey,3263693,_Dionysos_,3475761,2,1,Living End,Ruby Storm
+12849434,2026-07-30,C64,Challenge,QF,Univerce,2926088,ElPuerco,2718288,2,1,Devoted Combo,Neobrand
+12849434,2026-07-30,C64,Challenge,QF,Watchwolf92,574591,mikeleee,2708396,2,0,Mono-Green Eldrazi,Dimir Midrange
+12849434,2026-07-30,C64,Challenge,SF,MeninooNey,3263693,Watchwolf92,574591,2,0,Living End,Mono-Green Eldrazi
+12849434,2026-07-30,C64,Challenge,SF,Univerce,2926088,Uagli1,2680052,2,1,Devoted Combo,Dimir Murktide
+12849434,2026-07-30,C64,Challenge,F,MeninooNey,3263693,Univerce,2926088,2,0,Living End,Devoted Combo

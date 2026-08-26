@@ -60,6 +60,11 @@ except ImportError:
         _identity_key,
     )
 
+try:
+    import identity as pilot_identity
+except ImportError:
+    from . import identity as pilot_identity
+
 
 def _write_json(obj: object, path: Path) -> None:
     """UTF-8, no BOM, LF line endings, sorted keys -- see module docstring on determinism."""
@@ -110,7 +115,17 @@ def _pilot_key(login_id: str, name: str) -> str:
 def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
     """One entry per identity across the FULL results history on disk (not season-scoped -- a
     rename can predate the season being rendered), keyed by the same id _pilot_key produces:
-    {"current": most-recent Pilot value, "prior": [older distinct Pilot values, oldest first]}.
+    {"current": Pilot value of the row with the latest EventDate, "prior": [other distinct Pilot
+    values, oldest first]}.
+
+    "current" must be the value from the truly latest-dated row, not "whichever distinct name's
+    FIRST occurrence sorts last" -- those only coincide when a name changes once, monotonically.
+    They diverge as soon as one identity's rows interleave in time with another's (e.g. after a
+    pilot_identity.csv merge joins two accounts that were both active concurrently): the account
+    whose first-ever row happens to be earliest can dominate "first occurrence order" even though
+    the other account's rows run later. This is not merge-specific -- it's a possible source of a
+    wrong "current" name for any pilot whose raw Pilot strings, sorted by date, aren't a clean
+    old-then-new sequence.
     """
     if all_results.empty:
         return {}
@@ -123,15 +138,17 @@ def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
 
     out: Dict[str, dict] = {}
     for key, grp in work.groupby("_Key"):
-        dated = grp.dropna(subset=["_Date"]).sort_values("_Date")
+        dated = grp.dropna(subset=["_Date"]).sort_values("_Date", kind="mergesort")
         if dated.empty:
+            # No row in this group has a parseable date -- no way to determine a true "latest",
+            # so fall back to first-occurrence order (previous behavior for this edge case only).
             names_in_order = list(dict.fromkeys(grp["Pilot"].tolist()))
             current = names_in_order[-1]
             prior = names_in_order[:-1]
         else:
+            current = dated.iloc[-1]["Pilot"]
             names_in_order = list(dict.fromkeys(dated["Pilot"].tolist()))
-            current = names_in_order[-1]
-            prior = names_in_order[:-1]
+            prior = [n for n in names_in_order if n != current]
         out[key] = {"current": current, "prior": prior}
     return out
 
@@ -220,12 +237,19 @@ def build_season_site_data(
     season_pilots: List[dict] = []
     pilots_doc_entries: Dict[str, dict] = {}
 
+    profile_map = pilot_identity.load_profiles()
+
     for _, row in table.iterrows():
         login_id = str(row.get("LoginID", "")).strip()
         name = str(row.get("Pilot", "")).strip()
         key = _pilot_key(login_id, name)
         hist = names.get(key, {"current": name, "prior": []})
-        prior_names = hist["prior"]
+        # login_id here is already the canonical pilot_id (build_season_table/aggregate_pilot_table
+        # resolve it), and name already carries any pilot_profile.csv display_name override -- so
+        # the only thing left to do is keep that name from also showing up in "formerly ...".
+        prior_names = [n for n in hist["prior"] if n != name]
+        profile_hidden = login_id and pilot_identity.is_profile_hidden(login_id, profile_map)
+        x_handle = pilot_identity.get_visible_x_handle(login_id, profile_map) if login_id else None
 
         prev_rank = row.get("PrevRank")
         prev_rank_val = None if pd.isna(prev_rank) else int(prev_rank)
@@ -255,7 +279,16 @@ def build_season_site_data(
             "starts": int(row["Starts"]),
             "prevRank": prev_rank_val,
             "movement": movement,
+            # See pilot_identity.is_profile_hidden(): the pilot stays in the season table under
+            # their canonical name, but the site must not link to a profile page for them (their
+            # entry is omitted from pilots_doc_entries below, so a stale/guessed link 404s).
+            "profileHidden": bool(profile_hidden),
         })
+
+        if profile_hidden:
+            # Never serialize this identity's per-event results/bracket history at all -- same
+            # "don't even put it on the wire" posture as x_handle consent below.
+            continue
 
         grp = results_by_key.get(key)
         results_rows = _pilot_results_rows(grp) if grp is not None else []
@@ -283,6 +316,11 @@ def build_season_site_data(
                 "distinctDecks": distinct_decks,
             },
             "results": results_rows,
+            # Only ever set when pilot_profile.csv has x_consent == true for this pilot -- see
+            # pilot_identity.get_visible_x_handle(). This is the only place in the whole export
+            # that reads x_handle at all, so a non-consented handle is never serialized, not just
+            # hidden client-side.
+            "xHandle": x_handle,
             # Elimination-bracket opponents (Top8/Top4/Top2 matches only -- never Swiss), filled
             # in below from outputs/league/matches/. Defaults to empty so the site never has to
             # special-case a missing key, only an empty list (e.g. no bracket capture for any of

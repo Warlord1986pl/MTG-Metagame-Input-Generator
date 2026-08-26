@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851649,2026-08-14,C64,Challenge,QF,Retrisma,2700947,Laplasjan,1706283,2,1,Yawgmoth,Devoted Combo
+12851649,2026-08-14,C64,Challenge,QF,RandomGameActions,315946,DeepDisherino,3488559,2,0,Esper Blink,Azorius Control
+12851649,2026-08-14,C64,Challenge,QF,bestdraveneu,3569566,fazparte,3106246,2,0,Prowess,Boros Energy
+12851649,2026-08-14,C64,Challenge,QF,Azja,2751360,BLJ,2094696,2,1,Neobrand,Broodscale Combo
+12851649,2026-08-14,C64,Challenge,SF,RandomGameActions,315946,Retrisma,2700947,2,1,Esper Blink,Yawgmoth
+12851649,2026-08-14,C64,Challenge,SF,bestdraveneu,3569566,Azja,2751360,2,1,Prowess,Neobrand
+12851649,2026-08-14,C64,Challenge,F,RandomGameActions,315946,bestdraveneu,3569566,2,0,Esper Blink,Prowess

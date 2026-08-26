@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851707,2026-08-19,C32,Challenge,QF,musasabi,1210536,bless_von,2292083,2,0,Devoted Combo,Dimir Midrange
+12851707,2026-08-19,C32,Challenge,QF,nedyahiske,2404093,Sorathrix,2705240,2,1,Goryo's Vengeance,Goryo's Vengeance
+12851707,2026-08-19,C32,Challenge,QF,mechrataal,1938190,TuckerMTG,2204845,2,0,Prowess,Esper Blink
+12851707,2026-08-19,C32,Challenge,QF,xl_snapcaster,2232658,_Grogu_,3553900,2,1,Jeskai Energy,Esper Blink
+12851707,2026-08-19,C32,Challenge,SF,mechrataal,1938190,nedyahiske,2404093,2,1,Prowess,Goryo's Vengeance
+12851707,2026-08-19,C32,Challenge,SF,musasabi,1210536,xl_snapcaster,2232658,2,0,Devoted Combo,Jeskai Energy
+12851707,2026-08-19,C32,Challenge,F,mechrataal,1938190,musasabi,1210536,2,1,Prowess,Devoted Combo

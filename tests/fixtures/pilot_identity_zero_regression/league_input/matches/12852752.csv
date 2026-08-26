@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852752,2026-08-23,C64,Challenge,QF,hugofreitas1,1997683,Omegauo,30930,2,1,Ruby Storm,Esper Blink
+12852752,2026-08-23,C64,Challenge,QF,jev_,2878060,DskBayWolf,3220713,2,0,Esper Blink,Goryo's Vengeance
+12852752,2026-08-23,C64,Challenge,QF,wallofspikes,774962,The_Lion91,3468770,2,0,Devoted Combo,Tron
+12852752,2026-08-23,C64,Challenge,QF,thodoris17,2119308,JRomero,1061642,2,1,Esper Blink,4c HollowOne
+12852752,2026-08-23,C64,Challenge,SF,wallofspikes,774962,hugofreitas1,1997683,2,0,Devoted Combo,Ruby Storm
+12852752,2026-08-23,C64,Challenge,SF,thodoris17,2119308,jev_,2878060,2,0,Esper Blink,Esper Blink
+12852752,2026-08-23,C64,Challenge,F,thodoris17,2119308,wallofspikes,774962,1,0,Esper Blink,Devoted Combo

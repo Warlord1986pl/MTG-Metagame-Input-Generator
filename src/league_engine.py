@@ -39,6 +39,11 @@ except ImportError:
         process_event_standings_and_bracket = None  # type: ignore[assignment]
         detect_pilot_renames = None  # type: ignore[assignment]
 
+try:
+    import identity as pilot_identity
+except ImportError:
+    from . import identity as pilot_identity
+
 
 LEAGUE_RESULTS_COLS: List[str] = [
     "EventID",
@@ -518,6 +523,12 @@ def _identity_key(login_id: str, pilot: str) -> str:
     survives an account rename) rather than by display name. When LoginID is missing -- rows from
     before 2026-07-13, where no LoginID was ever captured -- falls back to the display name.
 
+    LoginID is first resolved through the pilot identity overlay (data/pilot_identity.csv --
+    see identity.resolve()), so two loginids belonging to the same real person (recorded there as
+    primary/alias) collapse to one key here, exactly like an account rename already does. A
+    loginid with no entry in that overlay resolves to itself, so this is a no-op until a merge is
+    recorded.
+
     The "id:"/"name:" prefix is not cosmetic: it keeps an id-keyed identity and a name-keyed
     identity from ever silently colliding, in the pathological case where some LoginID string
     happened to equal some other pilot's display name. Without the prefix that coincidence would
@@ -525,6 +536,7 @@ def _identity_key(login_id: str, pilot: str) -> str:
     """
     lid = str(login_id).strip()
     if lid:
+        lid = pilot_identity.resolve(lid)
         return f"id:{lid}"
     return f"name:{str(pilot).strip()}"
 
@@ -587,17 +599,29 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
     # Display name = Pilot at this identity's latest EventDate. Rows with an unparseable date are
     # excluded from the "latest" search (never let a bad date silently win); if that leaves an
     # identity with no dated row at all, fall back to whatever Pilot value appears first for it.
+    # A pilot_profile.csv display_name override (see identity.display_name()) takes priority over
+    # this "latest name wins" rule when one is set, for an id-keyed identity.
     dated = work.dropna(subset=["_EventDate_dt"])
     latest_idx = dated.groupby("_Key")["_EventDate_dt"].idxmax()
     display_pilot = work.loc[latest_idx.values].set_index(latest_idx.index)["Pilot"]
     first_pilot = work.groupby("_Key")["Pilot"].first()
-    login_id_by_key = work.groupby("_Key")["LoginID"].first()
+
+    def _canonical_login_id(key: str) -> str:
+        # The output LoginID is the resolved pilot_id encoded in the key itself, not "whichever
+        # raw LoginID happened to appear first in this group" -- after a merge, two different raw
+        # loginids share one key, and "first seen" could pick either one.
+        return key[3:] if key.startswith("id:") else ""
+
+    def _display_name_for(key: str) -> str:
+        raw = display_pilot.get(key, first_pilot.get(key, ""))
+        pilot_id = _canonical_login_id(key)
+        return pilot_identity.display_name(pilot_id, fallback=raw) if pilot_id else raw
 
     idx = points.index
     out = pd.DataFrame({
         "_Key": idx,
-        "Pilot": [display_pilot.get(k, first_pilot.get(k, "")) for k in idx],
-        "LoginID": [login_id_by_key.get(k, "") for k in idx],
+        "Pilot": [_display_name_for(k) for k in idx],
+        "LoginID": [_canonical_login_id(k) for k in idx],
         "Points": points.values,
         "PremierPoints": premier_points.reindex(idx).fillna(0).values,
         "Wins": wins.reindex(idx).values,

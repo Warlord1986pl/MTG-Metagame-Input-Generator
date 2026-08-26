@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851614,2026-08-12,C32,Challenge,QF,Kollslaw,3311758,mommydom_manifesto,3227644,2,1,Goryo's Vengeance,Song of Creation
+12851614,2026-08-12,C32,Challenge,QF,HuUeBR,2981401,Stealthmagician,2334451,2,1,Broodscale Combo,Eldrazi Tron
+12851614,2026-08-12,C32,Challenge,QF,frekinsmart,2873371,LucasG1ggs,750888,2,1,Neobrand,Devoted Combo
+12851614,2026-08-12,C32,Challenge,QF,Kritik,2707200,Watchwolf92,574591,2,1,Land Destruction,Esper Blink
+12851614,2026-08-12,C32,Challenge,SF,Kritik,2707200,Kollslaw,3311758,2,0,Land Destruction,Goryo's Vengeance
+12851614,2026-08-12,C32,Challenge,SF,frekinsmart,2873371,HuUeBR,2981401,2,0,Neobrand,Broodscale Combo
+12851614,2026-08-12,C32,Challenge,F,Kritik,2707200,frekinsmart,2873371,1,0,Land Destruction,Neobrand

@@ -24,6 +24,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+try:
+    import identity as pilot_identity
+except ImportError:
+    from . import identity as pilot_identity
+
 
 HISTORY_COLS: List[str] = [
     "EventDate",
@@ -67,9 +72,14 @@ def _identity_key(login_id: object, pilot: str) -> str:
     never collide even if a LoginID string happened to equal some pilot's display name. Used by
     _pilot_table (BestPilots) and _presence_table (DistinctPilots/TopPilotShare) so a renamed
     account is one identity, not two, in the metagame-analysis sheets too.
+
+    LoginID is first resolved through the pilot identity overlay (data/pilot_identity.csv -- see
+    identity.resolve()), same as league_engine._identity_key, so two loginids merged there
+    collapse to one identity here too. A loginid absent from that overlay resolves to itself.
     """
     lid = str(login_id or "").strip()
     if lid:
+        lid = pilot_identity.resolve(lid)
         return f"id:{lid}"
     return f"name:{str(pilot or '').strip()}"
 
@@ -742,13 +752,23 @@ def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) 
     latest_idx = dated.groupby("_Key")["_EventDate_dt"].idxmax()
     display_pilot = work.loc[latest_idx.values].set_index(latest_idx.index)["Pilot"]
     first_pilot = work.groupby("_Key")["Pilot"].first()
-    login_id_by_key = work.groupby("_Key")["LoginID"].first()
+
+    def _canonical_login_id(key: str) -> str:
+        # The output LoginID is the resolved pilot_id encoded in the key itself, not "whichever
+        # raw LoginID happened to appear first in this group" -- after an identity merge, two
+        # different raw loginids share one key, and "first seen" could pick either one.
+        return key[3:] if key.startswith("id:") else ""
+
+    def _display_name_for(key: str) -> str:
+        raw = display_pilot.get(key, first_pilot.get(key, ""))
+        pilot_id = _canonical_login_id(key)
+        return pilot_identity.display_name(pilot_id, fallback=raw) if pilot_id else raw
 
     idx = wins.index
     stats = pd.DataFrame({
         "_Key": idx,
-        "Pilot": [display_pilot.get(k, first_pilot.get(k, "")) for k in idx],
-        "LoginID": [login_id_by_key.get(k, "") for k in idx],
+        "Pilot": [_display_name_for(k) for k in idx],
+        "LoginID": [_canonical_login_id(k) for k in idx],
         "Wins": wins.values,
         "Top8": top8.values,
         "Top32": top32.values,
@@ -1398,6 +1418,17 @@ _EVENT_FREQ_PCT_COLS: set = {
 # denominator-scaled this way and keep being checked regardless of n_events.
 _SMALL_SAMPLE_EVENT_THRESHOLD = 6
 
+# BestPlace is meaningful to check at Deck granularity (hundreds of narrow decks -> real spread
+# expected), but not at Archetype granularity: there are only a handful of broad archetype buckets
+# (Aggro, Control, Combo, ...), each pooling dozens of decks. Once the window covers more than a
+# few events, it becomes the expected steady state -- not a data-loss signal -- that every single
+# bucket has taken 1st place somewhere. Confirmed live on the 2026-08-10..08-23 window: 24 events,
+# 768 Top32 rows, all 7 ALL_Archetypes rows legitimately at BestPlace=1, while the same window's
+# ALL_Decks (66 rows) spread from 1 to 30 as normal. A real merge/groupby bug that drops BestPlace
+# values fills a sentinel (999 via the fillna in _presence_table, or 0) instead of coincidentally
+# landing every row on 1, so skipping BestPlace at this granularity does not hide that failure mode.
+_ARCHETYPE_LEVEL_SKIP_COLS: set = {"BestPlace"}
+
 
 def _check_no_degenerate_columns(label: str, tbl: pd.DataFrame, n_events: Optional[int] = None) -> List[str]:
     """A metric column that is entirely constant or entirely zero across every row of a tab
@@ -1410,10 +1441,13 @@ def _check_no_degenerate_columns(label: str, tbl: pd.DataFrame, n_events: Option
     if tbl is None or len(tbl) < 3:
         return problems
     small_sample = n_events is not None and n_events < _SMALL_SAMPLE_EVENT_THRESHOLD
+    is_archetype_level = label.endswith("Archetypes")
     for col in _DEGENERACY_CHECK_COLS:
         if col not in tbl.columns:
             continue
         if small_sample and col in _EVENT_FREQ_PCT_COLS:
+            continue
+        if is_archetype_level and col in _ARCHETYPE_LEVEL_SKIP_COLS:
             continue
         values = pd.to_numeric(tbl[col], errors="coerce").dropna()
         if values.empty:

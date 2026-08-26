@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851660,2026-08-15,C32,Challenge,QF,xl_snapcaster,2232658,Napoleon_I,2807068,2,1,Jeskai Energy,Broodscale Combo
+12851660,2026-08-15,C32,Challenge,QF,SanPop,2621451,benbot9003,1572878,2,1,Esper Blink,Eldrazi Tron
+12851660,2026-08-15,C32,Challenge,QF,Venom01,3535587,albertosd87,3565947,2,1,Dimir Midrange,WUBRG
+12851660,2026-08-15,C32,Challenge,QF,Taddy_99,3412001,GigaChadSigmaMale,3085636,2,1,Lantern,Goryo's Vengeance
+12851660,2026-08-15,C32,Challenge,SF,Venom01,3535587,SanPop,2621451,2,0,Dimir Midrange,Esper Blink
+12851660,2026-08-15,C32,Challenge,SF,Taddy_99,3412001,xl_snapcaster,2232658,2,1,Lantern,Jeskai Energy
+12851660,2026-08-15,C32,Challenge,F,Taddy_99,3412001,Venom01,3535587,2,0,Lantern,Dimir Midrange
