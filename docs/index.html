@@ -296,7 +296,7 @@
     if (!q) return true;
     q = q.toLowerCase();
     if (p.name.toLowerCase().indexOf(q) !== -1) return true;
-    return p.priorNames.some(function (n) { return n.toLowerCase().indexOf(q) !== -1; });
+    return (p.priorNames || []).some(function (n) { return n.toLowerCase().indexOf(q) !== -1; });
   }
 
   // The search <input> and its surrounding card are built exactly once per visit to the season
