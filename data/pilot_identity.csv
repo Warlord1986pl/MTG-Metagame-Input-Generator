@@ -1,0 +1,3 @@
+loginid,pilot_id,role,added_on,source,evidence,note
+2903591,2903591,primary,2026-08-26,self_request_x,"krok 3 audytu regresji zerowej -- wiersz primary bez zadnego aliasu, MeninoNey",primary-only precursor to the planned 3263693 alias merge; added to test that a primary row alone is a no-op
+3263693,2903591,alias,2026-08-26,self_request_x,"DM 2026-08-25, prosba wlasciciela konta","Nazwa kanoniczna MeninoNey to wybor gracza, nie wynik wyliczenia z danych -- sam kod z historii wynikow wskazalby MeninooNey (najnowszy wpis w sezonie: 2026-08-23)."
