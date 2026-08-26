@@ -89,6 +89,12 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 - Grouping is by identity (`_identity_key(login_id, pilot)`, duplicated on purpose in both `league_engine.py` and `challenge_history_engine.py` rather than shared — see "Pilot identity overlay" below), not raw `Pilot` string, so a mid-season rename doesn't split one pilot into two rows.
 - **`outputs/league/pilot_league_Summer_2026.csv` is deliberately excluded from git** (see `.gitignore`) even though every other season's `pilot_league_*.csv` is tracked: Summer 2026's results only start 2026-07-13, six weeks into a season that starts 2026-06-01, so the file is a known-partial table and publishing it under a season name that promises more than it contains was judged worse than not tracking it. It still exists on disk and is rebuilt on every run/apply, it just never enters git for that one season.
 
+**TEMPORARY, expires after 2026-08-31 — review/remove this note then:** because that file is gitignored, it only ever exists on this one machine's disk. Since a computer reset mid-operation on 2026-08-26 made that risk concrete, until the Summer 2026 season closes (2026-08-31) it's manually copied to OneDrive after each recompute, pasted by hand (no pipeline hook — not worth touching core code for something that expires in 5 days):
+  ```powershell
+  Copy-Item "E:\github\MTG-Metagame-Input-Generator\outputs\league\pilot_league_Summer_2026.csv" "C:\Users\kmalo\OneDrive\pilot_league_Summer_2026_$(Get-Date -Format yyyyMMdd_HHmmss).csv"
+  ```
+  Once Autumn 2026 (or any season after Summer 2026) is the current season, its `pilot_league_*.csv` is tracked in git normally (see above) and this whole note — and the timestamped copies already sitting in OneDrive — stop being relevant.
+
 ### Pilot identity overlay (`data/`)
 
 Resolves one or more MTGO loginids to a single canonical `pilot_id`, so a real person who is renamed on mtgo.com (already handled by the "frozen at first capture" pilot-name rule below) *or* plays under two different accounts can be shown as one identity in the league table and in `challenge_history_engine`'s `BestPilots`/`DistinctPilots` tables.
