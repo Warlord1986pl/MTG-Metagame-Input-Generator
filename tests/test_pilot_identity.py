@@ -26,7 +26,9 @@ import pandas as pd  # noqa: E402
 import identity  # noqa: E402
 import pilot_identity_cli  # noqa: E402
 from league_engine import _identity_key as league_identity_key  # noqa: E402
+from league_engine import load_all_league_results, season_filename_slug  # noqa: E402
 from challenge_history_engine import _identity_key as challenge_identity_key  # noqa: E402
+from pilot_identity_cli import _season_config_rows  # noqa: E402
 
 FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures" / "pilot_identity_zero_regression"
 FIXTURE_AS_OF = date(2026, 8, 24)  # must match FIXTURE_DIR/expected/*'s generation date -- see
@@ -291,6 +293,93 @@ def test_zero_regression_no_identity_file() -> None:
                     )
 
 
+# --------------------------------------------------------------------------------------------
+# Regression guard for the third bug (found by hand, not by any simulation-based test above):
+# build_season_site_data's prior_names only ever drew from hist["prior"], never hist["current"],
+# so a real display_name override could silently drop a merged pilot's own raw historical name
+# from priorNames. This reads the REAL, currently-written docs/data/*.json on disk -- not a
+# recompute, not a simulation -- because that is exactly what the earlier bug slipped past: every
+# in-memory "after" preview looked fine, only the file --apply actually wrote was wrong.
+# --------------------------------------------------------------------------------------------
+
+def test_saved_json_priornames_cover_all_aliases() -> None:
+    identity_csv = REPO_ROOT / "data" / "pilot_identity.csv"
+    if not identity_csv.exists():
+        print("  (no data/pilot_identity.csv on disk -- nothing to verify yet)")
+        return
+    alias_rows = [r for r in identity.read_identity_rows(identity_csv) if r["role"] == "alias"]
+    if not alias_rows:
+        print("  (no alias rows in data/pilot_identity.csv -- nothing to verify yet)")
+        return
+
+    results_dir = REPO_ROOT / "outputs" / "league" / "results"
+    all_results = load_all_league_results(results_dir)
+    all_results = all_results.copy()
+    all_results["LoginID"] = all_results.get("LoginID", "").astype(str).str.strip()
+    all_results["Pilot"] = all_results.get("Pilot", "").astype(str).str.strip()
+    raw_names_by_loginid: Dict[str, set] = {}
+    for lid, grp in all_results.groupby("LoginID"):
+        if lid:
+            raw_names_by_loginid[lid] = set(n for n in grp["Pilot"].tolist() if n)
+
+    league_dir = REPO_ROOT / "outputs" / "league"
+    docs_data_dir = REPO_ROOT / "docs" / "data"
+    checked = 0
+    for season, _s, _e in _season_config_rows(league_dir):
+        slug = season_filename_slug(season)
+        season_json = docs_data_dir / f"season_{slug}.json"
+        pilots_json = docs_data_dir / f"pilots_{slug}.json"
+        if not season_json.exists() or not pilots_json.exists():
+            continue
+        season_doc = _load_json(season_json)
+        pilots_doc = _load_json(pilots_json)
+        season_pilots_by_id = {p["id"]: p for p in season_doc["pilots"]}
+
+        for row in alias_rows:
+            loginid, pilot_id = row["loginid"], row["pilot_id"]
+            raw_names = raw_names_by_loginid.get(loginid)
+            if not raw_names:
+                continue  # this alias has no rows in outputs/league/results -- nothing to check here
+            key = f"id:{pilot_id}"
+
+            season_pilot = season_pilots_by_id.get(key)
+            if season_pilot is None:
+                continue  # pilot_id didn't play in this season
+            name = season_pilot["name"]
+            expected = {n for n in raw_names if n != name}
+            if not expected:
+                continue  # this alias's only raw name(s) already equal the shown name -- nothing to prove
+            checked += 1
+            prior = season_pilot.get("priorNames") or []
+            assert prior, (
+                f"season_{slug}.json: pilot_id {pilot_id} has alias loginid {loginid} "
+                f"(raw name(s) {raw_names}) but priorNames is EMPTY"
+            )
+            missing = expected - set(prior)
+            assert not missing, (
+                f"season_{slug}.json: pilot_id {pilot_id}'s priorNames {prior} is missing "
+                f"alias loginid {loginid}'s raw name(s) {missing}"
+            )
+
+            pilots_pilot = pilots_doc["pilots"].get(key)
+            assert pilots_pilot is not None, f"pilots_{slug}.json: no entry for key {key} (pilot_id {pilot_id})"
+            prior2 = pilots_pilot.get("priorNames") or []
+            assert prior2, (
+                f"pilots_{slug}.json: pilot_id {pilot_id} has alias loginid {loginid} "
+                f"(raw name(s) {raw_names}) but priorNames is EMPTY"
+            )
+            missing2 = expected - set(prior2)
+            assert not missing2, (
+                f"pilots_{slug}.json: pilot_id {pilot_id}'s priorNames {prior2} is missing "
+                f"alias loginid {loginid}'s raw name(s) {missing2}"
+            )
+
+    if checked == 0:
+        print("  (no alias/season/name combination needed proving -- nothing to check yet)")
+    else:
+        print(f"  checked {checked} alias/season combination(s)")
+
+
 if __name__ == "__main__":
     test_missing_file_resolves_to_self()
     print("OK: test_missing_file_resolves_to_self")
@@ -306,4 +395,6 @@ if __name__ == "__main__":
     print("OK: test_event_collision_blocks_write")
     test_zero_regression_no_identity_file()
     print("OK: test_zero_regression_no_identity_file")
+    test_saved_json_priornames_cover_all_aliases()
+    print("OK: test_saved_json_priornames_cover_all_aliases")
     print("All pilot identity tests passed.")
