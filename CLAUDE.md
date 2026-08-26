@@ -2,97 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Session recovery notes (2026-07-23)
-
-**Status: Phase 2a done (dedup + C96 visibility) and verified. Paused here by user choice — resume with
-live end-to-end testing on Monday 2026-07-27. Phase 2b (full tier-agnostic table/sheet refactor) not
-started. Nothing committed yet.**
-
-**Why paused:** user doesn't want to pull fresh live data / touch output files today (risk of making a
-mess in the data before a planned break). Explicitly asked to defer running `run_gui.bat` /
-`run_weekly.ps1` (which hit the Videre API + MTGGoldfish live and update the real
-`outputs/challenge_history_modern.csv`) until Monday 2026-07-27. Everything up to and including the
-real rebuild + smoke test below was already done and verified safely (backed up first); it's only the
-*next* live network run (a fresh weekly generation) that's being deferred.
-
-**Resume-here checklist for Monday 2026-07-27:**
-1. Run `run_gui.bat` or `./run_weekly.ps1 -Format Modern -MyDeck "Domain Zoo"` (or the CLI form) for a
-   current-week window, with `--include-challenge-decklist`.
-2. Watch the log for `[challenge-dedup] Merged ...` / `[WARN] [challenge-dedup] ...` lines and confirm
-   `[OK] Fetched N challenge event(s)` counts look right (no double-counted duplicates).
-3. Confirm C96 events show up (`[OK] Challenge C96_...`) if any fall in that week's window.
-4. Check the new weekly `challenge_statistics.xlsx` — C96 rows should appear in `ALL_Decks`/`ALL_Archetypes`
-   (no dedicated `C96_Decks` sheet yet — that's Phase 2b).
-5. If all good: commit the Phase 2a code changes (see "Still open" below), then decide whether to start
-   Phase 2b.
-
-**Task:** Audit and fix the Challenge-stats pipeline, which miscounts events/trophies in weekly
-reports because the code hardcodes the assumption that Challenges only come in size 32 or 64.
-In practice sizes like "Modern Challenge 96" have existed on MTGGoldfish since week W26, and they
-fall through the cracks.
-
-**Root cause confirmed (2026-07-23):** `_build_mtggoldfish_challenge_url()` (metagame_input_generator.py)
-builds the scrape URL from `(format, size, date)` only — no tournament id. When MTGO's calendar lists
-two `tournament_id`s for the same `(date, size)` (confirmed for 2026-07-04, 07-11, 07-18 Challenge 64),
-both get scraped from the identical MTGGoldfish page — same 32-of-32 roster, counted as two trophies
-instead of one.
-
-**Done in this session (Phase 2a):**
-- `src/metagame_input_generator.py` — added `roster_content_signature(df)` (hash of sorted
-  pilot+deck pairs) and rewired `fetch_challenges_in_window_from_mtggoldfish()` to parse first, then
-  group by `(event_date, challenge_size)` and dedup by content signature before the alias/archetype
-  mapping step. Matching signatures = MTGO republish, merged silently with a log line. Differing
-  signatures = same-day/same-tier collision MTGGoldfish itself can't disambiguate (known source
-  limitation, per the accepted decision below) — still merged to 1, but flagged with a `[WARN]` log line.
-  Verified live against MTGGoldfish for 2026-07-04: `[challenge-dedup] Merged 2 duplicate publication(s)
-  of C64 2026-07-04` fires correctly, output list has exactly 1 C64 entry for that date.
-- `src/challenge_history_engine.py` — `RECON_DECKLIST_RE` widened from `C(32|64)` to `C(\d+)`, so
-  `rebuild_challenge_history_from_dirs()` now ingests `challenge_C96_*_decklist.csv` files. Added
-  `find_same_day_tier_collisions(history_csv, format_name=None)` — read-only audit scanning the full
-  history for any `(EventDate, Tier)` group (any tier) with >1 `EventSlug`, flagging content-hash
-  match/mismatch, for manual review.
-- Ran `rebuild_challenge_history_from_dirs()` for real on `outputs/challenge_history_modern.csv`
-  (backed up first to `challenge_history_modern.csv.bak_20260723_112953`, that file is *not*
-  git-tracked). Result: 240 → 247 unique events, +7 new unique C96 event-dates, C32 (115) and C64 (125)
-  unchanged. Window 2026-07-06..2026-07-19 now shows exactly 6×C32 + 12×C64 + 4×C96 = 22 events,
-  matching the manually-confirmed ground truth below. Post-rebuild collision audit: none found.
-  Smoke-tested `run_challenge_statistics()` against the rebuilt file — no crash, `events_processed=22`
-  for that window; C96 rows currently flow only into the unfiltered `ALL_Decks`/`ALL_Archetypes`
-  sheets (expected — they don't get their own `C96_Decks` sheet yet, that's Phase 2b).
-
-**Decision already made with the user:** stick with MTGGoldfish as the data source (mtgo.com's own
-JSON has no deck/archetype name field at all, only raw decklists, so it can't replace it). Same-day
-same-tier tournament collisions where MTGGoldfish itself can't disambiguate are an accepted source
-limitation — count them as 1 event and flag it (implemented above via the content-hash mismatch branch),
-rather than trying to disambiguate via `tournament_id`.
-
-**Confirmed ground truth (2026-07-06..2026-07-19 window):** 12×C64 + 6×C32 + 4×C96 = 22 trophies, plus
-Showcase Challenge and RC Super Qualifier counted separately as premier events (not Challenges).
-
-**Next step (Phase 2b, not started):** make the per-tier XLSX tables/sheets in
-`run_challenge_statistics()` (challenge_history_engine.py, currently hardcoded
-`Tier=="64"`/`=="32"` filters and `C64_Decks`/`C32_Decks`/`C64_Archetypes`/`C32_Archetypes`
-sheet names) size-agnostic, so C96 (and future tiers) get their own sheets following the existing
-`C{N}_Decks`/`C{N}_Archetypes` naming pattern, instead of only showing up in `ALL_*`. Get explicit
-go-ahead before touching code, same as Phase 1/2a were scoped read-only/dry-run first.
-
-**Still open:** none of this session's changes are committed yet (git status still shows
-`challenge_history_engine.py`/`metagame_input_generator.py` modified, plus the real
-`outputs/challenge_history_modern.csv` rebuild and its `.bak` sidecar — the outputs CSVs aren't
-git-tracked at all). Consider committing the Phase 2a code changes before starting Phase 2b.
-
-**Unrelated but relevant:** the large uncommitted diff sitting in the working tree since before this
-session (`gui_app.py`, `metagame_input_generator.py`, `docs/*.csv`, etc.) is from a *separate*, already-
-finished repair job: an accidental "Apply archetype to all visible" bulk action in the GUI had
-overwritten dozens of unrelated, previously-correct archetype mappings back to "Aggro" (e.g. Tron,
-Grixis Control, Jeskai Control, Hollow One). That was fully swept and fixed (`archetype_rules.csv`
-rebuilt, 47 rows fixed in `user_deck_mapping.csv`, 10 in `challenge_deck_mapping.csv`, 2268 rows of
-materialized data reconciled). It is not part of the Challenge-stats/tier-size task above, and is
-still uncommitted — consider committing it separately to keep diffs clean.
-
 ## What This Project Does
 
 Fetches MTG metagame and matchup data from the Videre Project API (`https://api.videreproject.com`), normalizes deck names/archetypes using rule CSV files in `docs/`, tracks Challenge tournament history scraped from MTGGoldfish, and exports CSV/XLSX/XML outputs and charts to weekly-dated folders under `outputs/`.
+
+It also runs a separate **league/season standings** pipeline (`outputs/league/`) built from the same per-event results, and publishes a static site (`docs/index.html` + `docs/data/*.json`) showing season leaderboards and per-pilot profiles.
 
 ## Commands
 
@@ -128,6 +42,20 @@ run_gui.bat
 
 The PowerShell scripts default to `E:/github/.venv/Scripts/python.exe` and fall back to `python` on PATH.
 
+### Pilot identity CLI
+
+```sh
+# read-only lookup, by loginid or display name
+python src/pilot_identity_cli.py --show 2903591
+
+# merge one or more alias loginids into a primary pilot -- dry-run by default, prints the full
+# before/after report (leaderboard, validations a-e); nothing is written without --apply
+python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
+    --source self_request_x --evidence "DM 2026-08-25" --primary-name MeninoNey
+python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
+    --source self_request_x --evidence "DM 2026-08-25" --primary-name MeninoNey --apply
+```
+
 ## Architecture
 
 ### Source modules (`src/`)
@@ -137,6 +65,10 @@ The PowerShell scripts default to `E:/github/.venv/Scripts/python.exe` and fall 
 | `metagame_input_generator.py` | Core entry point. API fetching, deck name normalization, dataset building, all file export. |
 | `challenge_history_engine.py` | Persistent challenge history CSV management, chart generation for Challenge Analytics. |
 | `statistics_engine.py` | Metagame statistics charts (encounter probability, performance quadrant, trend lines). |
+| `league_engine.py` | Rebuilds the league/season standings table from `outputs/league/results/*.csv` (`build_season_table`), identity-aware grouping (`_identity_key`), invariant checks. |
+| `league_site_export.py` | Turns the season table + per-event results/matches into `docs/data/*.json` for the static site (`export_league_site`). |
+| `identity.py` | Read/write overlay for `data/pilot_identity.csv` / `pilot_profile.csv` / `pilot_merge_log.csv` — see "Pilot identity overlay" below. Pure; never reads event data itself. |
+| `pilot_identity_cli.py` | Dry-run-by-default CLI (`merge`, `--show`) for recording an identity merge and rewriting the league/site outputs from it. The only intended way to edit `data/*.csv`. |
 | `gui_app.py` | PySide6 desktop GUI wrapping all of the above. QSettings persists backup URL between sessions. |
 | `change_model.py` | Reads/writes the `docs/` CSV config files (aliases, archetype rules, mappings, catalog). |
 | `preset_cli.py` | Interactive terminal CLI with saved state in `.preset_cli_state.json`. |
@@ -148,6 +80,26 @@ The PowerShell scripts default to `E:/github/.venv/Scripts/python.exe` and fall 
 3. Deck names are normalized via a pipeline: raw API name → `user_deck_mapping.csv` override → `deck_aliases.csv` canonicalization → archetype assignment from `archetype_rules.csv` (with `heuristic_archetype()` as final fallback).
 4. Challenge data is parsed from MTGGoldfish HTML. Discovery uses the MTGO calendar API first, falling back to scraping the `/decklists` index page.
 5. Outputs are written to `outputs/YYYY/MM/WNN_YYYY-MM-DD_to_YYYY-MM-DD/`. The persistent challenge history CSV lives at `outputs/challenge_history_<format>.csv` (not inside weekly run dirs).
+
+### League + site export
+
+- `outputs/league/season_config.csv` (`Season,StartDate,EndDate`) lists every season on record. `outputs/league/results/<EventID>.csv` and `matches/<EventID>.csv` hold per-event data (one row per pilot / per bracket match); these are the only inputs, read fresh on every rebuild — there is no incremental/running total.
+- `league_engine.build_season_table(results_dir, season_start, season_end, as_of, ...)` rebuilds one season's standings from scratch every call, `write_season_league_csv()` writes `outputs/league/pilot_league_<slug>.csv`.
+- `league_site_export.export_league_site(league_dir, docs_data_dir, as_of, ...)` rebuilds `docs/data/season_<slug>.json` + `pilots_<slug>.json` for **every** season on record (not just the one a given run touched) plus the `docs/data/seasons.json` manifest, so `docs/data/` always mirrors the current state of `outputs/league/results`.
+- Grouping is by identity (`_identity_key(login_id, pilot)`, duplicated on purpose in both `league_engine.py` and `challenge_history_engine.py` rather than shared — see "Pilot identity overlay" below), not raw `Pilot` string, so a mid-season rename doesn't split one pilot into two rows.
+- **`outputs/league/pilot_league_Summer_2026.csv` is deliberately excluded from git** (see `.gitignore`) even though every other season's `pilot_league_*.csv` is tracked: Summer 2026's results only start 2026-07-13, six weeks into a season that starts 2026-06-01, so the file is a known-partial table and publishing it under a season name that promises more than it contains was judged worse than not tracking it. It still exists on disk and is rebuilt on every run/apply, it just never enters git for that one season.
+
+### Pilot identity overlay (`data/`)
+
+Resolves one or more MTGO loginids to a single canonical `pilot_id`, so a real person who is renamed on mtgo.com (already handled by the "frozen at first capture" pilot-name rule below) *or* plays under two different accounts can be shown as one identity in the league table and in `challenge_history_engine`'s `BestPilots`/`DistinctPilots` tables.
+
+- `data/pilot_identity.csv` (`loginid,pilot_id,role,added_on,source,evidence,note`) — `role` is `primary` or `alias`. A loginid absent from this file resolves to itself: **the whole layer is a no-op until the file exists and has a row for that loginid** (confirmed by `tests/test_pilot_identity.py`'s zero-regression test, which recomputes the full season/site output with no `data/` present and asserts every value-bearing field matches the pre-feature baseline byte-for-byte).
+- `data/pilot_profile.csv` (`pilot_id,display_name,x_handle,x_consent,x_confirmed_on,profile_hidden,note`) — optional per-`pilot_id` overrides. `x_handle` is only ever serialized into the site JSON when `x_consent` is true (`league_site_export.py` is the one and only place that reads `x_consent`, so a non-consented handle never crosses the wire); `profile_hidden` keeps the pilot in the season table under their name but omits their key from `pilots_<slug>.json` entirely (a direct profile link 404s, same as an unknown id).
+- `data/pilot_merge_log.csv` (`timestamp,action,pilot_id,loginid,source,evidence,operator_note`) — append-only audit trail, one row per loginid↔pilot_id change.
+- `src/identity.py` is the only reader/writer of these three files (`resolve()`, `display_name()`, `is_profile_hidden()`, etc.); it never reads event data itself — callers (`league_engine`, `challenge_history_engine`, `league_site_export`) pass in whatever "latest observed name" they already computed as a fallback.
+- **The only intended way to edit `data/*.csv` is `src/pilot_identity_cli.py merge`** (never by hand, never via the GUI). It dry-runs by default, always printing the full before/after report (validations a–e, season leaderboard diff, row-count deltas); `--apply` is required to write anything, and on any validation failure — including (e), no `pilot_id` may have two results in the same `EventID`, checked across the **full** history, every season, not just the current window — nothing is written, not even a partial file.
+- A `display_name` override in `pilot_profile.csv` is a deliberate choice, not necessarily what "latest event wins" would compute on its own — record *why* in that row's `note` field (e.g. "canonical name is the player's choice; the raw data alone would pick the other account's name, which has a later event"), since nothing else preserves that reasoning.
+- **Correctness pitfall already hit once, worth remembering:** any code that computes a pilot's "current" display name from a list of historical `Pilot` strings must key off the actual latest `EventDate`, not "whichever distinct value's first occurrence sorts last" (e.g. `dict.fromkeys` over a date-sorted list) — those two only agree when a name changes once, monotonically, and silently diverge as soon as two merged loginids' event-date ranges interleave (exactly what an identity merge produces). A second, related trap: if a canonical `display_name` override differs from that true latest-dated raw name, any "prior names" / "formerly known as" computation must still include that raw name as a candidate — filtering candidates by "not equal to hist['current']" instead of "not equal to the (possibly-overridden) name actually shown" silently drops a real historical name from site search. Both bugs lived in `league_site_export.py` (`_name_history()` and `build_season_site_data()`'s `prior_names` computation) and only surfaced when the first real merge (`MeninoNey`/`MeninooNey`, 2026-08-26) exercised the interleaved-dates + override case for the first time — see `git log` for both fixes' full reasoning.
 
 ### Configuration files (`docs/`)
 
