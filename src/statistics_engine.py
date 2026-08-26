@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from math import comb
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 import shutil
 import re
 
@@ -178,6 +178,38 @@ def trend_label(current: float, past_avg: float, threshold: float = 1.0) -> str:
     if current - past_avg < -threshold:
         return "Falling Deck"
     return "Stable"
+
+
+DEFAULT_TREND_LOOKBACK_WEEKS = 4
+
+
+def resolve_trend_status(
+    history_meta: Iterable[float],
+    current: float,
+    threshold: float,
+    lookback_weeks: int = DEFAULT_TREND_LOOKBACK_WEEKS,
+) -> str:
+    """Single source of truth for trend direction. _create_trend_chart (PNG legends) and
+    run_statistics (the tabular Trend Label column) both call this, for both Deck and Archetype
+    levels -- before 2026-08-24 they computed direction two different ways (this function's
+    4-week average vs. a full-window average in the PNG path) and could disagree for the same
+    deck in the same document (e.g. Broodscale Combo: legend ^, table "Falling Deck" for the
+    2026-08-10..08-23 window).
+
+    `history_meta` must already be scoped to one key and one Level, in chronological
+    (oldest-first) order, and must NOT include the current week's own value -- comparing a week
+    against itself always reads "Stable" and would mask real movement.
+
+    Base = mean of the most recent `lookback_weeks` entries (fewer if less history exists, matching
+    the pre-existing Deck-level behavior); with no prior history at all for the key, the direction
+    is "Stable" rather than guessed at.
+    """
+    values = [float(v) for v in history_meta if v is not None and pd.notna(v)]
+    if not values:
+        return "Stable"
+    window = values[-lookback_weeks:]
+    past_avg = sum(window) / len(window)
+    return trend_label(float(current), past_avg, threshold=threshold)
 
 
 def calculate_binomial_records(winrate: float, rounds: int) -> dict[str, float]:
@@ -573,32 +605,38 @@ def _create_trend_chart(
     trend_colors: dict[str, str],
     deck_colors: dict[str, str],
     legend_colors: dict[str, str],
-) -> Optional[Path]:
+) -> tuple[Optional[Path], dict[str, str]]:
+    """Returns (png_path, status_by_key): status_by_key is the exact direction used to build
+    each legend entry (the trend_symbol computation below), keyed by Deck/Archetype display
+    name -- so callers can cross-check the tabular Trend Label column against what the legend
+    actually shows, instead of re-deriving it separately (see run_statistics's post-generation
+    guard). Empty dict whenever no chart was produced.
+    """
     if df_history.empty or "WeekIndex" not in df_history.columns:
-        return None
+        return None, {}
 
     if chart_type == "Archetype":
         if "Level" not in df_history.columns:
-            return None
-        hist = df_history[df_history["Level"] == "Archetype"].copy()
+            return None, {}
+        level_hist = df_history[df_history["Level"] == "Archetype"].copy()
     else:
         if "Level" in df_history.columns:
-            hist = df_history[(df_history["Level"] == "Deck") | (df_history["Level"].isna())].copy()
+            level_hist = df_history[(df_history["Level"] == "Deck") | (df_history["Level"].isna())].copy()
         else:
-            hist = df_history.copy()
+            level_hist = df_history.copy()
 
-    if hist.empty or "Deck" not in hist.columns:
-        return None
+    if level_hist.empty or "Deck" not in level_hist.columns:
+        return None, {}
 
     min_week = max(1, int(week_index - weeks_back + 1))
-    hist = hist[pd.to_numeric(hist["WeekIndex"], errors="coerce") >= min_week].copy()
+    hist = level_hist[pd.to_numeric(level_hist["WeekIndex"], errors="coerce") >= min_week].copy()
     if hist.empty:
-        return None
+        return None, {}
 
     top = df_current.sort_values("Meta", ascending=False).head(10)["Deck Display Name"].astype(str).tolist()
     hist = hist[hist["Deck"].astype(str).isin(top)].copy()
     if hist.empty:
-        return None
+        return None, {}
 
     fig, ax = plt.subplots(figsize=(18, 11))
     cmap = plt.cm.rainbow
@@ -606,19 +644,35 @@ def _create_trend_chart(
     base_deck_colors = {deck: cmap(1 - i / color_count) for i, deck in enumerate(top)}
 
     legend_elements = []
+    status_by_key: dict[str, str] = {}
+    threshold = TREND_THRESHOLD_ARCHETYPE if chart_type == "Archetype" else TREND_THRESHOLD_DECK
     for deck in top:
         series = hist[hist["Deck"].astype(str) == deck].sort_values("WeekIndex")
         if series.empty:
             continue
         values = pd.to_numeric(series["Meta"], errors="coerce").fillna(0)
         weeks = pd.to_numeric(series["WeekIndex"], errors="coerce").astype(int)
-        if len(values) >= 2:
-            current = float(values.iloc[-1])
-            past_avg = float(values.iloc[:-1].mean()) if len(values) > 1 else current
-            threshold = TREND_THRESHOLD_ARCHETYPE if chart_type == "Archetype" else TREND_THRESHOLD_DECK
-            status = trend_label(current, past_avg, threshold=threshold)
+
+        # Direction is resolved from level_hist (the FULL, un-windowed history for this key),
+        # not from `hist` above (already sliced to the weeks_back display window) -- otherwise
+        # the trend arrow would silently depend on the chart's weeks_back parameter instead of
+        # the shared 4-week definition in resolve_trend_status, and could disagree with the
+        # tabular Trend Label column whenever weeks_back != 4.
+        full_series = level_hist[level_hist["Deck"].astype(str) == deck].sort_values("WeekIndex")
+        full_weeks = pd.to_numeric(full_series["WeekIndex"], errors="coerce")
+        full_values = pd.to_numeric(full_series["Meta"], errors="coerce")
+        current_week_mask = full_weeks == week_index
+        if current_week_mask.any():
+            current = float(full_values[current_week_mask].iloc[-1])
+            prior_values = full_values[~current_week_mask].dropna().tolist()
+        elif not full_values.empty:
+            current = float(full_values.iloc[-1])
+            prior_values = full_values.iloc[:-1].dropna().tolist()
         else:
-            status = "Stable"
+            current = 0.0
+            prior_values = []
+        status = resolve_trend_status(prior_values, current, threshold=threshold)
+        status_by_key[deck] = status
         trend_symbol = "^" if status == "Rising Deck" else "v" if status == "Falling Deck" else "-"
         line_color = _deck_color_override(deck, deck_colors) or base_deck_colors[deck]
         ax.plot(weeks, values, marker="o", linewidth=2.5, markersize=8, color=line_color)
@@ -644,7 +698,7 @@ def _create_trend_chart(
     out_path = output_dir / f"meta_trend_{chart_type}_{file_tag}_last{weeks_back}w.png"
     plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-    return out_path
+    return out_path, status_by_key
 
 
 def run_statistics(
@@ -769,16 +823,33 @@ def run_statistics(
         same_week_mask = pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index
         history_for_trend = df_history[~same_week_mask].copy()
 
-    if len(history_for_trend) > 0 and "Deck" in history_for_trend.columns and "WeekIndex" in history_for_trend.columns:
-        tmp = history_for_trend.sort_values("WeekIndex").groupby("Deck").tail(4)
-        trend_meta = tmp.groupby("Deck")["Meta"].mean().to_dict() if "Meta" in tmp.columns else {}
-        df_new["Trend Label"] = df_new.apply(
-            lambda row: trend_label(float(row["Meta"]), float(trend_meta.get(row["Deck"], row["Meta"])), threshold=TREND_THRESHOLD_DECK),
-            axis=1,
-        )
-    else:
-        df_new["Trend Label"] = "Stable"
+    def _trend_history_by_deck(level: str) -> dict[str, list[float]]:
+        # Scoped to one Level so a Deck and an Archetype bucket that happen to share a name can
+        # never silently pull each other's Meta values into this key's trend average (they share
+        # the "Deck" column as the lookup key across both levels -- see df_arch["Deck"] below).
+        if history_for_trend.empty or "Deck" not in history_for_trend.columns or "WeekIndex" not in history_for_trend.columns:
+            return {}
+        scoped = history_for_trend
+        if "Level" in scoped.columns:
+            scoped = scoped[scoped["Level"] == level]
+        if scoped.empty or "Meta" not in scoped.columns:
+            return {}
+        scoped = scoped.sort_values("WeekIndex")
+        return {deck: grp["Meta"].tolist() for deck, grp in scoped.groupby("Deck")}
 
+    deck_trend_history = _trend_history_by_deck("Deck")
+    df_new["Trend Label"] = df_new.apply(
+        lambda row: resolve_trend_status(
+            deck_trend_history.get(row["Deck"], []), float(row["Meta"]), threshold=TREND_THRESHOLD_DECK
+        ),
+        axis=1,
+    )
+
+    # Pillar / Emerging Threat / Declining Threat are unimplemented placeholder columns, not a
+    # computed result -- nothing in this module ever sets them to True on either level. Do not
+    # treat "False" here as a verified "no pillars/threats this week"; a future implementation
+    # needs its own historical function, distinct from resolve_trend_status above. Flagged
+    # 2026-08-24 alongside the Trend Label unification so this doesn't get mistaken for output.
     df_new["Pillar"] = False
     df_new["Emerging Threat"] = False
     df_new["Declining Threat"] = False
@@ -797,8 +868,15 @@ def run_statistics(
     df_arch["Level"] = "Archetype"
     df_arch["WeekStart"] = week_start_tag if week_start_tag is not None else pd.NA
     df_arch["WeekEnd"] = week_end_tag if week_end_tag is not None else pd.NA
-    df_arch["Trend Label"] = "Stable"
-    df_arch["Pillar"] = False
+
+    arch_trend_history = _trend_history_by_deck("Archetype")
+    df_arch["Trend Label"] = df_arch.apply(
+        lambda row: resolve_trend_status(
+            arch_trend_history.get(row["Deck"], []), float(row["Meta"]), threshold=TREND_THRESHOLD_ARCHETYPE
+        ),
+        axis=1,
+    )
+    df_arch["Pillar"] = False  # placeholder -- see the note above df_new["Pillar"]
     df_arch["Emerging Threat"] = False
     df_arch["Declining Threat"] = False
 
@@ -869,7 +947,7 @@ def run_statistics(
     unique_weeks = pd.to_numeric(df_history["WeekIndex"], errors="coerce").nunique() if "WeekIndex" in df_history.columns else 0
     if unique_weeks > 1:
         weeks_back = max(2, min(int(weeks_back), int(pd.to_numeric(df_history["WeekIndex"], errors="coerce").max())))
-        deck_trend = _create_trend_chart(
+        deck_trend, deck_trend_status = _create_trend_chart(
             df_history,
             df_new,
             weeks_back,
@@ -882,7 +960,7 @@ def run_statistics(
             normalized_legend_colors,
         )
         if normalized_profile == "full":
-            arch_trend = _create_trend_chart(
+            arch_trend, arch_trend_status = _create_trend_chart(
                 df_history,
                 df_arch,
                 weeks_back,
@@ -897,6 +975,51 @@ def run_statistics(
             for maybe in [deck_trend, arch_trend]:
                 if maybe is not None:
                     files.append(maybe)
+
+            # Regression guard (a): a flat Archetype-level Trend Label column is exactly the
+            # 2026-08-24 bug (the column was hardcoded to "Stable"). With real week-over-week
+            # history and >=2 archetypes in scope this must never happen again -- hard failure,
+            # not a warning, so a silently-flat column can never reach the dossier.
+            if len(df_arch) >= 2:
+                arch_labels = set(df_arch["Trend Label"].astype(str))
+                if len(arch_labels) <= 1:
+                    emit(
+                        f"[stats] ABORT: Trend Label is constant ({arch_labels!r}) across all "
+                        f"{len(df_arch)} Archetype rows for week {week_index} ({file_tag})"
+                    )
+                    raise RuntimeError(
+                        f"Trend Label is constant across all Archetype rows ({arch_labels!r}, "
+                        f"{len(df_arch)} rows) for week {week_index} ({file_tag}) -- this is the "
+                        "flat-column regression, refusing to write deck_analysis_ARCHETYPE."
+                    )
+
+            # Regression guard (b): the PNG legend and the tabular Trend Label column must never
+            # disagree for the same key -- that was the root cause diagnosed on 2026-08-24 (two
+            # independent trend definitions feeding the same document). Compare every key present
+            # in both the chart legend and its corresponding table; both sides key on "Deck"
+            # (df_arch["Deck"] holds the Archetype name, set above) -- the same column
+            # resolve_trend_status was fed from.
+            mismatches: list[str] = []
+            for key, chart_status in deck_trend_status.items():
+                table_rows = df_new.loc[df_new["Deck"].astype(str) == key, "Trend Label"]
+                if table_rows.empty:
+                    continue
+                table_status = str(table_rows.iloc[0])
+                if table_status != chart_status:
+                    mismatches.append(f"Deck {key!r}: legend={chart_status!r} table={table_status!r}")
+            for key, chart_status in arch_trend_status.items():
+                table_rows = df_arch.loc[df_arch["Deck"].astype(str) == key, "Trend Label"]
+                if table_rows.empty:
+                    continue
+                table_status = str(table_rows.iloc[0])
+                if table_status != chart_status:
+                    mismatches.append(f"Archetype {key!r}: legend={chart_status!r} table={table_status!r}")
+            if mismatches:
+                emit(f"[stats] ABORT: PNG/table trend mismatch for {len(mismatches)} key(s): {mismatches}")
+                raise RuntimeError(
+                    f"PNG trend legend and Trend Label column disagree for {len(mismatches)} "
+                    f"key(s) in week {week_index} ({file_tag}): " + "; ".join(mismatches)
+                )
         else:
             if deck_trend is not None:
                 files.append(deck_trend)
