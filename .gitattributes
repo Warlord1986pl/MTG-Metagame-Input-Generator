@@ -4,4 +4,14 @@ outputs/league/results/*.csv text eol=lf
 outputs/league/pilot_league_*.csv text eol=lf
 outputs/league/season_config.csv text eol=lf
 outputs/league/matches/*.csv text eol=lf
-tests/fixtures/league/*.csv text eol=lf
+
+# Every CSV/JSON fixture under tests/fixtures/ is either read verbatim by a test or compared
+# byte-for-byte against fresh output from code that always writes LF (_write_csv_lf,
+# league_site_export._write_json, ...). Without this, a checkout with core.autocrlf=true silently
+# rewrites these to CRLF and a byte-identical comparison test fails for a reason that has nothing
+# to do with the code or data under test -- exactly what happened to
+# tests/fixtures/pilot_identity_zero_regression/expected/pilot_league_Summer_2026.csv (see its
+# fixture commit/PR for the full investigation). One blanket rule so a newly added fixture
+# directory never needs its own line here.
+tests/fixtures/**/*.csv text eol=lf
+tests/fixtures/**/*.json text eol=lf
