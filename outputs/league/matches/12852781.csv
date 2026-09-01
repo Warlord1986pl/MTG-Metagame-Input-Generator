@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852781,2026-08-26,C96,Challenge,QF,JPA93,1181017,LBBL,2729974,2,0,Prowess,The Rock
+12852781,2026-08-26,C96,Challenge,QF,MayoDominaria,1112102,oinkmage22,2858193,2,0,Jeskai Energy,Dimir Midrange
+12852781,2026-08-26,C96,Challenge,QF,KajuRoers,3549579,Walker735,2638611,2,0,Broodscale Combo,Jeskai Energy
+12852781,2026-08-26,C96,Challenge,QF,Kritik,2707200,levunga21,494936,2,1,Land Destruction,Song of Creation
+12852781,2026-08-26,C96,Challenge,SF,MayoDominaria,1112102,JPA93,1181017,2,1,Jeskai Energy,Prowess
+12852781,2026-08-26,C96,Challenge,SF,KajuRoers,3549579,Kritik,2707200,2,0,Broodscale Combo,Land Destruction
+12852781,2026-08-26,C96,Challenge,F,KajuRoers,3549579,MayoDominaria,1112102,2,0,Broodscale Combo,Jeskai Energy

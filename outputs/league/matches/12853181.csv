@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853181,2026-08-28,C64,Challenge,QF,BressD1,1940271,Slyker,2956563,2,1,Prowess,Tron
+12853181,2026-08-28,C64,Challenge,QF,walshi4life,962660,ShadowTitan1,2130633,2,0,Prowess,Jeskai Energy
+12853181,2026-08-28,C64,Challenge,QF,firstshot,111234,mtwhet,1997060,2,0,Prowess,WBG
+12853181,2026-08-28,C64,Challenge,QF,MdvWin,2544700,elBB,3003904,2,0,Prowess,Prowess
+12853181,2026-08-28,C64,Challenge,SF,MdvWin,2544700,firstshot,111234,2,0,Prowess,Prowess
+12853181,2026-08-28,C64,Challenge,SF,BressD1,1940271,walshi4life,962660,2,1,Prowess,Prowess
+12853181,2026-08-28,C64,Challenge,F,MdvWin,2544700,BressD1,1940271,2,0,Prowess,Prowess

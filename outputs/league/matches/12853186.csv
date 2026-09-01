@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853186,2026-08-29,C64,Challenge,QF,HelpfulHobo,2063678,JustAnotherGuy83,2691811,2,0,Broodscale Combo,Yawgmoth
+12853186,2026-08-29,C64,Challenge,QF,jussupinator,880239,yriel,2537131,2,0,Goryo's Vengeance,Esper Blink
+12853186,2026-08-29,C64,Challenge,QF,Selfeisek,2042214,Venom01,3535587,2,1,Mono-Black Midrange,Esper Blink
+12853186,2026-08-29,C64,Challenge,QF,hugofreitas1,1997683,MeninoNey,2903591,2,0,Ruby Storm,Living End
+12853186,2026-08-29,C64,Challenge,SF,hugofreitas1,1997683,HelpfulHobo,2063678,2,0,Ruby Storm,Broodscale Combo
+12853186,2026-08-29,C64,Challenge,SF,jussupinator,880239,Selfeisek,2042214,2,1,Goryo's Vengeance,Mono-Black Midrange
+12853186,2026-08-29,C64,Challenge,F,jussupinator,880239,hugofreitas1,1997683,2,0,Goryo's Vengeance,Ruby Storm

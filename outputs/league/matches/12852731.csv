@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852731,2026-08-21,C64,Challenge,QF,haveaboavida,2811955,ziofrancone,2676196,2,1,Mono-Green Eldrazi,Broodscale Combo
+12852731,2026-08-21,C64,Challenge,QF,Lightspirit,3222070,McWinSauce,803141,2,0,Eldrazi Ramp,Esper Blink
+12852731,2026-08-21,C64,Challenge,QF,Haunter56,1126715,TrueHero,2569009,2,1,Affinity,Affinity
+12852731,2026-08-21,C64,Challenge,QF,ArthurMorgan,3572741,DskBayWolf,3220713,2,1,Prowess,Goryo's Vengeance
+12852731,2026-08-21,C64,Challenge,SF,Lightspirit,3222070,haveaboavida,2811955,2,0,Eldrazi Ramp,Mono-Green Eldrazi
+12852731,2026-08-21,C64,Challenge,SF,Haunter56,1126715,ArthurMorgan,3572741,2,0,Affinity,Prowess
+12852731,2026-08-21,C64,Challenge,F,Haunter56,1126715,Lightspirit,3222070,2,0,Affinity,Eldrazi Ramp

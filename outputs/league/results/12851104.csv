@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12851104,2026-08-09,C64,Challenge,Slasher21,2522150,1,Affinity,5,1,21,0.66735,0.77778,0.60127
-12851104,2026-08-09,C64,Challenge,Acecalna,2919528,2,Goryo's Vengeance,4,3,18,0.62585,0.66667,0.56198
-12851104,2026-08-09,C64,Challenge,GigaChadSigmaMale,3085636,3,Goryo's Vengeance,3,2,18,0.65987,0.70588,0.58033
-12851104,2026-08-09,C64,Challenge,bakkenal,2677890,4,Devoted Combo,3,4,18,0.59864,0.76471,0.56844
-12851104,2026-08-09,C64,Challenge,gazmon48,1636994,5,Broodscale Combo,2,5,18,0.52313,0.66667,0.50551
-12851104,2026-08-09,C64,Challenge,auzzie51,1111936,6,Prowess,2,6,18,0.52109,0.72222,0.50125
-12851104,2026-08-09,C64,Challenge,mark_68,1324666,7,Dimir Midrange,2,7,15,0.71837,0.68750,0.63505
-12851104,2026-08-09,C64,Challenge,Kollslaw,3311758,8,Goryo's Vengeance,2,8,15,0.64966,0.64706,0.56457
-12851104,2026-08-09,C64,Challenge,bless_von,2292083,9,Broodscale Combo,1,9,15,0.63945,0.61111,0.58515
-12851104,2026-08-09,C64,Challenge,Sam_Lewin,2092528,10,Yawgmoth,1,10,15,0.62721,0.63158,0.55984
-12851104,2026-08-09,C64,Challenge,kattsu,3405528,11,Rakdos HollowOne,1,11,15,0.61905,0.63158,0.55468
-12851104,2026-08-09,C64,Challenge,VictorEsquici,3013293,12,Dimir Midrange,1,12,15,0.61905,0.61111,0.58988
-12851104,2026-08-09,C64,Challenge,TuckerMTG,2204845,13,Broodscale Combo,1,13,15,0.61837,0.57143,0.57304
-12851104,2026-08-09,C64,Challenge,ipadkid,3560747,14,Dimir Midrange,1,14,15,0.60952,0.64706,0.56415
-12851104,2026-08-09,C64,Challenge,renatoaraujo,864036,15,Devoted Combo,1,15,15,0.58504,0.57895,0.54070
-12851104,2026-08-09,C64,Challenge,C_S_W____,485263,16,Goryo's Vengeance,1,16,15,0.57937,0.66667,0.53006
-12851104,2026-08-09,C64,Challenge,Mtyrant,3023075,17,WUBRG,0,17,15,0.57755,0.64706,0.54688
-12851104,2026-08-09,C64,Challenge,felider,2322146,18,Domain Zoo,0,18,15,0.54830,0.64706,0.53089
-12851104,2026-08-09,C64,Challenge,Ashigaruu,2891700,19,Broodscale Combo,0,19,15,0.54422,0.64706,0.51902
-12851104,2026-08-09,C64,Challenge,TheTaxCollector,2243002,20,Devoted Combo,0,20,15,0.53401,0.64706,0.53045
-12851104,2026-08-09,C64,Challenge,_Stream,1540808,21,Goryo's Vengeance,0,21,15,0.53401,0.58824,0.51480
-12851104,2026-08-09,C64,Challenge,goron27,2908401,22,Devoted Combo,0,22,15,0.53061,0.62500,0.50777
-12851104,2026-08-09,C64,Challenge,i_b_TRUE,750628,23,Neobrand,0,23,12,0.61905,0.50000,0.57019
-12851104,2026-08-09,C64,Challenge,Stealthmagician,2334451,24,Domain Zoo,0,24,12,0.60816,0.52941,0.57482
-12851104,2026-08-09,C64,Challenge,Skeptic2304,2665316,25,Broodscale Combo,0,25,12,0.60544,0.57895,0.55663
-12851104,2026-08-09,C64,Challenge,klien7,2564773,26,Grixis Reanimator,0,26,12,0.59864,0.58824,0.56536
-12851104,2026-08-09,C64,Challenge,unsimilar_socks,3340310,27,Yawgmoth,0,27,12,0.59524,0.52941,0.56882
-12851104,2026-08-09,C64,Challenge,Iaashadow,2712707,28,Broodscale Combo,0,28,12,0.57483,0.55000,0.53062
-12851104,2026-08-09,C64,Challenge,Kai_Worldz,3150519,29,Mono-Green Eldrazi,0,29,12,0.55782,0.52941,0.51495
-12851104,2026-08-09,C64,Challenge,Vonducky,542229,30,Devoted Combo,0,30,12,0.55556,0.53333,0.52560
-12851104,2026-08-09,C64,Challenge,Sorathrix,2705240,31,Affinity,0,31,12,0.55442,0.56250,0.52451
-12851104,2026-08-09,C64,Challenge,ejk,1952341,32,Devoted Combo,0,32,12,0.54422,0.52941,0.50896
+12851104,2026-08-09,C64,Challenge,Slasher21,2522150,1,Affinity,5,,,,,
+12851104,2026-08-09,C64,Challenge,Acecalna,2919528,2,Goryo's Vengeance,4,,,,,
+12851104,2026-08-09,C64,Challenge,GigaChadSigmaMale,3085636,3,Goryo's Vengeance,3,,,,,
+12851104,2026-08-09,C64,Challenge,bakkenal,2677890,4,Devoted Combo,3,,,,,
+12851104,2026-08-09,C64,Challenge,gazmon48,1636994,5,Broodscale Combo,2,,,,,
+12851104,2026-08-09,C64,Challenge,auzzie51,1111936,6,Prowess,2,,,,,
+12851104,2026-08-09,C64,Challenge,mark_68,1324666,7,Dimir Midrange,2,,,,,
+12851104,2026-08-09,C64,Challenge,Kollslaw,3311758,8,Goryo's Vengeance,2,,,,,
+12851104,2026-08-09,C64,Challenge,bless_von,2292083,9,Broodscale Combo,1,,,,,
+12851104,2026-08-09,C64,Challenge,Sam_Lewin,2092528,10,Yawgmoth,1,,,,,
+12851104,2026-08-09,C64,Challenge,kattsu,3405528,11,Rakdos HollowOne,1,,,,,
+12851104,2026-08-09,C64,Challenge,VictorEsquici,3013293,12,Dimir Midrange,1,,,,,
+12851104,2026-08-09,C64,Challenge,TuckerMTG,2204845,13,Broodscale Combo,1,,,,,
+12851104,2026-08-09,C64,Challenge,ipadkid,3560747,14,Dimir Midrange,1,,,,,
+12851104,2026-08-09,C64,Challenge,renatoaraujo,864036,15,Devoted Combo,1,,,,,
+12851104,2026-08-09,C64,Challenge,C_S_W____,485263,16,Goryo's Vengeance,1,,,,,
+12851104,2026-08-09,C64,Challenge,Mtyrant,3023075,17,WUBRG,0,,,,,
+12851104,2026-08-09,C64,Challenge,felider,2322146,18,Domain Zoo,0,,,,,
+12851104,2026-08-09,C64,Challenge,Ashigaruu,2891700,19,Broodscale Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,TheTaxCollector,2243002,20,Devoted Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,_Stream,1540808,21,Goryo's Vengeance,0,,,,,
+12851104,2026-08-09,C64,Challenge,goron27,2908401,22,Devoted Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,i_b_TRUE,750628,23,Neobrand,0,,,,,
+12851104,2026-08-09,C64,Challenge,Stealthmagician,2334451,24,Domain Zoo,0,,,,,
+12851104,2026-08-09,C64,Challenge,Skeptic2304,2665316,25,Broodscale Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,klien7,2564773,26,Grixis Reanimator,0,,,,,
+12851104,2026-08-09,C64,Challenge,unsimilar_socks,3340310,27,Yawgmoth,0,,,,,
+12851104,2026-08-09,C64,Challenge,Iaashadow,2712707,28,Broodscale Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,Kai_Worldz,3150519,29,Mono-Green Eldrazi,0,,,,,
+12851104,2026-08-09,C64,Challenge,Vonducky,542229,30,Devoted Combo,0,,,,,
+12851104,2026-08-09,C64,Challenge,Sorathrix,2705240,31,Affinity,0,,,,,
+12851104,2026-08-09,C64,Challenge,ejk,1952341,32,Devoted Combo,0,,,,,

@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12849451,2026-07-31,C64,Challenge,lunaloveee,2886236,1,Goryo's Vengeance,5,7,18,0.54422,0.70588,0.53019
-12849451,2026-07-31,C64,Challenge,Univerce,2926088,2,Broodscale Combo,4,4,18,0.56463,0.66667,0.56137
-12849451,2026-07-31,C64,Challenge,FranBenitez91,319589,3,Goryo's Vengeance,3,3,18,0.57415,0.70588,0.54819
-12849451,2026-07-31,C64,Challenge,_Batutinha_,453404,4,Esper Blink,3,8,18,0.48571,0.76471,0.45969
-12849451,2026-07-31,C64,Challenge,sokos13,486439,5,Esper Blink,2,1,18,0.61905,0.66667,0.56502
-12849451,2026-07-31,C64,Challenge,moviemaker,992526,6,Broodscale Combo,2,2,18,0.59864,0.72222,0.54310
-12849451,2026-07-31,C64,Challenge,Lapsy,2939619,7,BRG,2,5,18,0.55442,0.72222,0.53042
-12849451,2026-07-31,C64,Challenge,Based,943247,8,Boros Energy,2,6,18,0.54830,0.68421,0.52417
-12849451,2026-07-31,C64,Challenge,Matts,2631782,9,Affinity,1,9,15,0.70068,0.64706,0.61526
-12849451,2026-07-31,C64,Challenge,NathanOfTheGiltLeaf,2968680,10,Devoted Combo,1,10,15,0.64354,0.68750,0.56438
-12849451,2026-07-31,C64,Challenge,JuanmaAT,2695862,11,Living End,1,11,15,0.63265,0.68750,0.59270
-12849451,2026-07-31,C64,Challenge,sioutis_kk,3499660,12,Affinity,1,12,15,0.58231,0.58824,0.54085
-12849451,2026-07-31,C64,Challenge,Uagli1,2680052,13,Dimir Murktide,1,13,15,0.57823,0.64706,0.52316
-12849451,2026-07-31,C64,Challenge,Jconn,2538717,14,Yawgmoth,1,14,15,0.57007,0.62500,0.54175
-12849451,2026-07-31,C64,Challenge,claudioh,1919341,15,Yawgmoth,1,15,15,0.56463,0.57895,0.53486
-12849451,2026-07-31,C64,Challenge,chuyingfei,691553,16,Affinity,1,16,15,0.55442,0.63158,0.53184
-12849451,2026-07-31,C64,Challenge,schobr,2452941,17,Belcher,0,17,15,0.55442,0.58824,0.52804
-12849451,2026-07-31,C64,Challenge,Anaxkoraz,2351182,18,Boros Energy,0,18,15,0.54694,0.68750,0.52057
-12849451,2026-07-31,C64,Challenge,MarimoTaketori,3086835,19,Grixis Reanimator,0,19,15,0.54422,0.57895,0.52988
-12849451,2026-07-31,C64,Challenge,digdude13,111081,20,Affinity,0,20,15,0.53333,0.63158,0.50550
-12849451,2026-07-31,C64,Challenge,levunga21,494936,21,Azorius Control,0,21,15,0.50340,0.64706,0.47857
-12849451,2026-07-31,C64,Challenge,Cown,3070041,22,4c HollowOne,0,22,15,0.48980,0.64706,0.47812
-12849451,2026-07-31,C64,Challenge,hugofreitas1,1997683,23,Ruby Storm,0,23,15,0.46258,0.61111,0.47166
-12849451,2026-07-31,C64,Challenge,DskBayWolf,3220713,24,Goryo's Vengeance,0,24,12,0.68027,0.58824,0.58730
-12849451,2026-07-31,C64,Challenge,Ikibob,2255206,25,Neobrand,0,25,12,0.62925,0.52941,0.58003
-12849451,2026-07-31,C64,Challenge,kasiso,2257869,26,Boros Energy,0,26,12,0.61905,0.56250,0.55326
-12849451,2026-07-31,C64,Challenge,cntrlfreak_ttv,2984703,27,Goryo's Vengeance,0,27,12,0.61225,0.50000,0.57972
-12849451,2026-07-31,C64,Challenge,ETBJezus,3040474,28,Dimir Midrange,0,28,12,0.59864,0.58824,0.54671
-12849451,2026-07-31,C64,Challenge,MahfuzVanGogh,1932562,29,UBRG,0,29,12,0.57823,0.52632,0.54872
-12849451,2026-07-31,C64,Challenge,SbanTwin,2932115,30,Affinity,0,30,12,0.57143,0.53333,0.53975
-12849451,2026-07-31,C64,Challenge,Rzt4097,3449184,31,Ruby Storm,0,31,12,0.56803,0.57143,0.53922
-12849451,2026-07-31,C64,Challenge,powered_by_VANYA,3169940,32,Devoted Combo,0,32,12,0.54422,0.61111,0.51706
+12849451,2026-07-31,C64,Challenge,lunaloveee,2886236,1,Goryo's Vengeance,5,,,,,
+12849451,2026-07-31,C64,Challenge,Univerce,2926088,2,Broodscale Combo,4,,,,,
+12849451,2026-07-31,C64,Challenge,FranBenitez91,319589,3,Goryo's Vengeance,3,,,,,
+12849451,2026-07-31,C64,Challenge,_Batutinha_,453404,4,Esper Blink,3,,,,,
+12849451,2026-07-31,C64,Challenge,sokos13,486439,5,Esper Blink,2,,,,,
+12849451,2026-07-31,C64,Challenge,moviemaker,992526,6,Broodscale Combo,2,,,,,
+12849451,2026-07-31,C64,Challenge,Lapsy,2939619,7,BRG,2,,,,,
+12849451,2026-07-31,C64,Challenge,Based,943247,8,Boros Energy,2,,,,,
+12849451,2026-07-31,C64,Challenge,Matts,2631782,9,Affinity,1,,,,,
+12849451,2026-07-31,C64,Challenge,NathanOfTheGiltLeaf,2968680,10,Devoted Combo,1,,,,,
+12849451,2026-07-31,C64,Challenge,JuanmaAT,2695862,11,Living End,1,,,,,
+12849451,2026-07-31,C64,Challenge,sioutis_kk,3499660,12,Affinity,1,,,,,
+12849451,2026-07-31,C64,Challenge,Uagli1,2680052,13,Dimir Murktide,1,,,,,
+12849451,2026-07-31,C64,Challenge,Jconn,2538717,14,Yawgmoth,1,,,,,
+12849451,2026-07-31,C64,Challenge,claudioh,1919341,15,Yawgmoth,1,,,,,
+12849451,2026-07-31,C64,Challenge,chuyingfei,691553,16,Affinity,1,,,,,
+12849451,2026-07-31,C64,Challenge,schobr,2452941,17,Belcher,0,,,,,
+12849451,2026-07-31,C64,Challenge,Anaxkoraz,2351182,18,Boros Energy,0,,,,,
+12849451,2026-07-31,C64,Challenge,MarimoTaketori,3086835,19,Grixis Reanimator,0,,,,,
+12849451,2026-07-31,C64,Challenge,digdude13,111081,20,Affinity,0,,,,,
+12849451,2026-07-31,C64,Challenge,levunga21,494936,21,Azorius Control,0,,,,,
+12849451,2026-07-31,C64,Challenge,Cown,3070041,22,4c HollowOne,0,,,,,
+12849451,2026-07-31,C64,Challenge,hugofreitas1,1997683,23,Ruby Storm,0,,,,,
+12849451,2026-07-31,C64,Challenge,DskBayWolf,3220713,24,Goryo's Vengeance,0,,,,,
+12849451,2026-07-31,C64,Challenge,Ikibob,2255206,25,Neobrand,0,,,,,
+12849451,2026-07-31,C64,Challenge,kasiso,2257869,26,Boros Energy,0,,,,,
+12849451,2026-07-31,C64,Challenge,cntrlfreak_ttv,2984703,27,Goryo's Vengeance,0,,,,,
+12849451,2026-07-31,C64,Challenge,ETBJezus,3040474,28,Dimir Midrange,0,,,,,
+12849451,2026-07-31,C64,Challenge,MahfuzVanGogh,1932562,29,UBRG,0,,,,,
+12849451,2026-07-31,C64,Challenge,SbanTwin,2932115,30,Affinity,0,,,,,
+12849451,2026-07-31,C64,Challenge,Rzt4097,3449184,31,Ruby Storm,0,,,,,
+12849451,2026-07-31,C64,Challenge,powered_by_VANYA,3169940,32,Devoted Combo,0,,,,,

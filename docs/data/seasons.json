@@ -1,9 +1,9 @@
 {
-  "currentSeason": "Summer 2026",
+  "currentSeason": "Autumn 2026",
   "seasons": [
     {
       "endDate": "2026-08-31",
-      "isCurrent": true,
+      "isCurrent": false,
       "season": "Summer 2026",
       "slug": "Summer_2026",
       "startDate": "2026-06-01"

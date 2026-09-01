@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853171,2026-08-27,C64,Challenge,QF,ls149950,1862893,Watchwolf92,574591,2,0,Broodscale Combo,Land Destruction
+12853171,2026-08-27,C64,Challenge,QF,PrismaticPrism,3542423,rastaf,254536,2,1,Belcher,Esper Blink
+12853171,2026-08-27,C64,Challenge,QF,lunaloveee,2886236,_Batutinha_,453404,2,0,Broodscale Combo,Esper Blink
+12853171,2026-08-27,C64,Challenge,QF,KingOfGames1522,2831734,Jumba,2618500,2,1,Domain Zoo,Broodscale Combo
+12853171,2026-08-27,C64,Challenge,SF,lunaloveee,2886236,PrismaticPrism,3542423,2,0,Broodscale Combo,Belcher
+12853171,2026-08-27,C64,Challenge,SF,ls149950,1862893,KingOfGames1522,2831734,2,0,Broodscale Combo,Domain Zoo
+12853171,2026-08-27,C64,Challenge,F,lunaloveee,2886236,ls149950,1862893,2,1,Broodscale Combo,Broodscale Combo

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851716,2026-08-19,C96,Challenge,QF,HouseOfManaMTG,2669359,Rvng,649380,2,0,Mono-Green Eldrazi,Goryo's Vengeance
+12851716,2026-08-19,C96,Challenge,QF,_Abijhavs_,3195782,CMack_,2069667,2,1,Prowess,Goryo's Vengeance
+12851716,2026-08-19,C96,Challenge,QF,MeninoNey,2903591,nahuel10,1942357,2,0,Living End,Prowess
+12851716,2026-08-19,C96,Challenge,QF,stefansson30952,3405508,frenzyofexultations,3476561,2,1,Jeskai Energy,WBG
+12851716,2026-08-19,C96,Challenge,SF,MeninoNey,2903591,_Abijhavs_,3195782,2,1,Living End,Prowess
+12851716,2026-08-19,C96,Challenge,SF,HouseOfManaMTG,2669359,stefansson30952,3405508,2,1,Mono-Green Eldrazi,Jeskai Energy
+12851716,2026-08-19,C96,Challenge,F,MeninoNey,2903591,HouseOfManaMTG,2669359,2,0,Living End,Mono-Green Eldrazi

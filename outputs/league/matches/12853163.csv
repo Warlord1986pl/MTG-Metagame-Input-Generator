@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853163,2026-08-29,modern-showcase-challenge,Premier,QF,DskBayWolf,3220713,levelerlover,449733,2,1,Goryo's Vengeance,NEEDS_MANUAL_REVIEW
+12853163,2026-08-29,modern-showcase-challenge,Premier,QF,rastaf,254536,musasabi,1210536,2,1,NEEDS_MANUAL_REVIEW,Devoted Combo
+12853163,2026-08-29,modern-showcase-challenge,Premier,QF,Xwhale,1428769,Cachorrowo,2720911,2,0,NEEDS_MANUAL_REVIEW,Ruby Storm
+12853163,2026-08-29,modern-showcase-challenge,Premier,QF,TonyScapone,2391802,E90_DeliveryBoy,3122660,2,1,NEEDS_MANUAL_REVIEW,Belcher
+12853163,2026-08-29,modern-showcase-challenge,Premier,SF,TonyScapone,2391802,Xwhale,1428769,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12853163,2026-08-29,modern-showcase-challenge,Premier,SF,rastaf,254536,DskBayWolf,3220713,2,0,NEEDS_MANUAL_REVIEW,Goryo's Vengeance
+12853163,2026-08-29,modern-showcase-challenge,Premier,F,rastaf,254536,TonyScapone,2391802,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW

@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12847171,2026-07-15,C32,Challenge,eclipse4343,2714224,1,UW Control,5,8,15,0.61905,0.68750,0.53472
-12847171,2026-07-15,C32,Challenge,Elfoman_br,2911871,2,Boros Energy,4,2,18,0.64966,0.68421,0.57671
-12847171,2026-07-15,C32,Challenge,justAlice,2446403,3,Grixis Reanimator,3,4,18,0.58503,0.68421,0.52703
-12847171,2026-07-15,C32,Challenge,TheColorOfBoom,3359144,4,Boros Energy,3,6,15,0.68367,0.61111,0.61828
-12847171,2026-07-15,C32,Challenge,niuwaid001,2372533,5,Living End,2,1,18,0.65986,0.66667,0.59713
-12847171,2026-07-15,C32,Challenge,KelsonBlack,2529360,6,Dimir Death's Shadow,2,3,18,0.60612,0.80000,0.55779
-12847171,2026-07-15,C32,Challenge,Tinker_deck,2981803,7,Eldrazi Tron,2,5,18,0.51360,0.70588,0.48987
-12847171,2026-07-15,C32,Challenge,ejk,1952341,8,Broodscale Combo,2,7,15,0.66327,0.63158,0.60710
-12847171,2026-07-15,C32,Challenge,Joey_Wheeler,1811013,9,Broodscale Combo,1,9,15,0.61905,0.57895,0.56221
-12847171,2026-07-15,C32,Challenge,renatoaraujo,864036,10,Broodscale Combo,1,10,15,0.61225,0.57143,0.58433
-12847171,2026-07-15,C32,Challenge,Baurong,2781425,11,Eldrazi Tron,1,11,15,0.60204,0.66667,0.54080
-12847171,2026-07-15,C32,Challenge,MyrRetriever,3006274,12,Broodscale Combo,1,12,15,0.57823,0.60000,0.54273
-12847171,2026-07-15,C32,Challenge,CliffBoyardee,2908645,13,Affinity,1,13,15,0.55442,0.57895,0.53828
-12847171,2026-07-15,C32,Challenge,oinkmage22,2858193,14,Esper Blink,1,14,12,0.61905,0.57895,0.58615
-12847171,2026-07-15,C32,Challenge,SuperCow12653,2064081,15,Affinity,1,15,12,0.58844,0.52941,0.56206
-12847171,2026-07-15,C32,Challenge,KadettiKersantti,3344298,16,Boros Energy,1,16,12,0.57211,0.55000,0.53517
-12847171,2026-07-15,C32,Challenge,Epreez,3100948,17,Amulet Titan,0,17,12,0.55102,0.62500,0.51097
-12847171,2026-07-15,C32,Challenge,Danmax97,2992883,18,Affinity,0,18,12,0.54762,0.58824,0.51635
-12847171,2026-07-15,C32,Challenge,Lightspirit,3222070,19,Eldrazi Ramp,0,19,12,0.53061,0.57895,0.52707
-12847171,2026-07-15,C32,Challenge,GrouchyTurtle,1722183,20,Jeskai Ascendancy Combo,0,20,12,0.52381,0.56250,0.47533
-12847171,2026-07-15,C32,Challenge,derlumberzack,1126781,21,Dimir Murktide,0,21,12,0.52109,0.58824,0.48366
-12847171,2026-07-15,C32,Challenge,EnderW,2945081,22,Humans,0,22,12,0.52041,0.50000,0.54051
-12847171,2026-07-15,C32,Challenge,xixia,3436277,23,Boros Energy,0,23,12,0.51293,0.50000,0.52070
-12847171,2026-07-15,C32,Challenge,KillerWhale01,3247117,24,Boros Energy,0,24,12,0.49728,0.52941,0.49533
-12847171,2026-07-15,C32,Challenge,RNicoF,2753736,25,Goryo's Vengeance,0,25,12,0.47891,0.50000,0.51458
-12847171,2026-07-15,C32,Challenge,shimoinu,3563589,26,Hollow One,0,26,12,0.41428,0.50000,0.43761
-12847171,2026-07-15,C32,Challenge,thatguy_champ,2917923,27,Living End,0,27,9,0.60318,0.53333,0.52932
-12847171,2026-07-15,C32,Challenge,MC_amp2267,2729232,28,Broodscale Combo,0,28,9,0.59429,0.50000,0.57045
-12847171,2026-07-15,C32,Challenge,Moe12,3037817,29,Esper Murktide,0,29,9,0.55556,0.50000,0.53235
-12847171,2026-07-15,C32,Challenge,prizedamalgam,3562327,30,Living End,0,30,9,0.54365,0.50000,0.51962
-12847171,2026-07-15,C32,Challenge,parasisnotcool,3135948,31,Belcher,0,31,9,0.53401,0.43750,0.51513
-12847171,2026-07-15,C32,Challenge,PaulHauk,3478047,32,Broodscale Combo,0,32,9,0.53061,0.47059,0.50716
+12847171,2026-07-15,C32,Challenge,eclipse4343,2714224,1,UW Control,5,,,,,
+12847171,2026-07-15,C32,Challenge,Elfoman_br,2911871,2,Boros Energy,4,,,,,
+12847171,2026-07-15,C32,Challenge,justAlice,2446403,3,Grixis Reanimator,3,,,,,
+12847171,2026-07-15,C32,Challenge,TheColorOfBoom,3359144,4,Boros Energy,3,,,,,
+12847171,2026-07-15,C32,Challenge,niuwaid001,2372533,5,Living End,2,,,,,
+12847171,2026-07-15,C32,Challenge,KelsonBlack,2529360,6,Dimir Death's Shadow,2,,,,,
+12847171,2026-07-15,C32,Challenge,Tinker_deck,2981803,7,Eldrazi Tron,2,,,,,
+12847171,2026-07-15,C32,Challenge,ejk,1952341,8,Broodscale Combo,2,,,,,
+12847171,2026-07-15,C32,Challenge,Joey_Wheeler,1811013,9,Broodscale Combo,1,,,,,
+12847171,2026-07-15,C32,Challenge,renatoaraujo,864036,10,Broodscale Combo,1,,,,,
+12847171,2026-07-15,C32,Challenge,Baurong,2781425,11,Eldrazi Tron,1,,,,,
+12847171,2026-07-15,C32,Challenge,MyrRetriever,3006274,12,Broodscale Combo,1,,,,,
+12847171,2026-07-15,C32,Challenge,CliffBoyardee,2908645,13,Affinity,1,,,,,
+12847171,2026-07-15,C32,Challenge,oinkmage22,2858193,14,Esper Blink,1,,,,,
+12847171,2026-07-15,C32,Challenge,SuperCow12653,2064081,15,Affinity,1,,,,,
+12847171,2026-07-15,C32,Challenge,KadettiKersantti,3344298,16,Boros Energy,1,,,,,
+12847171,2026-07-15,C32,Challenge,Epreez,3100948,17,Amulet Titan,0,,,,,
+12847171,2026-07-15,C32,Challenge,Danmax97,2992883,18,Affinity,0,,,,,
+12847171,2026-07-15,C32,Challenge,Lightspirit,3222070,19,Eldrazi Ramp,0,,,,,
+12847171,2026-07-15,C32,Challenge,GrouchyTurtle,1722183,20,Jeskai Ascendancy Combo,0,,,,,
+12847171,2026-07-15,C32,Challenge,derlumberzack,1126781,21,Dimir Murktide,0,,,,,
+12847171,2026-07-15,C32,Challenge,EnderW,2945081,22,Humans,0,,,,,
+12847171,2026-07-15,C32,Challenge,xixia,3436277,23,Boros Energy,0,,,,,
+12847171,2026-07-15,C32,Challenge,KillerWhale01,3247117,24,Boros Energy,0,,,,,
+12847171,2026-07-15,C32,Challenge,RNicoF,2753736,25,Goryo's Vengeance,0,,,,,
+12847171,2026-07-15,C32,Challenge,shimoinu,3563589,26,Hollow One,0,,,,,
+12847171,2026-07-15,C32,Challenge,thatguy_champ,2917923,27,Living End,0,,,,,
+12847171,2026-07-15,C32,Challenge,MC_amp2267,2729232,28,Broodscale Combo,0,,,,,
+12847171,2026-07-15,C32,Challenge,Moe12,3037817,29,Esper Murktide,0,,,,,
+12847171,2026-07-15,C32,Challenge,prizedamalgam,3562327,30,Living End,0,,,,,
+12847171,2026-07-15,C32,Challenge,parasisnotcool,3135948,31,Belcher,0,,,,,
+12847171,2026-07-15,C32,Challenge,PaulHauk,3478047,32,Broodscale Combo,0,,,,,

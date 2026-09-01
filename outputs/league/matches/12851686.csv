@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851686,2026-08-17,C64,Challenge,QF,ScreenwriterNY,1880301,ShadowTitan1,2130633,2,0,Prowess,WUR
+12851686,2026-08-17,C64,Challenge,QF,Ivan_Draw_Go,2679669,LucasG1ggs,750888,2,0,Goryo's Vengeance,4c HollowOne
+12851686,2026-08-17,C64,Challenge,QF,Selfeisek,2042214,littesir095,3034834,2,0,Mono-Black Midrange,Dimir Midrange
+12851686,2026-08-17,C64,Challenge,QF,Dioferreira,1950164,YungDingo,2928451,2,0,Esper Blink,Prowess
+12851686,2026-08-17,C64,Challenge,SF,Dioferreira,1950164,Ivan_Draw_Go,2679669,2,1,Esper Blink,Goryo's Vengeance
+12851686,2026-08-17,C64,Challenge,SF,ScreenwriterNY,1880301,Selfeisek,2042214,2,0,Prowess,Mono-Black Midrange
+12851686,2026-08-17,C64,Challenge,F,Dioferreira,1950164,ScreenwriterNY,1880301,1,0,Esper Blink,Prowess

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852762,2026-08-24,C96,Challenge,QF,elBB,3003904,Davidowiz,3467306,2,1,Prowess,Boros Energy
+12852762,2026-08-24,C96,Challenge,QF,MayoDominaria,1112102,Xsper,3056706,2,0,Jeskai Energy,Prowess
+12852762,2026-08-24,C96,Challenge,QF,Kritik,2707200,lunaloveee,2886236,2,1,Land Destruction,Goryo's Vengeance
+12852762,2026-08-24,C96,Challenge,QF,Mapletreefrog,1557079,Rashek,2702005,2,1,Esper Blink,Boros Energy
+12852762,2026-08-24,C96,Challenge,SF,elBB,3003904,Mapletreefrog,1557079,2,0,Prowess,Esper Blink
+12852762,2026-08-24,C96,Challenge,SF,Kritik,2707200,MayoDominaria,1112102,2,1,Land Destruction,Jeskai Energy
+12852762,2026-08-24,C96,Challenge,F,Kritik,2707200,elBB,3003904,2,0,Land Destruction,Prowess

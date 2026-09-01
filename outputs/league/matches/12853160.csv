@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853160,2026-08-26,C32,Challenge,QF,jussupinator,880239,manohito,2908947,2,0,Goryo's Vengeance,Broodscale Combo
+12853160,2026-08-26,C32,Challenge,QF,RNicoF,2753736,GMFischer,3536967,2,1,Living End,Prowess
+12853160,2026-08-26,C32,Challenge,QF,VampireDiaries,2283377,frekinsmart,2873371,2,1,WG,Mono-Green Eldrazi
+12853160,2026-08-26,C32,Challenge,QF,cgouldner,1387059,MercurialChemister,2839061,2,0,Jeskai Energy,Domain Zoo
+12853160,2026-08-26,C32,Challenge,SF,jussupinator,880239,RNicoF,2753736,2,0,Goryo's Vengeance,Living End
+12853160,2026-08-26,C32,Challenge,SF,cgouldner,1387059,VampireDiaries,2283377,2,0,Jeskai Energy,WG
+12853160,2026-08-26,C32,Challenge,F,jussupinator,880239,cgouldner,1387059,2,0,Goryo's Vengeance,Jeskai Energy

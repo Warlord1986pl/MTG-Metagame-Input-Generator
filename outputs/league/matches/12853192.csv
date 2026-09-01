@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853192,2026-08-29,C64,Challenge,QF,oosunq,1155358,IrIWANG,2920490,2,0,Goryo's Vengeance,NEEDS_MANUAL_REVIEW
+12853192,2026-08-29,C64,Challenge,QF,therock988,494270,bunnyfat,315547,2,0,Affinity,Broodscale Combo
+12853192,2026-08-29,C64,Challenge,QF,AzNsOuL,603790,Pleyboy,2822464,2,1,NEEDS_MANUAL_REVIEW,Domain Zoo
+12853192,2026-08-29,C64,Challenge,QF,elvin7,659635,Darthkid,2001916,2,0,NEEDS_MANUAL_REVIEW,Mono-Green Eldrazi
+12853192,2026-08-29,C64,Challenge,SF,elvin7,659635,therock988,494270,2,1,NEEDS_MANUAL_REVIEW,Affinity
+12853192,2026-08-29,C64,Challenge,SF,oosunq,1155358,AzNsOuL,603790,2,1,Goryo's Vengeance,NEEDS_MANUAL_REVIEW
+12853192,2026-08-29,C64,Challenge,F,elvin7,659635,oosunq,1155358,2,0,NEEDS_MANUAL_REVIEW,Goryo's Vengeance

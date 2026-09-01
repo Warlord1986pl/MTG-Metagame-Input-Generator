@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852769,2026-08-25,C32,Challenge,QF,morris,1198783,Xsper,3056706,2,1,Sultai Ritual,Prowess
+12852769,2026-08-25,C32,Challenge,QF,AzureMoon,3158693,connormc02,1221790,2,0,Living End,Goryo's Vengeance
+12852769,2026-08-25,C32,Challenge,QF,rastaf,254536,Bugsy69,2537822,2,1,Esper Blink,4c HollowOne
+12852769,2026-08-25,C32,Challenge,QF,MeninoNey,2903591,EthanBird,2658587,2,0,Living End,Prowess
+12852769,2026-08-25,C32,Challenge,SF,MeninoNey,2903591,rastaf,254536,2,0,Living End,Esper Blink
+12852769,2026-08-25,C32,Challenge,SF,AzureMoon,3158693,morris,1198783,2,0,Living End,Sultai Ritual
+12852769,2026-08-25,C32,Challenge,F,MeninoNey,2903591,AzureMoon,3158693,2,0,Living End,Living End

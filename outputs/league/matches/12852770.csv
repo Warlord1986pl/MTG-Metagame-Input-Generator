@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852770,2026-08-25,C16,Challenge,QF,ejk,1952341,ReservoirMog,3481307,2,0,Affinity,Neobrand
+12852770,2026-08-25,C16,Challenge,QF,TomBombadi1,2607787,meanfannypack,1703735,2,1,Broodscale Combo,Esper Blink
+12852770,2026-08-25,C16,Challenge,QF,Lightspirit,3222070,GreyChroma,3321836,2,1,Eldrazi Ramp,Kethis Combo
+12852770,2026-08-25,C16,Challenge,QF,toondoslav,1712831,JPA93,1181017,2,1,Esper Blink,Neobrand
+12852770,2026-08-25,C16,Challenge,SF,toondoslav,1712831,ejk,1952341,2,1,Esper Blink,Affinity
+12852770,2026-08-25,C16,Challenge,SF,Lightspirit,3222070,TomBombadi1,2607787,2,1,Eldrazi Ramp,Broodscale Combo
+12852770,2026-08-25,C16,Challenge,F,Lightspirit,3222070,toondoslav,1712831,2,0,Eldrazi Ramp,Esper Blink

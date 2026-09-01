@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853187,2026-08-29,C16,Challenge,QF,Marmotte_Lambda,3123572,oskiyaa,1111702,2,1,4c HollowOne,Neobrand
+12853187,2026-08-29,C16,Challenge,QF,AoKashikosa,3415154,stefansson30952,3405508,2,0,Simic Tron,Eldrazi Ramp
+12853187,2026-08-29,C16,Challenge,QF,VizosMTG,3474034,felider,2322146,2,0,Esper Blink,Goryo's Vengeance
+12853187,2026-08-29,C16,Challenge,QF,Silk_lobelia,1730432,medvedev,741295,2,0,Prowess,Esper Blink
+12853187,2026-08-29,C16,Challenge,SF,Silk_lobelia,1730432,Marmotte_Lambda,3123572,2,0,Prowess,4c HollowOne
+12853187,2026-08-29,C16,Challenge,SF,AoKashikosa,3415154,VizosMTG,3474034,2,1,Simic Tron,Esper Blink
+12853187,2026-08-29,C16,Challenge,F,Silk_lobelia,1730432,AoKashikosa,3415154,2,1,Prowess,Simic Tron

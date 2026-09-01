@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852760,2026-08-24,C64,Challenge,QF,skullcrobatjoker,3104275,Dioferreira,1950164,2,0,Affinity,Esper Blink
+12852760,2026-08-24,C64,Challenge,QF,MyrRetriever,3006274,Hazzrd,1695657,2,1,Broodscale Combo,Broodscale Combo
+12852760,2026-08-24,C64,Challenge,QF,gazmon48,1636994,ETBJezus,3040474,2,0,Esper Blink,Dimir Midrange
+12852760,2026-08-24,C64,Challenge,QF,Savior0117,2464763,C_S_W____,485263,2,1,Belcher,Dimir Midrange
+12852760,2026-08-24,C64,Challenge,SF,skullcrobatjoker,3104275,MyrRetriever,3006274,2,0,Affinity,Broodscale Combo
+12852760,2026-08-24,C64,Challenge,SF,Savior0117,2464763,gazmon48,1636994,2,1,Belcher,Esper Blink
+12852760,2026-08-24,C64,Challenge,F,skullcrobatjoker,3104275,Savior0117,2464763,1,0,Affinity,Belcher

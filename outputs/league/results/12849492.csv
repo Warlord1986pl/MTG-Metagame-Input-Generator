@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12849492,2026-08-03,C96,Challenge,DskBayWolf,3220713,1,Goryo's Vengeance,5,8,18,0.59167,0.61905,0.53273
-12849492,2026-08-03,C96,Challenge,oosunq,1155358,2,Goryo's Vengeance,4,6,18,0.71354,0.68421,0.59480
-12849492,2026-08-03,C96,Challenge,sokos13,486439,3,Esper Blink,3,2,21,0.64063,0.75000,0.57723
-12849492,2026-08-03,C96,Challenge,reidq7,3155916,4,Amulet Titan,3,4,21,0.61979,0.68182,0.56981
-12849492,2026-08-03,C96,Challenge,MayoDominaria,1112102,5,Boros Energy,2,1,21,0.66667,0.68182,0.57722
-12849492,2026-08-03,C96,Challenge,Alico,2640770,6,Grixis Reanimator,2,3,21,0.63170,0.65217,0.58959
-12849492,2026-08-03,C96,Challenge,ipadkid,3560747,7,Dimir Midrange,2,5,21,0.61979,0.68182,0.56750
-12849492,2026-08-03,C96,Challenge,Gerschi,1084298,8,WBRG,2,7,18,0.63170,0.65000,0.60023
-12849492,2026-08-03,C96,Challenge,Lightspirit,3222070,9,Eldrazi Ramp,1,9,18,0.57604,0.76471,0.52480
-12849492,2026-08-03,C96,Challenge,Laplasjan,1706283,10,Devoted Combo,1,10,18,0.56399,0.70000,0.53820
-12849492,2026-08-03,C96,Challenge,JPA93,1181017,11,Grixis Reanimator,1,11,18,0.54836,0.61905,0.54705
-12849492,2026-08-03,C96,Challenge,Pallocchia314,3489335,12,Broodscale Combo,1,12,18,0.53646,0.57143,0.52006
-12849492,2026-08-03,C96,Challenge,SpikeCHEN,3003086,13,Boros Energy,1,13,18,0.52917,0.65000,0.51892
-12849492,2026-08-03,C96,Challenge,Omegauo,30930,14,Esper Blink,1,14,18,0.52753,0.63636,0.51152
-12849492,2026-08-03,C96,Challenge,justFeather,2446403,15,Mono-Green Eldrazi,1,15,18,0.52604,0.61905,0.52719
-12849492,2026-08-03,C96,Challenge,JakeTMS,2931233,16,Jeskai Control,1,16,18,0.52083,0.63158,0.52125
-12849492,2026-08-03,C96,Challenge,xl_snapcaster,2232658,17,Jeskai Energy,0,17,18,0.48021,0.59091,0.49845
-12849492,2026-08-03,C96,Challenge,gooplay1,943285,18,UW Control,0,18,18,0.44420,0.65000,0.48406
-12849492,2026-08-03,C96,Challenge,Nunoboo,2702587,19,Mono-Green Eldrazi,0,19,15,0.68229,0.58824,0.58089
-12849492,2026-08-03,C96,Challenge,Deucebuckbuck,2796618,20,Boros Energy,0,20,15,0.65774,0.61905,0.58166
-12849492,2026-08-03,C96,Challenge,therock988,494270,21,Prowess,0,21,15,0.62292,0.60000,0.55217
-12849492,2026-08-03,C96,Challenge,hugofreitas1,1997683,22,Ruby Storm,0,22,15,0.60417,0.63158,0.55224
-12849492,2026-08-03,C96,Challenge,Mikebrav,726347,23,Boros Energy,0,23,15,0.59688,0.60000,0.52798
-12849492,2026-08-03,C96,Challenge,Mtyrant,3023075,24,WUBG,0,24,15,0.58854,0.60000,0.54062
-12849492,2026-08-03,C96,Challenge,Ticky13,2520941,25,Esper Reanimator,0,25,15,0.58482,0.52632,0.55022
-12849492,2026-08-03,C96,Challenge,Rvng,649380,26,Goryo's Vengeance,0,26,15,0.56250,0.63158,0.54217
-12849492,2026-08-03,C96,Challenge,Zuin,3517246,27,Goryo's Vengeance,0,27,15,0.55729,0.55556,0.52093
-12849492,2026-08-03,C96,Challenge,Fransadness,3143623,28,Goryo's Vengeance,0,28,15,0.55521,0.61905,0.52220
-12849492,2026-08-03,C96,Challenge,Aced5,10594,29,Boros Energy,0,29,15,0.55208,0.52632,0.52244
-12849492,2026-08-03,C96,Challenge,Efgan3,2188922,30,Boros Energy,0,30,15,0.54688,0.50000,0.55349
-12849492,2026-08-03,C96,Challenge,Capitano_CL,535716,31,Goryo's Vengeance,0,31,15,0.54479,0.60000,0.51051
-12849492,2026-08-03,C96,Challenge,mommydom_manifesto,3227644,32,Song of Creation,0,32,15,0.53646,0.54545,0.49470
+12849492,2026-08-03,C96,Challenge,DskBayWolf,3220713,1,Goryo's Vengeance,5,,,,,
+12849492,2026-08-03,C96,Challenge,oosunq,1155358,2,Goryo's Vengeance,4,,,,,
+12849492,2026-08-03,C96,Challenge,sokos13,486439,3,Esper Blink,3,,,,,
+12849492,2026-08-03,C96,Challenge,reidq7,3155916,4,Amulet Titan,3,,,,,
+12849492,2026-08-03,C96,Challenge,MayoDominaria,1112102,5,Boros Energy,2,,,,,
+12849492,2026-08-03,C96,Challenge,Alico,2640770,6,Grixis Reanimator,2,,,,,
+12849492,2026-08-03,C96,Challenge,ipadkid,3560747,7,Dimir Midrange,2,,,,,
+12849492,2026-08-03,C96,Challenge,Gerschi,1084298,8,WBRG,2,,,,,
+12849492,2026-08-03,C96,Challenge,Lightspirit,3222070,9,Eldrazi Ramp,1,,,,,
+12849492,2026-08-03,C96,Challenge,Laplasjan,1706283,10,Devoted Combo,1,,,,,
+12849492,2026-08-03,C96,Challenge,JPA93,1181017,11,Grixis Reanimator,1,,,,,
+12849492,2026-08-03,C96,Challenge,Pallocchia314,3489335,12,Broodscale Combo,1,,,,,
+12849492,2026-08-03,C96,Challenge,SpikeCHEN,3003086,13,Boros Energy,1,,,,,
+12849492,2026-08-03,C96,Challenge,Omegauo,30930,14,Esper Blink,1,,,,,
+12849492,2026-08-03,C96,Challenge,justFeather,2446403,15,Mono-Green Eldrazi,1,,,,,
+12849492,2026-08-03,C96,Challenge,JakeTMS,2931233,16,Jeskai Control,1,,,,,
+12849492,2026-08-03,C96,Challenge,xl_snapcaster,2232658,17,Jeskai Energy,0,,,,,
+12849492,2026-08-03,C96,Challenge,gooplay1,943285,18,UW Control,0,,,,,
+12849492,2026-08-03,C96,Challenge,Nunoboo,2702587,19,Mono-Green Eldrazi,0,,,,,
+12849492,2026-08-03,C96,Challenge,Deucebuckbuck,2796618,20,Boros Energy,0,,,,,
+12849492,2026-08-03,C96,Challenge,therock988,494270,21,Prowess,0,,,,,
+12849492,2026-08-03,C96,Challenge,hugofreitas1,1997683,22,Ruby Storm,0,,,,,
+12849492,2026-08-03,C96,Challenge,Mikebrav,726347,23,Boros Energy,0,,,,,
+12849492,2026-08-03,C96,Challenge,Mtyrant,3023075,24,WUBG,0,,,,,
+12849492,2026-08-03,C96,Challenge,Ticky13,2520941,25,Esper Reanimator,0,,,,,
+12849492,2026-08-03,C96,Challenge,Rvng,649380,26,Goryo's Vengeance,0,,,,,
+12849492,2026-08-03,C96,Challenge,Zuin,3517246,27,Goryo's Vengeance,0,,,,,
+12849492,2026-08-03,C96,Challenge,Fransadness,3143623,28,Goryo's Vengeance,0,,,,,
+12849492,2026-08-03,C96,Challenge,Aced5,10594,29,Boros Energy,0,,,,,
+12849492,2026-08-03,C96,Challenge,Efgan3,2188922,30,Boros Energy,0,,,,,
+12849492,2026-08-03,C96,Challenge,Capitano_CL,535716,31,Goryo's Vengeance,0,,,,,
+12849492,2026-08-03,C96,Challenge,mommydom_manifesto,3227644,32,Song of Creation,0,,,,,

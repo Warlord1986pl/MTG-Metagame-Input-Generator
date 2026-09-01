@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12848206,2026-07-25,C64,Challenge,pete2fiddy,2942810,1,Amulet Titan,5,5,18,0.57823,0.76471,0.52699
-12848206,2026-07-25,C64,Challenge,StormQrow,1928132,2,Mono-Green Eldrazi,4,7,18,0.55102,0.76471,0.51894
-12848206,2026-07-25,C64,Challenge,1OR513N86,614372,3,Dimir Midrange,3,1,18,0.66939,0.70588,0.59572
-12848206,2026-07-25,C64,Challenge,Stanners,2895362,4,4c HollowOne,3,6,18,0.57143,0.63158,0.52673
-12848206,2026-07-25,C64,Challenge,Terribad,850543,5,BRG,2,2,18,0.61905,0.70588,0.55838
-12848206,2026-07-25,C64,Challenge,UnbanOko,3044837,6,Belcher,2,3,18,0.60885,0.72222,0.56001
-12848206,2026-07-25,C64,Challenge,levunga21,494936,7,Song of Creation,2,4,18,0.57823,0.86667,0.51037
-12848206,2026-07-25,C64,Challenge,Kritik,2707200,8,Land Destruction,2,8,15,0.64898,0.66667,0.57769
-12848206,2026-07-25,C64,Challenge,filib,2628697,9,Neobrand,1,9,15,0.63945,0.64706,0.56577
-12848206,2026-07-25,C64,Challenge,Stefan_Magic,3392976,10,Belcher,1,10,15,0.63265,0.52632,0.63502
-12848206,2026-07-25,C64,Challenge,JPA93,1181017,11,Neobrand,1,11,15,0.60544,0.57895,0.55430
-12848206,2026-07-25,C64,Challenge,NathanOfTheGiltLeaf,2968680,12,Prowess,1,12,15,0.59864,0.66667,0.58031
-12848206,2026-07-25,C64,Challenge,Ale_Mtg,2683189,13,Mono-Green Eldrazi,1,13,15,0.57823,0.64706,0.53492
-12848206,2026-07-25,C64,Challenge,pepeteam,2272105,14,Goryo's Vengeance,1,14,15,0.56463,0.57895,0.53857
-12848206,2026-07-25,C64,Challenge,TheMeatMan,2901409,15,Yawgmoth,1,15,15,0.54422,0.66667,0.53610
-12848206,2026-07-25,C64,Challenge,heredia593,2971712,16,Land Destruction,1,16,15,0.51973,0.61111,0.52087
-12848206,2026-07-25,C64,Challenge,TheeMacSheezy,3144001,17,Broodscale Combo,0,17,15,0.51360,0.63158,0.49162
-12848206,2026-07-25,C64,Challenge,yriel,2537131,18,Esper Blink,0,18,15,0.51020,0.63158,0.48416
-12848206,2026-07-25,C64,Challenge,_must_be_nice,1252777,19,Broodscale Combo,0,19,15,0.50612,0.61111,0.49979
-12848206,2026-07-25,C64,Challenge,Rainwalker83,2406137,20,Boros Energy,0,20,15,0.44898,0.61111,0.43908
-12848206,2026-07-25,C64,Challenge,TheColorOfBoom,3359144,21,Boros Energy,0,21,12,0.71429,0.55556,0.60716
-12848206,2026-07-25,C64,Challenge,D00mwake,1226387,22,4c HollowOne,0,22,12,0.61905,0.55556,0.56696
-12848206,2026-07-25,C64,Challenge,C_Eastwood,3098269,23,Mono-Green Eldrazi,0,23,12,0.59864,0.56250,0.54314
-12848206,2026-07-25,C64,Challenge,B-Carp,1677693,24,Ruby Storm,0,24,12,0.59864,0.52632,0.55991
-12848206,2026-07-25,C64,Challenge,Tinker_deck,2981803,25,Eldrazi Tron,0,25,12,0.58844,0.52941,0.55799
-12848206,2026-07-25,C64,Challenge,Dydyk95,2940494,26,Mono-Green Eldrazi,0,26,12,0.56803,0.52941,0.56866
-12848206,2026-07-25,C64,Challenge,wallofspikes,774962,27,Broodscale Combo,0,27,12,0.55782,0.56250,0.54201
-12848206,2026-07-25,C64,Challenge,Jumba,2618500,28,Eldrazi Tron,0,28,12,0.55442,0.50000,0.52655
-12848206,2026-07-25,C64,Challenge,oolong-chan,2334410,29,Land Destruction,0,29,12,0.54365,0.56250,0.50216
-12848206,2026-07-25,C64,Challenge,TerminalJustice,1785831,30,Boros Energy,0,30,12,0.53401,0.52632,0.51139
-12848206,2026-07-25,C64,Challenge,BressD1,1940271,31,Dimir Midrange,0,31,12,0.53333,0.55556,0.49972
-12848206,2026-07-25,C64,Challenge,Thomas_Sankara,3548939,32,Domain Zoo,0,32,12,0.52698,0.43750,0.49943
+12848206,2026-07-25,C64,Challenge,pete2fiddy,2942810,1,Amulet Titan,5,,,,,
+12848206,2026-07-25,C64,Challenge,StormQrow,1928132,2,Mono-Green Eldrazi,4,,,,,
+12848206,2026-07-25,C64,Challenge,1OR513N86,614372,3,Dimir Midrange,3,,,,,
+12848206,2026-07-25,C64,Challenge,Stanners,2895362,4,4c HollowOne,3,,,,,
+12848206,2026-07-25,C64,Challenge,Terribad,850543,5,BRG,2,,,,,
+12848206,2026-07-25,C64,Challenge,UnbanOko,3044837,6,Belcher,2,,,,,
+12848206,2026-07-25,C64,Challenge,levunga21,494936,7,Song of Creation,2,,,,,
+12848206,2026-07-25,C64,Challenge,Kritik,2707200,8,Land Destruction,2,,,,,
+12848206,2026-07-25,C64,Challenge,filib,2628697,9,Neobrand,1,,,,,
+12848206,2026-07-25,C64,Challenge,Stefan_Magic,3392976,10,Belcher,1,,,,,
+12848206,2026-07-25,C64,Challenge,JPA93,1181017,11,Neobrand,1,,,,,
+12848206,2026-07-25,C64,Challenge,NathanOfTheGiltLeaf,2968680,12,Prowess,1,,,,,
+12848206,2026-07-25,C64,Challenge,Ale_Mtg,2683189,13,Mono-Green Eldrazi,1,,,,,
+12848206,2026-07-25,C64,Challenge,pepeteam,2272105,14,Goryo's Vengeance,1,,,,,
+12848206,2026-07-25,C64,Challenge,TheMeatMan,2901409,15,Yawgmoth,1,,,,,
+12848206,2026-07-25,C64,Challenge,heredia593,2971712,16,Land Destruction,1,,,,,
+12848206,2026-07-25,C64,Challenge,TheeMacSheezy,3144001,17,Broodscale Combo,0,,,,,
+12848206,2026-07-25,C64,Challenge,yriel,2537131,18,Esper Blink,0,,,,,
+12848206,2026-07-25,C64,Challenge,_must_be_nice,1252777,19,Broodscale Combo,0,,,,,
+12848206,2026-07-25,C64,Challenge,Rainwalker83,2406137,20,Boros Energy,0,,,,,
+12848206,2026-07-25,C64,Challenge,TheColorOfBoom,3359144,21,Boros Energy,0,,,,,
+12848206,2026-07-25,C64,Challenge,D00mwake,1226387,22,4c HollowOne,0,,,,,
+12848206,2026-07-25,C64,Challenge,C_Eastwood,3098269,23,Mono-Green Eldrazi,0,,,,,
+12848206,2026-07-25,C64,Challenge,B-Carp,1677693,24,Ruby Storm,0,,,,,
+12848206,2026-07-25,C64,Challenge,Tinker_deck,2981803,25,Eldrazi Tron,0,,,,,
+12848206,2026-07-25,C64,Challenge,Dydyk95,2940494,26,Mono-Green Eldrazi,0,,,,,
+12848206,2026-07-25,C64,Challenge,wallofspikes,774962,27,Broodscale Combo,0,,,,,
+12848206,2026-07-25,C64,Challenge,Jumba,2618500,28,Eldrazi Tron,0,,,,,
+12848206,2026-07-25,C64,Challenge,oolong-chan,2334410,29,Land Destruction,0,,,,,
+12848206,2026-07-25,C64,Challenge,TerminalJustice,1785831,30,Boros Energy,0,,,,,
+12848206,2026-07-25,C64,Challenge,BressD1,1940271,31,Dimir Midrange,0,,,,,
+12848206,2026-07-25,C64,Challenge,Thomas_Sankara,3548939,32,Domain Zoo,0,,,,,

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852736,2026-08-22,C64,Challenge,QF,MercurialChemister,2839061,LucasG1ggs,750888,2,1,Domain Zoo,Affinity
+12852736,2026-08-22,C64,Challenge,QF,ipadkid,3560747,DrewEldon,1710517,2,0,Grixis Control,Dimir Midrange
+12852736,2026-08-22,C64,Challenge,QF,Willthepill,999039,KingHairy,2185747,2,1,Esper Blink,Goryo's Vengeance
+12852736,2026-08-22,C64,Challenge,QF,Kalipapas,3087728,Tinker_deck,2981803,2,0,Mono-Green Eldrazi,Eldrazi Tron
+12852736,2026-08-22,C64,Challenge,SF,Kalipapas,3087728,MercurialChemister,2839061,2,0,Mono-Green Eldrazi,Domain Zoo
+12852736,2026-08-22,C64,Challenge,SF,Willthepill,999039,ipadkid,3560747,2,0,Esper Blink,Grixis Control
+12852736,2026-08-22,C64,Challenge,F,Willthepill,999039,Kalipapas,3087728,2,0,Esper Blink,Mono-Green Eldrazi

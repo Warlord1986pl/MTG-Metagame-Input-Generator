@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852776,2026-08-25,C64,Challenge,QF,StormQrow,1928132,ziofrancone,2676196,1,0,Esper Blink,Broodscale Combo
+12852776,2026-08-25,C64,Challenge,QF,fazparte,3106246,Anemu,1074022,2,1,Jeskai Energy,Prowess
+12852776,2026-08-25,C64,Challenge,QF,Dydyk95,2940494,shindy,1237388,2,1,Devoted Combo,Land Destruction
+12852776,2026-08-25,C64,Challenge,QF,SorryImSoTilted,3074961,ETBJezus,3040474,2,0,Esper Blink,Dimir Midrange
+12852776,2026-08-25,C64,Challenge,SF,Dydyk95,2940494,fazparte,3106246,2,1,Devoted Combo,Jeskai Energy
+12852776,2026-08-25,C64,Challenge,SF,StormQrow,1928132,SorryImSoTilted,3074961,2,1,Esper Blink,Esper Blink
+12852776,2026-08-25,C64,Challenge,F,Dydyk95,2940494,StormQrow,1928132,2,0,Devoted Combo,Esper Blink

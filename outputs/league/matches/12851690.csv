@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12851690,2026-08-17,C96,Challenge,QF,ShadowTitan1,2130633,arturcosta,2887338,2,1,WUR,Prowess
+12851690,2026-08-17,C96,Challenge,QF,Rvng,649380,Thunus,3076886,2,0,Goryo's Vengeance,Devoted Combo
+12851690,2026-08-17,C96,Challenge,QF,Nowayh,2714019,EpicWalrus,2287212,2,0,Devoted Combo,Goryo's Vengeance
+12851690,2026-08-17,C96,Challenge,QF,bcs8995,1824707,kthanakit26,2122697,2,1,Goryo's Vengeance,Land Destruction
+12851690,2026-08-17,C96,Challenge,SF,Rvng,649380,bcs8995,1824707,2,1,Goryo's Vengeance,Goryo's Vengeance
+12851690,2026-08-17,C96,Challenge,SF,Nowayh,2714019,ShadowTitan1,2130633,2,1,Devoted Combo,WUR
+12851690,2026-08-17,C96,Challenge,F,Rvng,649380,Nowayh,2714019,2,0,Goryo's Vengeance,Devoted Combo

@@ -9303,67 +9303,899 @@
 2026-08-15,Modern,64,64,challenge_C64_2026-08-15_12851665_decklist,12851665,30,Land Destruction,Control,wallofspikes,774962
 2026-08-15,Modern,64,64,challenge_C64_2026-08-15_12851665_decklist,12851665,31,Neobrand,Combo,MonstrousRage,3468061
 2026-08-15,Modern,64,64,challenge_C64_2026-08-15_12851665_decklist,12851665,32,Goryo's Vengeance,Graveyard,TheRightStuff,2315424
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,1,Belcher,Combo,E90_DeliveryBoy,3122660
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,2,Living End,Graveyard,niuwaid001,2372533
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,3,Eldrazi Tron,Ramp,benbot9003,1572878
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,4,UW Control,Control,eclipse4343,2714224
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,5,Goryo's Vengeance,Graveyard,jussupinator,880239
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,6,Eldrazi Ramp,Ramp,manohito,2908947
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,7,Prowess,Aggro,emairi,2984489
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,8,Dimir Midrange,Midrange,DrewEldon,1710517
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,9,Prowess,Aggro,Grogore,2664302
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,10,Dimir Midrange,Midrange,oinkmage22,2858193
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,11,Neobrand,Combo,UninspiredMehjagic,3050754
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,12,Esper Blink,Blink,Marvin_Dalkiri,1516253
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,13,Prowess,Aggro,mechrataal,1938190
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,14,Broodscale Combo,Combo,NerdDadChad,2993160
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,15,Broodscale Combo,Combo,MyrRetriever,3006274
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,16,Ruby Storm,Combo,WanderingOnes,840020
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,17,Devoted Combo,Combo,416FrowningTable,2397690
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,18,Domain Zoo,Midrange,KingOfGames1522,2831734
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,19,Boros Energy,Aggro,Rapgod,3163526
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,20,Grixis Midrange,Midrange,ipadkid,3560747
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,21,Goryo's Vengeance,Graveyard,BENTO_,3458153
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,22,4c Control,Control,SteveKnack,2568591
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,23,Mono-Black Midrange,Midrange,Selfeisek,2042214
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,24,Mono-Green Eldrazi,Ramp,amin0e,3107576
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,25,Broodscale Combo,Combo,praiseseigerhino,2723741
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,26,Prowess,Aggro,Marlin583,3350667
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,27,Dimir Midrange,Midrange,DLCabelo,516055
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,28,Affinity,Aggro,_Stream,1540808
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,29,Neobrand,Combo,RED-King,3519050
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,30,Prowess,Aggro,KnightOfSuri,2797068
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,31,Neobrand,Combo,frekinsmart,2873371
-2026-08-16,Modern,64,79,challenge_C64_2026-08-16_12851672_decklist,12851672,32,Yawgmoth,Midrange,MacIsaac,3233450
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,1,4c HollowOne,Graveyard,Xenowan,2614008
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,2,Esper Blink,Blink,thodoris17,2119308
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,3,Domain Zoo,Midrange,ryuumei,933670
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,4,Esper Blink,Blink,JahBoodle,3150061
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,5,Mono-Black Midrange,Midrange,SanPop,2621451
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,6,Esper Blink,Blink,acelerado440,3358375
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,7,Sultai Ritual,Midrange,STURSY,3273156
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,8,Grixis Reanimator,Graveyard,yolad,3342362
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,9,Mono-Black Midrange,Midrange,UltraEgo_,3105602
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,10,Broodscale Combo,Combo,Cheeesy,2950421
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,11,Azorius Control,Control,bobthedog,5694
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,12,Esper Blink,Blink,JuanmaAT,2695862
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,13,Prowess,Aggro,bestdraveneu,3569566
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,14,Goryo's Vengeance,Graveyard,VampireDiaries,2283377
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,15,Dimir Midrange,Midrange,ipadkid,3560747
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,16,Mono-Green Eldrazi,Ramp,CNewman,1715380
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,17,Boros Energy,Aggro,ManuMasters,2625537
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,18,UW Loki,Control,Radziolot,2416526
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,19,Dimir Midrange,Midrange,Mazun0,3132608
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,20,Goryo's Vengeance,Graveyard,optivial,3140486
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,21,Ruby Storm,Combo,Erik157751,2578127
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,22,Affinity,Aggro,Habitante_do_Escuro,3412574
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,23,Eldrazi Tron,Ramp,Scappie,1129308
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,24,Esper Blink,Blink,etazazer,2242008
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,25,Esper Blink,Blink,_Falcon_,2498069
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,26,Living End,Graveyard,Sorathrix,2705240
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,27,Goryo's Vengeance,Graveyard,Deathmaxx,2995055
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,28,Ruby Storm,Combo,WanderingOnes,840020
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,29,Goryo's Vengeance,Graveyard,Sifui,3073951
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,30,Jeskai Energy,Aggro,_Batutinha_,453404
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,31,4c HollowOne,Graveyard,Ardonas,1040296
-2026-08-16,Modern,64,71,challenge_C64_2026-08-16_12851676_decklist,12851676,32,Boros Energy,Aggro,MayoDominaria,1112102
+2026-08-30,modern,64,72,modern-challenge-64,12853202,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,SanPop,2621451
+2026-08-30,modern,64,72,modern-challenge-64,12853202,2,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,wraaith,2911801
+2026-08-30,modern,64,72,modern-challenge-64,12853202,3,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Bayesta_93,759973
+2026-08-30,modern,64,72,modern-challenge-64,12853202,4,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-30,modern,64,72,modern-challenge-64,12853202,5,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,innaig88,2143659
+2026-08-30,modern,64,72,modern-challenge-64,12853202,6,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,caronte1991,2265267
+2026-08-30,modern,64,72,modern-challenge-64,12853202,7,Broodscale Combo,Combo,unagieel,815932
+2026-08-30,modern,64,72,modern-challenge-64,12853202,8,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,SizzleSkeleton,2901097
+2026-08-30,modern,64,72,modern-challenge-64,12853202,9,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,wutey,2916560
+2026-08-30,modern,64,72,modern-challenge-64,12853202,10,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Taddy_99,3412001
+2026-08-30,modern,64,72,modern-challenge-64,12853202,11,Land Destruction,Control,Zompatanfo,3018543
+2026-08-30,modern,64,72,modern-challenge-64,12853202,12,Tron,Ramp,narca,2776772
+2026-08-30,modern,64,72,modern-challenge-64,12853202,13,Prowess,Aggro,ratabruta,2693418
+2026-08-30,modern,64,72,modern-challenge-64,12853202,14,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,tibalt_of_red_sub,1071904
+2026-08-30,modern,64,72,modern-challenge-64,12853202,15,Esper Blink,Blink,mh7lucky,2941952
+2026-08-30,modern,64,72,modern-challenge-64,12853202,16,Esper Blink,Blink,acelerado440,3358375
+2026-08-30,modern,64,72,modern-challenge-64,12853202,17,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Traumatismes,2865888
+2026-08-30,modern,64,72,modern-challenge-64,12853202,18,Goryo's Vengeance,Graveyard,Laplasjan,1706283
+2026-08-30,modern,64,72,modern-challenge-64,12853202,19,Esper Blink,Blink,yriel,2537131
+2026-08-30,modern,64,72,modern-challenge-64,12853202,20,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Sorathrix,2705240
+2026-08-30,modern,64,72,modern-challenge-64,12853202,21,Eldrazi Tron,Ramp,_Falcon_,2498069
+2026-08-30,modern,64,72,modern-challenge-64,12853202,22,Prowess,Aggro,Marvelman123,2802384
+2026-08-30,modern,64,72,modern-challenge-64,12853202,23,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,mtbWolf,2192378
+2026-08-30,modern,64,72,modern-challenge-64,12853202,24,Esper Blink,Blink,Venom01,3535587
+2026-08-30,modern,64,72,modern-challenge-64,12853202,25,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,AeonLock,3469304
+2026-08-30,modern,64,72,modern-challenge-64,12853202,26,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,albert62,1574579
+2026-08-30,modern,64,72,modern-challenge-64,12853202,27,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Flamie_Oliver,2885656
+2026-08-30,modern,64,72,modern-challenge-64,12853202,28,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,PhyrexianSwarm,3553954
+2026-08-30,modern,64,72,modern-challenge-64,12853202,29,Goryo's Vengeance,Graveyard,_Tia93_,1216580
+2026-08-30,modern,64,72,modern-challenge-64,12853202,30,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,WanderingOnes,840020
+2026-08-30,modern,64,72,modern-challenge-64,12853202,31,Prowess,Aggro,Sandstorm87,2727413
+2026-08-30,modern,64,72,modern-challenge-64,12853202,32,Ruby Storm,Combo,Gobeli,476651
+2026-08-30,modern,64,73,modern-challenge-64,12853197,1,5c Midrange,Midrange,TingInTheRice,2877542
+2026-08-30,modern,64,73,modern-challenge-64,12853197,2,Broodscale Combo,Combo,HelpfulHobo,2063678
+2026-08-30,modern,64,73,modern-challenge-64,12853197,3,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-30,modern,64,73,modern-challenge-64,12853197,4,Yawgmoth,Midrange,PETRICHOR21,2769869
+2026-08-30,modern,64,73,modern-challenge-64,12853197,5,Goryo's Vengeance,Graveyard,jussupinator,880239
+2026-08-30,modern,64,73,modern-challenge-64,12853197,6,Goryo's Vengeance,Graveyard,Rexplosion,1860596
+2026-08-30,modern,64,73,modern-challenge-64,12853197,7,Domain Zoo,Midrange,KingOfGames1522,2831734
+2026-08-30,modern,64,73,modern-challenge-64,12853197,8,4c HollowOne,Graveyard,HolaChico,3485421
+2026-08-30,modern,64,73,modern-challenge-64,12853197,9,The Rock,Midrange,werhsdnas1414,3149897
+2026-08-30,modern,64,73,modern-challenge-64,12853197,10,Dimir Control,Control,WaffleWiz,3254787
+2026-08-30,modern,64,73,modern-challenge-64,12853197,11,Tron,Ramp,UninspiredMehjagic,3050754
+2026-08-30,modern,64,73,modern-challenge-64,12853197,12,Dimir Midrange,Midrange,nick4567,2757041
+2026-08-30,modern,64,73,modern-challenge-64,12853197,13,4c HollowOne,Graveyard,otakkun,1970928
+2026-08-30,modern,64,73,modern-challenge-64,12853197,14,Broodscale Combo,Combo,nv_goblin,2147397
+2026-08-30,modern,64,73,modern-challenge-64,12853197,15,Tron,Ramp,weezerologist,3475930
+2026-08-30,modern,64,73,modern-challenge-64,12853197,16,Affinity,Aggro,JV_7777,2045296
+2026-08-30,modern,64,73,modern-challenge-64,12853197,17,Ragavan,Aggro,MacIsaac,3233450
+2026-08-30,modern,64,73,modern-challenge-64,12853197,18,U,Control,AgentP,1088634
+2026-08-30,modern,64,73,modern-challenge-64,12853197,19,Broodscale Combo,Combo,claudio0907,1059076
+2026-08-30,modern,64,73,modern-challenge-64,12853197,20,The Rock,Midrange,Prim3Time,3017502
+2026-08-30,modern,64,73,modern-challenge-64,12853197,21,Goryo's Vengeance,Graveyard,SaradinDR,42325
+2026-08-30,modern,64,73,modern-challenge-64,12853197,22,4c HollowOne,Graveyard,hockeybro26,1067641
+2026-08-30,modern,64,73,modern-challenge-64,12853197,23,Ruby Storm,Combo,Cachorrowo,2720911
+2026-08-30,modern,64,73,modern-challenge-64,12853197,24,Broodscale Combo,Combo,Scorpion100,2872570
+2026-08-30,modern,64,73,modern-challenge-64,12853197,25,Affinity,Aggro,Arcbound_Papi,2137107
+2026-08-30,modern,64,73,modern-challenge-64,12853197,26,Goryo's Vengeance,Graveyard,bkubit,2153835
+2026-08-30,modern,64,73,modern-challenge-64,12853197,27,Living End,Graveyard,WaynePlays,3544508
+2026-08-30,modern,64,73,modern-challenge-64,12853197,28,Amulet Titan,Combo,fijitree,1974088
+2026-08-30,modern,64,73,modern-challenge-64,12853197,29,Boros Burn,Aggro,quinniac,2261440
+2026-08-30,modern,64,73,modern-challenge-64,12853197,30,Esper Blink,Blink,VictorEsquici,3013293
+2026-08-30,modern,64,73,modern-challenge-64,12853197,31,Affinity,Aggro,Shamplade,2976962
+2026-08-30,modern,64,73,modern-challenge-64,12853197,32,Prowess,Aggro,_and_one_,1171245
+2026-08-29,modern,64,72,modern-challenge-64,12853192,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,elvin7,659635
+2026-08-29,modern,64,72,modern-challenge-64,12853192,2,Goryo's Vengeance,Graveyard,oosunq,1155358
+2026-08-29,modern,64,72,modern-challenge-64,12853192,3,Affinity,Aggro,therock988,494270
+2026-08-29,modern,64,72,modern-challenge-64,12853192,4,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,AzNsOuL,603790
+2026-08-29,modern,64,72,modern-challenge-64,12853192,5,Domain Zoo,Midrange,Pleyboy,2822464
+2026-08-29,modern,64,72,modern-challenge-64,12853192,6,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,IrIWANG,2920490
+2026-08-29,modern,64,72,modern-challenge-64,12853192,7,Broodscale Combo,Combo,bunnyfat,315547
+2026-08-29,modern,64,72,modern-challenge-64,12853192,8,Mono-Green Eldrazi,Ramp,Darthkid,2001916
+2026-08-29,modern,64,72,modern-challenge-64,12853192,9,Mono-Green Eldrazi,Ramp,_Batutinha_,453404
+2026-08-29,modern,64,72,modern-challenge-64,12853192,10,Affinity,Aggro,lourice,2069446
+2026-08-29,modern,64,72,modern-challenge-64,12853192,11,Boros Energy,Aggro,Arkany1,2813192
+2026-08-29,modern,64,72,modern-challenge-64,12853192,12,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,joaobelo92,2721329
+2026-08-29,modern,64,72,modern-challenge-64,12853192,13,Affinity,Aggro,Arcbound_Papi,2137107
+2026-08-29,modern,64,72,modern-challenge-64,12853192,14,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,jjcbupt,3413176
+2026-08-29,modern,64,72,modern-challenge-64,12853192,15,Land Destruction,Control,SpockVidaLoka,2898953
+2026-08-29,modern,64,72,modern-challenge-64,12853192,16,Eldrazi Tron,Ramp,bathutubgod,3353750
+2026-08-29,modern,64,72,modern-challenge-64,12853192,17,Broodscale Combo,Combo,Craigpuncher,3511452
+2026-08-29,modern,64,72,modern-challenge-64,12853192,18,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Pafru,3069560
+2026-08-29,modern,64,72,modern-challenge-64,12853192,19,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Devoured,3230515
+2026-08-29,modern,64,72,modern-challenge-64,12853192,20,4c HollowOne,Graveyard,Blinkmoth-Nexus,1174989
+2026-08-29,modern,64,72,modern-challenge-64,12853192,21,Esper Blink,Blink,yriel,2537131
+2026-08-29,modern,64,72,modern-challenge-64,12853192,22,Belcher,Combo,patheus_84,1852645
+2026-08-29,modern,64,72,modern-challenge-64,12853192,23,Prowess,Aggro,Hammond24,1373079
+2026-08-29,modern,64,72,modern-challenge-64,12853192,24,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,hellisreal,3551942
+2026-08-29,modern,64,72,modern-challenge-64,12853192,25,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Smigui,2970592
+2026-08-29,modern,64,72,modern-challenge-64,12853192,26,Mono-Green Eldrazi,Ramp,Zoza,3170981
+2026-08-29,modern,64,72,modern-challenge-64,12853192,27,Living End,Graveyard,MeninoNey,2903591
+2026-08-29,modern,64,72,modern-challenge-64,12853192,28,Goryo's Vengeance,Graveyard,EnisSanchez,3187811
+2026-08-29,modern,64,72,modern-challenge-64,12853192,29,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-29,modern,64,72,modern-challenge-64,12853192,30,Amulet Titan,Combo,Chillbais,3360797
+2026-08-29,modern,64,72,modern-challenge-64,12853192,31,Grixis Reanimator,Graveyard,Alico,2640770
+2026-08-29,modern,64,72,modern-challenge-64,12853192,32,Esper Blink,Blink,Jedgi,1996271
+2026-08-29,modern,16,35,modern-challenge-16,12853187,1,Prowess,Aggro,Silk_lobelia,1730432
+2026-08-29,modern,16,35,modern-challenge-16,12853187,2,Simic Tron,Ramp,AoKashikosa,3415154
+2026-08-29,modern,16,35,modern-challenge-16,12853187,3,Esper Blink,Blink,VizosMTG,3474034
+2026-08-29,modern,16,35,modern-challenge-16,12853187,4,4c HollowOne,Graveyard,Marmotte_Lambda,3123572
+2026-08-29,modern,16,35,modern-challenge-16,12853187,5,Eldrazi Ramp,Ramp,stefansson30952,3405508
+2026-08-29,modern,16,35,modern-challenge-16,12853187,6,Neobrand,Combo,oskiyaa,1111702
+2026-08-29,modern,16,35,modern-challenge-16,12853187,7,Goryo's Vengeance,Graveyard,felider,2322146
+2026-08-29,modern,16,35,modern-challenge-16,12853187,8,Esper Blink,Blink,medvedev,741295
+2026-08-29,modern,16,35,modern-challenge-16,12853187,9,Jeskai Energy,Aggro,_Falcon_,2498069
+2026-08-29,modern,16,35,modern-challenge-16,12853187,10,Prowess,Aggro,imthekiing,639998
+2026-08-29,modern,16,35,modern-challenge-16,12853187,11,Esper Blink,Blink,yriel,2537131
+2026-08-29,modern,16,35,modern-challenge-16,12853187,12,Prowess,Aggro,nahuel10,1942357
+2026-08-29,modern,16,35,modern-challenge-16,12853187,13,WBG,Midrange,-Nausea-,2759230
+2026-08-29,modern,16,35,modern-challenge-16,12853187,14,Boros Energy,Aggro,Dreddybajs,559515
+2026-08-29,modern,16,35,modern-challenge-16,12853187,15,Land Destruction,Control,DYXJ65,3572605
+2026-08-29,modern,16,35,modern-challenge-16,12853187,16,Eldrazi Tron,Ramp,Marvelman123,2802384
+2026-08-29,modern,16,35,modern-challenge-16,12853187,17,Affinity,Aggro,SanPop,2621451
+2026-08-29,modern,16,35,modern-challenge-16,12853187,18,Affinity,Aggro,narcatrashcan,3185952
+2026-08-29,modern,16,35,modern-challenge-16,12853187,19,Goryo's Vengeance,Graveyard,Bayesta_93,759973
+2026-08-29,modern,16,35,modern-challenge-16,12853187,20,Neobrand,Combo,JPA93,1181017
+2026-08-29,modern,16,35,modern-challenge-16,12853187,21,Affinity,Aggro,Mura505,3361215
+2026-08-29,modern,16,35,modern-challenge-16,12853187,22,WBG,Midrange,JV_7777,2045296
+2026-08-29,modern,16,35,modern-challenge-16,12853187,23,WBR,Midrange,morris,1198783
+2026-08-29,modern,16,35,modern-challenge-16,12853187,24,Golgari Basking Broodscale Combo,Combo,Napoleon_I,2807068
+2026-08-29,modern,16,35,modern-challenge-16,12853187,25,WUBRG,Control,albertosd87,3565947
+2026-08-29,modern,16,35,modern-challenge-16,12853187,26,Prowess,Aggro,Lostwanderer,1104991
+2026-08-29,modern,16,35,modern-challenge-16,12853187,27,Tron,Ramp,narca,2776772
+2026-08-29,modern,16,35,modern-challenge-16,12853187,28,Eldrazi Tron,Ramp,416FrowningTable,2397690
+2026-08-29,modern,16,35,modern-challenge-16,12853187,29,Mardu Energy,Aggro,kasiso,2257869
+2026-08-29,modern,16,35,modern-challenge-16,12853187,30,Eldrazi Ramp,Ramp,Manascrew161,3379209
+2026-08-29,modern,16,35,modern-challenge-16,12853187,31,Prowess,Aggro,W_DN,3555364
+2026-08-29,modern,16,35,modern-challenge-16,12853187,32,Orzhov Midrange,Midrange,Gxs3v3n,2861105
+2026-08-29,modern,64,73,modern-challenge-64,12853186,1,Goryo's Vengeance,Graveyard,jussupinator,880239
+2026-08-29,modern,64,73,modern-challenge-64,12853186,2,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-29,modern,64,73,modern-challenge-64,12853186,3,Broodscale Combo,Combo,HelpfulHobo,2063678
+2026-08-29,modern,64,73,modern-challenge-64,12853186,4,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-29,modern,64,73,modern-challenge-64,12853186,5,Esper Blink,Blink,Venom01,3535587
+2026-08-29,modern,64,73,modern-challenge-64,12853186,6,Yawgmoth,Midrange,JustAnotherGuy83,2691811
+2026-08-29,modern,64,73,modern-challenge-64,12853186,7,Esper Blink,Blink,yriel,2537131
+2026-08-29,modern,64,73,modern-challenge-64,12853186,8,Living End,Graveyard,MeninoNey,2903591
+2026-08-29,modern,64,73,modern-challenge-64,12853186,9,Land Destruction,Control,Bagoot,1155448
+2026-08-29,modern,64,73,modern-challenge-64,12853186,10,Domain Zoo,Midrange,Tetsubou,1700365
+2026-08-29,modern,64,73,modern-challenge-64,12853186,11,Neobrand,Combo,E_Kaminuma,2707045
+2026-08-29,modern,64,73,modern-challenge-64,12853186,12,Broodscale Combo,Combo,MyrRetriever,3006274
+2026-08-29,modern,64,73,modern-challenge-64,12853186,13,Jeskai Energy,Aggro,zturchan,476834
+2026-08-29,modern,64,73,modern-challenge-64,12853186,14,Prowess,Aggro,nahuel10,1942357
+2026-08-29,modern,64,73,modern-challenge-64,12853186,15,Mardu Energy,Aggro,kasiso,2257869
+2026-08-29,modern,64,73,modern-challenge-64,12853186,16,Affinity,Aggro,Arcbound_Papi,2137107
+2026-08-29,modern,64,73,modern-challenge-64,12853186,17,Broodscale Combo,Combo,Brazeredo,3449761
+2026-08-29,modern,64,73,modern-challenge-64,12853186,18,Goryo's Vengeance,Graveyard,Asa_Akira,3233479
+2026-08-29,modern,64,73,modern-challenge-64,12853186,19,Broodscale Combo,Combo,JhonnySeJugar,3185788
+2026-08-29,modern,64,73,modern-challenge-64,12853186,20,Prowess,Aggro,qmcgarry45,2301700
+2026-08-29,modern,64,73,modern-challenge-64,12853186,21,Boros Energy,Aggro,DenimHero19,3383182
+2026-08-29,modern,64,73,modern-challenge-64,12853186,22,The Rock,Midrange,Prim3Time,3017502
+2026-08-29,modern,64,73,modern-challenge-64,12853186,23,Living End,Graveyard,Sorathrix,2705240
+2026-08-29,modern,64,73,modern-challenge-64,12853186,24,Jeskai Energy,Aggro,Fransadness,3143623
+2026-08-29,modern,64,73,modern-challenge-64,12853186,25,Neobrand,Combo,Tree42o,875470
+2026-08-29,modern,64,73,modern-challenge-64,12853186,26,Kethis Combo,Combo,GreyChroma,3321836
+2026-08-29,modern,64,73,modern-challenge-64,12853186,27,Living End,Graveyard,TooManySnacks,2947363
+2026-08-29,modern,64,73,modern-challenge-64,12853186,28,Tron,Ramp,LucasG1ggs,750888
+2026-08-29,modern,64,73,modern-challenge-64,12853186,29,Prowess,Aggro,PeasOfCrab,3072435
+2026-08-29,modern,64,73,modern-challenge-64,12853186,30,Prowess,Aggro,Xsper,3056706
+2026-08-29,modern,64,73,modern-challenge-64,12853186,31,Devoted Combo,Combo,Capitano_CL,535716
+2026-08-29,modern,64,73,modern-challenge-64,12853186,32,BRG,Midrange,Ztenod,1096446
+2026-08-28,modern,64,109,modern-challenge-64,12853181,1,Prowess,Aggro,MdvWin,2544700
+2026-08-28,modern,64,109,modern-challenge-64,12853181,2,Prowess,Aggro,BressD1,1940271
+2026-08-28,modern,64,109,modern-challenge-64,12853181,3,Prowess,Aggro,firstshot,111234
+2026-08-28,modern,64,109,modern-challenge-64,12853181,4,Prowess,Aggro,walshi4life,962660
+2026-08-28,modern,64,109,modern-challenge-64,12853181,5,Jeskai Energy,Aggro,ShadowTitan1,2130633
+2026-08-28,modern,64,109,modern-challenge-64,12853181,6,WBG,Midrange,mtwhet,1997060
+2026-08-28,modern,64,109,modern-challenge-64,12853181,7,Prowess,Aggro,elBB,3003904
+2026-08-28,modern,64,109,modern-challenge-64,12853181,8,Tron,Ramp,Slyker,2956563
+2026-08-28,modern,64,109,modern-challenge-64,12853181,9,Land Destruction,Control,shindy,1237388
+2026-08-28,modern,64,109,modern-challenge-64,12853181,10,Prowess,Aggro,GMFischer,3536967
+2026-08-28,modern,64,109,modern-challenge-64,12853181,11,Boros Burn,Aggro,DemianDesposito10,2747375
+2026-08-28,modern,64,109,modern-challenge-64,12853181,12,Broodscale Combo,Combo,unagieel,815932
+2026-08-28,modern,64,109,modern-challenge-64,12853181,13,4c HollowOne,Graveyard,PedraStone,3094324
+2026-08-28,modern,64,109,modern-challenge-64,12853181,14,Goryo's Vengeance,Graveyard,kennydarko,2096186
+2026-08-28,modern,64,109,modern-challenge-64,12853181,15,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-28,modern,64,109,modern-challenge-64,12853181,16,4c HollowOne,Graveyard,Marmotte_Lambda,3123572
+2026-08-28,modern,64,109,modern-challenge-64,12853181,17,Broodscale Combo,Combo,BoreiMTG,3135327
+2026-08-28,modern,64,109,modern-challenge-64,12853181,18,Belcher,Combo,Savior0117,2464763
+2026-08-28,modern,64,109,modern-challenge-64,12853181,19,Dimir Mill,Combo,Blitzlion27,2271998
+2026-08-28,modern,64,109,modern-challenge-64,12853181,20,Goryo's Vengeance,Graveyard,Ignotus97,2424281
+2026-08-28,modern,64,109,modern-challenge-64,12853181,21,Eldrazi Ramp,Ramp,Gobern,1847500
+2026-08-28,modern,64,109,modern-challenge-64,12853181,22,Tron,Ramp,narca,2776772
+2026-08-28,modern,64,109,modern-challenge-64,12853181,23,Boros Energy,Aggro,Pafru,3069560
+2026-08-28,modern,64,109,modern-challenge-64,12853181,24,Jeskai Energy,Aggro,Watchwolf92,574591
+2026-08-28,modern,64,109,modern-challenge-64,12853181,25,Devoted Combo,Combo,scipios,2454058
+2026-08-28,modern,64,109,modern-challenge-64,12853181,26,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-28,modern,64,109,modern-challenge-64,12853181,27,Esper Blink,Blink,renatoaraujo,864036
+2026-08-28,modern,64,109,modern-challenge-64,12853181,28,Broodscale Combo,Combo,Thunus,3076886
+2026-08-28,modern,64,109,modern-challenge-64,12853181,29,Broodscale Combo,Combo,RCMerriam,1041920
+2026-08-28,modern,64,109,modern-challenge-64,12853181,30,Belcher,Combo,patheus_84,1852645
+2026-08-28,modern,64,109,modern-challenge-64,12853181,31,Prowess,Aggro,unworldlyorigin,2957500
+2026-08-28,modern,64,109,modern-challenge-64,12853181,32,Azorius Control,Control,DeepDisherino,3488559
+2026-08-27,modern,64,99,modern-challenge-64,12853171,1,Broodscale Combo,Combo,lunaloveee,2886236
+2026-08-27,modern,64,99,modern-challenge-64,12853171,2,Broodscale Combo,Combo,ls149950,1862893
+2026-08-27,modern,64,99,modern-challenge-64,12853171,3,Domain Zoo,Midrange,KingOfGames1522,2831734
+2026-08-27,modern,64,99,modern-challenge-64,12853171,4,Belcher,Combo,PrismaticPrism,3542423
+2026-08-27,modern,64,99,modern-challenge-64,12853171,5,Esper Blink,Blink,rastaf,254536
+2026-08-27,modern,64,99,modern-challenge-64,12853171,6,Broodscale Combo,Combo,Jumba,2618500
+2026-08-27,modern,64,99,modern-challenge-64,12853171,7,Esper Blink,Blink,_Batutinha_,453404
+2026-08-27,modern,64,99,modern-challenge-64,12853171,8,Land Destruction,Control,Watchwolf92,574591
+2026-08-27,modern,64,99,modern-challenge-64,12853171,9,Broodscale Combo,Combo,Thunus,3076886
+2026-08-27,modern,64,99,modern-challenge-64,12853171,10,Jeskai Blink,Blink,TrueHero,2569009
+2026-08-27,modern,64,99,modern-challenge-64,12853171,11,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-27,modern,64,99,modern-challenge-64,12853171,12,Esper Blink,Blink,yriel,2537131
+2026-08-27,modern,64,99,modern-challenge-64,12853171,13,Boros Energy,Aggro,Sarlanga,643454
+2026-08-27,modern,64,99,modern-challenge-64,12853171,14,WBRG,Control,Gerschi,1084298
+2026-08-27,modern,64,99,modern-challenge-64,12853171,15,Dimir Midrange,Midrange,ipadkid,3560747
+2026-08-27,modern,64,99,modern-challenge-64,12853171,16,Prowess,Aggro,SilverSeraph123,2789793
+2026-08-27,modern,64,99,modern-challenge-64,12853171,17,Ruby Storm,Combo,Pompuskaya,2911978
+2026-08-27,modern,64,99,modern-challenge-64,12853171,18,Prowess,Aggro,GMFischer,3536967
+2026-08-27,modern,64,99,modern-challenge-64,12853171,19,Esper Blink,Blink,peter780108,1742159
+2026-08-27,modern,64,99,modern-challenge-64,12853171,20,Belcher,Combo,Kael95,2702823
+2026-08-27,modern,64,99,modern-challenge-64,12853171,21,Boros Energy,Aggro,Rashek,2702005
+2026-08-27,modern,64,99,modern-challenge-64,12853171,22,Domain Zoo,Midrange,Pleyboy,2822464
+2026-08-27,modern,64,99,modern-challenge-64,12853171,23,Mono-Black Midrange,Midrange,PorkMcPie,2976701
+2026-08-27,modern,64,99,modern-challenge-64,12853171,24,The Rock,Midrange,dawido,3470560
+2026-08-27,modern,64,99,modern-challenge-64,12853171,25,Broodscale Combo,Combo,Uagli1,2680052
+2026-08-27,modern,64,99,modern-challenge-64,12853171,26,Prowess,Aggro,Persona_Non_Grata,3475757
+2026-08-27,modern,64,99,modern-challenge-64,12853171,27,Dimir Midrange,Midrange,Dabol-R,2246917
+2026-08-27,modern,64,99,modern-challenge-64,12853171,28,Goryo's Vengeance,Graveyard,xfile,2449332
+2026-08-27,modern,64,99,modern-challenge-64,12853171,29,Yawgmoth,Midrange,NickBolas90,2921975
+2026-08-27,modern,64,99,modern-challenge-64,12853171,30,Esper Blink,Blink,Brunes,2764694
+2026-08-27,modern,64,99,modern-challenge-64,12853171,31,Living End,Graveyard,ResponsiblyStupid,3050181
+2026-08-27,modern,64,99,modern-challenge-64,12853171,32,Devoted Combo,Combo,Capitano_CL,535716
+2026-08-26,modern,96,113,modern-challenge-96,12852781,1,Broodscale Combo,Combo,KajuRoers,3549579
+2026-08-26,modern,96,113,modern-challenge-96,12852781,2,Jeskai Energy,Aggro,MayoDominaria,1112102
+2026-08-26,modern,96,113,modern-challenge-96,12852781,3,Prowess,Aggro,JPA93,1181017
+2026-08-26,modern,96,113,modern-challenge-96,12852781,4,Land Destruction,Control,Kritik,2707200
+2026-08-26,modern,96,113,modern-challenge-96,12852781,5,Jeskai Energy,Aggro,Walker735,2638611
+2026-08-26,modern,96,113,modern-challenge-96,12852781,6,Dimir Midrange,Midrange,oinkmage22,2858193
+2026-08-26,modern,96,113,modern-challenge-96,12852781,7,Song of Creation,Combo,levunga21,494936
+2026-08-26,modern,96,113,modern-challenge-96,12852781,8,The Rock,Midrange,LBBL,2729974
+2026-08-26,modern,96,113,modern-challenge-96,12852781,9,Goryo's Vengeance,Graveyard,Takayama,3293313
+2026-08-26,modern,96,113,modern-challenge-96,12852781,10,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-26,modern,96,113,modern-challenge-96,12852781,11,Affinity,Aggro,Alico,2640770
+2026-08-26,modern,96,113,modern-challenge-96,12852781,12,Broodscale Combo,Combo,BoreiMTG,3135327
+2026-08-26,modern,96,113,modern-challenge-96,12852781,13,Affinity,Aggro,starfall,1156605
+2026-08-26,modern,96,113,modern-challenge-96,12852781,14,WB,Blink,ElbowSoap,2717364
+2026-08-26,modern,96,113,modern-challenge-96,12852781,15,Esper Blink,Blink,rastaf,254536
+2026-08-26,modern,96,113,modern-challenge-96,12852781,16,Devoted Combo,Combo,musasabi,1210536
+2026-08-26,modern,96,113,modern-challenge-96,12852781,17,WBG,Midrange,elvish-misclick,3100094
+2026-08-26,modern,96,113,modern-challenge-96,12852781,18,Goryo's Vengeance,Graveyard,slaxx,331829
+2026-08-26,modern,96,113,modern-challenge-96,12852781,19,WG,Aggro,ejk,1952341
+2026-08-26,modern,96,113,modern-challenge-96,12852781,20,Prowess,Aggro,nahuel10,1942357
+2026-08-26,modern,96,113,modern-challenge-96,12852781,21,Living End,Graveyard,_Chamytinho_,3175692
+2026-08-26,modern,96,113,modern-challenge-96,12852781,22,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-26,modern,96,113,modern-challenge-96,12852781,23,Yawgmoth,Midrange,Anonieme_Max,3183579
+2026-08-26,modern,96,113,modern-challenge-96,12852781,24,Prowess,Aggro,Alakai,676549
+2026-08-26,modern,96,113,modern-challenge-96,12852781,25,Esper Blink,Blink,peter780108,1742159
+2026-08-26,modern,96,113,modern-challenge-96,12852781,26,Miracles,Control,Evariel,2709546
+2026-08-26,modern,96,113,modern-challenge-96,12852781,27,Goryo's Vengeance,Graveyard,Mclopi,3551828
+2026-08-26,modern,96,113,modern-challenge-96,12852781,28,Land Destruction,Control,shindy,1237388
+2026-08-26,modern,96,113,modern-challenge-96,12852781,29,Esper Blink,Blink,Ghost11157,2690892
+2026-08-26,modern,96,113,modern-challenge-96,12852781,30,Goryo's Vengeance,Graveyard,ElPuerco,2718288
+2026-08-26,modern,96,113,modern-challenge-96,12852781,31,Land Destruction,Control,kthanakit26,2122697
+2026-08-26,modern,96,113,modern-challenge-96,12852781,32,Devoted Combo,Combo,bozo2112,2309846
+2026-08-26,modern,32,81,modern-challenge-32,12853160,1,Goryo's Vengeance,Graveyard,jussupinator,880239
+2026-08-26,modern,32,81,modern-challenge-32,12853160,2,Jeskai Energy,Aggro,cgouldner,1387059
+2026-08-26,modern,32,81,modern-challenge-32,12853160,3,Living End,Graveyard,RNicoF,2753736
+2026-08-26,modern,32,81,modern-challenge-32,12853160,4,WG,Aggro,VampireDiaries,2283377
+2026-08-26,modern,32,81,modern-challenge-32,12853160,5,Mono-Green Eldrazi,Ramp,frekinsmart,2873371
+2026-08-26,modern,32,81,modern-challenge-32,12853160,6,Prowess,Aggro,GMFischer,3536967
+2026-08-26,modern,32,81,modern-challenge-32,12853160,7,Broodscale Combo,Combo,manohito,2908947
+2026-08-26,modern,32,81,modern-challenge-32,12853160,8,Domain Zoo,Midrange,MercurialChemister,2839061
+2026-08-26,modern,32,81,modern-challenge-32,12853160,9,Affinity,Aggro,rastaf,254536
+2026-08-26,modern,32,81,modern-challenge-32,12853160,10,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-26,modern,32,81,modern-challenge-32,12853160,11,Goryo's Vengeance,Graveyard,Goscar,2529433
+2026-08-26,modern,32,81,modern-challenge-32,12853160,12,Mono-Green Eldrazi,Ramp,tonyjones22,1991529
+2026-08-26,modern,32,81,modern-challenge-32,12853160,13,Esper Blink,Blink,RandomGameActions,315946
+2026-08-26,modern,32,81,modern-challenge-32,12853160,14,WBG,Midrange,selesneal,1618758
+2026-08-26,modern,32,81,modern-challenge-32,12853160,15,Land Destruction,Control,Kritik,2707200
+2026-08-26,modern,32,81,modern-challenge-32,12853160,16,Tron,Ramp,narca,2776772
+2026-08-26,modern,32,81,modern-challenge-32,12853160,17,Living End,Graveyard,TooManySnacks,2947363
+2026-08-26,modern,32,81,modern-challenge-32,12853160,18,Prowess,Aggro,TheTaxCollector,2243002
+2026-08-26,modern,32,81,modern-challenge-32,12853160,19,Prowess,Aggro,Xsper,3056706
+2026-08-26,modern,32,81,modern-challenge-32,12853160,20,Mono-Green Eldrazi,Ramp,Hazzrd,1695657
+2026-08-26,modern,32,81,modern-challenge-32,12853160,21,Esper Blink,Blink,TuckerMTG,2204845
+2026-08-26,modern,32,81,modern-challenge-32,12853160,22,4c HollowOne,Graveyard,Scooby_Snacks,3285170
+2026-08-26,modern,32,81,modern-challenge-32,12853160,23,Grixis Control,Control,ipadkid,3560747
+2026-08-26,modern,32,81,modern-challenge-32,12853160,24,WBG,Midrange,NathanOfTheGiltLeaf,2968680
+2026-08-26,modern,32,81,modern-challenge-32,12853160,25,Yawgmoth,Midrange,Sam_Lewin,2092528
+2026-08-26,modern,32,81,modern-challenge-32,12853160,26,Broodscale Combo,Combo,MyrRetriever,3006274
+2026-08-26,modern,32,81,modern-challenge-32,12853160,27,Broodscale Combo,Combo,TheColorOfBoom,3359144
+2026-08-26,modern,32,81,modern-challenge-32,12853160,28,Rakdos Aggro,Aggro,DragonFodder,415299
+2026-08-26,modern,32,81,modern-challenge-32,12853160,29,Affinity,Aggro,ShinySyduck,1784729
+2026-08-26,modern,32,81,modern-challenge-32,12853160,30,Prowess,Aggro,nahuel10,1942357
+2026-08-26,modern,32,81,modern-challenge-32,12853160,31,Tron,Ramp,-Grissom-,3162448
+2026-08-26,modern,32,81,modern-challenge-32,12853160,32,Living End,Graveyard,LucasG1ggs,750888
+2026-08-25,modern,64,88,modern-challenge-64,12852776,1,Devoted Combo,Combo,Dydyk95,2940494
+2026-08-25,modern,64,88,modern-challenge-64,12852776,2,Esper Blink,Blink,StormQrow,1928132
+2026-08-25,modern,64,88,modern-challenge-64,12852776,3,Esper Blink,Blink,SorryImSoTilted,3074961
+2026-08-25,modern,64,88,modern-challenge-64,12852776,4,Jeskai Energy,Aggro,fazparte,3106246
+2026-08-25,modern,64,88,modern-challenge-64,12852776,5,Broodscale Combo,Combo,ziofrancone,2676196
+2026-08-25,modern,64,88,modern-challenge-64,12852776,6,Prowess,Aggro,Anemu,1074022
+2026-08-25,modern,64,88,modern-challenge-64,12852776,7,Dimir Midrange,Midrange,ETBJezus,3040474
+2026-08-25,modern,64,88,modern-challenge-64,12852776,8,Land Destruction,Control,shindy,1237388
+2026-08-25,modern,64,88,modern-challenge-64,12852776,9,Neobrand,Combo,Azja,2751360
+2026-08-25,modern,64,88,modern-challenge-64,12852776,10,Boros Energy,Aggro,YungDingo,2928451
+2026-08-25,modern,64,88,modern-challenge-64,12852776,11,Broodscale Combo,Combo,pedronavaja,3540949
+2026-08-25,modern,64,88,modern-challenge-64,12852776,12,Eldrazi Tron,Ramp,HuUeBR,2981401
+2026-08-25,modern,64,88,modern-challenge-64,12852776,13,Goryo's Vengeance,Graveyard,bkubit,2153835
+2026-08-25,modern,64,88,modern-challenge-64,12852776,14,Dimir Midrange,Midrange,cntrlfreak_ttv,2984703
+2026-08-25,modern,64,88,modern-challenge-64,12852776,15,Mono-Black Midrange,Midrange,Craig_Long123,3364560
+2026-08-25,modern,64,88,modern-challenge-64,12852776,16,Prowess,Aggro,Arianne,845813
+2026-08-25,modern,64,88,modern-challenge-64,12852776,17,Goryo's Vengeance,Graveyard,Thalai,180817
+2026-08-25,modern,64,88,modern-challenge-64,12852776,18,Esper Blink,Blink,rastaf,254536
+2026-08-25,modern,64,88,modern-challenge-64,12852776,19,Affinity,Aggro,sioutis_kk,3499660
+2026-08-25,modern,64,88,modern-challenge-64,12852776,20,Jeskai Blink,Blink,Aced5,10594
+2026-08-25,modern,64,88,modern-challenge-64,12852776,21,Yawgmoth,Midrange,Anonieme_Max,3183579
+2026-08-25,modern,64,88,modern-challenge-64,12852776,22,Goryo's Vengeance,Graveyard,kentaro_hokori,575927
+2026-08-25,modern,64,88,modern-challenge-64,12852776,23,Jeskai Energy,Aggro,VizosMTG,3474034
+2026-08-25,modern,64,88,modern-challenge-64,12852776,24,Mono-Green Eldrazi,Ramp,yunk3r,1113267
+2026-08-25,modern,64,88,modern-challenge-64,12852776,25,Prowess,Aggro,Xsper,3056706
+2026-08-25,modern,64,88,modern-challenge-64,12852776,26,Devoted Combo,Combo,Marxelo,277034
+2026-08-25,modern,64,88,modern-challenge-64,12852776,27,Dimir Midrange,Midrange,GLSwadow,3438702
+2026-08-25,modern,64,88,modern-challenge-64,12852776,28,Domain Zoo,Midrange,Doomenstein,2636574
+2026-08-25,modern,64,88,modern-challenge-64,12852776,29,Goryo's Vengeance,Graveyard,Mclopi,3551828
+2026-08-25,modern,64,88,modern-challenge-64,12852776,30,Belcher,Combo,quinniac,2261440
+2026-08-25,modern,64,88,modern-challenge-64,12852776,31,Amulet Titan,Combo,claudio0907,1059076
+2026-08-25,modern,64,88,modern-challenge-64,12852776,32,Prowess,Aggro,nahuel10,1942357
+2026-08-25,modern,16,34,modern-challenge-16,12852770,1,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-25,modern,16,34,modern-challenge-16,12852770,2,Esper Blink,Blink,toondoslav,1712831
+2026-08-25,modern,16,34,modern-challenge-16,12852770,3,Broodscale Combo,Combo,TomBombadi1,2607787
+2026-08-25,modern,16,34,modern-challenge-16,12852770,4,Affinity,Aggro,ejk,1952341
+2026-08-25,modern,16,34,modern-challenge-16,12852770,5,Neobrand,Combo,ReservoirMog,3481307
+2026-08-25,modern,16,34,modern-challenge-16,12852770,6,Neobrand,Combo,JPA93,1181017
+2026-08-25,modern,16,34,modern-challenge-16,12852770,7,Kethis Combo,Combo,GreyChroma,3321836
+2026-08-25,modern,16,34,modern-challenge-16,12852770,8,Esper Blink,Blink,meanfannypack,1703735
+2026-08-25,modern,16,34,modern-challenge-16,12852770,9,Amulet Titan,Combo,crazythursday,3116151
+2026-08-25,modern,16,34,modern-challenge-16,12852770,10,Living End,Graveyard,Sorathrix,2705240
+2026-08-25,modern,16,34,modern-challenge-16,12852770,11,Devoted Combo,Combo,musasabi,1210536
+2026-08-25,modern,16,34,modern-challenge-16,12852770,12,Goryo's Vengeance,Graveyard,Deathmaxx,2995055
+2026-08-25,modern,16,34,modern-challenge-16,12852770,13,Grixis Reanimator,Graveyard,The_shallow_grave,3254577
+2026-08-25,modern,16,34,modern-challenge-16,12852770,14,Prowess,Aggro,TrueHero,2569009
+2026-08-25,modern,16,34,modern-challenge-16,12852770,15,Esper Blink,Blink,Laplasjan,1706283
+2026-08-25,modern,16,34,modern-challenge-16,12852770,16,Jeskai Energy,Aggro,klien7,2564773
+2026-08-25,modern,16,34,modern-challenge-16,12852770,17,Affinity,Aggro,sioutis_kk,3499660
+2026-08-25,modern,16,34,modern-challenge-16,12852770,18,Azorius Control,Control,FraKoE,3535355
+2026-08-25,modern,16,34,modern-challenge-16,12852770,19,Esper Reanimator,Graveyard,Serosocram,3477626
+2026-08-25,modern,16,34,modern-challenge-16,12852770,20,Domain Zoo,Midrange,Dydyk95,2940494
+2026-08-25,modern,16,34,modern-challenge-16,12852770,21,WUR,Midrange,SimoCr,2713675
+2026-08-25,modern,16,34,modern-challenge-16,12852770,22,Prowess,Aggro,Grogore,2664302
+2026-08-25,modern,16,34,modern-challenge-16,12852770,23,Amulet Titan,Combo,Boucha,844369
+2026-08-25,modern,16,34,modern-challenge-16,12852770,24,Prowess,Aggro,manoah,1305745
+2026-08-25,modern,16,34,modern-challenge-16,12852770,25,Land Destruction,Control,bomberboss,2013138
+2026-08-25,modern,16,34,modern-challenge-16,12852770,26,Domain Zoo,Midrange,vdboule,2780151
+2026-08-25,modern,16,34,modern-challenge-16,12852770,27,Domain Zoo,Midrange,pius23,3298900
+2026-08-25,modern,16,34,modern-challenge-16,12852770,28,Living End,Graveyard,Traumatismes,2865888
+2026-08-25,modern,16,34,modern-challenge-16,12852770,29,Sultai Ritual,Midrange,-=Alfa=-,685719
+2026-08-25,modern,16,34,modern-challenge-16,12852770,30,Rakdos HollowOne,Graveyard,Cptwalnut,1964476
+2026-08-25,modern,16,34,modern-challenge-16,12852770,31,Dimir Control,Control,NuBlkAu,1719515
+2026-08-25,modern,16,34,modern-challenge-16,12852770,32,Hammer Time,Combo,Eyelash,2871058
+2026-08-25,modern,32,67,modern-challenge-32,12852769,1,Living End,Graveyard,MeninoNey,2903591
+2026-08-25,modern,32,67,modern-challenge-32,12852769,2,Living End,Graveyard,AzureMoon,3158693
+2026-08-25,modern,32,67,modern-challenge-32,12852769,3,Sultai Ritual,Midrange,morris,1198783
+2026-08-25,modern,32,67,modern-challenge-32,12852769,4,Esper Blink,Blink,rastaf,254536
+2026-08-25,modern,32,67,modern-challenge-32,12852769,5,Prowess,Aggro,EthanBird,2658587
+2026-08-25,modern,32,67,modern-challenge-32,12852769,6,Goryo's Vengeance,Graveyard,connormc02,1221790
+2026-08-25,modern,32,67,modern-challenge-32,12852769,7,4c HollowOne,Graveyard,Bugsy69,2537822
+2026-08-25,modern,32,67,modern-challenge-32,12852769,8,Prowess,Aggro,Xsper,3056706
+2026-08-25,modern,32,67,modern-challenge-32,12852769,9,Rakdos Midrange,Midrange,ScreenwriterNY,1880301
+2026-08-25,modern,32,67,modern-challenge-32,12852769,10,Land Destruction,Control,Kritik,2707200
+2026-08-25,modern,32,67,modern-challenge-32,12852769,11,Hammer Time,Combo,CursedOcean,2981783
+2026-08-25,modern,32,67,modern-challenge-32,12852769,12,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-25,modern,32,67,modern-challenge-32,12852769,13,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-25,modern,32,67,modern-challenge-32,12852769,14,WG,Aggro,VampireDiaries,2283377
+2026-08-25,modern,32,67,modern-challenge-32,12852769,15,Eldrazi Tron,Ramp,Kuhmero,1076951
+2026-08-25,modern,32,67,modern-challenge-32,12852769,16,Boros Energy,Aggro,NJ5030,3042804
+2026-08-25,modern,32,67,modern-challenge-32,12852769,17,Grixis Reanimator,Graveyard,soggymeatball,2127900
+2026-08-25,modern,32,67,modern-challenge-32,12852769,18,4c HollowOne,Graveyard,HolaChico,3485421
+2026-08-25,modern,32,67,modern-challenge-32,12852769,19,Jeskai Energy,Aggro,amin0e,3107576
+2026-08-25,modern,32,67,modern-challenge-32,12852769,20,Broodscale Combo,Combo,Chichichi,2788809
+2026-08-25,modern,32,67,modern-challenge-32,12852769,21,Belcher,Combo,quinniac,2261440
+2026-08-25,modern,32,67,modern-challenge-32,12852769,22,Neobrand,Combo,PrismaticPrism,3542423
+2026-08-25,modern,32,67,modern-challenge-32,12852769,23,Jeskai Energy,Aggro,yolad,3342362
+2026-08-25,modern,32,67,modern-challenge-32,12852769,24,Esper Blink,Blink,Venom01,3535587
+2026-08-25,modern,32,67,modern-challenge-32,12852769,25,Mono-Green Eldrazi,Ramp,justFeather,2446403
+2026-08-25,modern,32,67,modern-challenge-32,12852769,26,Dimir Control,Control,Scorpion100,2872570
+2026-08-25,modern,32,67,modern-challenge-32,12852769,27,Rakdos Aggro,Aggro,DragonFodder,415299
+2026-08-25,modern,32,67,modern-challenge-32,12852769,28,WBG,Midrange,SteelClad,3124235
+2026-08-25,modern,32,67,modern-challenge-32,12852769,29,Broodscale Combo,Combo,manohito,2908947
+2026-08-25,modern,32,67,modern-challenge-32,12852769,30,Devoted Combo,Combo,musasabi,1210536
+2026-08-25,modern,32,67,modern-challenge-32,12852769,31,Living End,Graveyard,Traumatismes,2865888
+2026-08-25,modern,32,67,modern-challenge-32,12852769,32,Prowess,Aggro,duanceyao,1727039
+2026-08-24,modern,96,105,modern-challenge-96,12852762,1,Land Destruction,Control,Kritik,2707200
+2026-08-24,modern,96,105,modern-challenge-96,12852762,2,Prowess,Aggro,elBB,3003904
+2026-08-24,modern,96,105,modern-challenge-96,12852762,3,Jeskai Energy,Aggro,MayoDominaria,1112102
+2026-08-24,modern,96,105,modern-challenge-96,12852762,4,Esper Blink,Blink,Mapletreefrog,1557079
+2026-08-24,modern,96,105,modern-challenge-96,12852762,5,Boros Energy,Aggro,Rashek,2702005
+2026-08-24,modern,96,105,modern-challenge-96,12852762,6,Boros Energy,Aggro,Davidowiz,3467306
+2026-08-24,modern,96,105,modern-challenge-96,12852762,7,Goryo's Vengeance,Graveyard,lunaloveee,2886236
+2026-08-24,modern,96,105,modern-challenge-96,12852762,8,Prowess,Aggro,Xsper,3056706
+2026-08-24,modern,96,105,modern-challenge-96,12852762,9,Goryo's Vengeance,Graveyard,liuyuchen,1739534
+2026-08-24,modern,96,105,modern-challenge-96,12852762,10,Broodscale Combo,Combo,Cheeesy,2950421
+2026-08-24,modern,96,105,modern-challenge-96,12852762,11,Esper Blink,Blink,Jedgi,1996271
+2026-08-24,modern,96,105,modern-challenge-96,12852762,12,UG,Combo,Alakai,676549
+2026-08-24,modern,96,105,modern-challenge-96,12852762,13,Esper Blink,Blink,albert62,1574579
+2026-08-24,modern,96,105,modern-challenge-96,12852762,14,Domain Zoo,Midrange,Dydyk95,2940494
+2026-08-24,modern,96,105,modern-challenge-96,12852762,15,Devoted Combo,Combo,Thunus,3076886
+2026-08-24,modern,96,105,modern-challenge-96,12852762,16,WUR,Midrange,ShadowTitan1,2130633
+2026-08-24,modern,96,105,modern-challenge-96,12852762,17,Grixis Midrange,Midrange,VizosMTG,3474034
+2026-08-24,modern,96,105,modern-challenge-96,12852762,18,Eldrazi Tron,Ramp,PerkyT,3142768
+2026-08-24,modern,96,105,modern-challenge-96,12852762,19,URG,Midrange,DelverOfBolts,2688845
+2026-08-24,modern,96,105,modern-challenge-96,12852762,20,Esper Blink,Blink,Mansa_Musa,3544096
+2026-08-24,modern,96,105,modern-challenge-96,12852762,21,Grixis Control,Control,ipadkid,3560747
+2026-08-24,modern,96,105,modern-challenge-96,12852762,22,Domain Zoo,Midrange,Pleyboy,2822464
+2026-08-24,modern,96,105,modern-challenge-96,12852762,23,WBRG,Control,Gerschi,1084298
+2026-08-24,modern,96,105,modern-challenge-96,12852762,24,Devoted Combo,Combo,ShikiXYZ,1188705
+2026-08-24,modern,96,105,modern-challenge-96,12852762,25,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-24,modern,96,105,modern-challenge-96,12852762,26,Boros Burn,Aggro,DidSomeoneJustSayBod,2521073
+2026-08-24,modern,96,105,modern-challenge-96,12852762,27,Eldrazi Tron,Ramp,Tinker_deck,2981803
+2026-08-24,modern,96,105,modern-challenge-96,12852762,28,Dimir Control,Control,TrueHero,2569009
+2026-08-24,modern,96,105,modern-challenge-96,12852762,29,Goryo's Vengeance,Graveyard,Takayama,3293313
+2026-08-24,modern,96,105,modern-challenge-96,12852762,30,Azorius Control,Control,Aldreen,1074736
+2026-08-24,modern,96,105,modern-challenge-96,12852762,31,Azorius Blink,Blink,DavidDaBridges,2888604
+2026-08-24,modern,96,105,modern-challenge-96,12852762,32,WUR,Midrange,fazparte,3106246
+2026-08-24,modern,64,83,modern-challenge-64,12852760,1,Affinity,Aggro,skullcrobatjoker,3104275
+2026-08-24,modern,64,83,modern-challenge-64,12852760,2,Belcher,Combo,Savior0117,2464763
+2026-08-24,modern,64,83,modern-challenge-64,12852760,3,Esper Blink,Blink,gazmon48,1636994
+2026-08-24,modern,64,83,modern-challenge-64,12852760,4,Broodscale Combo,Combo,MyrRetriever,3006274
+2026-08-24,modern,64,83,modern-challenge-64,12852760,5,Broodscale Combo,Combo,Hazzrd,1695657
+2026-08-24,modern,64,83,modern-challenge-64,12852760,6,Dimir Midrange,Midrange,ETBJezus,3040474
+2026-08-24,modern,64,83,modern-challenge-64,12852760,7,Dimir Midrange,Midrange,C_S_W____,485263
+2026-08-24,modern,64,83,modern-challenge-64,12852760,8,Esper Blink,Blink,Dioferreira,1950164
+2026-08-24,modern,64,83,modern-challenge-64,12852760,9,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-24,modern,64,83,modern-challenge-64,12852760,10,WBG,Midrange,selesneal,1618758
+2026-08-24,modern,64,83,modern-challenge-64,12852760,11,Boros Energy,Aggro,jayrod115,2760324
+2026-08-24,modern,64,83,modern-challenge-64,12852760,12,Esper Blink,Blink,bless_von,2292083
+2026-08-24,modern,64,83,modern-challenge-64,12852760,13,UW Control,Control,eclipse4343,2714224
+2026-08-24,modern,64,83,modern-challenge-64,12852760,14,WBG,Midrange,nedyahiske,2404093
+2026-08-24,modern,64,83,modern-challenge-64,12852760,15,Belcher,Combo,Chaticus,3230169
+2026-08-24,modern,64,83,modern-challenge-64,12852760,16,Esper Blink,Blink,rastaf,254536
+2026-08-24,modern,64,83,modern-challenge-64,12852760,17,Prowess,Aggro,EthanBird,2658587
+2026-08-24,modern,64,83,modern-challenge-64,12852760,18,Grixis Control,Control,ipadkid,3560747
+2026-08-24,modern,64,83,modern-challenge-64,12852760,19,Azorius Control,Control,wft,3030517
+2026-08-24,modern,64,83,modern-challenge-64,12852760,20,Devoted Combo,Combo,Capitano_CL,535716
+2026-08-24,modern,64,83,modern-challenge-64,12852760,21,Ruby Storm,Combo,Botboy,3165422
+2026-08-24,modern,64,83,modern-challenge-64,12852760,22,Broodscale Combo,Combo,KeasbyKnight,2856033
+2026-08-24,modern,64,83,modern-challenge-64,12852760,23,Dimir Murktide,Midrange,oinkmage22,2858193
+2026-08-24,modern,64,83,modern-challenge-64,12852760,24,Devoted Combo,Combo,Cachorrowo,2720911
+2026-08-24,modern,64,83,modern-challenge-64,12852760,25,Prowess,Aggro,Xsper,3056706
+2026-08-24,modern,64,83,modern-challenge-64,12852760,26,Amulet Titan,Combo,crazythursday,3116151
+2026-08-24,modern,64,83,modern-challenge-64,12852760,27,Esper Blink,Blink,Venom01,3535587
+2026-08-24,modern,64,83,modern-challenge-64,12852760,28,Affinity,Aggro,Zonda,2083240
+2026-08-24,modern,64,83,modern-challenge-64,12852760,29,Eldrazi Ramp,Ramp,shindy,1237388
+2026-08-24,modern,64,83,modern-challenge-64,12852760,30,Yawgmoth,Midrange,Sam_Lewin,2092528
+2026-08-24,modern,64,83,modern-challenge-64,12852760,31,Devoted Combo,Combo,musasabi,1210536
+2026-08-24,modern,64,83,modern-challenge-64,12852760,32,Prowess,Aggro,bananadisaster,3442638
+2026-08-23,modern,64,84,modern-challenge-64,12852752,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,thodoris17,2119308
+2026-08-23,modern,64,84,modern-challenge-64,12852752,2,Devoted Combo,Combo,wallofspikes,774962
+2026-08-23,modern,64,84,modern-challenge-64,12852752,3,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-23,modern,64,84,modern-challenge-64,12852752,4,Esper Blink,Blink,jev_,2878060
+2026-08-23,modern,64,84,modern-challenge-64,12852752,5,Goryo's Vengeance,Graveyard,DskBayWolf,3220713
+2026-08-23,modern,64,84,modern-challenge-64,12852752,6,Esper Blink,Blink,Omegauo,30930
+2026-08-23,modern,64,84,modern-challenge-64,12852752,7,4c HollowOne,Graveyard,JRomero,1061642
+2026-08-23,modern,64,84,modern-challenge-64,12852752,8,Tron,Ramp,The_Lion91,3468770
+2026-08-23,modern,64,84,modern-challenge-64,12852752,9,Devoted Combo,Combo,John1111,2676588
+2026-08-23,modern,64,84,modern-challenge-64,12852752,10,Devoted Combo,Combo,musasabi,1210536
+2026-08-23,modern,64,84,modern-challenge-64,12852752,11,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Suechtler,962368
+2026-08-23,modern,64,84,modern-challenge-64,12852752,12,Tron,Ramp,Nuserdog,2702142
+2026-08-23,modern,64,84,modern-challenge-64,12852752,13,Jeskai Energy,Aggro,MayoDominaria,1112102
+2026-08-23,modern,64,84,modern-challenge-64,12852752,14,Living End,Graveyard,niuwaid001,2372533
+2026-08-23,modern,64,84,modern-challenge-64,12852752,15,Esper Blink,Blink,Clesss,2250193
+2026-08-23,modern,64,84,modern-challenge-64,12852752,16,Prowess,Aggro,manoah,1305745
+2026-08-23,modern,64,84,modern-challenge-64,12852752,17,Broodscale Combo,Combo,Jaksiel,132755
+2026-08-23,modern,64,84,modern-challenge-64,12852752,18,Esper Blink,Blink,_Batutinha_,453404
+2026-08-23,modern,64,84,modern-challenge-64,12852752,19,Affinity,Aggro,Enter,1103085
+2026-08-23,modern,64,84,modern-challenge-64,12852752,20,Goryo's Vengeance,Graveyard,VampireDiaries,2283377
+2026-08-23,modern,64,84,modern-challenge-64,12852752,21,4c HollowOne,Graveyard,Ardonas,1040296
+2026-08-23,modern,64,84,modern-challenge-64,12852752,22,Esper Blink,Blink,scalo94,868229
+2026-08-23,modern,64,84,modern-challenge-64,12852752,23,Broodscale Combo,Combo,CNewman,1715380
+2026-08-23,modern,64,84,modern-challenge-64,12852752,24,Prowess,Aggro,Toscanini,2913039
+2026-08-23,modern,64,84,modern-challenge-64,12852752,25,Mono-Black Midrange,Midrange,Craig_Long123,3364560
+2026-08-23,modern,64,84,modern-challenge-64,12852752,26,Amulet Titan,Combo,crazythursday,3116151
+2026-08-23,modern,64,84,modern-challenge-64,12852752,27,Dimir Midrange,Midrange,bobthedog,5694
+2026-08-23,modern,64,84,modern-challenge-64,12852752,28,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,ipadkid,3560747
+2026-08-23,modern,64,84,modern-challenge-64,12852752,29,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Gobeli,476651
+2026-08-23,modern,64,84,modern-challenge-64,12852752,30,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,almostomniscient,2563273
+2026-08-23,modern,64,84,modern-challenge-64,12852752,31,Land Destruction,Control,jps_17,1066436
+2026-08-23,modern,64,84,modern-challenge-64,12852752,32,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,STURSY,3273156
+2026-08-23,modern,64,88,modern-challenge-64,12852747,1,Dimir Midrange,Midrange,ETBJezus,3040474
+2026-08-23,modern,64,88,modern-challenge-64,12852747,2,Living End,Graveyard,MeninooNey,3263693
+2026-08-23,modern,64,88,modern-challenge-64,12852747,3,Prowess,Aggro,Junkmener,2305332
+2026-08-23,modern,64,88,modern-challenge-64,12852747,4,Affinity,Aggro,Skeptic2304,2665316
+2026-08-23,modern,64,88,modern-challenge-64,12852747,5,Affinity,Aggro,sidisi,1944075
+2026-08-23,modern,64,88,modern-challenge-64,12852747,6,Tron,Ramp,gazmon48,1636994
+2026-08-23,modern,64,88,modern-challenge-64,12852747,7,Goryo's Vengeance,Graveyard,Fransadness,3143623
+2026-08-23,modern,64,88,modern-challenge-64,12852747,8,Dimir Control,Control,WaffleWiz,3254787
+2026-08-23,modern,64,88,modern-challenge-64,12852747,9,Azorius Control,Control,DeepDisherino,3488559
+2026-08-23,modern,64,88,modern-challenge-64,12852747,10,Goryo's Vengeance,Graveyard,connormc02,1221790
+2026-08-23,modern,64,88,modern-challenge-64,12852747,11,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-23,modern,64,88,modern-challenge-64,12852747,12,Ruby Storm,Combo,pwqz,3253255
+2026-08-23,modern,64,88,modern-challenge-64,12852747,13,Golgari Basking Broodscale Combo,Combo,YungDingo,2928451
+2026-08-23,modern,64,88,modern-challenge-64,12852747,14,Goryo's Vengeance,Graveyard,Arkmaru,2797293
+2026-08-23,modern,64,88,modern-challenge-64,12852747,15,Esper Blink,Blink,renatoaraujo,864036
+2026-08-23,modern,64,88,modern-challenge-64,12852747,16,Goryo's Vengeance,Graveyard,GigaChadSigmaMale,3085636
+2026-08-23,modern,64,88,modern-challenge-64,12852747,17,Esper Blink,Blink,Venom01,3535587
+2026-08-23,modern,64,88,modern-challenge-64,12852747,18,Prowess,Aggro,DannyStarchild,1802874
+2026-08-23,modern,64,88,modern-challenge-64,12852747,19,Mono-Green Eldrazi,Ramp,duke12,6062
+2026-08-23,modern,64,88,modern-challenge-64,12852747,20,WBG,Midrange,selesneal,1618758
+2026-08-23,modern,64,88,modern-challenge-64,12852747,21,Domain Zoo,Midrange,MercurialChemister,2839061
+2026-08-23,modern,64,88,modern-challenge-64,12852747,22,Devoted Combo,Combo,YAK9k,3500249
+2026-08-23,modern,64,88,modern-challenge-64,12852747,23,Goryo's Vengeance,Graveyard,Rivrat2007,2718021
+2026-08-23,modern,64,88,modern-challenge-64,12852747,24,Goryo's Vengeance,Graveyard,Kollslaw,3311758
+2026-08-23,modern,64,88,modern-challenge-64,12852747,25,Belcher,Combo,E90_DeliveryBoy,3122660
+2026-08-23,modern,64,88,modern-challenge-64,12852747,26,Rakdos HollowOne,Graveyard,kattsu,3405528
+2026-08-23,modern,64,88,modern-challenge-64,12852747,27,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-23,modern,64,88,modern-challenge-64,12852747,28,Tron,Ramp,kokoko098,608077
+2026-08-23,modern,64,88,modern-challenge-64,12852747,29,Prowess,Aggro,EthanBird,2658587
+2026-08-23,modern,64,88,modern-challenge-64,12852747,30,Broodscale Combo,Combo,mav807,1832476
+2026-08-23,modern,64,88,modern-challenge-64,12852747,31,Prowess,Aggro,chase00111,1199408
+2026-08-23,modern,64,88,modern-challenge-64,12852747,32,Affinity,Aggro,RandomOctopus,1800145
+2026-08-22,modern,64,125,modern-challenge-64,12852742,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Phryziel,301933
+2026-08-22,modern,64,125,modern-challenge-64,12852742,2,Tron,Ramp,Nuserdog,2702142
+2026-08-22,modern,64,125,modern-challenge-64,12852742,3,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,MikeEgan,980850
+2026-08-22,modern,64,125,modern-challenge-64,12852742,4,The Rock,Midrange,pokerswizard,280778
+2026-08-22,modern,64,125,modern-challenge-64,12852742,5,Prowess,Aggro,toto_2295,3086057
+2026-08-22,modern,64,125,modern-challenge-64,12852742,6,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Bugsy69,2537822
+2026-08-22,modern,64,125,modern-challenge-64,12852742,7,Goryo's Vengeance,Graveyard,Takayama,3293313
+2026-08-22,modern,64,125,modern-challenge-64,12852742,8,Living End,Graveyard,MeninooNey,3263693
+2026-08-22,modern,64,125,modern-challenge-64,12852742,9,Esper Blink,Blink,Dhedjeshdi,3044830
+2026-08-22,modern,64,125,modern-challenge-64,12852742,10,Mono-Green Eldrazi,Ramp,CNewman,1715380
+2026-08-22,modern,64,125,modern-challenge-64,12852742,11,Belcher,Combo,JustAnotherGuy83,2691811
+2026-08-22,modern,64,125,modern-challenge-64,12852742,12,Broodscale Combo,Combo,ziofrancone,2676196
+2026-08-22,modern,64,125,modern-challenge-64,12852742,13,The Rock,Midrange,Prim3Time,3017502
+2026-08-22,modern,64,125,modern-challenge-64,12852742,14,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,VenoW_art,3301567
+2026-08-22,modern,64,125,modern-challenge-64,12852742,15,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,bobthedog,5694
+2026-08-22,modern,64,125,modern-challenge-64,12852742,16,Grixis Reanimator,Graveyard,RedArmada,680636
+2026-08-22,modern,64,125,modern-challenge-64,12852742,17,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,JakeTMS,2931233
+2026-08-22,modern,64,125,modern-challenge-64,12852742,18,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,Walrusguy32,2596469
+2026-08-22,modern,64,125,modern-challenge-64,12852742,19,Broodscale Combo,Combo,GodOfSlaughter,1185021
+2026-08-22,modern,64,125,modern-challenge-64,12852742,20,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,richcs1,2920892
+2026-08-22,modern,64,125,modern-challenge-64,12852742,21,Affinity,Aggro,starfall,1156605
+2026-08-22,modern,64,125,modern-challenge-64,12852742,22,Goryo's Vengeance,Graveyard,Urthstrype,702030
+2026-08-22,modern,64,125,modern-challenge-64,12852742,23,Mono-Green Eldrazi,Ramp,Watchwolf92,574591
+2026-08-22,modern,64,125,modern-challenge-64,12852742,24,Devoted Combo,Combo,Dydyk95,2940494
+2026-08-22,modern,64,125,modern-challenge-64,12852742,25,Broodscale Combo,Combo,Jaksiel,132755
+2026-08-22,modern,64,125,modern-challenge-64,12852742,26,Living End,Graveyard,Traumatismes,2865888
+2026-08-22,modern,64,125,modern-challenge-64,12852742,27,Prowess,Aggro,JPA93,1181017
+2026-08-22,modern,64,125,modern-challenge-64,12852742,28,Grixis Reanimator,Graveyard,BigErnMcKraken,3530748
+2026-08-22,modern,64,125,modern-challenge-64,12852742,29,Esper Blink,Blink,St1ffler,3488068
+2026-08-22,modern,64,125,modern-challenge-64,12852742,30,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,henry_morehouse,1872783
+2026-08-22,modern,64,125,modern-challenge-64,12852742,31,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,magiclibrary,1112793
+2026-08-22,modern,64,125,modern-challenge-64,12852742,32,Goryo's Vengeance,Graveyard,Sifui,3073951
+2026-08-22,modern,16,33,modern-challenge-16,12852737,1,Esper Blink,Blink,yriel,2537131
+2026-08-22,modern,16,33,modern-challenge-16,12852737,2,Prowess,Aggro,NotJim,3249166
+2026-08-22,modern,16,33,modern-challenge-16,12852737,3,Grixis Reanimator,Graveyard,soggymeatball,2127900
+2026-08-22,modern,16,33,modern-challenge-16,12852737,4,WBG,Midrange,meanfannypack,1703735
+2026-08-22,modern,16,33,modern-challenge-16,12852737,5,Prowess,Aggro,Junkmener,2305332
+2026-08-22,modern,16,33,modern-challenge-16,12852737,6,Esper Blink,Blink,ejk,1952341
+2026-08-22,modern,16,33,modern-challenge-16,12852737,7,Devoted Combo,Combo,musasabi,1210536
+2026-08-22,modern,16,33,modern-challenge-16,12852737,8,Goryo's Vengeance,Graveyard,PesE,3145234
+2026-08-22,modern,16,33,modern-challenge-16,12852737,9,4c HollowOne,Graveyard,kyporioth,1713588
+2026-08-22,modern,16,33,modern-challenge-16,12852737,10,Mono-Green Eldrazi,Ramp,_Falcon_,2498069
+2026-08-22,modern,16,33,modern-challenge-16,12852737,11,Neobrand,Combo,E_Kaminuma,2707045
+2026-08-22,modern,16,33,modern-challenge-16,12852737,12,Esper Blink,Blink,TheRightStuff,2315424
+2026-08-22,modern,16,33,modern-challenge-16,12852737,13,Boros Burn,Aggro,GiestOfIWin,1564356
+2026-08-22,modern,16,33,modern-challenge-16,12852737,14,Devoted Combo,Combo,selesneal,1618758
+2026-08-22,modern,16,33,modern-challenge-16,12852737,15,Esper Blink,Blink,SanPop,2621451
+2026-08-22,modern,16,33,modern-challenge-16,12852737,16,Esper Mill,Combo,medvedev,741295
+2026-08-22,modern,16,33,modern-challenge-16,12852737,17,Prowess,Aggro,EthanBird,2658587
+2026-08-22,modern,16,33,modern-challenge-16,12852737,18,Eldrazi Ramp,Ramp,iReedMinds,2038499
+2026-08-22,modern,16,33,modern-challenge-16,12852737,19,Amulet Titan,Combo,reidq7,3155916
+2026-08-22,modern,16,33,modern-challenge-16,12852737,20,Goryo's Vengeance,Graveyard,liuyuchen,1739534
+2026-08-22,modern,16,33,modern-challenge-16,12852737,21,Prowess,Aggro,-Nausea-,2759230
+2026-08-22,modern,16,33,modern-challenge-16,12852737,22,Broodscale Combo,Combo,maear,2645032
+2026-08-22,modern,16,33,modern-challenge-16,12852737,23,Goryo's Vengeance,Graveyard,Kollslaw,3311758
+2026-08-22,modern,16,33,modern-challenge-16,12852737,24,Rakdos Burn,Aggro,DemianDesposito10,2747375
+2026-08-22,modern,16,33,modern-challenge-16,12852737,25,Boros Energy,Aggro,kasiso,2257869
+2026-08-22,modern,16,33,modern-challenge-16,12852737,26,Domain Zoo,Midrange,Kyndrax,3477428
+2026-08-22,modern,16,33,modern-challenge-16,12852737,27,Prowess,Aggro,nahuel10,1942357
+2026-08-22,modern,16,33,modern-challenge-16,12852737,28,Affinity,Aggro,sidisi,1944075
+2026-08-22,modern,16,33,modern-challenge-16,12852737,29,Affinity,Aggro,LordEgg,964394
+2026-08-22,modern,16,33,modern-challenge-16,12852737,30,UBR,Midrange,planetbrainwash,3037817
+2026-08-22,modern,16,33,modern-challenge-16,12852737,31,Domain Zoo,Midrange,Freeky_16,3046168
+2026-08-22,modern,16,33,modern-challenge-16,12852737,32,Neobrand,Combo,JPA93,1181017
+2026-08-22,modern,64,94,modern-challenge-64,12852736,1,Esper Blink,Blink,Willthepill,999039
+2026-08-22,modern,64,94,modern-challenge-64,12852736,2,Mono-Green Eldrazi,Ramp,Kalipapas,3087728
+2026-08-22,modern,64,94,modern-challenge-64,12852736,3,Grixis Control,Control,ipadkid,3560747
+2026-08-22,modern,64,94,modern-challenge-64,12852736,4,Domain Zoo,Midrange,MercurialChemister,2839061
+2026-08-22,modern,64,94,modern-challenge-64,12852736,5,Affinity,Aggro,LucasG1ggs,750888
+2026-08-22,modern,64,94,modern-challenge-64,12852736,6,Goryo's Vengeance,Graveyard,KingHairy,2185747
+2026-08-22,modern,64,94,modern-challenge-64,12852736,7,Eldrazi Tron,Ramp,Tinker_deck,2981803
+2026-08-22,modern,64,94,modern-challenge-64,12852736,8,Dimir Midrange,Midrange,DrewEldon,1710517
+2026-08-22,modern,64,94,modern-challenge-64,12852736,9,Esper Blink,Blink,stefansson30952,3405508
+2026-08-22,modern,64,94,modern-challenge-64,12852736,10,Mono-Green Eldrazi,Ramp,gazmon48,1636994
+2026-08-22,modern,64,94,modern-challenge-64,12852736,11,UW Control,Control,eclipse4343,2714224
+2026-08-22,modern,64,94,modern-challenge-64,12852736,12,Goryo's Vengeance,Graveyard,connormc02,1221790
+2026-08-22,modern,64,94,modern-challenge-64,12852736,13,Devoted Combo,Combo,MC_amp2267,2729232
+2026-08-22,modern,64,94,modern-challenge-64,12852736,14,Devoted Combo,Combo,azureu09,1156732
+2026-08-22,modern,64,94,modern-challenge-64,12852736,15,Prowess,Aggro,jvidarte,2651868
+2026-08-22,modern,64,94,modern-challenge-64,12852736,16,Broodscale Combo,Combo,NerdDadChad,2993160
+2026-08-22,modern,64,94,modern-challenge-64,12852736,17,Ruby Storm,Combo,Manny-,2139100
+2026-08-22,modern,64,94,modern-challenge-64,12852736,18,Boros Energy,Aggro,NJ5030,3042804
+2026-08-22,modern,64,94,modern-challenge-64,12852736,19,Rakdos HollowOne,Graveyard,kattsu,3405528
+2026-08-22,modern,64,94,modern-challenge-64,12852736,20,Hammer Time,Combo,YungDingo,2928451
+2026-08-22,modern,64,94,modern-challenge-64,12852736,21,Goryo's Vengeance,Graveyard,Tongmuzi,3111303
+2026-08-22,modern,64,94,modern-challenge-64,12852736,22,Dimir Midrange,Midrange,RandomOctopus,1800145
+2026-08-22,modern,64,94,modern-challenge-64,12852736,23,4c HollowOne,Graveyard,Sarlanga,643454
+2026-08-22,modern,64,94,modern-challenge-64,12852736,24,U,Control,AgentP,1088634
+2026-08-22,modern,64,94,modern-challenge-64,12852736,25,WUR,Midrange,ShadowTitan1,2130633
+2026-08-22,modern,64,94,modern-challenge-64,12852736,26,Yawgmoth,Midrange,Sam_Lewin,2092528
+2026-08-22,modern,64,94,modern-challenge-64,12852736,27,Affinity,Aggro,Arcbound_Papi,2137107
+2026-08-22,modern,64,94,modern-challenge-64,12852736,28,Boros Energy,Aggro,kasiso,2257869
+2026-08-22,modern,64,94,modern-challenge-64,12852736,29,Goryo's Vengeance,Graveyard,Richie727,1013616
+2026-08-22,modern,64,94,modern-challenge-64,12852736,30,Devoted Combo,Combo,YAK9k,3500249
+2026-08-22,modern,64,94,modern-challenge-64,12852736,31,Living End,Graveyard,TooManySnacks,2947363
+2026-08-22,modern,64,94,modern-challenge-64,12852736,32,Jeskai Energy,Aggro,_demian,973068
+2026-08-21,modern,64,101,modern-challenge-64,12852731,1,Affinity,Aggro,Haunter56,1126715
+2026-08-21,modern,64,101,modern-challenge-64,12852731,2,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-21,modern,64,101,modern-challenge-64,12852731,3,Mono-Green Eldrazi,Ramp,haveaboavida,2811955
+2026-08-21,modern,64,101,modern-challenge-64,12852731,4,Prowess,Aggro,ArthurMorgan,3572741
+2026-08-21,modern,64,101,modern-challenge-64,12852731,5,Goryo's Vengeance,Graveyard,DskBayWolf,3220713
+2026-08-21,modern,64,101,modern-challenge-64,12852731,6,Affinity,Aggro,TrueHero,2569009
+2026-08-21,modern,64,101,modern-challenge-64,12852731,7,Broodscale Combo,Combo,ziofrancone,2676196
+2026-08-21,modern,64,101,modern-challenge-64,12852731,8,Esper Blink,Blink,McWinSauce,803141
+2026-08-21,modern,64,101,modern-challenge-64,12852731,9,Yawgmoth,Midrange,The_Yoda,1197356
+2026-08-21,modern,64,101,modern-challenge-64,12852731,10,Domain Zoo,Midrange,ShowTime_,949859
+2026-08-21,modern,64,101,modern-challenge-64,12852731,11,URG,Midrange,DelverOfBolts,2688845
+2026-08-21,modern,64,101,modern-challenge-64,12852731,12,Broodscale Combo,Combo,pedronavaja,3540949
+2026-08-21,modern,64,101,modern-challenge-64,12852731,13,Goryo's Vengeance,Graveyard,Habitante_do_Escuro,3412574
+2026-08-21,modern,64,101,modern-challenge-64,12852731,14,Esper Midrange,Midrange,dzk,3390053
+2026-08-21,modern,64,101,modern-challenge-64,12852731,15,Boros Energy,Aggro,kasiso,2257869
+2026-08-21,modern,64,101,modern-challenge-64,12852731,16,Land Destruction,Control,shindy,1237388
+2026-08-21,modern,64,101,modern-challenge-64,12852731,17,U,Control,aspiringspike,1042649
+2026-08-21,modern,64,101,modern-challenge-64,12852731,18,Prowess,Aggro,dmorito,2027462
+2026-08-21,modern,64,101,modern-challenge-64,12852731,19,Yawgmoth,Midrange,bobthedog,5694
+2026-08-21,modern,64,101,modern-challenge-64,12852731,20,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-21,modern,64,101,modern-challenge-64,12852731,21,Dimir Midrange,Midrange,ipadkid,3560747
+2026-08-21,modern,64,101,modern-challenge-64,12852731,22,Prowess,Aggro,O_danielakos,1017550
+2026-08-21,modern,64,101,modern-challenge-64,12852731,23,Broodscale Combo,Combo,SuperCow12653,2064081
+2026-08-21,modern,64,101,modern-challenge-64,12852731,24,Goryo's Vengeance,Graveyard,iomatic,900413
+2026-08-21,modern,64,101,modern-challenge-64,12852731,25,Goryo's Vengeance,Graveyard,Rvng,649380
+2026-08-21,modern,64,101,modern-challenge-64,12852731,26,Tron,Ramp,narca,2776772
+2026-08-21,modern,64,101,modern-challenge-64,12852731,27,Goryo's Vengeance,Graveyard,Xwhale,1428769
+2026-08-21,modern,64,101,modern-challenge-64,12852731,28,4c HollowOne,Graveyard,Moaddin1186,1490004
+2026-08-21,modern,64,101,modern-challenge-64,12852731,29,Azorius Control,Control,big6ybois,3358880
+2026-08-21,modern,64,101,modern-challenge-64,12852731,30,Jeskai Energy,Aggro,-=Alfa=-,685719
+2026-08-21,modern,64,101,modern-challenge-64,12852731,31,Belcher,Combo,Otifex,3149769
+2026-08-21,modern,64,101,modern-challenge-64,12852731,32,Land Destruction,Control,JhonnySeJugar,3185788
+2026-08-20,modern,64,94,modern-challenge-64,12852721,1,Prowess,Aggro,bananadisaster,3442638
+2026-08-20,modern,64,94,modern-challenge-64,12852721,2,Boros Energy,Aggro,Rashek,2702005
+2026-08-20,modern,64,94,modern-challenge-64,12852721,3,Esper Blink,Blink,thodoris17,2119308
+2026-08-20,modern,64,94,modern-challenge-64,12852721,4,Eldrazi Ramp,Ramp,Lightspirit,3222070
+2026-08-20,modern,64,94,modern-challenge-64,12852721,5,Goryo's Vengeance,Graveyard,lunaloveee,2886236
+2026-08-20,modern,64,94,modern-challenge-64,12852721,6,Devoted Combo,Combo,selesneal,1618758
+2026-08-20,modern,64,94,modern-challenge-64,12852721,7,Domain Zoo,Midrange,ShowTime_,949859
+2026-08-20,modern,64,94,modern-challenge-64,12852721,8,Ruby Storm,Combo,X_Why_Z,2937193
+2026-08-20,modern,64,94,modern-challenge-64,12852721,9,Mono-Green Eldrazi,Ramp,Slatorade,828185
+2026-08-20,modern,64,94,modern-challenge-64,12852721,10,Domain Zoo,Midrange,MKC,549287
+2026-08-20,modern,64,94,modern-challenge-64,12852721,11,Broodscale Combo,Combo,manohito,2908947
+2026-08-20,modern,64,94,modern-challenge-64,12852721,12,Esper Blink,Blink,TSPJendrek,1205798
+2026-08-20,modern,64,94,modern-challenge-64,12852721,13,Boros Energy,Aggro,ratabruta,2693418
+2026-08-20,modern,64,94,modern-challenge-64,12852721,14,Grixis Control,Control,ipadkid,3560747
+2026-08-20,modern,64,94,modern-challenge-64,12852721,15,Neobrand,Combo,jade-venus,3252443
+2026-08-20,modern,64,94,modern-challenge-64,12852721,16,Boros Energy,Aggro,Mikebrav,726347
+2026-08-20,modern,64,94,modern-challenge-64,12852721,17,Esper Blink,Blink,yriel,2537131
+2026-08-20,modern,64,94,modern-challenge-64,12852721,18,Goryo's Vengeance,Graveyard,haoqinglangou,2390663
+2026-08-20,modern,64,94,modern-challenge-64,12852721,19,Devoted Combo,Combo,_Shikamaru_,3332226
+2026-08-20,modern,64,94,modern-challenge-64,12852721,20,Jeskai Energy,Aggro,xl_snapcaster,2232658
+2026-08-20,modern,64,94,modern-challenge-64,12852721,21,Neobrand,Combo,CavalloGoloso,1205480
+2026-08-20,modern,64,94,modern-challenge-64,12852721,22,Eldrazi Tron,Ramp,Jumba,2618500
+2026-08-20,modern,64,94,modern-challenge-64,12852721,23,Orzhov Blink,Blink,JJ,750455
+2026-08-20,modern,64,94,modern-challenge-64,12852721,24,Goryo's Vengeance,Graveyard,Tetsubou,1700365
+2026-08-20,modern,64,94,modern-challenge-64,12852721,25,Devoted Combo,Combo,Capitano_CL,535716
+2026-08-20,modern,64,94,modern-challenge-64,12852721,26,Grixis Reanimator,Graveyard,Cyncopath,3539894
+2026-08-20,modern,64,94,modern-challenge-64,12852721,27,Living End,Graveyard,MeninoNey,2903591
+2026-08-20,modern,64,94,modern-challenge-64,12852721,28,Devoted Combo,Combo,Marxelo,277034
+2026-08-20,modern,64,94,modern-challenge-64,12852721,29,Land Destruction,Control,Kritik,2707200
+2026-08-20,modern,64,94,modern-challenge-64,12852721,30,Azorius Control,Control,levunga21,494936
+2026-08-20,modern,64,94,modern-challenge-64,12852721,31,Living End,Graveyard,Traumatismes,2865888
+2026-08-20,modern,64,94,modern-challenge-64,12852721,32,The Rock,Midrange,SanPop,2621451
+2026-08-19,modern,96,109,modern-challenge-96,12851716,1,Living End,Graveyard,MeninoNey,2903591
+2026-08-19,modern,96,109,modern-challenge-96,12851716,2,Mono-Green Eldrazi,Ramp,HouseOfManaMTG,2669359
+2026-08-19,modern,96,109,modern-challenge-96,12851716,3,Jeskai Energy,Aggro,stefansson30952,3405508
+2026-08-19,modern,96,109,modern-challenge-96,12851716,4,Prowess,Aggro,_Abijhavs_,3195782
+2026-08-19,modern,96,109,modern-challenge-96,12851716,5,Goryo's Vengeance,Graveyard,Rvng,649380
+2026-08-19,modern,96,109,modern-challenge-96,12851716,6,Goryo's Vengeance,Graveyard,CMack_,2069667
+2026-08-19,modern,96,109,modern-challenge-96,12851716,7,WBG,Midrange,frenzyofexultations,3476561
+2026-08-19,modern,96,109,modern-challenge-96,12851716,8,Prowess,Aggro,nahuel10,1942357
+2026-08-19,modern,96,109,modern-challenge-96,12851716,9,Affinity,Aggro,starfall,1156605
+2026-08-19,modern,96,109,modern-challenge-96,12851716,10,Broodscale Combo,Combo,TomBombadi1,2607787
+2026-08-19,modern,96,109,modern-challenge-96,12851716,11,Esper Blink,Blink,mh7lucky,2941952
+2026-08-19,modern,96,109,modern-challenge-96,12851716,12,Devoted Combo,Combo,4FunNoWin,3479773
+2026-08-19,modern,96,109,modern-challenge-96,12851716,13,Neobrand,Combo,JPA93,1181017
+2026-08-19,modern,96,109,modern-challenge-96,12851716,14,Eldrazi Tron,Ramp,Antarctica,1163110
+2026-08-19,modern,96,109,modern-challenge-96,12851716,15,4c HollowOne,Graveyard,Sarlanga,643454
+2026-08-19,modern,96,109,modern-challenge-96,12851716,16,Boros Energy,Aggro,NJ5030,3042804
+2026-08-19,modern,96,109,modern-challenge-96,12851716,17,Esper Blink,Blink,Bugsy69,2537822
+2026-08-19,modern,96,109,modern-challenge-96,12851716,18,Broodscale Combo,Combo,pedronavaja,3540949
+2026-08-19,modern,96,109,modern-challenge-96,12851716,19,Goryo's Vengeance,Graveyard,Tetsubou,1700365
+2026-08-19,modern,96,109,modern-challenge-96,12851716,20,Dimir Midrange,Midrange,Martin_Dominguez,1755256
+2026-08-19,modern,96,109,modern-challenge-96,12851716,21,Devoted Combo,Combo,Cachorrowo,2720911
+2026-08-19,modern,96,109,modern-challenge-96,12851716,22,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-19,modern,96,109,modern-challenge-96,12851716,23,Prowess,Aggro,peter780108,1742159
+2026-08-19,modern,96,109,modern-challenge-96,12851716,24,Prowess,Aggro,Xsper,3056706
+2026-08-19,modern,96,109,modern-challenge-96,12851716,25,Esper Blink,Blink,acelerado440,3358375
+2026-08-19,modern,96,109,modern-challenge-96,12851716,26,Prowess,Aggro,MasterGarrix,3452649
+2026-08-19,modern,96,109,modern-challenge-96,12851716,27,Boros Energy,Aggro,Based,943247
+2026-08-19,modern,96,109,modern-challenge-96,12851716,28,Broodscale Combo,Combo,PhyrexianSwarm,3553954
+2026-08-19,modern,96,109,modern-challenge-96,12851716,29,Mono-Green Eldrazi,Ramp,oeni,847498
+2026-08-19,modern,96,109,modern-challenge-96,12851716,30,Eldrazi Tron,Ramp,Jumba,2618500
+2026-08-19,modern,96,109,modern-challenge-96,12851716,31,Prowess,Aggro,JonDaBill,3382957
+2026-08-19,modern,96,109,modern-challenge-96,12851716,32,Affinity,Aggro,chuyingfei,691553
+2026-08-19,modern,32,69,modern-challenge-32,12851707,1,Prowess,Aggro,mechrataal,1938190
+2026-08-19,modern,32,69,modern-challenge-32,12851707,2,Devoted Combo,Combo,musasabi,1210536
+2026-08-19,modern,32,69,modern-challenge-32,12851707,3,Jeskai Energy,Aggro,xl_snapcaster,2232658
+2026-08-19,modern,32,69,modern-challenge-32,12851707,4,Goryo's Vengeance,Graveyard,nedyahiske,2404093
+2026-08-19,modern,32,69,modern-challenge-32,12851707,5,Goryo's Vengeance,Graveyard,Sorathrix,2705240
+2026-08-19,modern,32,69,modern-challenge-32,12851707,6,Esper Blink,Blink,TuckerMTG,2204845
+2026-08-19,modern,32,69,modern-challenge-32,12851707,7,Dimir Midrange,Midrange,bless_von,2292083
+2026-08-19,modern,32,69,modern-challenge-32,12851707,8,Esper Blink,Blink,_Grogu_,3553900
+2026-08-19,modern,32,69,modern-challenge-32,12851707,9,UW Control,Control,eclipse4343,2714224
+2026-08-19,modern,32,69,modern-challenge-32,12851707,10,Esper Blink,Blink,_Batutinha_,453404
+2026-08-19,modern,32,69,modern-challenge-32,12851707,11,Living End,Graveyard,MeninoNey,2903591
+2026-08-19,modern,32,69,modern-challenge-32,12851707,12,Prowess,Aggro,BowBloBiw,2768190
+2026-08-19,modern,32,69,modern-challenge-32,12851707,13,Belcher,Combo,bugzbugs,3486773
+2026-08-19,modern,32,69,modern-challenge-32,12851707,14,Eldrazi Tron,Ramp,Tinker_deck,2981803
+2026-08-19,modern,32,69,modern-challenge-32,12851707,15,Goryo's Vengeance,Graveyard,magikal_juggalo,711131
+2026-08-19,modern,32,69,modern-challenge-32,12851707,16,Jeskai Energy,Aggro,stefansson30952,3405508
+2026-08-19,modern,32,69,modern-challenge-32,12851707,17,Prowess,Aggro,YungDingo,2928451
+2026-08-19,modern,32,69,modern-challenge-32,12851707,18,Azorius Control,Control,thatguy_champ,2917923
+2026-08-19,modern,32,69,modern-challenge-32,12851707,19,Living End,Graveyard,btail08,1980653
+2026-08-19,modern,32,69,modern-challenge-32,12851707,20,Rakdos Aggro,Aggro,DragonFodder,415299
+2026-08-19,modern,32,69,modern-challenge-32,12851707,21,4c HollowOne,Graveyard,ejk,1952341
+2026-08-19,modern,32,69,modern-challenge-32,12851707,22,Prowess,Aggro,nahuel10,1942357
+2026-08-19,modern,32,69,modern-challenge-32,12851707,23,Broodscale Combo,Combo,manohito,2908947
+2026-08-19,modern,32,69,modern-challenge-32,12851707,24,4c HollowOne,Graveyard,LucasG1ggs,750888
+2026-08-19,modern,32,69,modern-challenge-32,12851707,25,Yawgmoth,Midrange,Sam_Lewin,2092528
+2026-08-19,modern,32,69,modern-challenge-32,12851707,26,BRG,Midrange,derlumberzack,1126781
+2026-08-19,modern,32,69,modern-challenge-32,12851707,27,Dimir Midrange,Midrange,ipadkid,3560747
+2026-08-19,modern,32,69,modern-challenge-32,12851707,28,Prowess,Aggro,jvidarte,2651868
+2026-08-19,modern,32,69,modern-challenge-32,12851707,29,The Rock,Midrange,MystikHawk,2626857
+2026-08-19,modern,32,69,modern-challenge-32,12851707,30,Neobrand,Combo,frekinsmart,2873371
+2026-08-19,modern,32,69,modern-challenge-32,12851707,31,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-19,modern,32,69,modern-challenge-32,12851707,32,Affinity,Aggro,Arcbound_Papi,2137107
+2026-08-18,modern,64,77,modern-challenge-64,12851705,1,Mono-Green Eldrazi,Ramp,HouseOfManaMTG,2669359
+2026-08-18,modern,64,77,modern-challenge-64,12851705,2,Dimir Midrange,Midrange,ipadkid,3560747
+2026-08-18,modern,64,77,modern-challenge-64,12851705,3,WBG,Midrange,NathanOfTheGiltLeaf,2968680
+2026-08-18,modern,64,77,modern-challenge-64,12851705,4,Devoted Combo,Combo,Marxelo,277034
+2026-08-18,modern,64,77,modern-challenge-64,12851705,5,Broodscale Combo,Combo,KajuRoers,3549579
+2026-08-18,modern,64,77,modern-challenge-64,12851705,6,Goryo's Vengeance,Graveyard,Martin_Dominguez,1755256
+2026-08-18,modern,64,77,modern-challenge-64,12851705,7,Devoted Combo,Combo,Nowayh,2714019
+2026-08-18,modern,64,77,modern-challenge-64,12851705,8,Prowess,Aggro,nahuel10,1942357
+2026-08-18,modern,64,77,modern-challenge-64,12851705,9,Grixis Midrange,Midrange,Linden_43,3041704
+2026-08-18,modern,64,77,modern-challenge-64,12851705,10,Jeskai Energy,Aggro,Aced5,10594
+2026-08-18,modern,64,77,modern-challenge-64,12851705,11,WUR,Midrange,ShadowTitan1,2130633
+2026-08-18,modern,64,77,modern-challenge-64,12851705,12,Prowess,Aggro,Devoured,3230515
+2026-08-18,modern,64,77,modern-challenge-64,12851705,13,Goryo's Vengeance,Graveyard,Kollslaw,3311758
+2026-08-18,modern,64,77,modern-challenge-64,12851705,14,Boros Energy,Aggro,ratabruta,2693418
+2026-08-18,modern,64,77,modern-challenge-64,12851705,15,Prowess,Aggro,MaxMedeiros,1020450
+2026-08-18,modern,64,77,modern-challenge-64,12851705,16,Esper Blink,Blink,_Batutinha_,453404
+2026-08-18,modern,64,77,modern-challenge-64,12851705,17,Esper Blink,Blink,Rexplosion,1860596
+2026-08-18,modern,64,77,modern-challenge-64,12851705,18,UG,Combo,CesarMerjan,2633477
+2026-08-18,modern,64,77,modern-challenge-64,12851705,19,Broodscale Combo,Combo,bunnyfat,315547
+2026-08-18,modern,64,77,modern-challenge-64,12851705,20,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-18,modern,64,77,modern-challenge-64,12851705,21,Living End,Graveyard,MeninoNey,2903591
+2026-08-18,modern,64,77,modern-challenge-64,12851705,22,4c HollowOne,Graveyard,LucasG1ggs,750888
+2026-08-18,modern,64,77,modern-challenge-64,12851705,23,Esper Blink,Blink,-Grissom-,3162448
+2026-08-18,modern,64,77,modern-challenge-64,12851705,24,Esper Blink,Blink,Salty_Orange,2273541
+2026-08-18,modern,64,77,modern-challenge-64,12851705,25,Boros Energy,Aggro,Rashek,2702005
+2026-08-18,modern,64,77,modern-challenge-64,12851705,26,Domain Zoo,Midrange,Boin,181637
+2026-08-18,modern,64,77,modern-challenge-64,12851705,27,Esper Blink,Blink,Mortaa,3250308
+2026-08-18,modern,64,77,modern-challenge-64,12851705,28,Prowess,Aggro,Dustin_Comite,2995405
+2026-08-18,modern,64,77,modern-challenge-64,12851705,29,Broodscale Combo,Combo,pedronavaja,3540949
+2026-08-18,modern,64,77,modern-challenge-64,12851705,30,4c HollowOne,Graveyard,HolaChico,3485421
+2026-08-18,modern,64,77,modern-challenge-64,12851705,31,Ruby Storm,Combo,hugofreitas1,1997683
+2026-08-18,modern,64,77,modern-challenge-64,12851705,32,Neobrand,Combo,your_fave_maeve,3359557
+2026-08-17,modern,96,99,modern-challenge-96,12851690,1,Goryo's Vengeance,Graveyard,Rvng,649380
+2026-08-17,modern,96,99,modern-challenge-96,12851690,2,Devoted Combo,Combo,Nowayh,2714019
+2026-08-17,modern,96,99,modern-challenge-96,12851690,3,WUR,Midrange,ShadowTitan1,2130633
+2026-08-17,modern,96,99,modern-challenge-96,12851690,4,Goryo's Vengeance,Graveyard,bcs8995,1824707
+2026-08-17,modern,96,99,modern-challenge-96,12851690,5,Land Destruction,Control,kthanakit26,2122697
+2026-08-17,modern,96,99,modern-challenge-96,12851690,6,Prowess,Aggro,arturcosta,2887338
+2026-08-17,modern,96,99,modern-challenge-96,12851690,7,Devoted Combo,Combo,Thunus,3076886
+2026-08-17,modern,96,99,modern-challenge-96,12851690,8,Goryo's Vengeance,Graveyard,EpicWalrus,2287212
+2026-08-17,modern,96,99,modern-challenge-96,12851690,9,Esper Blink,Blink,Poderosisimo,1186562
+2026-08-17,modern,96,99,modern-challenge-96,12851690,10,Esper Blink,Blink,Salty_Orange,2273541
+2026-08-17,modern,96,99,modern-challenge-96,12851690,11,Eldrazi Tron,Ramp,Tamarindo,1216373
+2026-08-17,modern,96,99,modern-challenge-96,12851690,12,Esper Blink,Blink,Bugsy69,2537822
+2026-08-17,modern,96,99,modern-challenge-96,12851690,13,UW Control,Control,eclipse4343,2714224
+2026-08-17,modern,96,99,modern-challenge-96,12851690,14,Prowess,Aggro,mechrataal,1938190
+2026-08-17,modern,96,99,modern-challenge-96,12851690,15,Broodscale Combo,Combo,Pallocchia314,3489335
+2026-08-17,modern,96,99,modern-challenge-96,12851690,16,Affinity,Aggro,Haunter56,1126715
+2026-08-17,modern,96,99,modern-challenge-96,12851690,17,Through the Breach,Combo,Fra91,3375676
+2026-08-17,modern,96,99,modern-challenge-96,12851690,18,Broodscale Combo,Combo,manohito,2908947
+2026-08-17,modern,96,99,modern-challenge-96,12851690,19,Broodscale Combo,Combo,Uagli1,2680052
+2026-08-17,modern,96,99,modern-challenge-96,12851690,20,Esper Blink,Blink,TSPJendrek,1205798
+2026-08-17,modern,96,99,modern-challenge-96,12851690,21,UW Control,Control,CavalloGoloso,1205480
+2026-08-17,modern,96,99,modern-challenge-96,12851690,22,Broodscale Combo,Combo,pedronavaja,3540949
+2026-08-17,modern,96,99,modern-challenge-96,12851690,23,Eldrazi Ramp,Ramp,RTR_,3186428
+2026-08-17,modern,96,99,modern-challenge-96,12851690,24,WBG,Midrange,Jungski,3169912
+2026-08-17,modern,96,99,modern-challenge-96,12851690,25,Neobrand,Combo,badgods,2712630
+2026-08-17,modern,96,99,modern-challenge-96,12851690,26,Affinity,Aggro,chuyingfei,691553
+2026-08-17,modern,96,99,modern-challenge-96,12851690,27,UBR,Midrange,planetbrainwash,3037817
+2026-08-17,modern,96,99,modern-challenge-96,12851690,28,Esper Blink,Blink,Spellyp,3373315
+2026-08-17,modern,96,99,modern-challenge-96,12851690,29,Esper Blink,Blink,Mansa_Musa,3544096
+2026-08-17,modern,96,99,modern-challenge-96,12851690,30,Neobrand,Combo,oskiyaa,1111702
+2026-08-17,modern,96,99,modern-challenge-96,12851690,31,The Rock,Midrange,pokerswizard,280778
+2026-08-17,modern,96,99,modern-challenge-96,12851690,32,Broodscale Combo,Combo,RCMerriam,1041920
+2026-08-17,modern,64,72,modern-challenge-64,12851686,1,Esper Blink,Blink,Dioferreira,1950164
+2026-08-17,modern,64,72,modern-challenge-64,12851686,2,Prowess,Aggro,ScreenwriterNY,1880301
+2026-08-17,modern,64,72,modern-challenge-64,12851686,3,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-17,modern,64,72,modern-challenge-64,12851686,4,Goryo's Vengeance,Graveyard,Ivan_Draw_Go,2679669
+2026-08-17,modern,64,72,modern-challenge-64,12851686,5,Prowess,Aggro,YungDingo,2928451
+2026-08-17,modern,64,72,modern-challenge-64,12851686,6,4c HollowOne,Graveyard,LucasG1ggs,750888
+2026-08-17,modern,64,72,modern-challenge-64,12851686,7,WUR,Midrange,ShadowTitan1,2130633
+2026-08-17,modern,64,72,modern-challenge-64,12851686,8,Dimir Midrange,Midrange,littesir095,3034834
+2026-08-17,modern,64,72,modern-challenge-64,12851686,9,Devoted Combo,Combo,musasabi,1210536
+2026-08-17,modern,64,72,modern-challenge-64,12851686,10,WUR,Midrange,bless_von,2292083
+2026-08-17,modern,64,72,modern-challenge-64,12851686,11,Esper Blink,Blink,Bugsy69,2537822
+2026-08-17,modern,64,72,modern-challenge-64,12851686,12,Grixis Reanimator,Graveyard,Sorathrix,2705240
+2026-08-17,modern,64,72,modern-challenge-64,12851686,13,Devoted Combo,Combo,DaybreakFinks,2753868
+2026-08-17,modern,64,72,modern-challenge-64,12851686,14,Boros Energy,Aggro,ChinaNO2,2881508
+2026-08-17,modern,64,72,modern-challenge-64,12851686,15,Mono-Green Eldrazi,Ramp,Csypher,3040653
+2026-08-17,modern,64,72,modern-challenge-64,12851686,16,BRG,Midrange,derlumberzack,1126781
+2026-08-17,modern,64,72,modern-challenge-64,12851686,17,WUR,Midrange,Darkchrome6538,2877405
+2026-08-17,modern,64,72,modern-challenge-64,12851686,18,UG,Combo,manohito,2908947
+2026-08-17,modern,64,72,modern-challenge-64,12851686,19,Boros Energy,Aggro,SimonAntillon,3557832
+2026-08-17,modern,64,72,modern-challenge-64,12851686,20,Esper Blink,Blink,TuckerMTG,2204845
+2026-08-17,modern,64,72,modern-challenge-64,12851686,21,4c HollowOne,Graveyard,Filho_do_MOL,3180600
+2026-08-17,modern,64,72,modern-challenge-64,12851686,22,Prowess,Aggro,Tree42o,875470
+2026-08-17,modern,64,72,modern-challenge-64,12851686,23,UW Control,Control,eclipse4343,2714224
+2026-08-17,modern,64,72,modern-challenge-64,12851686,24,Hammer Time,Combo,justFeather,2446403
+2026-08-17,modern,64,72,modern-challenge-64,12851686,25,4c HollowOne,Graveyard,Cachorrowo,2720911
+2026-08-17,modern,64,72,modern-challenge-64,12851686,26,Rakdos Aggro,Aggro,DragonFodder,415299
+2026-08-17,modern,64,72,modern-challenge-64,12851686,27,Amulet Titan,Combo,crazythursday,3116151
+2026-08-17,modern,64,72,modern-challenge-64,12851686,28,Boros Energy,Aggro,Sarlanga,643454
+2026-08-17,modern,64,72,modern-challenge-64,12851686,29,Neobrand,Combo,KeasbyKnight,2856033
+2026-08-17,modern,64,72,modern-challenge-64,12851686,30,Esper Mill,Combo,medvedev,741295
+2026-08-17,modern,64,72,modern-challenge-64,12851686,31,Goryo's Vengeance,Graveyard,DskBayWolf,3220713
+2026-08-17,modern,64,72,modern-challenge-64,12851686,32,Grixis Midrange,Midrange,ipadkid,3560747
+2026-08-16,modern,64,71,modern-challenge-64,12851676,1,4c HollowOne,Graveyard,Xenowan,2614008
+2026-08-16,modern,64,71,modern-challenge-64,12851676,2,Esper Blink,Blink,thodoris17,2119308
+2026-08-16,modern,64,71,modern-challenge-64,12851676,3,Domain Zoo,Midrange,ryuumei,933670
+2026-08-16,modern,64,71,modern-challenge-64,12851676,4,Esper Blink,Blink,JahBoodle,3150061
+2026-08-16,modern,64,71,modern-challenge-64,12851676,5,Mono-Black Midrange,Midrange,SanPop,2621451
+2026-08-16,modern,64,71,modern-challenge-64,12851676,6,Esper Blink,Blink,acelerado440,3358375
+2026-08-16,modern,64,71,modern-challenge-64,12851676,7,Sultai Ritual,Midrange,STURSY,3273156
+2026-08-16,modern,64,71,modern-challenge-64,12851676,8,Grixis Reanimator,Graveyard,yolad,3342362
+2026-08-16,modern,64,71,modern-challenge-64,12851676,9,Mono-Black Midrange,Midrange,UltraEgo_,3105602
+2026-08-16,modern,64,71,modern-challenge-64,12851676,10,Broodscale Combo,Combo,Cheeesy,2950421
+2026-08-16,modern,64,71,modern-challenge-64,12851676,11,Azorius Control,Control,bobthedog,5694
+2026-08-16,modern,64,71,modern-challenge-64,12851676,12,Esper Blink,Blink,JuanmaAT,2695862
+2026-08-16,modern,64,71,modern-challenge-64,12851676,13,Prowess,Aggro,bestdraveneu,3569566
+2026-08-16,modern,64,71,modern-challenge-64,12851676,14,Goryo's Vengeance,Graveyard,VampireDiaries,2283377
+2026-08-16,modern,64,71,modern-challenge-64,12851676,15,Dimir Midrange,Midrange,ipadkid,3560747
+2026-08-16,modern,64,71,modern-challenge-64,12851676,16,Mono-Green Eldrazi,Ramp,CNewman,1715380
+2026-08-16,modern,64,71,modern-challenge-64,12851676,17,Boros Energy,Aggro,ManuMasters,2625537
+2026-08-16,modern,64,71,modern-challenge-64,12851676,18,UW Loki,Control,Radziolot,2416526
+2026-08-16,modern,64,71,modern-challenge-64,12851676,19,Dimir Midrange,Midrange,Mazun0,3132608
+2026-08-16,modern,64,71,modern-challenge-64,12851676,20,Goryo's Vengeance,Graveyard,optivial,3140486
+2026-08-16,modern,64,71,modern-challenge-64,12851676,21,Ruby Storm,Combo,Erik157751,2578127
+2026-08-16,modern,64,71,modern-challenge-64,12851676,22,Affinity,Aggro,Habitante_do_Escuro,3412574
+2026-08-16,modern,64,71,modern-challenge-64,12851676,23,Eldrazi Tron,Ramp,Scappie,1129308
+2026-08-16,modern,64,71,modern-challenge-64,12851676,24,Esper Blink,Blink,etazazer,2242008
+2026-08-16,modern,64,71,modern-challenge-64,12851676,25,Esper Blink,Blink,_Falcon_,2498069
+2026-08-16,modern,64,71,modern-challenge-64,12851676,26,Living End,Graveyard,Sorathrix,2705240
+2026-08-16,modern,64,71,modern-challenge-64,12851676,27,Goryo's Vengeance,Graveyard,Deathmaxx,2995055
+2026-08-16,modern,64,71,modern-challenge-64,12851676,28,Ruby Storm,Combo,WanderingOnes,840020
+2026-08-16,modern,64,71,modern-challenge-64,12851676,29,Goryo's Vengeance,Graveyard,Sifui,3073951
+2026-08-16,modern,64,71,modern-challenge-64,12851676,30,Jeskai Energy,Aggro,_Batutinha_,453404
+2026-08-16,modern,64,71,modern-challenge-64,12851676,31,4c HollowOne,Graveyard,Ardonas,1040296
+2026-08-16,modern,64,71,modern-challenge-64,12851676,32,Boros Energy,Aggro,MayoDominaria,1112102
+2026-08-16,modern,64,79,modern-challenge-64,12851672,1,Belcher,Combo,E90_DeliveryBoy,3122660
+2026-08-16,modern,64,79,modern-challenge-64,12851672,2,Living End,Graveyard,niuwaid001,2372533
+2026-08-16,modern,64,79,modern-challenge-64,12851672,3,Eldrazi Tron,Ramp,benbot9003,1572878
+2026-08-16,modern,64,79,modern-challenge-64,12851672,4,UW Control,Control,eclipse4343,2714224
+2026-08-16,modern,64,79,modern-challenge-64,12851672,5,Goryo's Vengeance,Graveyard,jussupinator,880239
+2026-08-16,modern,64,79,modern-challenge-64,12851672,6,Eldrazi Ramp,Ramp,manohito,2908947
+2026-08-16,modern,64,79,modern-challenge-64,12851672,7,Prowess,Aggro,emairi,2984489
+2026-08-16,modern,64,79,modern-challenge-64,12851672,8,Dimir Midrange,Midrange,DrewEldon,1710517
+2026-08-16,modern,64,79,modern-challenge-64,12851672,9,Prowess,Aggro,Grogore,2664302
+2026-08-16,modern,64,79,modern-challenge-64,12851672,10,Dimir Midrange,Midrange,oinkmage22,2858193
+2026-08-16,modern,64,79,modern-challenge-64,12851672,11,Neobrand,Combo,UninspiredMehjagic,3050754
+2026-08-16,modern,64,79,modern-challenge-64,12851672,12,Esper Blink,Blink,Marvin_Dalkiri,1516253
+2026-08-16,modern,64,79,modern-challenge-64,12851672,13,Prowess,Aggro,mechrataal,1938190
+2026-08-16,modern,64,79,modern-challenge-64,12851672,14,Broodscale Combo,Combo,NerdDadChad,2993160
+2026-08-16,modern,64,79,modern-challenge-64,12851672,15,Broodscale Combo,Combo,MyrRetriever,3006274
+2026-08-16,modern,64,79,modern-challenge-64,12851672,16,Ruby Storm,Combo,WanderingOnes,840020
+2026-08-16,modern,64,79,modern-challenge-64,12851672,17,Devoted Combo,Combo,416FrowningTable,2397690
+2026-08-16,modern,64,79,modern-challenge-64,12851672,18,Domain Zoo,Midrange,KingOfGames1522,2831734
+2026-08-16,modern,64,79,modern-challenge-64,12851672,19,Boros Energy,Aggro,Rapgod,3163526
+2026-08-16,modern,64,79,modern-challenge-64,12851672,20,Grixis Midrange,Midrange,ipadkid,3560747
+2026-08-16,modern,64,79,modern-challenge-64,12851672,21,Goryo's Vengeance,Graveyard,BENTO_,3458153
+2026-08-16,modern,64,79,modern-challenge-64,12851672,22,4c Control,Control,SteveKnack,2568591
+2026-08-16,modern,64,79,modern-challenge-64,12851672,23,Mono-Black Midrange,Midrange,Selfeisek,2042214
+2026-08-16,modern,64,79,modern-challenge-64,12851672,24,Mono-Green Eldrazi,Ramp,amin0e,3107576
+2026-08-16,modern,64,79,modern-challenge-64,12851672,25,Broodscale Combo,Combo,praiseseigerhino,2723741
+2026-08-16,modern,64,79,modern-challenge-64,12851672,26,Prowess,Aggro,Marlin583,3350667
+2026-08-16,modern,64,79,modern-challenge-64,12851672,27,Dimir Midrange,Midrange,DLCabelo,516055
+2026-08-16,modern,64,79,modern-challenge-64,12851672,28,Affinity,Aggro,_Stream,1540808
+2026-08-16,modern,64,79,modern-challenge-64,12851672,29,Neobrand,Combo,RED-King,3519050
+2026-08-16,modern,64,79,modern-challenge-64,12851672,30,Prowess,Aggro,KnightOfSuri,2797068
+2026-08-16,modern,64,79,modern-challenge-64,12851672,31,Neobrand,Combo,frekinsmart,2873371
+2026-08-16,modern,64,79,modern-challenge-64,12851672,32,Yawgmoth,Midrange,MacIsaac,3233450

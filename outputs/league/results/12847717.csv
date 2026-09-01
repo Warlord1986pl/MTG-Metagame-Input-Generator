@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12847717,2026-07-20,C64,Challenge,percussion_mike,3085850,1,4c HollowOne,5,1,21,0.55782,0.82353,0.51007
-12847717,2026-07-20,C64,Challenge,Calambity,979328,2,Ruby Storm,4,7,15,0.58503,0.70588,0.51975
-12847717,2026-07-20,C64,Challenge,sultai4lyfe,1614331,3,Broodscale Combo,3,3,18,0.57823,0.70588,0.52309
-12847717,2026-07-20,C64,Challenge,ejk,1952341,4,Domain Zoo,3,5,15,0.71021,0.57895,0.61182
-12847717,2026-07-20,C64,Challenge,Scorpion100,2872570,5,Neobrand,2,2,18,0.60204,0.66667,0.57465
-12847717,2026-07-20,C64,Challenge,Stealthmagician,2334451,6,Tron,2,4,18,0.53742,0.68421,0.49682
-12847717,2026-07-20,C64,Challenge,azpharot,3023527,7,Boros Energy,2,6,15,0.68708,0.60000,0.62104
-12847717,2026-07-20,C64,Challenge,MTGeeGee,2812852,8,Broodscale Combo,2,8,15,0.58503,0.55556,0.54470
-12847717,2026-07-20,C64,Challenge,xerioc,1660533,9,Dimir Mill,1,9,15,0.57823,0.75000,0.50616
-12847717,2026-07-20,C64,Challenge,JDunny4,3340044,10,Dimir Midrange,1,10,15,0.57823,0.60000,0.56335
-12847717,2026-07-20,C64,Challenge,Dioferreira,1950164,11,Grixis Midrange,1,11,15,0.56803,0.52632,0.54457
-12847717,2026-07-20,C64,Challenge,MystikHawk,2626857,12,Affinity,1,12,15,0.53401,0.66667,0.52213
-12847717,2026-07-20,C64,Challenge,niuwaid001,2372533,13,Living End,1,13,15,0.52653,0.63158,0.55013
-12847717,2026-07-20,C64,Challenge,wft,3030517,14,Azorius Control,1,14,15,0.52313,0.70588,0.47734
-12847717,2026-07-20,C64,Challenge,Dlihchtarw,2718398,15,Tron,1,15,15,0.40136,0.61111,0.42271
-12847717,2026-07-20,C64,Challenge,touto_Isle,1439480,16,Living End,1,16,12,0.75510,0.50000,0.64802
-12847717,2026-07-20,C64,Challenge,andersoneclair,1186448,17,Domain Zoo,0,17,12,0.63492,0.53333,0.56986
-12847717,2026-07-20,C64,Challenge,lgqueiroz3,2011282,18,Grixis Reanimator,0,18,12,0.60884,0.52632,0.55779
-12847717,2026-07-20,C64,Challenge,derlumberzack,1126781,19,BRG,0,19,12,0.60136,0.57143,0.55590
-12847717,2026-07-20,C64,Challenge,JonDaBill,3382957,20,Prowess,0,20,12,0.59184,0.58824,0.55368
-12847717,2026-07-20,C64,Challenge,TRON_Bahiano,3526959,21,Boros Energy,0,21,12,0.57415,0.55556,0.53969
-12847717,2026-07-20,C64,Challenge,ador,2786634,22,Goryo's Vengeance,0,22,12,0.56395,0.55000,0.52725
-12847717,2026-07-20,C64,Challenge,Hongfu_Eureka,3070695,23,Goryo's Vengeance,0,23,12,0.55953,0.53333,0.56189
-12847717,2026-07-20,C64,Challenge,Tinker_deck,2981803,24,Eldrazi Tron,0,24,12,0.55714,0.57895,0.51245
-12847717,2026-07-20,C64,Challenge,lilcreacher,3447454,25,Azorius Blink,0,25,12,0.54762,0.47059,0.57885
-12847717,2026-07-20,C64,Challenge,Fransadness,3143623,26,Broodscale Combo,0,26,12,0.53674,0.50000,0.53163
-12847717,2026-07-20,C64,Challenge,jussupinator,880239,27,Goryo's Vengeance,0,27,12,0.53401,0.56250,0.50510
-12847717,2026-07-20,C64,Challenge,amin0e,3107576,28,Boros Energy,0,28,12,0.47891,0.53333,0.46224
-12847717,2026-07-20,C64,Challenge,RandomOctopus,1800145,29,Dimir Midrange,0,29,12,0.46939,0.62500,0.45905
-12847717,2026-07-20,C64,Challenge,Smang,312637,30,Ruby Storm,0,30,9,0.58651,0.53333,0.53217
-12847717,2026-07-20,C64,Challenge,arturcosta,2887338,31,Boros Energy,0,31,9,0.55442,0.42105,0.52041
-12847717,2026-07-20,C64,Challenge,Lightspirit,3222070,32,Eldrazi Ramp,0,32,9,0.52381,0.42857,0.51710
+12847717,2026-07-20,C64,Challenge,percussion_mike,3085850,1,4c HollowOne,5,,,,,
+12847717,2026-07-20,C64,Challenge,Calambity,979328,2,Ruby Storm,4,,,,,
+12847717,2026-07-20,C64,Challenge,sultai4lyfe,1614331,3,Broodscale Combo,3,,,,,
+12847717,2026-07-20,C64,Challenge,ejk,1952341,4,Domain Zoo,3,,,,,
+12847717,2026-07-20,C64,Challenge,Scorpion100,2872570,5,Neobrand,2,,,,,
+12847717,2026-07-20,C64,Challenge,Stealthmagician,2334451,6,Tron,2,,,,,
+12847717,2026-07-20,C64,Challenge,azpharot,3023527,7,Boros Energy,2,,,,,
+12847717,2026-07-20,C64,Challenge,MTGeeGee,2812852,8,Broodscale Combo,2,,,,,
+12847717,2026-07-20,C64,Challenge,xerioc,1660533,9,Dimir Mill,1,,,,,
+12847717,2026-07-20,C64,Challenge,JDunny4,3340044,10,Dimir Midrange,1,,,,,
+12847717,2026-07-20,C64,Challenge,Dioferreira,1950164,11,Grixis Midrange,1,,,,,
+12847717,2026-07-20,C64,Challenge,MystikHawk,2626857,12,Affinity,1,,,,,
+12847717,2026-07-20,C64,Challenge,niuwaid001,2372533,13,Living End,1,,,,,
+12847717,2026-07-20,C64,Challenge,wft,3030517,14,Azorius Control,1,,,,,
+12847717,2026-07-20,C64,Challenge,Dlihchtarw,2718398,15,Tron,1,,,,,
+12847717,2026-07-20,C64,Challenge,touto_Isle,1439480,16,Living End,1,,,,,
+12847717,2026-07-20,C64,Challenge,andersoneclair,1186448,17,Domain Zoo,0,,,,,
+12847717,2026-07-20,C64,Challenge,lgqueiroz3,2011282,18,Grixis Reanimator,0,,,,,
+12847717,2026-07-20,C64,Challenge,derlumberzack,1126781,19,BRG,0,,,,,
+12847717,2026-07-20,C64,Challenge,JonDaBill,3382957,20,Prowess,0,,,,,
+12847717,2026-07-20,C64,Challenge,TRON_Bahiano,3526959,21,Boros Energy,0,,,,,
+12847717,2026-07-20,C64,Challenge,ador,2786634,22,Goryo's Vengeance,0,,,,,
+12847717,2026-07-20,C64,Challenge,Hongfu_Eureka,3070695,23,Goryo's Vengeance,0,,,,,
+12847717,2026-07-20,C64,Challenge,Tinker_deck,2981803,24,Eldrazi Tron,0,,,,,
+12847717,2026-07-20,C64,Challenge,lilcreacher,3447454,25,Azorius Blink,0,,,,,
+12847717,2026-07-20,C64,Challenge,Fransadness,3143623,26,Broodscale Combo,0,,,,,
+12847717,2026-07-20,C64,Challenge,jussupinator,880239,27,Goryo's Vengeance,0,,,,,
+12847717,2026-07-20,C64,Challenge,amin0e,3107576,28,Boros Energy,0,,,,,
+12847717,2026-07-20,C64,Challenge,RandomOctopus,1800145,29,Dimir Midrange,0,,,,,
+12847717,2026-07-20,C64,Challenge,Smang,312637,30,Ruby Storm,0,,,,,
+12847717,2026-07-20,C64,Challenge,arturcosta,2887338,31,Boros Energy,0,,,,,
+12847717,2026-07-20,C64,Challenge,Lightspirit,3222070,32,Eldrazi Ramp,0,,,,,

@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12851665,2026-08-15,C64,Challenge,DskBayWolf,3220713,1,Goryo's Vengeance,5,8,12,0.66667,0.60000,0.60741
-12851665,2026-08-15,C64,Challenge,MeninoNey,2903591,2,Living End,4,3,15,0.66667,0.71429,0.60794
-12851665,2026-08-15,C64,Challenge,EnderW,2945081,3,Ruby Storm,3,2,15,0.66667,0.73333,0.60794
-12851665,2026-08-15,C64,Challenge,Lightspirit,3222070,4,Eldrazi Ramp,3,4,15,0.63889,0.62500,0.57976
-12851665,2026-08-15,C64,Challenge,gazmon48,1636994,5,Tron,2,1,18,0.65000,0.80000,0.56250
-12851665,2026-08-15,C64,Challenge,JustAnotherGuy83,2691811,6,Belcher,2,5,15,0.58334,0.73333,0.55038
-12851665,2026-08-15,C64,Challenge,CNewman,1715380,7,Mono-Green Eldrazi,2,6,15,0.56667,0.73333,0.55451
-12851665,2026-08-15,C64,Challenge,acelerado440,3358375,8,Esper Blink,2,7,15,0.50000,0.66667,0.50207
-12851665,2026-08-15,C64,Challenge,NicolasP,2812872,9,Boros Energy,1,9,12,0.63889,0.62500,0.55903
-12851665,2026-08-15,C64,Challenge,kentaro_hokori,575927,10,Goryo's Vengeance,1,10,12,0.61111,0.50000,0.56046
-12851665,2026-08-15,C64,Challenge,PhyrexianSwarm,3553954,11,Broodscale Combo,1,11,12,0.58333,0.62500,0.50893
-12851665,2026-08-15,C64,Challenge,Arcbound_Papi,2137107,12,Affinity,1,12,12,0.56667,0.60000,0.53393
-12851665,2026-08-15,C64,Challenge,The_Phenom,1010620,13,Prowess,1,13,12,0.55556,0.64286,0.53457
-12851665,2026-08-15,C64,Challenge,yriel,2537131,14,Esper Blink,1,14,12,0.55556,0.62500,0.51498
-12851665,2026-08-15,C64,Challenge,SanPop,2621451,15,Esper Blink,1,15,12,0.55556,0.60000,0.51322
-12851665,2026-08-15,C64,Challenge,thodoris17,2119308,16,Esper Blink,1,16,12,0.53889,0.61538,0.51462
-12851665,2026-08-15,C64,Challenge,Disgruntled_Elk,1883946,17,Hammer Time,0,17,12,0.52778,0.60000,0.49660
-12851665,2026-08-15,C64,Challenge,Urthstrype,702030,18,Goryo's Vengeance,0,18,12,0.52778,0.53333,0.52843
-12851665,2026-08-15,C64,Challenge,MasterNeo7,913552,19,Ruby Storm,0,19,12,0.51111,0.56250,0.49300
-12851665,2026-08-15,C64,Challenge,mechrataal,1938190,20,Prowess,0,20,12,0.47222,0.64286,0.49048
-12851665,2026-08-15,C64,Challenge,leandru,1546166,21,Devoted Combo,0,21,12,0.47222,0.57143,0.48320
-12851665,2026-08-15,C64,Challenge,jvidarte,2651868,22,Prowess,0,22,9,0.66667,0.50000,0.57784
-12851665,2026-08-15,C64,Challenge,Shoa1,2252178,23,Mono-Green Eldrazi,0,23,9,0.58334,0.50000,0.55084
-12851665,2026-08-15,C64,Challenge,EsperD,3083306,24,Affinity,0,24,9,0.56667,0.53333,0.51468
-12851665,2026-08-15,C64,Challenge,fazparte,3106246,25,Boros Energy,0,25,9,0.55556,0.52941,0.52573
-12851665,2026-08-15,C64,Challenge,Dioferreira,1950164,26,UW Control,0,26,9,0.55556,0.50000,0.54266
-12851665,2026-08-15,C64,Challenge,nahuel10,1942357,27,Prowess,0,27,9,0.55555,0.46667,0.51775
-12851665,2026-08-15,C64,Challenge,Stealthmagician,2334451,28,Neobrand,0,28,9,0.52778,0.47059,0.53036
-12851665,2026-08-15,C64,Challenge,_must_be_nice,1252777,29,Goryo's Vengeance,0,29,9,0.52778,0.46154,0.50067
-12851665,2026-08-15,C64,Challenge,wallofspikes,774962,30,Land Destruction,0,30,9,0.52778,0.42857,0.49668
-12851665,2026-08-15,C64,Challenge,MonstrousRage,3468061,31,Neobrand,0,31,9,0.50000,0.42857,0.51786
-12851665,2026-08-15,C64,Challenge,TheRightStuff,2315424,32,Goryo's Vengeance,0,32,9,0.47222,0.50000,0.47625
+12851665,2026-08-15,C64,Challenge,DskBayWolf,3220713,1,Goryo's Vengeance,5,,,,,
+12851665,2026-08-15,C64,Challenge,MeninoNey,2903591,2,Living End,4,,,,,
+12851665,2026-08-15,C64,Challenge,EnderW,2945081,3,Ruby Storm,3,,,,,
+12851665,2026-08-15,C64,Challenge,Lightspirit,3222070,4,Eldrazi Ramp,3,,,,,
+12851665,2026-08-15,C64,Challenge,gazmon48,1636994,5,Tron,2,,,,,
+12851665,2026-08-15,C64,Challenge,JustAnotherGuy83,2691811,6,Belcher,2,,,,,
+12851665,2026-08-15,C64,Challenge,CNewman,1715380,7,Mono-Green Eldrazi,2,,,,,
+12851665,2026-08-15,C64,Challenge,acelerado440,3358375,8,Esper Blink,2,,,,,
+12851665,2026-08-15,C64,Challenge,NicolasP,2812872,9,Boros Energy,1,,,,,
+12851665,2026-08-15,C64,Challenge,kentaro_hokori,575927,10,Goryo's Vengeance,1,,,,,
+12851665,2026-08-15,C64,Challenge,PhyrexianSwarm,3553954,11,Broodscale Combo,1,,,,,
+12851665,2026-08-15,C64,Challenge,Arcbound_Papi,2137107,12,Affinity,1,,,,,
+12851665,2026-08-15,C64,Challenge,The_Phenom,1010620,13,Prowess,1,,,,,
+12851665,2026-08-15,C64,Challenge,yriel,2537131,14,Esper Blink,1,,,,,
+12851665,2026-08-15,C64,Challenge,SanPop,2621451,15,Esper Blink,1,,,,,
+12851665,2026-08-15,C64,Challenge,thodoris17,2119308,16,Esper Blink,1,,,,,
+12851665,2026-08-15,C64,Challenge,Disgruntled_Elk,1883946,17,Hammer Time,0,,,,,
+12851665,2026-08-15,C64,Challenge,Urthstrype,702030,18,Goryo's Vengeance,0,,,,,
+12851665,2026-08-15,C64,Challenge,MasterNeo7,913552,19,Ruby Storm,0,,,,,
+12851665,2026-08-15,C64,Challenge,mechrataal,1938190,20,Prowess,0,,,,,
+12851665,2026-08-15,C64,Challenge,leandru,1546166,21,Devoted Combo,0,,,,,
+12851665,2026-08-15,C64,Challenge,jvidarte,2651868,22,Prowess,0,,,,,
+12851665,2026-08-15,C64,Challenge,Shoa1,2252178,23,Mono-Green Eldrazi,0,,,,,
+12851665,2026-08-15,C64,Challenge,EsperD,3083306,24,Affinity,0,,,,,
+12851665,2026-08-15,C64,Challenge,fazparte,3106246,25,Boros Energy,0,,,,,
+12851665,2026-08-15,C64,Challenge,Dioferreira,1950164,26,UW Control,0,,,,,
+12851665,2026-08-15,C64,Challenge,nahuel10,1942357,27,Prowess,0,,,,,
+12851665,2026-08-15,C64,Challenge,Stealthmagician,2334451,28,Neobrand,0,,,,,
+12851665,2026-08-15,C64,Challenge,_must_be_nice,1252777,29,Goryo's Vengeance,0,,,,,
+12851665,2026-08-15,C64,Challenge,wallofspikes,774962,30,Land Destruction,0,,,,,
+12851665,2026-08-15,C64,Challenge,MonstrousRage,3468061,31,Neobrand,0,,,,,
+12851665,2026-08-15,C64,Challenge,TheRightStuff,2315424,32,Goryo's Vengeance,0,,,,,

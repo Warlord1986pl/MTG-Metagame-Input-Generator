@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12852742,2026-08-22,C64,Challenge,QF,MikeEgan,980850,Bugsy69,2537822,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12852742,2026-08-22,C64,Challenge,QF,pokerswizard,280778,toto_2295,3086057,2,0,The Rock,Prowess
+12852742,2026-08-22,C64,Challenge,QF,Phryziel,301933,MeninooNey,3263693,2,0,NEEDS_MANUAL_REVIEW,Living End
+12852742,2026-08-22,C64,Challenge,QF,Nuserdog,2702142,Takayama,3293313,2,1,Tron,Goryo's Vengeance
+12852742,2026-08-22,C64,Challenge,SF,Phryziel,301933,pokerswizard,280778,2,1,NEEDS_MANUAL_REVIEW,The Rock
+12852742,2026-08-22,C64,Challenge,SF,Nuserdog,2702142,MikeEgan,980850,2,1,Tron,NEEDS_MANUAL_REVIEW
+12852742,2026-08-22,C64,Challenge,F,Phryziel,301933,Nuserdog,2702142,2,0,NEEDS_MANUAL_REVIEW,Tron

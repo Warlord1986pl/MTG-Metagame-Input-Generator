@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12849488,2026-08-03,C64,Challenge,MystikHawk,2626857,1,Affinity,5,8,15,0.67007,0.63158,0.58714
-12849488,2026-08-03,C64,Challenge,LegacyGrinder,2604603,2,Goryo's Vengeance,4,7,15,0.68367,0.62500,0.59490
-12849488,2026-08-03,C64,Challenge,Skeptic2304,2665316,3,Affinity,3,3,18,0.63946,0.76471,0.57692
-12849488,2026-08-03,C64,Challenge,niuwaid001,2372533,4,Living End,3,4,18,0.54422,0.76471,0.49461
-12849488,2026-08-03,C64,Challenge,Tree42o,875470,5,Affinity,2,1,21,0.60544,0.77778,0.56229
-12849488,2026-08-03,C64,Challenge,KingHairy,2185747,6,Goryo's Vengeance,2,2,18,0.71429,0.63158,0.65100
-12849488,2026-08-03,C64,Challenge,Slasher21,2522150,7,Prowess,2,5,18,0.54422,0.70588,0.51483
-12849488,2026-08-03,C64,Challenge,Odin2015,3306092,8,Eldrazi Tron,2,6,18,0.52381,0.75000,0.50120
-12849488,2026-08-03,C64,Challenge,auzzie51,1111936,9,Bant Control,1,9,15,0.66939,0.64706,0.61362
-12849488,2026-08-03,C64,Challenge,KurumimBagoRosa,3472098,10,Grixis Reanimator,1,10,15,0.66327,0.61111,0.60418
-12849488,2026-08-03,C64,Challenge,YungDingo,2928451,11,Eldrazi Ramp,1,11,15,0.63810,0.61111,0.58818
-12849488,2026-08-03,C64,Challenge,nick4567,2757041,12,Dimir Midrange,1,12,15,0.63674,0.52632,0.59337
-12849488,2026-08-03,C64,Challenge,ipadkid,3560747,13,Dimir Midrange,1,13,15,0.57823,0.68750,0.52067
-12849488,2026-08-03,C64,Challenge,dayodemayo,2863625,14,Simic Midrange,1,14,15,0.53401,0.64706,0.52199
-12849488,2026-08-03,C64,Challenge,zbogames,3109223,15,Esper Blink,1,15,15,0.51361,0.60000,0.48504
-12849488,2026-08-03,C64,Challenge,JustAnotherGuy83,2691811,16,Belcher,1,16,15,0.50952,0.64706,0.51103
-12849488,2026-08-03,C64,Challenge,fanahova,2962399,17,Dimir Midrange,0,17,15,0.45556,0.62500,0.46991
-12849488,2026-08-03,C64,Challenge,Sorathrix,2705240,18,Living End,0,18,12,0.64286,0.52941,0.56836
-12849488,2026-08-03,C64,Challenge,bathutubgod,3353750,19,Living End,0,19,12,0.58571,0.50000,0.55667
-12849488,2026-08-03,C64,Challenge,bcs8995,1824707,20,Prowess,0,20,12,0.58503,0.55556,0.52974
-12849488,2026-08-03,C64,Challenge,ShadowTitan1,2130633,21,Domain Zoo,0,21,12,0.56803,0.62500,0.51039
-12849488,2026-08-03,C64,Challenge,xl_snapcaster,2232658,22,Jeskai Energy,0,22,12,0.56463,0.50000,0.54308
-12849488,2026-08-03,C64,Challenge,Kollslaw,3311758,23,Goryo's Vengeance,0,23,12,0.56054,0.56250,0.52101
-12849488,2026-08-03,C64,Challenge,Chichichi,2788809,24,Broodscale Combo,0,24,12,0.55782,0.50000,0.50544
-12849488,2026-08-03,C64,Challenge,jakobpablo,2856109,25,Neobrand,0,25,12,0.49932,0.55556,0.49974
-12849488,2026-08-03,C64,Challenge,DemianDesposito10,2747375,26,Rakdos Burn,0,26,12,0.48912,0.58824,0.47554
-12849488,2026-08-03,C64,Challenge,Kuhmero,1076951,27,Boros Burn,0,27,12,0.48912,0.50000,0.48932
-12849488,2026-08-03,C64,Challenge,Xsper,3056706,28,Prowess,0,28,12,0.48571,0.58824,0.47661
-12849488,2026-08-03,C64,Challenge,ashame,2761370,29,Devoted Combo,0,29,12,0.43809,0.55556,0.44289
-12849488,2026-08-03,C64,Challenge,internetsurfer09,803177,30,4c Omnath,0,30,12,0.43809,0.52381,0.44469
-12849488,2026-08-03,C64,Challenge,justFeather,2446403,31,Mono-Green Eldrazi,0,31,12,0.40816,0.58824,0.42143
-12849488,2026-08-03,C64,Challenge,kcomedina,617093,32,Goryo's Vengeance,0,32,12,0.40408,0.53333,0.41667
+12849488,2026-08-03,C64,Challenge,MystikHawk,2626857,1,Affinity,5,,,,,
+12849488,2026-08-03,C64,Challenge,LegacyGrinder,2604603,2,Goryo's Vengeance,4,,,,,
+12849488,2026-08-03,C64,Challenge,Skeptic2304,2665316,3,Affinity,3,,,,,
+12849488,2026-08-03,C64,Challenge,niuwaid001,2372533,4,Living End,3,,,,,
+12849488,2026-08-03,C64,Challenge,Tree42o,875470,5,Affinity,2,,,,,
+12849488,2026-08-03,C64,Challenge,KingHairy,2185747,6,Goryo's Vengeance,2,,,,,
+12849488,2026-08-03,C64,Challenge,Slasher21,2522150,7,Prowess,2,,,,,
+12849488,2026-08-03,C64,Challenge,Odin2015,3306092,8,Eldrazi Tron,2,,,,,
+12849488,2026-08-03,C64,Challenge,auzzie51,1111936,9,Bant Control,1,,,,,
+12849488,2026-08-03,C64,Challenge,KurumimBagoRosa,3472098,10,Grixis Reanimator,1,,,,,
+12849488,2026-08-03,C64,Challenge,YungDingo,2928451,11,Eldrazi Ramp,1,,,,,
+12849488,2026-08-03,C64,Challenge,nick4567,2757041,12,Dimir Midrange,1,,,,,
+12849488,2026-08-03,C64,Challenge,ipadkid,3560747,13,Dimir Midrange,1,,,,,
+12849488,2026-08-03,C64,Challenge,dayodemayo,2863625,14,Simic Midrange,1,,,,,
+12849488,2026-08-03,C64,Challenge,zbogames,3109223,15,Esper Blink,1,,,,,
+12849488,2026-08-03,C64,Challenge,JustAnotherGuy83,2691811,16,Belcher,1,,,,,
+12849488,2026-08-03,C64,Challenge,fanahova,2962399,17,Dimir Midrange,0,,,,,
+12849488,2026-08-03,C64,Challenge,Sorathrix,2705240,18,Living End,0,,,,,
+12849488,2026-08-03,C64,Challenge,bathutubgod,3353750,19,Living End,0,,,,,
+12849488,2026-08-03,C64,Challenge,bcs8995,1824707,20,Prowess,0,,,,,
+12849488,2026-08-03,C64,Challenge,ShadowTitan1,2130633,21,Domain Zoo,0,,,,,
+12849488,2026-08-03,C64,Challenge,xl_snapcaster,2232658,22,Jeskai Energy,0,,,,,
+12849488,2026-08-03,C64,Challenge,Kollslaw,3311758,23,Goryo's Vengeance,0,,,,,
+12849488,2026-08-03,C64,Challenge,Chichichi,2788809,24,Broodscale Combo,0,,,,,
+12849488,2026-08-03,C64,Challenge,jakobpablo,2856109,25,Neobrand,0,,,,,
+12849488,2026-08-03,C64,Challenge,DemianDesposito10,2747375,26,Rakdos Burn,0,,,,,
+12849488,2026-08-03,C64,Challenge,Kuhmero,1076951,27,Boros Burn,0,,,,,
+12849488,2026-08-03,C64,Challenge,Xsper,3056706,28,Prowess,0,,,,,
+12849488,2026-08-03,C64,Challenge,ashame,2761370,29,Devoted Combo,0,,,,,
+12849488,2026-08-03,C64,Challenge,internetsurfer09,803177,30,4c Omnath,0,,,,,
+12849488,2026-08-03,C64,Challenge,justFeather,2446403,31,Mono-Green Eldrazi,0,,,,,
+12849488,2026-08-03,C64,Challenge,kcomedina,617093,32,Goryo's Vengeance,0,,,,,
