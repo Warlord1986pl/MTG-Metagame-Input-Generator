@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, timedelta
+from fractions import Fraction
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -560,9 +561,6 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
     placements from both classes together -- a Top 8 is a Top 8 regardless of which ladder scored
     it.
 
-    Also carries a hidden "_AvgFinish" column (mean Place across the identity's Top32 appearances)
-    used only as a rank tie-break by _rank_table -- not part of PILOT_TABLE_COLS, stripped before
-    the season table is written.
     """
     cols = ["Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
     if results_df.empty:
@@ -594,7 +592,6 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
     top8 = grp["Place"].apply(lambda s: int((s <= 8).sum()))
     top16 = grp["Place"].apply(lambda s: int((s <= 16).sum()))
     starts = grp["EventID"].nunique()
-    avg_finish = grp["Place"].mean()
 
     # Display name = Pilot at this identity's latest EventDate. Rows with an unparseable date are
     # excluded from the "latest" search (never let a bad date silently win); if that leaves an
@@ -630,42 +627,80 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
         "Top8": top8.reindex(idx).values,
         "Top16": top16.reindex(idx).values,
         "Starts": starts.reindex(idx).values,
-        "_AvgFinish": avg_finish.reindex(idx).values,
     })
     out["Points"] = out["Points"].astype(int)
     out["PremierPoints"] = out["PremierPoints"].astype(int)
-    return out[["_Key"] + cols + ["_AvgFinish"]]
+    return out[["_Key"] + cols]
+
+
+def _apply_tie_break_sort(df: pd.DataFrame) -> pd.DataFrame:
+    """The one production implementation of the tie-break rule described in _rank_table's
+    docstring (that docstring is the rule's single source of truth for anything published outside
+    the code) -- shared by _rank_table (building today's table). Returns *df* stably re-ordered;
+    does not add a Rank column itself.
+
+    Every row must have Starts >= 1 (a pilot only ever enters this table via a Top32 appearance,
+    so Points/Starts is always well-defined) -- raises AssertionError naming the offending LoginID
+    otherwise, rather than letting a division by zero happen or silently skipping the row.
+    """
+    work = df.copy()
+    starts_num = pd.to_numeric(work["Starts"], errors="coerce")
+    bad = work[starts_num.isna() | (starts_num < 1)]
+    if not bad.empty:
+        offending = [
+            {"LoginID": r.get("LoginID"), "Starts": r.get("Starts")}
+            for r in bad.to_dict(orient="records")
+        ]
+        raise AssertionError(
+            f"_apply_tie_break_sort: Starts must be >= 1 for every pilot (a pilot only enters "
+            f"this table via a Top32 appearance) -- offending: {offending}"
+        )
+
+    work["_PtsPerStart"] = [
+        Fraction(int(p), int(s)) for p, s in zip(work["Points"], work["Starts"])
+    ]
+    ordered = work.sort_values(
+        ["Points", "_PtsPerStart", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"],
+        ascending=[False, False, False, False, False, False, False, True],
+        kind="mergesort",
+    ).drop(columns=["_PtsPerStart"]).reset_index(drop=True)
+    return ordered
 
 
 def _rank_table(agg: pd.DataFrame) -> pd.DataFrame:
-    """Tie-break, applied in sequence: Points, Wins, Top2, Top4, Top8, Top16, Starts (more is
-    better for all seven -- a pilot who has shown up to more events is not worse, on an equal
-    points/placement record, than one who has shown up to fewer), then a BETTER (lower) average
-    finish across that identity's Top32 appearances, then the displayed Pilot name ascending, then
-    LoginID ascending as a final determinism guard.
+    """Tie-break chain -- this docstring is the single source of truth for the rule (it is quoted
+    in published materials); the one production implementation is _apply_tie_break_sort. Applied
+    in this exact order:
 
-    Average finish is deliberately second-to-last, after Starts and not before it: with several
-    hundred pilots sitting on zero points, Starts is what actually separates them (more events
-    entered, on an otherwise identical zero-point record, ranks higher) -- putting average finish
-    ahead of Starts would instead favour a pilot with two lucky appearances over one who entered
-    fifteen, which is the wrong story for a season-long table.
+      1. Points, descending.
+      2. Points / Starts, descending -- points earned per Top32 entry, as an exact
+         fractions.Fraction(Points, Starts), never a float. A float comparison can split
+         mathematically equal ratios apart, or merge distinct ones together, and this value
+         decides the order of the published table. A single Top32 entry scores 0-5 points in a
+         Challenge and 0-10 in a premier event, so this ratio is a real measure of how deep a
+         pilot's runs go, not an artifact of how many events they entered -- it lightly offsets
+         the raw Points column's inherent bias toward pilots who simply play often.
+      3. Wins, descending.
+      4. Top2, descending.
+      5. Top4, descending.
+      6. Top8, descending.
+      7. Top16, descending.
+      8. Starts, ascending -- in practice this key only ever decides anything at zero points,
+         where Points/Starts is 0 regardless of Starts. Deliberately arbitrary at the very bottom
+         of the table, not a meaningful signal on its own; it exists only so the chain has a
+         defined behaviour there instead of falling through to input order by accident.
 
-    The Pilot/LoginID pair (not Pilot alone) makes the ordering a total order -- deterministic
-    across runs on identical data, and still deterministic if two different pilots happen to share
-    a display name (LoginID breaks that tie; a name-keyed fallback row has no LoginID and sorts by
-    the empty string, i.e. first among ties, which is fine since it's merely a tie-break, not a
-    ranking signal). PremierPoints plays no part in the tie-break -- it is informational only,
-    carried through unchanged.
+    A group still tied after all eight keys is a genuine, unresolved tie and stays that way -- no
+    ninth key, and no Pilot or LoginID tiebreak is added. Such a group's internal order falls out
+    of the stable sort applied to *agg*'s existing order, which is itself deterministic (see
+    aggregate_pilot_table's identity groupby), so re-running on identical data reproduces the same
+    order even where the rule itself is silent.
     """
     if agg.empty:
         out = agg.copy()
         out.insert(0, "Rank", pd.Series(dtype=int))
         return out
-    ranked = agg.sort_values(
-        ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts", "_AvgFinish", "Pilot", "LoginID"],
-        ascending=[False, False, False, False, False, False, False, True, True, True],
-        kind="mergesort",
-    ).reset_index(drop=True)
+    ranked = _apply_tie_break_sort(agg)
     ranked.insert(0, "Rank", range(1, len(ranked) + 1))
     return ranked
 
