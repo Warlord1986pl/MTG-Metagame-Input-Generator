@@ -19,6 +19,7 @@ appear over time and a text filter would silently miss them.
 from __future__ import annotations
 
 import re
+import sys
 from datetime import date, timedelta
 from fractions import Fraction
 from pathlib import Path
@@ -77,9 +78,28 @@ LEAGUE_RESULTS_COLS: List[str] = [
 
 SEASON_CONFIG_COLS: List[str] = ["Season", "StartDate", "EndDate"]
 
+# Immutable weekly capture, keyed by LoginID -- see write_weekly_snapshot. This, not a running
+# total, is what next week's Prev*/D* columns are computed from.
+SNAPSHOT_COLS: List[str] = [
+    "LoginID", "Rank", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts",
+]
+
+# The 14 week-over-week delta columns, in the exact order/names the published site reads by name
+# (see build_season_table / _apply_deltas). PrevPoints etc. come straight from the most recent
+# snapshot older than the current run's ISO week; D* = current value - Prev*.
+DELTA_COLS: List[str] = [
+    "PrevPoints", "PrevStarts", "PrevTop16", "PrevTop8", "PrevTop4", "PrevTop2", "PrevWins",
+    "DPoints", "DStarts", "DTop16", "DTop8", "DTop4", "DTop2", "DWins",
+]
+
 PILOT_TABLE_COLS: List[str] = [
     "Rank", "Pilot", "LoginID", "Points", "PremierPoints", "Wins", "Top2", "Top4", "Top8", "Top16",
     "Starts", "PrevRank", "RankChange",
+    *DELTA_COLS,
+    # Not part of the published 14-column delta block above (that list's order/names are fixed) --
+    # appended here only because validate_league's check 16 (DPoints formula) needs the previous
+    # week's PremierPoints to verify the premier-bonus term, and nothing else already carries it.
+    "PrevPremierPoints",
 ]
 
 
@@ -729,17 +749,25 @@ def build_season_table(
     season_end: date,
     as_of: date,
     prevrank_cutoff_days: int = 7,
+    snapshot_dir: Optional[Path] = None,
     log: Optional[Callable[[str], None]] = None,
 ) -> pd.DataFrame:
     """Rebuilt from scratch every call by reading every file in results_dir whose EventDate falls
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
     propagates automatically. PrevRank/RankChange are computed live from the same raw files with an
-    earlier cutoff (as_of - prevrank_cutoff_days); no snapshot is ever stored.
+    earlier cutoff (as_of - prevrank_cutoff_days); no snapshot is involved in that pair.
 
     Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key),
     including for the PrevRank lookup: matching prev-vs-current by identity rather than by raw
     Pilot string is what stops a rename inside the cutoff window from showing up as one pilot
     vanishing and a different one appearing from nowhere.
+
+    DELTA_COLS (PrevPoints/DPoints/...) are a separate, snapshot-based pair: when *snapshot_dir* is
+    given, the newest weekly snapshot older than isocalendar(as_of) is loaded (see
+    _load_latest_snapshot_before) as the delta base; left None (no snapshot lookup at all, e.g. a
+    read-only caller like league_site_export/pilot_identity_cli that doesn't want the stderr noise
+    of a missing-snapshot warning), or when no snapshot exists yet, every DELTA_COLS cell stays
+    blank -- never 0, since 0 is a legitimate delta.
     """
     all_results = load_all_league_results(results_dir)
     if all_results.empty:
@@ -766,6 +794,15 @@ def build_season_table(
 
     current_ranked["PrevRank"] = current_ranked["_Key"].map(prev_rank_lookup).astype("Int64")
     current_ranked["RankChange"] = (current_ranked["PrevRank"] - current_ranked["Rank"]).astype("Int64")
+
+    base_snapshot = None
+    if snapshot_dir is not None:
+        season_name, _s, _e = season_for_date(season_start)
+        base_snapshot, _base_week = _load_latest_snapshot_before(
+            snapshot_dir, season_name, _iso_week(as_of), log=log
+        )
+    current_ranked = _apply_deltas(current_ranked, base_snapshot)
+
     return current_ranked[PILOT_TABLE_COLS]
 
 
@@ -775,11 +812,423 @@ def write_season_league_csv(league_dir: Path, season: str, table: pd.DataFrame) 
     return path
 
 
+# --- Weekly snapshots (delta base for PrevPoints/DPoints/...) -----------------------------------
+
+_SNAPSHOT_WEEK_RE = re.compile(r"_w(\d+)\.csv$")
+
+
+def _iso_week(d: date) -> int:
+    """ISO week number, same convention compute_run_dir uses for the WNN_ run-folder prefix in
+    metagame_input_generator.py -- reusing it here keeps "week N" meaning one thing project-wide."""
+    return d.isocalendar()[1]
+
+
+def _snapshot_path(snapshot_dir: Path, season: str, week: int) -> Path:
+    return snapshot_dir / f"pilot_league_{season_filename_slug(season)}_w{week:02d}.csv"
+
+
+def write_weekly_snapshot(
+    snapshot_dir: Path,
+    season: str,
+    as_of: date,
+    table: pd.DataFrame,
+    today: Optional[date] = None,
+    log: Optional[Callable[[str], None]] = None,
+) -> Optional[Path]:
+    """Writes the weekly snapshot for *season* at ISO week isocalendar(as_of), keyed by LoginID.
+
+    Overwritable only for the CURRENT ISO week: a second run later the same week (e.g. Wednesday,
+    then again Friday) legitimately has more events on disk by then, and it -- not the Wednesday
+    run -- should become next week's delta base, so it overwrites and logs
+    "snapshot for week <N> overwritten". A snapshot for any earlier ISO week is frozen: writing to
+    it raises FileExistsError. "Current" is judged against *today* (real wall-clock date,
+    defaulting to date.today() when not given) rather than *as_of* itself, so a deliberately
+    backdated as_of -- a historical backfill run -- is still correctly judged frozen against the
+    real calendar instead of always comparing equal to its own week.
+
+    Returns None (writes nothing) when *table* is empty or every row is name-keyed (no LoginID --
+    pre-2026-07-13 fallback identity, see _identity_key), since LoginID is the only key a delta can
+    reliably track across weeks.
+    """
+    def emit(msg: str) -> None:
+        if log is not None:
+            log(msg)
+        else:
+            print(msg)
+
+    if table.empty:
+        return None
+    week = _iso_week(as_of)
+    week_today = _iso_week(today if today is not None else date.today())
+    path = _snapshot_path(snapshot_dir, season, week)
+    if path.exists():
+        if week == week_today:
+            emit(f"snapshot for week {week} overwritten")
+        else:
+            raise FileExistsError(
+                f"[league] snapshot already exists for {season} week {week}: {path} -- this is an "
+                f"earlier ISO week than today's (week {week_today}), so it is frozen; only the "
+                f"current week's snapshot may be overwritten"
+            )
+    snap = table[table["LoginID"].astype(str).str.strip() != ""].copy()
+    if snap.empty:
+        return None
+    out = snap[SNAPSHOT_COLS].copy()
+    for col in SNAPSHOT_COLS:
+        if col != "LoginID":
+            out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0).astype(int)
+    _write_csv_lf(out, path)
+    return path
+
+
+def _load_latest_snapshot_before(
+    snapshot_dir: Path, season: str, week: int, log: Optional[Callable[[str], None]] = None,
+) -> Tuple[Optional[pd.DataFrame], Optional[int]]:
+    """Finds the newest snapshot for *season* with a week number strictly less than *week* and
+    loads it indexed by LoginID. Returns (None, None) when no such snapshot exists -- printing the
+    required one-line stderr message rather than inventing a zero-filled base, since zero is a
+    legitimate delta value and must never stand in for "no prior data".
+    """
+    slug = season_filename_slug(season)
+    best_week: Optional[int] = None
+    best_path: Optional[Path] = None
+    if snapshot_dir.exists():
+        for p in snapshot_dir.glob(f"pilot_league_{slug}_w*.csv"):
+            m = _SNAPSHOT_WEEK_RE.search(p.name)
+            if not m:
+                continue
+            w = int(m.group(1))
+            if w < week and (best_week is None or w > best_week):
+                best_week, best_path = w, p
+    if best_path is None:
+        print(f"no snapshot for week {week - 1}, deltas empty", file=sys.stderr)
+        return None, None
+    df = pd.read_csv(best_path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    if df.empty:
+        print(f"no snapshot for week {week - 1}, deltas empty", file=sys.stderr)
+        return None, None
+    for col in SNAPSHOT_COLS:
+        if col != "LoginID":
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
+    df["LoginID"] = df["LoginID"].astype(str).str.strip()
+    df = df.set_index("LoginID", drop=False)
+    return df, best_week
+
+
+def _apply_deltas(current_ranked: pd.DataFrame, base_snapshot: Optional[pd.DataFrame]) -> pd.DataFrame:
+    """Adds DELTA_COLS + PrevPremierPoints to an already-ranked season table. Every cell stays
+    pandas NA (blank in the CSV) for a pilot absent from *base_snapshot* -- no snapshot at all, or
+    a debutant identity this week -- rather than 0, since 0 is a legitimate delta and must not be
+    mistaken for "no prior data" (PrevRank/RankChange already follow this same blank-not-zero rule).
+    """
+    out = current_ranked.copy()
+    extra_cols = DELTA_COLS + ["PrevPremierPoints"]
+    for col in extra_cols:
+        out[col] = pd.array([pd.NA] * len(out), dtype="Int64")
+
+    if base_snapshot is None or base_snapshot.empty:
+        return out
+
+    for idx, row in out.iterrows():
+        lid = str(row.get("LoginID", "")).strip()
+        if not lid or lid not in base_snapshot.index:
+            continue
+        base = base_snapshot.loc[lid]
+        if isinstance(base, pd.DataFrame):
+            raise AssertionError(f"[league] snapshot has duplicate LoginID {lid}, cannot compute delta")
+
+        prev_points, prev_starts = int(base["Points"]), int(base["Starts"])
+        prev_top16, prev_top8 = int(base["Top16"]), int(base["Top8"])
+        prev_top4, prev_top2 = int(base["Top4"]), int(base["Top2"])
+        prev_wins = int(base["Wins"])
+        prev_premier = int(base["PremierPoints"])
+
+        out.at[idx, "PrevPoints"] = prev_points
+        out.at[idx, "PrevStarts"] = prev_starts
+        out.at[idx, "PrevTop16"] = prev_top16
+        out.at[idx, "PrevTop8"] = prev_top8
+        out.at[idx, "PrevTop4"] = prev_top4
+        out.at[idx, "PrevTop2"] = prev_top2
+        out.at[idx, "PrevWins"] = prev_wins
+        out.at[idx, "PrevPremierPoints"] = prev_premier
+
+        out.at[idx, "DPoints"] = int(row["Points"]) - prev_points
+        out.at[idx, "DStarts"] = int(row["Starts"]) - prev_starts
+        out.at[idx, "DTop16"] = int(row["Top16"]) - prev_top16
+        out.at[idx, "DTop8"] = int(row["Top8"]) - prev_top8
+        out.at[idx, "DTop4"] = int(row["Top4"]) - prev_top4
+        out.at[idx, "DTop2"] = int(row["Top2"]) - prev_top2
+        out.at[idx, "DWins"] = int(row["Wins"]) - prev_wins
+
+    return out
+
+
+def _remigrate_snapshot_ranks(snapshot_dir: Path, log: Optional[Callable[[str], None]] = None) -> dict:
+    """One-time migration: recomputes Rank inside every existing weekly snapshot with the CURRENT
+    tie-break rule (_apply_tie_break_sort, see _rank_table's docstring for the rule itself) and
+    overwrites the snapshot in place -- deliberately bypassing write_weekly_snapshot's immutability
+    guard, since a controlled, one-time rewrite of already-published snapshots is exactly what this
+    migration is for.
+
+    Needed because the tie-break rule changed: re-ranking with the new rule moves most pilots' Rank
+    even though their Points/Wins/Top2/.../Starts values are all unchanged. Without this migration,
+    the next production run would diff a freshly-built (new-rule) table's Rank against an old-rule
+    snapshot's Rank and report a false wave of RankChange movement across the whole table.
+
+    Logs the number of snapshots migrated and the number of rows whose Rank value actually changed.
+    That row-changed count is purely informational, printed for visibility only -- it is NOT a
+    stable, assertable quantity. It depends on the OLD rule's tie-break order among fully-tied rows,
+    which was itself dependent on whatever input order happened to produce that specific snapshot;
+    the same recomputation over the same underlying Points/Wins/.../Starts values can legitimately
+    report a different changed-row count against a different (differently-ordered) prior snapshot
+    of the old rule's output. Never assert on this number.
+
+    Prints "no snapshots to remigrate" and does nothing if *snapshot_dir* has no snapshot files.
+    """
+    def emit(msg: str) -> None:
+        if log is not None:
+            log(msg)
+        else:
+            print(msg)
+
+    paths = sorted(snapshot_dir.glob("pilot_league_*_w*.csv")) if snapshot_dir.exists() else []
+    if not paths:
+        emit("no snapshots to remigrate")
+        return {"snapshots_migrated": 0, "rows_changed": 0}
+
+    snapshots_migrated = 0
+    rows_changed = 0
+    for p in paths:
+        df = pd.read_csv(p, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+        if df.empty:
+            snapshots_migrated += 1
+            continue
+        df["LoginID"] = df["LoginID"].astype(str).str.strip()
+        for col in SNAPSHOT_COLS:
+            if col != "LoginID":
+                df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
+
+        old_rank_by_lid = dict(zip(df["LoginID"], df["Rank"]))
+        reranked = _apply_tie_break_sort(df)
+        reranked["Rank"] = range(1, len(reranked) + 1)
+        changed_here = int((reranked["Rank"] != reranked["LoginID"].map(old_rank_by_lid)).sum())
+
+        out = reranked[SNAPSHOT_COLS]
+        _write_csv_lf(out, p)  # bypasses write_weekly_snapshot's overwrite guard on purpose
+        rows_changed += changed_here
+        snapshots_migrated += 1
+
+    emit(
+        f"[league] remigrated {snapshots_migrated} snapshot(s), {rows_changed} row(s) with a "
+        f"changed Rank (informational count only -- see docstring, not stable/assertable)"
+    )
+    return {"snapshots_migrated": snapshots_migrated, "rows_changed": rows_changed}
+
+
 # --- Assertions: fail loudly, print the offending value -----------------------------------------
 
 def _fail(label: str, message: str, offending: object) -> None:
     print(f"[league][invariant] ASSERTION FAILED ({label}): {message} -- offending value: {offending!r}")
     raise AssertionError(f"{label}: {message} (offending value: {offending!r})")
+
+
+def _validate_num(v: object) -> Optional[int]:
+    """Coerces a table cell (python int/float, numpy scalar, pandas NA, or CSV-round-tripped
+    string/empty-string) to int, or None for anything that means "blank" -- used throughout
+    validate_league so it works identically whether *rows* came straight from build_season_table's
+    DataFrame or from re-reading an already-written pilot_league_*.csv."""
+    if v is None:
+        return None
+    try:
+        if pd.isna(v):
+            return None
+    except (TypeError, ValueError):
+        pass
+    if v == "":
+        return None
+    return int(float(v))
+
+
+def validate_league(rows, n_events: int, n_premier_events: int) -> None:
+    """Hard invariants for a rebuilt season table -- run immediately before writing the CSV (see
+    run_league_update). Every violation raises AssertionError naming the offending LoginID and
+    values; there are no warnings and no silent pass-through here, by design (see this feature's
+    task doc -- turning any of these into a warning defeats the point of a hard invariant).
+
+    *rows* is the season table, either a DataFrame or an iterable of row-dicts (e.g.
+    table.to_dict("records"), or the result of pd.read_csv(pilot_league_<season>.csv) -- both are
+    accepted so this can validate either a freshly-built table or one already round-tripped through
+    CSV). *n_events* is the season's total event count across both EventClasses; *n_premier_events*
+    is the Premier-only subset -- both counted the same way check_league_invariants already does
+    (season_results["EventID"].nunique()).
+
+    Check 14 re-derives the FULL 8-key tie-break chain from zero (see _rank_table's docstring for
+    the rule; _full_tie_break_key here is an independent re-implementation of it, not a call into
+    _apply_tie_break_sort) and sorts *rows* by it, then compares position-by-position against the
+    given Rank column. Every one of the 8 keys is present here, so a stable sort's tie-preservation
+    only ever matters for a row-pair genuinely tied on all 8 -- a real, unresolved tie (see
+    _rank_table), not an untested gap in this check's own key like the previous (Points, Wins,
+    Top2)-only version had.
+
+    Checks 15-16 (delta sanity) run only for a row that actually has a snapshot base (PrevPoints
+    not blank) -- a debutant, or a season with no snapshot at all yet, has nothing to check there.
+    """
+    if isinstance(rows, pd.DataFrame):
+        rows = rows.to_dict("records")
+    rows = list(rows)
+    if not rows:
+        return
+
+    num = _validate_num
+
+    def lid_of(row: dict) -> str:
+        return str(row.get("LoginID", "")).strip()
+
+    # 1-3: per-pilot checks.
+    for row in rows:
+        lid = lid_of(row)
+        top16, top8, top4, top2 = num(row.get("Top16")) or 0, num(row.get("Top8")) or 0, num(row.get("Top4")) or 0, num(row.get("Top2")) or 0
+        wins, starts = num(row.get("Wins")) or 0, num(row.get("Starts")) or 0
+        premier, points = num(row.get("PremierPoints")) or 0, num(row.get("Points")) or 0
+
+        expected_points = top16 + top8 + top4 + top2 + wins + premier // 2
+        if points != expected_points:
+            _fail(
+                "points formula",
+                f"LoginID {lid}: Points={points} != Top16+Top8+Top4+Top2+Wins+PremierPoints//2={expected_points}",
+                {"LoginID": lid, "Points": points, "expected": expected_points},
+            )
+        if premier % 2 != 0:
+            _fail("premier points parity", f"LoginID {lid}: PremierPoints={premier} is odd", {"LoginID": lid, "PremierPoints": premier})
+        if not (wins <= top2 <= top4 <= top8 <= top16 <= starts):
+            _fail(
+                "monotonic counts",
+                f"LoginID {lid}: Wins<=Top2<=Top4<=Top8<=Top16<=Starts violated",
+                {"LoginID": lid, "Wins": wins, "Top2": top2, "Top4": top4, "Top8": top8, "Top16": top16, "Starts": starts},
+            )
+
+    # 4: LoginID unique across the whole table.
+    lids = [lid_of(r) for r in rows]
+    dupes = sorted({x for x in lids if lids.count(x) > 1})
+    if dupes:
+        _fail("unique LoginID", "LoginID appears more than once in the table", dupes)
+
+    # 5-12: global sums, all derived from event counts.
+    def col_sum(col: str) -> int:
+        return sum((num(r.get(col)) or 0) for r in rows)
+
+    for col, expected in [
+        ("Starts", 32 * n_events), ("Top16", 16 * n_events), ("Top8", 8 * n_events),
+        ("Top4", 4 * n_events), ("Top2", 2 * n_events), ("Wins", 1 * n_events),
+    ]:
+        actual = col_sum(col)
+        if actual != expected:
+            _fail("season sum", f"sum({col})={actual} != {expected}", {"col": col, "actual": actual, "expected": expected})
+
+    premier_sum = col_sum("PremierPoints")
+    expected_premier_sum = 62 * n_premier_events
+    if premier_sum != expected_premier_sum:
+        _fail(
+            "season sum (PremierPoints)",
+            f"sum(PremierPoints)={premier_sum} != 62*{n_premier_events}={expected_premier_sum}",
+            premier_sum,
+        )
+
+    points_sum = col_sum("Points")
+    expected_points_sum = 31 * n_events + 31 * n_premier_events
+    if points_sum != expected_points_sum:
+        _fail(
+            "season sum (Points)",
+            f"sum(Points)={points_sum} != 31*{n_events}+31*{n_premier_events}={expected_points_sum}",
+            points_sum,
+        )
+
+    # 13: Rank is exactly 1..len(rows), no gaps/duplicates.
+    ranks = sorted(num(r.get("Rank")) for r in rows)
+    expected_ranks = list(range(1, len(rows) + 1))
+    if ranks != expected_ranks:
+        _fail("rank sequence", "Rank column is not exactly 1..N with no gaps or duplicates", ranks)
+
+    # 14: the FULL 8-key tie-break chain (see _rank_table's docstring for the rule itself),
+    # re-derived here from zero rather than reused from _apply_tie_break_sort -- an independent
+    # implementation of the same specification, so a bug in the production sort (wrong direction
+    # on one key, a dropped key, ...) is actually caught instead of the check silently agreeing
+    # with whatever _rank_table happened to produce. Nothing here relies on *rows* already being
+    # correctly ordered or on sort stability standing in for an untested key: every one of the 8
+    # keys is present, so stability only ever matters for a row-pair genuinely tied on all 8 --
+    # which is a real, unresolved tie (see _rank_table), not a gap in this check's key.
+    def _full_tie_break_key(r: dict):
+        points = num(r.get("Points")) or 0
+        starts = num(r.get("Starts")) or 0
+        if starts < 1:
+            _fail(
+                "starts floor",
+                f"LoginID {lid_of(r)}: Starts={starts} < 1 -- a pilot only enters this table via "
+                f"a Top32 appearance",
+                {"LoginID": lid_of(r), "Starts": starts},
+            )
+        pts_per_start = Fraction(points, starts)
+        return (
+            -points,
+            -pts_per_start,
+            -(num(r.get("Wins")) or 0),
+            -(num(r.get("Top2")) or 0),
+            -(num(r.get("Top4")) or 0),
+            -(num(r.get("Top8")) or 0),
+            -(num(r.get("Top16")) or 0),
+            starts,
+        )
+
+    stable = sorted(rows, key=_full_tie_break_key)
+    for i, r in enumerate(stable, start=1):
+        actual_rank = num(r.get("Rank"))
+        if actual_rank != i:
+            _fail(
+                "tie-break determinism",
+                f"LoginID {lid_of(r)}: the full 8-key tie-break places this row at position {i} "
+                f"but its Rank={actual_rank}",
+                {"LoginID": lid_of(r), "position": i, "Rank": actual_rank},
+            )
+
+    # 15-16: delta checks, only for rows that actually have a snapshot base.
+    for row in rows:
+        prev_points = num(row.get("PrevPoints"))
+        if prev_points is None:
+            continue
+        lid = lid_of(row)
+        deltas = {
+            "DPoints": num(row.get("DPoints")) or 0, "DStarts": num(row.get("DStarts")) or 0,
+            "DTop16": num(row.get("DTop16")) or 0, "DTop8": num(row.get("DTop8")) or 0,
+            "DTop4": num(row.get("DTop4")) or 0, "DTop2": num(row.get("DTop2")) or 0,
+            "DWins": num(row.get("DWins")) or 0,
+        }
+        for name, val in deltas.items():
+            if val < 0:
+                _fail(
+                    "delta non-negative",
+                    f"LoginID {lid}: {name}={val} is negative -- past results disappeared",
+                    {"LoginID": lid, name: val},
+                )
+
+        premier_now = num(row.get("PremierPoints")) or 0
+        prev_premier = num(row.get("PrevPremierPoints"))
+        if prev_premier is None:
+            _fail(
+                "delta formula",
+                f"LoginID {lid}: has PrevPoints but no PrevPremierPoints -- snapshot delta is incomplete",
+                {"LoginID": lid},
+            )
+        expected_d_points = (
+            deltas["DTop16"] + deltas["DTop8"] + deltas["DTop4"] + deltas["DTop2"] + deltas["DWins"]
+            + (premier_now - prev_premier) // 2
+        )
+        if deltas["DPoints"] != expected_d_points:
+            _fail(
+                "delta formula",
+                f"LoginID {lid}: DPoints={deltas['DPoints']} != "
+                f"DTop16+DTop8+DTop4+DTop2+DWins+(PremierPoints-PrevPremierPoints)//2={expected_d_points}",
+                {"LoginID": lid, "DPoints": deltas["DPoints"], "expected": expected_d_points},
+            )
 
 
 def check_league_invariants(season_results_df: pd.DataFrame, league_table: pd.DataFrame) -> None:
@@ -1250,13 +1699,24 @@ def run_league_update(
             seasons_touched[name] = (s, e)
 
     summary = {"written_event_ids": written, "seasons": {}}
+    snapshot_dir = league_dir / "snapshots"
     for season, (s, e) in sorted(seasons_touched.items(), key=lambda kv: kv[1][0]):
         upsert_season_config(league_dir / "season_config.csv", season, s, e)
-        table = build_season_table(results_dir, s, e, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days, log=log)
+        table = build_season_table(
+            results_dir, s, e, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days,
+            snapshot_dir=snapshot_dir, log=log,
+        )
 
         dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
         season_results = all_results[((dates >= s) & (dates <= e)).fillna(False)]
         check_league_invariants(season_results, table)
+
+        n_events_season = season_results["EventID"].nunique()
+        n_premier_season = season_results[
+            season_results.get("EventClass", pd.Series(dtype=str)).astype(str).str.strip() == "Premier"
+        ]["EventID"].nunique()
+        validate_league(table, n_events_season, n_premier_season)
+
         # Completeness is checked only for the slice of the season this call actually synced
         # (start_date..end_date intersected with the season), not the whole season -- the design
         # is incremental (each weekly run syncs its own window; earlier weeks' events may simply
@@ -1269,7 +1729,9 @@ def run_league_update(
         warn_if_partial_season(season, s, season_results, log)
 
         path = write_season_league_csv(league_dir, season, table)
-        n_events_season = season_results["EventID"].nunique()
+        snap_path = write_weekly_snapshot(snapshot_dir, season, as_of, table, log=log)
+        if snap_path is not None:
+            emit(f"[league] wrote weekly snapshot for {season} -> {snap_path}")
         total_points_season = int(pd.to_numeric(table["Points"], errors="coerce").sum()) if not table.empty else 0
         current_tag = " (current)" if season == current_season_name else ""
         emit(

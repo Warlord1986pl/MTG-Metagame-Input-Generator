@@ -30,6 +30,13 @@ outputs/**
 !outputs/league/matches/*.csv
 !outputs/league/matches/_no_bracket.csv
 
+# A weekly snapshot (outputs/league/snapshots/pilot_league_<Season>_w<NN>.csv) is an irreplaceable
+# point-in-time capture of that week's standings -- it cannot be recomputed from later season data
+# (only from another snapshot of the same week, which by definition doesn't exist once it's gone),
+# unlike outputs/**'s other regenerable contents. Same reasoning as results/ and matches/ above.
+!outputs/league/snapshots/
+!outputs/league/snapshots/*.csv
+
 # Summer 2026 is the one season whose table on disk is known partial (data only
 # starts 2026-07-13, six weeks into a season that starts 2026-06-01 -- see the
 # PARTIAL warning league_engine prints on every run). A derived, rebuild-from-
