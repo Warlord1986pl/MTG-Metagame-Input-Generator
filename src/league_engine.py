@@ -47,6 +47,19 @@ except ImportError:
     from . import identity as pilot_identity
 
 
+class LeagueBlockingError(Exception):
+    """Raised by run_league_update when a snapshot write or validate_league fails -- the two
+    failure modes that leave the league's delta chain silently broken if swallowed: a missing
+    snapshot means next week's Prev*/D* columns come back blank, and a failed validate_league means
+    a season table went out the door with the invariants already known to be wrong. Both are
+    deliberately distinguished from every OTHER league/Challenge failure (check_league_invariants,
+    check_premier_completeness, a bad fetch, ...), which stays a plain AssertionError/Exception and
+    is handled the old way (logged, does not abort the run) -- see metagame_input_generator.py's
+    except clauses, which catch this type specifically to mark the run's exit code non-zero without
+    escalating every other kind of league hiccup the same way.
+    """
+
+
 LEAGUE_RESULTS_COLS: List[str] = [
     "EventID",
     "EventDate",
@@ -656,8 +669,9 @@ def aggregate_pilot_table(results_df: pd.DataFrame) -> pd.DataFrame:
 def _apply_tie_break_sort(df: pd.DataFrame) -> pd.DataFrame:
     """The one production implementation of the tie-break rule described in _rank_table's
     docstring (that docstring is the rule's single source of truth for anything published outside
-    the code) -- shared by _rank_table (building today's table). Returns *df* stably re-ordered;
-    does not add a Rank column itself.
+    the code) -- shared by _rank_table (building today's table) and _remigrate_snapshot_ranks
+    (recomputing Rank inside an already-written snapshot with the same rule), so the two can never
+    silently drift apart. Returns *df* stably re-ordered; does not add a Rank column itself.
 
     Every row must have Starts >= 1 (a pilot only ever enters this table via a Top32 appearance,
     so Points/Starts is always well-defined) -- raises AssertionError naming the offending LoginID
@@ -689,8 +703,8 @@ def _apply_tie_break_sort(df: pd.DataFrame) -> pd.DataFrame:
 
 def _rank_table(agg: pd.DataFrame) -> pd.DataFrame:
     """Tie-break chain -- this docstring is the single source of truth for the rule (it is quoted
-    in published materials); the one production implementation is _apply_tie_break_sort. Applied
-    in this exact order:
+    in published materials); the one production implementation is _apply_tie_break_sort, shared
+    with _remigrate_snapshot_ranks. Applied in this exact order:
 
       1. Points, descending.
       2. Points / Starts, descending -- points earned per Top32 entry, as an exact
@@ -1586,6 +1600,7 @@ def run_league_update(
     premier_history_csv: Optional[Path] = None,
     mtgo_json_cache_dir: Optional[Path] = None,
     prevrank_cutoff_days: int = 7,
+    today: Optional[date] = None,
     log: Optional[Callable[[str], None]] = None,
 ) -> dict:
     """One call = the full league update for a date range: backfill EventClass on any pre-Premier
@@ -1595,6 +1610,18 @@ def run_league_update(
     requests), rebuild and write the season table(s) touched, upsert season_config.csv, and run the
     standing invariants. This is the single entry point the weekly run and the backfill script both
     call -- there is only one code path that writes league data.
+
+    *today* is passed through to write_weekly_snapshot as the real wall-clock date to judge
+    overwrite-vs-frozen against (see its docstring); defaults to date.today() when not given. Kept
+    as a separate parameter from *as_of* so a test (or a deliberately backdated backfill run) can
+    control it without affecting anything else this function computes from *as_of*.
+
+    Raises LeagueBlockingError (never swallowed by the generic Exception handlers callers may have
+    around this function) if either validate_league or the weekly snapshot write fails -- both are
+    treated as blocking because a season table that shipped with a broken invariant, or a week that
+    silently ended up with no snapshot, needs the run's caller to notice and stop trusting a clean
+    exit code. Every other failure in this function (check_league_invariants,
+    check_premier_completeness, ...) still raises a plain AssertionError/Exception, unchanged.
     """
     def emit(msg: str) -> None:
         if log is not None:
@@ -1715,7 +1742,12 @@ def run_league_update(
         n_premier_season = season_results[
             season_results.get("EventClass", pd.Series(dtype=str)).astype(str).str.strip() == "Premier"
         ]["EventID"].nunique()
-        validate_league(table, n_events_season, n_premier_season)
+        try:
+            validate_league(table, n_events_season, n_premier_season)
+        except AssertionError as exc:
+            raise LeagueBlockingError(
+                f"validate_league failed for {season}: {exc}"
+            ) from exc
 
         # Completeness is checked only for the slice of the season this call actually synced
         # (start_date..end_date intersected with the season), not the whole season -- the design
@@ -1729,7 +1761,13 @@ def run_league_update(
         warn_if_partial_season(season, s, season_results, log)
 
         path = write_season_league_csv(league_dir, season, table)
-        snap_path = write_weekly_snapshot(snapshot_dir, season, as_of, table, log=log)
+        try:
+            snap_path = write_weekly_snapshot(snapshot_dir, season, as_of, table, today=today, log=log)
+        except FileExistsError as exc:
+            raise LeagueBlockingError(
+                f"league snapshot not written for week {_iso_week(as_of)} ({season}): {exc} -- "
+                f"next week's deltas will be empty"
+            ) from exc
         if snap_path is not None:
             emit(f"[league] wrote weekly snapshot for {season} -> {snap_path}")
         total_points_season = int(pd.to_numeric(table["Points"], errors="coerce").sum()) if not table.empty else 0

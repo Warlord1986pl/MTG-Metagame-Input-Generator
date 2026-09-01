@@ -53,12 +53,17 @@ except ImportError:
         run_statistics = None  # type: ignore[assignment]
 
 try:
-    from league_engine import run_league_update
+    from league_engine import run_league_update, LeagueBlockingError
 except ImportError:
     try:
-        from .league_engine import run_league_update
+        from .league_engine import run_league_update, LeagueBlockingError
     except ImportError:
         run_league_update = None  # type: ignore[assignment]
+
+        class LeagueBlockingError(Exception):  # type: ignore[no-redef]
+            """Fallback so `except LeagueBlockingError` stays valid syntax when league_engine
+            itself failed to import -- run_league_update is None in that case, so this is never
+            actually raised."""
 
 try:
     from league_site_export import export_league_site
@@ -200,6 +205,10 @@ class GenerationRunResult:
     challenge_stats_path: Optional[Path] = None
     challenge_events_fetched: int = 0
     challenge_review_items: List[dict] = dataclasses_field(default_factory=list)
+    # Blocking league failures for this window (validate_league or the weekly snapshot write
+    # failed) -- see LeagueBlockingError. Non-empty here is what main() checks to exit non-zero;
+    # every other Challenge/league failure stays a logged [ERROR] that does not affect the exit code.
+    blocking_failures: List[str] = dataclasses_field(default_factory=list)
 
 
 def parse_date(value: str) -> date:
@@ -1991,6 +2000,7 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         metagame_stats_path: Optional[Path] = None
         challenge_events_fetched: int = 0
         challenge_review_items: List[dict] = []
+        window_blocking_failures: List[str] = []
 
         if not analysis_mode:
             grouped_xml = export_grouped_xml(grouped, output_xml_grouped)
@@ -2190,6 +2200,16 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                             # blocks below) and must not stop the rest of the weekly run either.
                             log(f"[ERROR] [league-site] site data export FAILED (league data itself is unaffected): {site_err}")
 
+            except LeagueBlockingError as league_err:
+                # Distinguished from every other Challenge/league failure below: a missing
+                # snapshot or a failed validate_league leaves the delta chain silently broken if
+                # this were treated the same as e.g. a bad fetch (logged, run stays "successful").
+                # Still doesn't abort the rest of this window's processing (metagame stats etc.
+                # still need to run) -- only the process's final exit code is affected, via
+                # window_blocking_failures -> GenerationRunResult.blocking_failures -> main().
+                log(f"[ERROR] [BLOCKING] {league_err}")
+                window_blocking_failures.append(str(league_err))
+                _write_challenge_failure_status(run_dir, week_start, week_end, str(league_err), log)
             except ChallengeSourceError as challenge_err:
                 log(f"[ERROR] Challenge report STOPPED (not a silent skip): {challenge_err}")
                 _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
@@ -2292,10 +2312,33 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 challenge_stats_path=challenge_stats_path,
                 challenge_events_fetched=challenge_events_fetched,
                 challenge_review_items=challenge_review_items,
+                blocking_failures=window_blocking_failures,
             )
         )
 
+    # Blocking league failures (validate_league or a snapshot write failed -- see
+    # LeagueBlockingError) get their own summary line, printed last so it's the thing a scrolled-
+    # past-the-top-of-terminal reader still sees. A run that logged one of these must not be
+    # mistaken for a clean success just because nothing else raised -- see main(), which checks
+    # this same GenerationRunResult.blocking_failures list to decide the process exit code.
+    _log_blocking_summary(results, log)
+
     return results
+
+
+def _log_blocking_summary(results: List[GenerationRunResult], log=print) -> bool:
+    """Prints one "BLOCKING: ..." line per blocking league failure collected across *results*
+    (see LeagueBlockingError / GenerationRunResult.blocking_failures). Returns True iff at least
+    one was found -- main() uses that to decide whether the process exits non-zero. Split out from
+    run_generation as its own small function purely so it's testable without a full (network-
+    dependent) run_generation call.
+    """
+    all_blocking = [msg for r in results for msg in r.blocking_failures]
+    if all_blocking:
+        log("")
+        for msg in all_blocking:
+            log(f"BLOCKING: {msg}")
+    return bool(all_blocking)
 
 
 def main() -> None:
@@ -2305,8 +2348,10 @@ def main() -> None:
     else:
         # Interaktywne menu
         args = interactive_menu()
-    
-    run_generation(args)
+
+    results = run_generation(args)
+    if any(r.blocking_failures for r in results):
+        sys.exit(1)
 
 
 if __name__ == "__main__":
