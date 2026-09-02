@@ -83,6 +83,11 @@
   }
   .pager button:disabled { opacity: 0.4; cursor: default; }
   .pager button:not(:disabled):hover { border-color: var(--accent); }
+  .csv-download {
+    background: var(--card); color: var(--text); border: 1px solid var(--card-border);
+    border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.85rem; margin: 8px 0;
+  }
+  .csv-download:hover { border-color: var(--accent); }
   .page-input {
     width: 48px; text-align: center; background: #0B1220; color: var(--text);
     border: 1px solid var(--card-border); border-radius: 6px; padding: 5px 4px; font-size: 0.9rem;
@@ -267,6 +272,42 @@
     return "#/pilot/" + encodeURIComponent(id);
   }
 
+  // CSV export of the currently loaded season table (all pilots, ignoring the search box) --
+  // for pulling numbers into a spreadsheet or a presentation without scraping the page by hand.
+  function csvEscape(value) {
+    var s = value == null ? "" : String(value);
+    if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function seasonToCsv(doc) {
+    var cols = [
+      "Rank", "Name", "LoginID", "Points", "PremierPoints", "Wins",
+      "Top2", "Top4", "Top8", "Top16", "Starts", "RankChange", "PriorNames",
+    ];
+    var lines = [cols.join(",")];
+    (doc.pilots || []).forEach(function (p) {
+      var rankChange = (p.prevRank != null) ? (p.prevRank - p.rank) : "";
+      lines.push([
+        p.rank, p.name, p.loginId, p.points, p.premierPoints, p.wins,
+        p.top2, p.top4, p.top8, p.top16, p.starts, rankChange,
+        (p.priorNames || []).join("; "),
+      ].map(csvEscape).join(","));
+    });
+    return lines.join("\r\n");
+  }
+
+  function downloadSeasonCsv() {
+    if (!state.seasonDoc || !state.currentSlug) return;
+    var blob = new Blob([seasonToCsv(state.seasonDoc)], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var link = el("a", { href: url, download: "pilot_league_" + state.currentSlug + ".csv" });
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function fmtPct(x) {
     return (x * 100).toFixed(1) + "%";
   }
@@ -396,6 +437,11 @@
       },
     });
     card.appendChild(search);
+
+    card.appendChild(el("button", {
+      class: "csv-download",
+      onclick: downloadSeasonCsv,
+    }, ["Download season as CSV"]));
 
     card.appendChild(el("p", { class: "note" },
       ["A pilot who did not play in the last week can drop in rank without losing any points. Movement reflects rank, not points lost."]));
