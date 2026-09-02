@@ -66,6 +66,9 @@
     text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--card-border);
   }
   thead th:nth-child(3) { text-align: left; }
+  .sortable-th { cursor: pointer; user-select: none; }
+  .sortable-th:hover { color: var(--text); }
+  .sort-active { color: var(--accent); }
   tbody tr { border-bottom: 1px solid #1c2534; }
   tbody tr:hover { background: rgba(59, 130, 246, 0.08); }
   .rank-cell { color: var(--text-dim); font-variant-numeric: tabular-nums; }
@@ -178,7 +181,23 @@
     pilotsDocCache: {},
     searchQuery: "",
     page: 1,
+    // View-only sort: reorders the rows on screen (and in the CSV export), never touches Rank
+    // itself -- Rank always shows the pilot's real league rank regardless of the current sort.
+    sortColumn: null, // null = natural rank order; else a SORTABLE_COLUMNS key
+    sortDirection: "desc",
   };
+
+  // Every column a viewer can click to sort by. "conversion" (Top32->Top8 conversion) is not a
+  // field in the season JSON -- it is Top8/Starts, computed here, since a pilot only ever
+  // appears in this table via a Top32 (Starts >= 1) appearance, so the divide is always safe.
+  var SORTABLE_COLUMNS = [
+    { key: "points", label: "Points", get: function (p) { return p.points; } },
+    { key: "wins", label: "Wins", get: function (p) { return p.wins; } },
+    { key: "top8", label: "Top 8", get: function (p) { return p.top8; } },
+    { key: "top16", label: "Top 16", get: function (p) { return p.top16; } },
+    { key: "starts", label: "Starts", get: function (p) { return p.starts; } },
+    { key: "conversion", label: "Top 32 → Top 8", get: function (p) { return p.top8 / p.starts; } },
+  ];
 
   // ---- small stats helpers -------------------------------------------------------------------
 
@@ -283,14 +302,15 @@
   function seasonToCsv(doc) {
     var cols = [
       "AsOf", "Rank", "Name", "LoginID", "Points", "PremierPoints", "Wins",
-      "Top2", "Top4", "Top8", "Top16", "Starts", "RankChange", "PriorNames",
+      "Top2", "Top4", "Top8", "Top16", "Starts", "Top32ToTop8Pct", "RankChange", "PriorNames",
     ];
     var lines = [cols.join(",")];
     (doc.pilots || []).forEach(function (p) {
       var rankChange = (p.prevRank != null) ? (p.prevRank - p.rank) : "";
+      var conversionPct = (p.top8 / p.starts * 100).toFixed(1);
       lines.push([
         doc.asOf, p.rank, p.name, p.loginId, p.points, p.premierPoints, p.wins,
-        p.top2, p.top4, p.top8, p.top16, p.starts, rankChange,
+        p.top2, p.top4, p.top8, p.top16, p.starts, conversionPct, rankChange,
         (p.priorNames || []).join("; "),
       ].map(csvEscape).join(","));
     });
@@ -351,13 +371,50 @@
   // event still in flight for the old node landed on nothing.
   var seasonResultsBox = null;
 
+  // Clicking a sortable header cycles desc -> asc -> back to natural rank order. Sorting only
+  // ever reorders which row is shown where; Rank is a fixed field on each pilot and always shows
+  // their real league rank, whichever column the view happens to be sorted by right now.
+  function sortHeaderCell(col) {
+    var active = state.sortColumn === col.key;
+    var arrow = active ? (state.sortDirection === "asc" ? " ▲" : " ▼") : "";
+    return el("th", {
+      class: "sortable-th" + (active ? " sort-active" : ""),
+      title: "Click to sort",
+      onclick: function () {
+        if (!active) {
+          state.sortColumn = col.key;
+          state.sortDirection = "desc";
+        } else if (state.sortDirection === "desc") {
+          state.sortDirection = "asc";
+        } else {
+          state.sortColumn = null;
+          state.sortDirection = "desc";
+        }
+        state.page = 1;
+        updateSeasonResults();
+      },
+    }, [col.label + arrow]);
+  }
+
   function updateSeasonResults() {
     var doc = state.seasonDoc;
-    var filtered = doc.pilots.filter(function (p) { return matchesSearch(p, state.searchQuery); });
-    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    var rows = doc.pilots.filter(function (p) { return matchesSearch(p, state.searchQuery); });
+    if (state.sortColumn) {
+      var activeCol = SORTABLE_COLUMNS.filter(function (c) { return c.key === state.sortColumn; })[0];
+      if (activeCol) {
+        // Array#sort is a stable sort in every browser this page targets, so ties keep falling
+        // back to the array's existing (rank) order without needing an explicit tiebreak here.
+        rows = rows.slice().sort(function (a, b) {
+          var av = activeCol.get(a), bv = activeCol.get(b);
+          var cmp = av < bv ? -1 : av > bv ? 1 : 0;
+          return state.sortDirection === "asc" ? cmp : -cmp;
+        });
+      }
+    }
+    var totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
     if (state.page > totalPages) state.page = totalPages;
     var startIdx = (state.page - 1) * PAGE_SIZE;
-    var pageRows = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+    var pageRows = rows.slice(startIdx, startIdx + PAGE_SIZE);
 
     var box = seasonResultsBox;
     box.innerHTML = "";
@@ -370,9 +427,7 @@
       table.appendChild(el("thead", {}, [
         el("tr", {}, [
           el("th", {}, ["Rank"]), el("th", {}, [""]), el("th", {}, ["Pilot"]),
-          el("th", {}, ["Points"]), el("th", {}, ["Wins"]), el("th", {}, ["Top 8"]),
-          el("th", {}, ["Top 16"]), el("th", {}, ["Starts"]),
-        ]),
+        ].concat(SORTABLE_COLUMNS.map(sortHeaderCell))),
       ]));
       var tbody = el("tbody");
       pageRows.forEach(function (p) {
@@ -389,6 +444,7 @@
           el("td", {}, [String(p.top8)]),
           el("td", {}, [String(p.top16)]),
           el("td", {}, [String(p.starts)]),
+          el("td", {}, [fmtPct(p.top8 / p.starts)]),
         ]));
       });
       table.appendChild(tbody);
