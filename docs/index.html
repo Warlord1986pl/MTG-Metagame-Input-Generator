@@ -282,14 +282,14 @@
 
   function seasonToCsv(doc) {
     var cols = [
-      "Rank", "Name", "LoginID", "Points", "PremierPoints", "Wins",
+      "AsOf", "Rank", "Name", "LoginID", "Points", "PremierPoints", "Wins",
       "Top2", "Top4", "Top8", "Top16", "Starts", "RankChange", "PriorNames",
     ];
     var lines = [cols.join(",")];
     (doc.pilots || []).forEach(function (p) {
       var rankChange = (p.prevRank != null) ? (p.prevRank - p.rank) : "";
       lines.push([
-        p.rank, p.name, p.loginId, p.points, p.premierPoints, p.wins,
+        doc.asOf, p.rank, p.name, p.loginId, p.points, p.premierPoints, p.wins,
         p.top2, p.top4, p.top8, p.top16, p.starts, rankChange,
         (p.priorNames || []).join("; "),
       ].map(csvEscape).join(","));
@@ -301,7 +301,8 @@
     if (!state.seasonDoc || !state.currentSlug) return;
     var blob = new Blob([seasonToCsv(state.seasonDoc)], { type: "text/csv;charset=utf-8;" });
     var url = URL.createObjectURL(blob);
-    var link = el("a", { href: url, download: "pilot_league_" + state.currentSlug + ".csv" });
+    var filename = "pilot_league_" + state.currentSlug + "_" + (state.seasonDoc.asOf || "unknown-date") + ".csv";
+    var link = el("a", { href: url, download: filename });
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
