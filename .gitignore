@@ -30,6 +30,14 @@ outputs/**
 !outputs/league/matches/*.csv
 !outputs/league/matches/_no_bracket.csv
 
+# The event-ingestion log (league_results_export.update_ingestion_log) records, per EventID, the
+# first time that event's results were ever seen -- write-once, never recomputed. Losing it doesn't
+# lose data, but it does lose historical accuracy: the next run would treat every already-seen
+# EventID as newly ingested and stamp it with today's date instead of when it actually first
+# appeared, silently corrupting IngestedAt for every event already published. Same "irreplaceable,
+# small enough to track directly" reasoning as the two history CSVs below.
+!outputs/league/ingestion_log.csv
+
 # A weekly snapshot (outputs/league/snapshots/pilot_league_<Season>_w<NN>.csv) is an irreplaceable
 # point-in-time capture of that week's standings -- it cannot be recomputed from later season data
 # (only from another snapshot of the same week, which by definition doesn't exist once it's gone),
