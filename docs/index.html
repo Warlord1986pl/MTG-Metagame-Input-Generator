@@ -665,24 +665,29 @@
 
     var rankCard = el("div", { class: "card" });
     rankCard.appendChild(el("h2", {}, ["Ranking order"]));
-    rankCard.appendChild(el("p", {}, ["Pilots are ordered by, in sequence:"]));
+    rankCard.appendChild(el("p", {}, ["Pilots tied on points are ordered by, in sequence:"]));
     var rankList = el("ol");
     [
       "Points",
+      "Points per Top 32 entry (Points ÷ Starts) — a deeper average run ranks above more, shallower ones",
       "Wins",
       "Top 2 finishes",
       "Top 4 finishes",
       "Top 8 finishes",
       "Top 16 finishes",
-      "Starts (events entered)",
-      "Better average finish across Top 32 appearances",
-      "Pilot name, alphabetically",
+      "Starts (events entered), ascending",
     ].forEach(function (item) { rankList.appendChild(el("li", {}, [item])); });
     rankCard.appendChild(rankList);
     rankCard.appendChild(el("p", { class: "note" }, [
-      "Average finish is deliberately second to last. Putting it higher would favor a pilot with two ",
-      "lucky appearances over one who entered fifteen events; with several hundred pilots sitting on ",
-      "zero points, Starts is what actually separates them, and that is the intended behavior.",
+      "Points per Top 32 entry is deliberately second, right after raw Points. The raw points ladder ",
+      "rewards playing often; this ratio lightly offsets that by favoring pilots whose runs go deeper ",
+      "relative to how many events they entered. Starts sits last and, in practice, only ever decides ",
+      "anything among pilots on zero points, where it exists purely to give the chain a defined order ",
+      "rather than any real signal on its own.",
+    ]));
+    rankCard.appendChild(el("p", { class: "note" }, [
+      "A pilot still tied after all eight of these is a genuine, unresolved tie and stays that way — ",
+      "there is no ninth, name-based tiebreak.",
     ]));
     container.appendChild(rankCard);
 
@@ -713,10 +718,19 @@
       "conversion rate between bracket stages: with only a handful of elimination matches in a season, a ",
       "number like 67% would read as a fact when it is really one or two matches.",
     ]));
-    dataCard.appendChild(el("p", {}, [
-      "A pilot who would like to be removed from this public table may ask, and it will be done.",
-    ]));
     container.appendChild(dataCard);
+
+    var contactCard = el("div", { class: "card" });
+    contactCard.appendChild(el("h2", {}, ["Contact"]));
+    contactCard.appendChild(el("p", {}, [
+      "A pilot who would like to be removed from this public table, report an error, or ask anything ",
+      "else about how it works, can reach out directly:",
+    ]));
+    var contactList = el("ul");
+    contactList.appendChild(el("li", {}, ["Discord: warlord1986_pl"]));
+    contactList.appendChild(el("li", {}, ["MTGO: WarLord1986pl"]));
+    contactCard.appendChild(contactList);
+    container.appendChild(contactCard);
   }
 
   // ---- router ---------------------------------------------------------------------------------
