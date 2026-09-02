@@ -669,7 +669,7 @@
     var rankList = el("ol");
     [
       "Points",
-      "Points per Top 32 entry (Points ÷ Starts) — a deeper average run ranks above more, shallower ones",
+      "Points per Top 32 entry (Points ÷ Starts): deeper average runs rank above shallower ones",
       "Wins",
       "Top 2 finishes",
       "Top 4 finishes",
@@ -679,15 +679,13 @@
     ].forEach(function (item) { rankList.appendChild(el("li", {}, [item])); });
     rankCard.appendChild(rankList);
     rankCard.appendChild(el("p", { class: "note" }, [
-      "Points per Top 32 entry is deliberately second, right after raw Points. The raw points ladder ",
-      "rewards playing often; this ratio lightly offsets that by favoring pilots whose runs go deeper ",
-      "relative to how many events they entered. Starts sits last and, in practice, only ever decides ",
-      "anything among pilots on zero points, where it exists purely to give the chain a defined order ",
-      "rather than any real signal on its own.",
+      "Points per Top 32 entry comes right after Points on purpose. The raw points ladder rewards ",
+      "playing often, so this ratio balances it out by rewarding pilots whose runs go deeper relative ",
+      "to how many events they entered. Starts is last, and in most cases it only matters among pilots ",
+      "on zero points.",
     ]));
     rankCard.appendChild(el("p", { class: "note" }, [
-      "A pilot still tied after all eight of these is a genuine, unresolved tie and stays that way — ",
-      "there is no ninth, name-based tiebreak.",
+      "A pilot still tied after all eight criteria stays tied. There is no ninth, name-based tiebreak.",
     ]));
     container.appendChild(rankCard);
 
