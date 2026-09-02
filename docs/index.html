@@ -190,13 +190,18 @@
   // Every column a viewer can click to sort by. "conversion" (Top32->Top8 conversion) is not a
   // field in the season JSON -- it is Top8/Starts, computed here, since a pilot only ever
   // appears in this table via a Top32 (Starts >= 1) appearance, so the divide is always safe.
+  // defaultDirection is what a first click on that column sorts by -- ascending for Rank (lowest,
+  // i.e. best, first), descending for everything else (highest, i.e. best, first). Sorting by
+  // "rank" here only ever reorders which row is shown where; the Rank cell itself always shows
+  // the pilot's real, fixed league rank (see the sortColumn comment on state above).
   var SORTABLE_COLUMNS = [
-    { key: "points", label: "Points", get: function (p) { return p.points; } },
-    { key: "wins", label: "Wins", get: function (p) { return p.wins; } },
-    { key: "top8", label: "Top 8", get: function (p) { return p.top8; } },
-    { key: "top16", label: "Top 16", get: function (p) { return p.top16; } },
-    { key: "starts", label: "Starts", get: function (p) { return p.starts; } },
-    { key: "conversion", label: "Top 32 → Top 8", get: function (p) { return p.top8 / p.starts; } },
+    { key: "rank", label: "Rank", get: function (p) { return p.rank; }, defaultDirection: "asc" },
+    { key: "points", label: "Points", get: function (p) { return p.points; }, defaultDirection: "desc" },
+    { key: "wins", label: "Wins", get: function (p) { return p.wins; }, defaultDirection: "desc" },
+    { key: "top8", label: "Top 8", get: function (p) { return p.top8; }, defaultDirection: "desc" },
+    { key: "top16", label: "Top 16", get: function (p) { return p.top16; }, defaultDirection: "desc" },
+    { key: "starts", label: "Starts", get: function (p) { return p.starts; }, defaultDirection: "desc" },
+    { key: "conversion", label: "Top 32 → Top 8", get: function (p) { return p.top8 / p.starts; }, defaultDirection: "desc" },
   ];
 
   // ---- small stats helpers -------------------------------------------------------------------
@@ -371,11 +376,13 @@
   // event still in flight for the old node landed on nothing.
   var seasonResultsBox = null;
 
-  // Clicking a sortable header cycles desc -> asc -> back to natural rank order. Sorting only
-  // ever reorders which row is shown where; Rank is a fixed field on each pilot and always shows
-  // their real league rank, whichever column the view happens to be sorted by right now.
+  // Clicking a sortable header cycles: that column's default direction (best first) -> the
+  // opposite direction -> back to natural rank order. Sorting only ever reorders which row is
+  // shown where; Rank is a fixed field on each pilot and always shows their real league rank,
+  // whichever column the view happens to be sorted by right now.
   function sortHeaderCell(col) {
     var active = state.sortColumn === col.key;
+    var defaultDir = col.defaultDirection || "desc";
     var arrow = active ? (state.sortDirection === "asc" ? " ▲" : " ▼") : "";
     return el("th", {
       class: "sortable-th" + (active ? " sort-active" : ""),
@@ -383,9 +390,9 @@
       onclick: function () {
         if (!active) {
           state.sortColumn = col.key;
-          state.sortDirection = "desc";
-        } else if (state.sortDirection === "desc") {
-          state.sortDirection = "asc";
+          state.sortDirection = defaultDir;
+        } else if (state.sortDirection === defaultDir) {
+          state.sortDirection = defaultDir === "asc" ? "desc" : "asc";
         } else {
           state.sortColumn = null;
           state.sortDirection = "desc";
@@ -426,8 +433,9 @@
       var table = el("table");
       table.appendChild(el("thead", {}, [
         el("tr", {}, [
-          el("th", {}, ["Rank"]), el("th", {}, [""]), el("th", {}, ["Pilot"]),
-        ].concat(SORTABLE_COLUMNS.map(sortHeaderCell))),
+          sortHeaderCell(SORTABLE_COLUMNS[0]), // Rank
+          el("th", {}, [""]), el("th", {}, ["Pilot"]),
+        ].concat(SORTABLE_COLUMNS.slice(1).map(sortHeaderCell))),
       ]));
       var tbody = el("tbody");
       pageRows.forEach(function (p) {
