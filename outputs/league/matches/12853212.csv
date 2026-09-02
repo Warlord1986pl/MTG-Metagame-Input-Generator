@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853212,2026-08-31,C96,Challenge,QF,rerere,2298957,kanister,1205292,2,0,Esper Blink,Goryo's Vengeance
+12853212,2026-08-31,C96,Challenge,QF,PerkyT,3142768,GWT,3544040,2,1,Broodscale Combo,Dimir Midrange
+12853212,2026-08-31,C96,Challenge,QF,shindy,1237388,ShikiXYZ,1188705,2,0,Land Destruction,Esper Blink
+12853212,2026-08-31,C96,Challenge,QF,Sol0monGrundy,2338194,MeninoNey,2903591,2,1,Goryo's Vengeance,Living End
+12853212,2026-08-31,C96,Challenge,SF,PerkyT,3142768,rerere,2298957,2,1,Broodscale Combo,Esper Blink
+12853212,2026-08-31,C96,Challenge,SF,Sol0monGrundy,2338194,shindy,1237388,2,0,Goryo's Vengeance,Land Destruction
+12853212,2026-08-31,C96,Challenge,F,Sol0monGrundy,2338194,PerkyT,3142768,2,1,Goryo's Vengeance,Broodscale Combo

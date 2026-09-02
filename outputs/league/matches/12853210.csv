@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853210,2026-08-31,C64,Challenge,QF,rastaf,254536,I_Cant_Read,3558262,2,1,Esper Blink,Living End
+12853210,2026-08-31,C64,Challenge,QF,YungDingo,2928451,NerdDadChad,2993160,2,1,WG,Broodscale Combo
+12853210,2026-08-31,C64,Challenge,QF,VictorEsquici,3013293,WaynePlays,3544508,2,1,Esper Blink,Living End
+12853210,2026-08-31,C64,Challenge,QF,Dioferreira,1950164,Hazzrd,1695657,2,1,Esper Blink,Broodscale Combo
+12853210,2026-08-31,C64,Challenge,SF,VictorEsquici,3013293,Dioferreira,1950164,2,0,Esper Blink,Esper Blink
+12853210,2026-08-31,C64,Challenge,SF,rastaf,254536,YungDingo,2928451,2,1,Esper Blink,WG
+12853210,2026-08-31,C64,Challenge,F,rastaf,254536,VictorEsquici,3013293,2,0,Esper Blink,Esper Blink
