@@ -508,6 +508,14 @@
       onclick: downloadSeasonCsv,
     }, ["Download season as CSV"]));
 
+    card.appendChild(el("a", {
+      class: "csv-download",
+      style: "display:inline-block; margin-left:8px; text-decoration:none;",
+      href: DATA_DIR + "/pilot_league_results_" + state.currentSlug + ".csv",
+      download: "pilot_league_results_" + state.currentSlug + ".csv",
+      title: "One row per pilot per event appearance -- lets any weekly window be reconstructed by filtering EventDate",
+    }, ["Download event-level results (CSV)"]));
+
     card.appendChild(el("p", { class: "note" },
       ["A pilot who did not play in the last week can drop in rank without losing any points. Movement reflects rank, not points lost."]));
 
