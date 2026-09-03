@@ -11,10 +11,12 @@ and --apply mode.
 
 Usage:
   python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
-      --source self_request_x --evidence "DM 2026-08-25" [--primary-name MeninoNey]
+      --source self_request_x --evidence "DM 2026-08-25" \
+      --evidence-type direct_confirmation --confirmed-on 2026-08-25 [--primary-name MeninoNey]
 
   python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
-      --source self_request_x --evidence "DM 2026-08-25" --apply
+      --source self_request_x --evidence "DM 2026-08-25" \
+      --evidence-type direct_confirmation --confirmed-on 2026-08-25 --apply
 
   python src/pilot_identity_cli.py --show 2903591
   python src/pilot_identity_cli.py --show MeninoNey
@@ -227,11 +229,16 @@ def merge_command(args: argparse.Namespace) -> int:
     new_rows: List[Dict[str, str]] = []
     errors: List[str] = []
 
+    confirmed_on = args.confirmed_on or today
+
     primary_row = existing_by_lid.get(primary)
     if primary_row is None:
+        # No evidence_type/confirmed_on on a primary-only row -- there is no alias, nothing was
+        # confirmed, see identity.IDENTITY_COLS.
         new_rows.append({
             "loginid": primary, "pilot_id": primary, "role": "primary",
-            "added_on": today, "source": args.source, "evidence": args.evidence, "note": args.note or "",
+            "added_on": today, "source": args.source, "evidence": args.evidence,
+            "evidence_type": "", "confirmed_on": "", "note": args.note or "",
         })
     elif primary_row["role"] != "primary":
         errors.append(
@@ -248,7 +255,9 @@ def merge_command(args: argparse.Namespace) -> int:
         if existing is None:
             new_rows.append({
                 "loginid": alias, "pilot_id": primary, "role": "alias",
-                "added_on": today, "source": args.source, "evidence": args.evidence, "note": args.note or "",
+                "added_on": today, "source": args.source, "evidence": args.evidence,
+                "evidence_type": args.evidence_type or "", "confirmed_on": confirmed_on,
+                "note": args.note or "",
             })
         elif existing["role"] == "alias" and existing["pilot_id"] == primary:
             skipped.append(alias)
@@ -498,6 +507,18 @@ def main(argv=None) -> int:
     merge_parser.add_argument("--alias", action="append", required=True, dest="aliases")
     merge_parser.add_argument("--source", required=True)
     merge_parser.add_argument("--evidence", required=True)
+    merge_parser.add_argument(
+        "--evidence-type", default="",
+        help="Short classification of --evidence's freeform text, e.g. 'direct_confirmation' "
+             "(the player themselves confirmed it) vs. 'admin_decision'. Documentation only -- "
+             "not validated. Applies to alias rows only (a primary-only row has nothing to confirm).",
+    )
+    merge_parser.add_argument(
+        "--confirmed-on", default=None,
+        help="ISO date the confirmation actually happened (e.g. the date of a DM), if different "
+             "from today -- defaults to today (same default as added_on) when not given. "
+             "Applies to alias rows only.",
+    )
     merge_parser.add_argument("--primary-name", default=None)
     merge_parser.add_argument("--note", default="")
     merge_parser.add_argument("--apply", action="store_true")

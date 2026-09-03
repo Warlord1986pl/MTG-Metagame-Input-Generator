@@ -67,6 +67,11 @@ outputs/league/pilot_league_Summer_2026.csv
 # Backup files created by mapping editor
 docs/*.bak.*
 
+# pilot_identity_cli.py's write_identity_rows/write_profile_rows back up the previous file
+# (identity.py's _backup_if_exists) before every write, same "local safety net, not a git
+# artifact" reasoning as docs/*.bak.* above -- git history is the real backup once committed.
+data/*.bak.*
+
 # Manual pre-fix backups
 backups/
 

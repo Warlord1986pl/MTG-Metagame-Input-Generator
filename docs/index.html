@@ -153,6 +153,7 @@
       <select id="seasonPicker" class="season-picker" aria-label="Season" style="display:none;"></select>
       <span class="as-of" id="seasonMeta"></span>
     </nav>
+    <div class="as-of" id="seasonCoverage" style="margin-top:4px;"></div>
   </header>
   <main id="app"></main>
   <footer class="site-footer" id="siteFooter">
@@ -179,6 +180,7 @@
     currentSlug: null,
     seasonDoc: null,
     pilotsDocCache: {},
+    resultsManifestCache: {},
     searchQuery: "",
     page: 1,
     // View-only sort: reorders the rows on screen (and in the CSV export), never touches Rank
@@ -271,6 +273,18 @@
     });
   }
 
+  // Best-effort: the event-level results manifest may not exist yet for a brand-new season (no
+  // events synced yet) or for data published before this file existed -- absence is not an error,
+  // the coverage note simply stays blank. Never blocks the main season render.
+  function loadResultsManifest(slug) {
+    if (Object.prototype.hasOwnProperty.call(state.resultsManifestCache, slug)) {
+      return Promise.resolve(state.resultsManifestCache[slug]);
+    }
+    return fetchJson(DATA_DIR + "/pilot_league_results_" + slug + "_manifest.json")
+      .then(function (doc) { state.resultsManifestCache[slug] = doc; return doc; })
+      .catch(function () { state.resultsManifestCache[slug] = null; return null; });
+  }
+
   // ---- rendering: shared ----------------------------------------------------------------------
 
   function el(tag, attrs, children) {
@@ -355,6 +369,26 @@
     if (!state.seasonDoc) { meta.textContent = ""; return; }
     meta.textContent = state.seasonDoc.season + " · as of " + state.seasonDoc.asOf +
       " · " + state.seasonDoc.pilotCount + " pilots";
+  }
+
+  // Reads from state.resultsManifestCache only (never fetches) -- safe to call from render() on
+  // every route change. The actual fetch is kicked off separately in boot()/switchSeason(), which
+  // call this again once it resolves. A reader comparing this season's event count against a
+  // later, full-quarter season needs the covered window right here, not just implied by an
+  // asterisk -- see this repo's CLAUDE.md on why Summer 2026 specifically is partial.
+  function updateSeasonCoverage() {
+    var box = document.getElementById("seasonCoverage");
+    var slug = state.currentSlug;
+    var manifest = slug ? state.resultsManifestCache[slug] : null;
+    if (!manifest || !manifest.events || !manifest.events.length) { box.textContent = ""; return; }
+    var dates = manifest.events.map(function (e) { return e.date; }).slice().sort();
+    var coverageStart = dates[0], coverageEnd = dates[dates.length - 1];
+    var seasonStart = state.seasonDoc && state.seasonDoc.seasonStart;
+    var seasonEnd = state.seasonDoc && state.seasonDoc.seasonEnd;
+    var partial = !!(seasonStart && seasonEnd && (coverageStart > seasonStart || coverageEnd < seasonEnd));
+    var n = manifest.events_total;
+    box.textContent = "Covers " + coverageStart + " to " + coverageEnd + " · " + n +
+      (n === 1 ? " event" : " events") + (partial ? " · partial season (coverage narrower than the full quarter)" : "");
   }
 
   // ---- season table view ------------------------------------------------------------------------
@@ -864,6 +898,7 @@
     var app = document.getElementById("app");
     app.innerHTML = "";
     updateHeaderMeta();
+    updateSeasonCoverage();
 
     var parsed = parseHash();
     if (parsed.route === "about") {
@@ -919,6 +954,9 @@
       state.seasonDoc = doc;
       populateSeasonPicker();
       render();
+      loadResultsManifest(slug).then(function () {
+        if (state.currentSlug === slug) updateSeasonCoverage();
+      });
     });
   }
 
@@ -941,6 +979,9 @@
         state.seasonDoc = doc;
         populateSeasonPicker();
         render();
+        loadResultsManifest(slug).then(function () {
+          if (state.currentSlug === slug) updateSeasonCoverage();
+        });
       });
     }).catch(function (err) {
       document.getElementById("app").appendChild(

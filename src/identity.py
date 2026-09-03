@@ -32,7 +32,17 @@ from typing import Dict, Iterable, List, Optional
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
 
-IDENTITY_COLS: List[str] = ["loginid", "pilot_id", "role", "added_on", "source", "evidence", "note"]
+IDENTITY_COLS: List[str] = [
+    "loginid", "pilot_id", "role", "added_on", "source", "evidence",
+    # Documentation, not validation logic (validate_identity_rows never reads these) -- so a
+    # future reader can tell a confirmed merge from a guess without asking anyone. EvidenceType is
+    # a short classification (e.g. "direct_confirmation") of *evidence*'s freeform text;
+    # ConfirmedOn is when that confirmation actually happened, which can predate added_on (the
+    # date this row was recorded) by however long the merge sat un-applied. Both blank for a
+    # primary-only row (nothing to confirm -- there is no alias to merge).
+    "evidence_type", "confirmed_on",
+    "note",
+]
 PROFILE_COLS: List[str] = [
     "pilot_id", "display_name", "x_handle", "x_consent", "x_confirmed_on", "profile_hidden", "note",
 ]

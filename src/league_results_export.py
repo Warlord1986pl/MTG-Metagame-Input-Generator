@@ -61,6 +61,18 @@ RESULTS_EXPORT_COLS: List[str] = [
 
 INGESTION_LOG_COLS: List[str] = ["EventID", "IngestedAtUTC"]
 
+# One row per season (or one per co-champion, for a shared rank 1), written once when a season
+# closes and never rewritten afterward -- see maybe_close_season. SeasonStart/SeasonEnd are the
+# meteorological quarter bounds; CoverageStart/CoverageEnd are the dates actually backed by data,
+# which can differ (Summer 2026: quarter is 2026-06-01..2026-08-31, data starts 2026-07-13, since
+# LoginID tracking itself only began then) -- Partial records that gap so a later, full-quarter
+# season's event count is never compared against this one without the caveat living in the data.
+SEASON_REGISTRY_COLS: List[str] = [
+    "Season", "SeasonStart", "SeasonEnd", "CoverageStart", "CoverageEnd", "Partial",
+    "EventsTotal", "EventsChallenge", "EventsPremier", "PilotsTotal", "PointsTotal",
+    "ChampionLoginID", "ChampionName", "ChampionPoints",
+]
+
 # The season-aggregate columns compared between this module's own re-derivation and the canonical
 # league_engine.build_season_table output -- deliberately excludes PrevRank/RankChange/DELTA_COLS
 # (separate machinery, already independently validated elsewhere; coupling this check to
@@ -98,6 +110,90 @@ def update_ingestion_log(results_dir: Path, log_path: Path) -> Dict[str, str]:
         df = pd.DataFrame(sorted(log.items()), columns=INGESTION_LOG_COLS)
         _write_csv_lf(df, log_path)
     return log
+
+
+def load_season_registry(registry_path: Path) -> pd.DataFrame:
+    if not registry_path.exists():
+        return pd.DataFrame(columns=SEASON_REGISTRY_COLS)
+    return pd.read_csv(registry_path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+
+
+def maybe_close_season(
+    season_name: str,
+    season_start: date,
+    season_end: date,
+    today: date,
+    export_df: pd.DataFrame,
+    season_table: pd.DataFrame,
+    registry_path: Path,
+    log: Optional[Callable[[str], None]] = None,
+) -> bool:
+    """Appends one row (or one per co-champion, for a shared rank 1) for *season_name* to
+    pilot_league_seasons.csv -- but only the first time this is called for a season that has
+    actually closed (today > season_end). A season already present in the registry is never
+    touched again, regardless of what later reruns compute -- "written once at season close and
+    never rewritten" is the whole point: it is the permanent record of what a season looked like
+    the moment it ended, not a live-updating summary. Returns True iff a row was actually written.
+    """
+    def emit(msg: str) -> None:
+        if log:
+            log(f"[season-registry] {msg}")
+
+    if today <= season_end:
+        return False
+    if export_df.empty or season_table.empty:
+        return False
+
+    registry = load_season_registry(registry_path)
+    if not registry.empty and season_name in set(registry["Season"]):
+        return False
+
+    dates = pd.to_datetime(export_df["EventDate"], errors="coerce")
+    coverage_start = dates.min().date()
+    coverage_end = dates.max().date()
+    partial = (coverage_start > season_start) or (coverage_end < season_end)
+
+    events_total = export_df["EventID"].nunique()
+    events_challenge = export_df.loc[export_df["EventType"] == "challenge", "EventID"].nunique()
+    events_premier = export_df.loc[export_df["EventType"] == "premier", "EventID"].nunique()
+
+    # NOT season_table["Rank"] == 1 -- confirmed live that _rank_table never assigns a duplicate
+    # Rank even on a genuine, full 8-key tie (its stable sort just breaks ties into sequential
+    # numbers). A real co-champion is instead any pilot matching the #1 row on every column the
+    # tie-break rule actually uses (Points, Wins, Top2/4/8/16, Starts -- the 8th key, Points/Starts
+    # as a Fraction, is a deterministic function of Points and Starts, both already compared here,
+    # so matching on these seven is equivalent to matching on the full 8-key rule).
+    top_row = season_table.loc[season_table["Rank"].idxmin()]
+    tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
+    champions = season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+    new_rows = [
+        {
+            "Season": season_name,
+            "SeasonStart": season_start.isoformat(), "SeasonEnd": season_end.isoformat(),
+            "CoverageStart": coverage_start.isoformat(), "CoverageEnd": coverage_end.isoformat(),
+            "Partial": "true" if partial else "false",
+            "EventsTotal": int(events_total), "EventsChallenge": int(events_challenge),
+            "EventsPremier": int(events_premier),
+            # season_table already has exactly one row per distinct (resolved) identity -- this
+            # deliberately counts every one of them, including a rare pre-LoginID-tracking
+            # name-fallback identity, matching the pilot count already shown on the published
+            # site (e.g. "1032 pilot(s)" in league-rebuild's own log line).
+            "PilotsTotal": int(len(season_table)),
+            "PointsTotal": int(export_df["PointsAwarded"].sum()),
+            "ChampionLoginID": str(ch["LoginID"]), "ChampionName": str(ch["Pilot"]),
+            "ChampionPoints": int(ch["Points"]),
+        }
+        for _, ch in champions.iterrows()
+    ]
+    combined = pd.concat(
+        [registry, pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)], ignore_index=True,
+    ) if not registry.empty else pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)
+    _write_csv_lf(combined, registry_path)
+    emit(
+        f"{season_name}: CLOSED -- {events_total} events, coverage {coverage_start}..{coverage_end}"
+        f"{' (PARTIAL)' if partial else ''}, {len(new_rows)} champion row(s) recorded"
+    )
+    return True
 
 
 def _name_by_raw_login_id(current_results: pd.DataFrame) -> Dict[str, str]:
@@ -300,6 +396,7 @@ def export_results_and_manifest(
     docs_data_dir: Path,
     format_name: str,
     ingestion_log_path: Path,
+    season_registry_path: Path,
     as_of: date,
     log: Optional[Callable[[str], None]] = None,
 ) -> bool:
@@ -365,5 +462,14 @@ def export_results_and_manifest(
         _write_csv_lf(export_out[RESULTS_EXPORT_COLS], csv_path)
         _write_json(manifest, manifest_path)
         emit(f"{season_name}: {len(export_df)} row(s) -> {csv_path.name} + {manifest_path.name}")
+
+        # Only a season whose export just validated cleanly gets considered for closure -- the
+        # registry is meant to be authoritative, so it should never record season-level facts
+        # (event counts, champion) derived from data that failed its own self-validation.
+        season_table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
+        maybe_close_season(
+            season_name, season_start, season_end, as_of, export_df, season_table,
+            season_registry_path, log=log,
+        )
 
     return overall_ok
