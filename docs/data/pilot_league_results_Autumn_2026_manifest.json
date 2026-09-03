@@ -1,4 +1,28 @@
 {
+  "LateArrivals": [
+    {
+      "EventDate": "2026-09-01",
+      "EventID": "12853219",
+      "IngestedAt": "2026-09-03T08:28:55Z",
+      "WindowClose": "2026-09-02",
+      "WindowStart": "2026-08-26"
+    },
+    {
+      "EventDate": "2026-09-01",
+      "EventID": "12853220",
+      "IngestedAt": "2026-09-03T08:28:55Z",
+      "WindowClose": "2026-09-02",
+      "WindowStart": "2026-08-26"
+    },
+    {
+      "EventDate": "2026-09-01",
+      "EventID": "12853226",
+      "IngestedAt": "2026-09-03T08:28:55Z",
+      "WindowClose": "2026-09-02",
+      "WindowStart": "2026-08-26"
+    }
+  ],
+  "RankChangeAnchor": "2026-09-02",
   "as_of": "2026-09-03",
   "events": [
     {
@@ -23,7 +47,7 @@
   "events_challenge": 3,
   "events_premier": 0,
   "events_total": 3,
-  "generated_at": "2026-09-03T08:29:00Z",
+  "generated_at": "2026-09-03T10:31:22Z",
   "pilots_scoring": 47,
   "pilots_total": 90,
   "points_total": 93,
