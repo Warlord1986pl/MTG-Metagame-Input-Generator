@@ -829,25 +829,31 @@
       "Top 8 finishes",
       "Top 16 finishes",
       "Starts (events entered), ascending",
+      "MTGO account ID, ascending",
     ].forEach(function (item) { rankList.appendChild(el("li", {}, [item])); });
     rankCard.appendChild(rankList);
     rankCard.appendChild(el("p", { class: "note" }, [
       "Points per Top 32 entry comes right after Points on purpose. The raw points ladder rewards ",
       "playing often, so this ratio balances it out by rewarding pilots whose runs go deeper relative ",
-      "to how many events they entered. Starts is last, and in most cases it only matters among pilots ",
-      "on zero points.",
+      "to how many events they entered. Starts rarely decides anything on its own -- account ID, next, ",
+      "almost always does first, since it is a genuinely unique value for every real account.",
     ]));
     rankCard.appendChild(el("p", { class: "note" }, [
-      "A pilot still tied after all eight criteria stays tied. There is no ninth, name-based tiebreak.",
+      "Every real pilot has a unique account ID, so this fully determines the table: two pilots stay ",
+      "tied only if neither has an MTGO account ID on record at all (a handful of pilots from before ",
+      "account tracking began).",
     ]));
     container.appendChild(rankCard);
 
     var moveCard = el("div", { class: "card" });
     moveCard.appendChild(el("h2", {}, ["Movement and identity"]));
     moveCard.appendChild(el("p", {}, [
-      "The arrow next to a pilot's rank compares today's standings to the standings seven days earlier. ",
-      "A pilot who did not play in that week can still drop in rank as other pilots pass them; that is a ",
-      "change in rank, not a loss of points.",
+      "The arrow next to a pilot's rank compares today's standings to the standings as of the most ",
+      "recent Wednesday -- a fixed weekly checkpoint, not a rolling number of days back, so it reads ",
+      "the same all week regardless of which day you look. A pilot who did not play that week can ",
+      "still drop in rank as other pilots pass them; that is a change in rank, not a loss of points. ",
+      "Once a season ends, this comparison point stops moving and stays fixed permanently at the last ",
+      "week the season actually had events in.",
     ]));
     moveCard.appendChild(el("p", {}, [
       "Pilots are tracked by their MTGO account, not by display name, so a rename does not split one ",

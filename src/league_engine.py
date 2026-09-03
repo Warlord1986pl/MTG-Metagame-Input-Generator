@@ -166,6 +166,38 @@ def season_for_date(d: date) -> Tuple[str, date, date]:
     return f"Winter {y0}/{str(y0 + 1)[-2:]}", date(y0, 12, 1), end
 
 
+def rank_change_anchor(as_of: date, coverage_end: Optional[date] = None) -> date:
+    """The single source of truth for "which date is RankChange measured against" -- called both
+    by build_season_table (to pick the PrevRank baseline) and by anything downstream that needs to
+    report or re-derive the same value (league_site_export, league_results_export), so the anchor
+    can never drift between what was actually used and what gets published about it.
+
+    anchor = the most recent Wednesday on or before *as_of*. An event dated ON that Wednesday
+    belongs to the NEXT weekly window, not this one -- build_season_table's baseline filter is
+    EventDate < anchor, so this stays a plain "most recent Wednesday <= as_of" rather than needing
+    a same-day special case here.
+
+    Within any single calendar week (Wed through the following Tue), every as_of maps to the SAME
+    anchor -- this is what actually fixes the old rolling "as_of - 7 days" baseline, which gave a
+    different answer on every single day. Consecutive weekly editions tile the season with no
+    overlap and no gap even if a download happens late; anchoring to as_of directly does not.
+
+    If *coverage_end* is given and the anchor as computed above would land AFTER it, the anchor is
+    frozen instead at the most recent Wednesday on or before coverage_end -- and stays there
+    forever, for any as_of from then on. This is what stops a closed season's RankChange from
+    sliding into an ever-emptier window and decaying to 0 as days pass with no new events: once a
+    season has no more events coming (as_of has moved past its last actual EventDate), the
+    published RankChange is permanently the one measured over the last complete window that
+    actually contained events.
+    """
+    days_since_wednesday = (as_of.weekday() - 2) % 7  # date.weekday(): Monday=0 ... Wednesday=2
+    anchor = as_of - timedelta(days=days_since_wednesday)
+    if coverage_end is not None and anchor > coverage_end:
+        frozen_days_since_wednesday = (coverage_end.weekday() - 2) % 7
+        anchor = coverage_end - timedelta(days=frozen_days_since_wednesday)
+    return anchor
+
+
 def season_filename_slug(season: str) -> str:
     """Filesystem/Windows-safe form of a season name -- "Winter 2026/27" has a "/" that is not a
     legal path character, so it becomes "Winter_2026-27".
@@ -693,11 +725,16 @@ def _apply_tie_break_sort(df: pd.DataFrame) -> pd.DataFrame:
     work["_PtsPerStart"] = [
         Fraction(int(p), int(s)) for p, s in zip(work["Points"], work["Starts"])
     ]
+    # Terminal key: a real LoginID is a unique account id, so this fully resolves every tie except
+    # between two blank-LoginID name-fallback identities (pre-2026-07-13 legacy rows with no
+    # LoginID at all) -- pd.to_numeric("") -> NaN, and sort_values already places NaN last
+    # regardless of ascending direction, so no separate handling is needed for that residual case.
+    work["_LoginIDNum"] = pd.to_numeric(work["LoginID"], errors="coerce")
     ordered = work.sort_values(
-        ["Points", "_PtsPerStart", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"],
-        ascending=[False, False, False, False, False, False, False, True],
+        ["Points", "_PtsPerStart", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts", "_LoginIDNum"],
+        ascending=[False, False, False, False, False, False, False, True, True],
         kind="mergesort",
-    ).drop(columns=["_PtsPerStart"]).reset_index(drop=True)
+    ).drop(columns=["_PtsPerStart", "_LoginIDNum"]).reset_index(drop=True)
     return ordered
 
 
@@ -719,16 +756,21 @@ def _rank_table(agg: pd.DataFrame) -> pd.DataFrame:
       5. Top4, descending.
       6. Top8, descending.
       7. Top16, descending.
-      8. Starts, ascending -- in practice this key only ever decides anything at zero points,
-         where Points/Starts is 0 regardless of Starts. Deliberately arbitrary at the very bottom
-         of the table, not a meaningful signal on its own; it exists only so the chain has a
-         defined behaviour there instead of falling through to input order by accident.
+      8. Starts, ascending -- in practice this key rarely decides anything on its own (LoginID,
+         next, almost always does first), but stays in the chain at this position for continuity
+         with the table's own display order.
+      9. LoginID, ascending (ties before keys 1-8 are set are compared numerically; a
+         name-fallback identity, which has no LoginID at all, sorts after every id-keyed one).
+         A real LoginID is a unique per-account id, so this is a genuine terminal key: any two
+         *distinct* id-keyed pilots are now always fully ordered by keys 1-9, with no remaining
+         ambiguity for an outside reader re-deriving the table from the published results alone.
 
-    A group still tied after all eight keys is a genuine, unresolved tie and stays that way -- no
-    ninth key, and no Pilot or LoginID tiebreak is added. Such a group's internal order falls out
-    of the stable sort applied to *agg*'s existing order, which is itself deterministic (see
-    aggregate_pilot_table's identity groupby), so re-running on identical data reproduces the same
-    order even where the rule itself is silent.
+    A group still tied after all nine keys is a genuine, unresolved tie -- today this can only
+    happen between two blank-LoginID name-fallback identities (pre-2026-07-13 legacy rows with no
+    LoginID ever captured), an increasingly rare, purely historical edge case. Such a group's
+    internal order falls out of the stable sort applied to *agg*'s existing order, which is itself
+    deterministic (see aggregate_pilot_table's identity groupby), so re-running on identical data
+    reproduces the same order even where the rule itself is silent.
     """
     if agg.empty:
         out = agg.copy()
@@ -762,14 +804,18 @@ def build_season_table(
     season_start: date,
     season_end: date,
     as_of: date,
-    prevrank_cutoff_days: int = 7,
     snapshot_dir: Optional[Path] = None,
     log: Optional[Callable[[str], None]] = None,
 ) -> pd.DataFrame:
     """Rebuilt from scratch every call by reading every file in results_dir whose EventDate falls
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
-    propagates automatically. PrevRank/RankChange are computed live from the same raw files with an
-    earlier cutoff (as_of - prevrank_cutoff_days); no snapshot is involved in that pair.
+    propagates automatically. PrevRank/RankChange are computed live from the same raw files, with
+    the baseline date picked by rank_change_anchor(as_of, coverage_end) -- see that function's own
+    docstring for why this is a fixed weekly (Wednesday) boundary rather than a rolling "N days
+    back" window, and why it freezes once a season has stopped receiving new events. No snapshot is
+    involved in this pair; the returned table also carries the anchor actually used as
+    table.attrs["rank_change_anchor"] (an ISO date string) so a caller never has to recompute or
+    guess it.
 
     Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key),
     including for the PrevRank lookup: matching prev-vs-current by identity rather than by raw
@@ -798,8 +844,10 @@ def build_season_table(
     if current_ranked.empty:
         return pd.DataFrame(columns=PILOT_TABLE_COLS)
 
-    cutoff_date = as_of - timedelta(days=prevrank_cutoff_days)
-    prev_mask = season_mask & (dates <= cutoff_date)
+    event_dates = pd.to_datetime(current_results["EventDate"], errors="coerce").dt.date.dropna()
+    coverage_end = event_dates.max() if not event_dates.empty else None
+    anchor = rank_change_anchor(as_of, coverage_end)
+    prev_mask = season_mask & (dates < anchor)
     prev_results = all_results[prev_mask]
     prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
     prev_rank_lookup = (
@@ -817,7 +865,12 @@ def build_season_table(
         )
     current_ranked = _apply_deltas(current_ranked, base_snapshot)
 
-    return current_ranked[PILOT_TABLE_COLS]
+    # Set on the object actually being returned, not earlier -- pandas' .attrs propagation through
+    # intermediate operations (_apply_deltas, the column-selection below) is not guaranteed across
+    # pandas versions, so this assigns it last rather than relying on it surviving the trip.
+    result = current_ranked[PILOT_TABLE_COLS]
+    result.attrs["rank_change_anchor"] = anchor.isoformat()
+    return result
 
 
 def write_season_league_csv(league_dir: Path, season: str, table: pd.DataFrame) -> Path:
@@ -1076,11 +1129,11 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
     is the Premier-only subset -- both counted the same way check_league_invariants already does
     (season_results["EventID"].nunique()).
 
-    Check 14 re-derives the FULL 8-key tie-break chain from zero (see _rank_table's docstring for
+    Check 14 re-derives the FULL 9-key tie-break chain from zero (see _rank_table's docstring for
     the rule; _full_tie_break_key here is an independent re-implementation of it, not a call into
     _apply_tie_break_sort) and sorts *rows* by it, then compares position-by-position against the
-    given Rank column. Every one of the 8 keys is present here, so a stable sort's tie-preservation
-    only ever matters for a row-pair genuinely tied on all 8 -- a real, unresolved tie (see
+    given Rank column. Every one of the 9 keys is present here, so a stable sort's tie-preservation
+    only ever matters for a row-pair genuinely tied on all 9 -- a real, unresolved tie (see
     _rank_table), not an untested gap in this check's own key like the previous (Points, Wins,
     Top2)-only version had.
 
@@ -1163,14 +1216,14 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
     if ranks != expected_ranks:
         _fail("rank sequence", "Rank column is not exactly 1..N with no gaps or duplicates", ranks)
 
-    # 14: the FULL 8-key tie-break chain (see _rank_table's docstring for the rule itself),
+    # 14: the FULL 9-key tie-break chain (see _rank_table's docstring for the rule itself),
     # re-derived here from zero rather than reused from _apply_tie_break_sort -- an independent
     # implementation of the same specification, so a bug in the production sort (wrong direction
     # on one key, a dropped key, ...) is actually caught instead of the check silently agreeing
-    # with whatever _rank_table happened to produce. Nothing here relies on *rows* already being
-    # correctly ordered or on sort stability standing in for an untested key: every one of the 8
-    # keys is present, so stability only ever matters for a row-pair genuinely tied on all 8 --
-    # which is a real, unresolved tie (see _rank_table), not a gap in this check's key.
+    # with whatever _rank_table happened to produce. LoginID (key 9, ascending, blank sorts last)
+    # makes every id-keyed pilot's position fully determined by keys 1-9, so stability now only
+    # ever matters for a row-pair genuinely tied on all 9 -- two blank-LoginID name-fallback
+    # identities, the one residual case _rank_table's docstring still calls a real, unresolved tie.
     def _full_tie_break_key(r: dict):
         points = num(r.get("Points")) or 0
         starts = num(r.get("Starts")) or 0
@@ -1182,6 +1235,10 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
                 {"LoginID": lid_of(r), "Starts": starts},
             )
         pts_per_start = Fraction(points, starts)
+        try:
+            lid_sort = (0, int(lid_of(r)))
+        except ValueError:
+            lid_sort = (1, 0)  # blank/name-fallback identity -- sorts after every real LoginID
         return (
             -points,
             -pts_per_start,
@@ -1191,6 +1248,7 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
             -(num(r.get("Top8")) or 0),
             -(num(r.get("Top16")) or 0),
             starts,
+            lid_sort,
         )
 
     stable = sorted(rows, key=_full_tie_break_key)
@@ -1199,7 +1257,7 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
         if actual_rank != i:
             _fail(
                 "tie-break determinism",
-                f"LoginID {lid_of(r)}: the full 8-key tie-break places this row at position {i} "
+                f"LoginID {lid_of(r)}: the full 9-key tie-break places this row at position {i} "
                 f"but its Rank={actual_rank}",
                 {"LoginID": lid_of(r), "position": i, "Rank": actual_rank},
             )
@@ -1599,7 +1657,6 @@ def run_league_update(
     as_of: date,
     premier_history_csv: Optional[Path] = None,
     mtgo_json_cache_dir: Optional[Path] = None,
-    prevrank_cutoff_days: int = 7,
     today: Optional[date] = None,
     log: Optional[Callable[[str], None]] = None,
 ) -> dict:
@@ -1730,8 +1787,7 @@ def run_league_update(
     for season, (s, e) in sorted(seasons_touched.items(), key=lambda kv: kv[1][0]):
         upsert_season_config(league_dir / "season_config.csv", season, s, e)
         table = build_season_table(
-            results_dir, s, e, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days,
-            snapshot_dir=snapshot_dir, log=log,
+            results_dir, s, e, as_of=as_of, snapshot_dir=snapshot_dir, log=log,
         )
 
         dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date

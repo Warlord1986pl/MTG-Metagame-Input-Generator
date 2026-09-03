@@ -5,10 +5,13 @@ metagame_input_generator.py exit-code wiring that reacts to it.
 
 No live network access, no dependency on outputs/league/pilot_league_Summer_2026.csv (that file is
 gitignored and mutates every production run -- see CLAUDE.md). The exact-numbers test instead reads
-a frozen copy of it, tests/fixtures/league/pilot_league_validation_fixture.csv, captured on
-2026-08-31 with the CURRENT tie-break rule (Points, Points/Starts, Wins, Top2, Top4, Top8, Top16,
-Starts -- see _rank_table's docstring) specifically so this test keeps passing regardless of how
-the live season file grows afterward.
+a frozen copy of it, tests/fixtures/league/pilot_league_validation_fixture.csv -- Points/Starts/etc.
+per pilot captured on 2026-08-31, specifically so this test keeps passing regardless of how the
+live season file grows afterward. Rank itself was re-derived on 2026-09-03 (re-sorting the SAME
+per-pilot values, not re-fetched) after the tie-break rule gained its 9th key (LoginID, ascending
+-- see _rank_table's docstring for the full, current rule); 742 of 1025 rows' Rank changed as a
+direct result, none of the sums/counts asserted below did, since those depend on the underlying
+values, not on which pilot a tied group's Rank number happens to land on.
 
 Run directly: python tests/test_league_validation.py
 Or via pytest (if installed): pytest tests/test_league_validation.py

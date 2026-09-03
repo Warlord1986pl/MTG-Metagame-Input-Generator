@@ -214,15 +214,12 @@ def build_season_site_data(
     season_start: date,
     season_end: date,
     as_of: date,
-    prevrank_cutoff_days: int = 7,
     matches_dir: Optional[Path] = None,
 ) -> tuple:
     """Returns (season_doc, pilots_doc) for one season -- pure computation, no file I/O, so it can
     be unit-tested and diffed without touching disk.
     """
-    table = build_season_table(
-        results_dir, season_start, season_end, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days
-    )
+    table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
     all_results = load_all_league_results(results_dir)
     names = _name_history(all_results)
 
@@ -381,7 +378,7 @@ def build_season_site_data(
         "seasonStart": season_start.isoformat(),
         "seasonEnd": season_end.isoformat(),
         "asOf": as_of.isoformat(),
-        "prevRankCutoffDays": prevrank_cutoff_days,
+        "rankChangeAnchor": table.attrs.get("rank_change_anchor"),
         "pilotCount": len(season_pilots),
         "pilots": season_pilots,
     }
@@ -396,7 +393,6 @@ def export_league_site(
     league_dir: Path,
     docs_data_dir: Path,
     as_of: date,
-    prevrank_cutoff_days: int = 7,
     log: Optional[Callable[[str], None]] = None,
 ) -> List[str]:
     """Rewrites docs/data/season_<slug>.json + pilots_<slug>.json for every season on record in
@@ -444,8 +440,7 @@ def export_league_site(
         slug = season_filename_slug(season)
 
         season_doc, pilots_doc = build_season_site_data(
-            results_dir, season, s_start, s_end, as_of=as_of, prevrank_cutoff_days=prevrank_cutoff_days,
-            matches_dir=matches_dir,
+            results_dir, season, s_start, s_end, as_of=as_of, matches_dir=matches_dir,
         )
         _write_json(season_doc, docs_data_dir / f"season_{slug}.json")
         _write_json(pilots_doc, docs_data_dir / f"pilots_{slug}.json")

@@ -247,7 +247,7 @@ def test_zero_regression_no_identity_file() -> None:
                 season = str(row["Season"]).strip()
                 s_start = pd.to_datetime(row["StartDate"]).date()
                 s_end = pd.to_datetime(row["EndDate"]).date()
-                table = build_season_table(league_input / "results", s_start, s_end, as_of=FIXTURE_AS_OF, prevrank_cutoff_days=7)
+                table = build_season_table(league_input / "results", s_start, s_end, as_of=FIXTURE_AS_OF)
                 new_csv = write_season_league_csv(out_league_dir, season, table)
                 expected_csv = expected / f"pilot_league_{season_filename_slug(season)}.csv"
                 assert new_csv.read_bytes() == expected_csv.read_bytes(), (

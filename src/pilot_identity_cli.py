@@ -79,7 +79,7 @@ def _compute_season_tables(league_dir: Path, as_of: date) -> Dict[str, pd.DataFr
     results_dir = league_dir / "results"
     tables = {}
     for season, s, e in _season_config_rows(league_dir):
-        tables[season] = build_season_table(results_dir, s, e, as_of=as_of, prevrank_cutoff_days=7)
+        tables[season] = build_season_table(results_dir, s, e, as_of=as_of)
     return tables
 
 
@@ -399,7 +399,7 @@ def merge_command(args: argparse.Namespace) -> int:
     pilot_identity.append_merge_log_rows(log_rows)
 
     for season, s, e in _season_config_rows(league_dir):
-        table = build_season_table(league_dir / "results", s, e, as_of=as_of, prevrank_cutoff_days=7)
+        table = build_season_table(league_dir / "results", s, e, as_of=as_of)
         path = write_season_league_csv(league_dir, season, table)
         print(f"[apply] rewrote {path} ({len(table)} pilot row(s))")
 

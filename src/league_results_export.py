@@ -27,7 +27,7 @@ writing this (see this repo's session notes, not repeated here):
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -335,6 +335,46 @@ def reconcile_with_season_table(
     ]
 
 
+def find_late_arrivals(export_df: pd.DataFrame, season_end: date) -> List[dict]:
+    """Events whose EventDate falls inside a weekly (Wed-Wed) window that has already closed, but
+    whose IngestedAt is later than that window's close -- MTGO publishes results with a lag, so a
+    Tuesday event may not be available on Wednesday morning. Reported, not silently reassigned or
+    dropped: whoever publishes a weekly edition can then choose to include or skip a late event
+    deliberately, instead of it just vanishing from both the week it belongs to and the one it
+    actually arrived in.
+
+    Season-open guard (see this repo's session notes for why): an event is only evaluated at all if
+    its own IngestedAt date is at or before *season_end* -- an event ingested after the season had
+    already fully ended was, by definition, part of a bulk backfill of an already-closed season,
+    not a genuinely late weekly arrival, and would otherwise flag every single event in a
+    backfilled season (confirmed live: Summer 2026's entire 91-event IngestedAt is one single
+    timestamp from its first export run, all after SeasonEnd -- every one of them would be a false
+    positive without this guard).
+    """
+    from league_engine import rank_change_anchor
+
+    events = export_df.drop_duplicates(subset=["EventID"])[["EventID", "EventDate", "IngestedAt"]]
+    late = []
+    for _, row in events.iterrows():
+        ingested_at = row["IngestedAt"]
+        if not ingested_at:
+            continue  # no ingestion-log entry for this EventID -- nothing to judge it against
+        ingested_date = datetime.fromisoformat(ingested_at.replace("Z", "+00:00")).date()
+        if ingested_date > season_end:
+            continue  # backfill of an already-closed season, not a late weekly arrival
+
+        event_date = date.fromisoformat(row["EventDate"])
+        window_start = rank_change_anchor(as_of=event_date)  # no coverage_end -- just "which week"
+        window_close = window_start + timedelta(days=7)
+        if ingested_date >= window_close:
+            late.append({
+                "EventID": row["EventID"], "EventDate": row["EventDate"],
+                "WindowStart": window_start.isoformat(), "WindowClose": window_close.isoformat(),
+                "IngestedAt": ingested_at,
+            })
+    return late
+
+
 def build_manifest(
     season_name: str,
     season_start: date,
@@ -343,6 +383,7 @@ def build_manifest(
     export_df: pd.DataFrame,
     placement_issues: List[dict],
     reconciliation_issues: List[dict],
+    rank_change_anchor: Optional[str],
 ) -> dict:
     event_groups = (
         export_df.groupby(["EventID", "EventDate", "EventType"], as_index=False)
@@ -363,6 +404,7 @@ def build_manifest(
     events_premier = sum(1 for e in events_list if e["type"] == "premier")
 
     points_by_login = export_df.groupby("LoginID")["PointsAwarded"].sum()
+    late_arrivals = find_late_arrivals(export_df, season_end)
 
     checks = [
         {"name": "placement_integrity", "passed": not placement_issues, "offending": placement_issues[:50]},
@@ -378,6 +420,7 @@ def build_manifest(
         "season_end": season_end.isoformat(),
         "generated_at": _utcnow_iso(),
         "as_of": as_of.isoformat(),
+        "RankChangeAnchor": rank_change_anchor,
         "events_total": len(events_list),
         "events_challenge": events_challenge,
         "events_premier": events_premier,
@@ -386,6 +429,7 @@ def build_manifest(
         "pilots_scoring": int((points_by_login > 0).sum()),
         "points_total": int(export_df["PointsAwarded"].sum()),
         "starts_total": int(len(export_df)),
+        "LateArrivals": late_arrivals,
         "validation": {"checks": checks, "all_passed": all(c["passed"] for c in checks)},
     }
 
@@ -436,6 +480,10 @@ def export_results_and_manifest(
             emit(f"{season_name}: no results yet -- skipping")
             continue
 
+        # Computed once, used both for the manifest's RankChangeAnchor and (below) season-closure
+        # detection -- previously two separate build_season_table calls.
+        season_table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
+
         placement_issues = check_placement_integrity(export_df)
         reconciliation_issues = reconcile_with_season_table(
             current_results, results_dir, season_start, season_end, as_of,
@@ -443,6 +491,7 @@ def export_results_and_manifest(
         manifest = build_manifest(
             season_name, season_start, season_end, as_of, export_df,
             placement_issues, reconciliation_issues,
+            season_table.attrs.get("rank_change_anchor"),
         )
 
         slug = season_filename_slug(season_name)
@@ -466,7 +515,6 @@ def export_results_and_manifest(
         # Only a season whose export just validated cleanly gets considered for closure -- the
         # registry is meant to be authoritative, so it should never record season-level facts
         # (event counts, champion) derived from data that failed its own self-validation.
-        season_table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
         maybe_close_season(
             season_name, season_start, season_end, as_of, export_df, season_table,
             season_registry_path, log=log,
