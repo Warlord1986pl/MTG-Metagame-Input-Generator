@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853219,2026-09-01,C32,Challenge,QF,yuhewang,2275355,shindy,1237388,2,1,Prowess,Land Destruction
+12853219,2026-09-01,C32,Challenge,QF,Sunbird17,2235773,Misplacedginger,736792,2,1,Goryo's Vengeance,Esper Blink
+12853219,2026-09-01,C32,Challenge,QF,nahuel10,1942357,XantosCell,2914916,2,1,Dimir Midrange,Mono-Green Eldrazi
+12853219,2026-09-01,C32,Challenge,QF,Brunes,2764694,jvidarte,2651868,2,0,Esper Blink,Prowess
+12853219,2026-09-01,C32,Challenge,SF,yuhewang,2275355,Brunes,2764694,2,1,Prowess,Esper Blink
+12853219,2026-09-01,C32,Challenge,SF,nahuel10,1942357,Sunbird17,2235773,2,0,Dimir Midrange,Goryo's Vengeance
+12853219,2026-09-01,C32,Challenge,F,nahuel10,1942357,yuhewang,2275355,2,1,Dimir Midrange,Prowess

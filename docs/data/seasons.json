@@ -7,6 +7,13 @@
       "season": "Summer 2026",
       "slug": "Summer_2026",
       "startDate": "2026-06-01"
+    },
+    {
+      "endDate": "2026-11-30",
+      "isCurrent": true,
+      "season": "Autumn 2026",
+      "slug": "Autumn_2026",
+      "startDate": "2026-09-01"
     }
   ]
 }

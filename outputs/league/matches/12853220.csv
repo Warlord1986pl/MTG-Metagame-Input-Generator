@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853220,2026-09-01,C16,Challenge,QF,alexeezayyy,1126161,SFDK,3509735,2,1,Land Destruction,Tron
+12853220,2026-09-01,C16,Challenge,QF,shindy,1237388,Deathmaxx,2995055,2,0,Land Destruction,Goryo's Vengeance
+12853220,2026-09-01,C16,Challenge,QF,meanfannypack,1703735,Cptwalnut,1964476,2,0,Esper Blink,Living End
+12853220,2026-09-01,C16,Challenge,QF,hanshq,737594,The_shallow_grave,3254577,2,1,Goryo's Vengeance,Grixis Reanimator
+12853220,2026-09-01,C16,Challenge,SF,alexeezayyy,1126161,meanfannypack,1703735,2,0,Land Destruction,Esper Blink
+12853220,2026-09-01,C16,Challenge,SF,hanshq,737594,shindy,1237388,2,0,Goryo's Vengeance,Land Destruction
+12853220,2026-09-01,C16,Challenge,F,alexeezayyy,1126161,hanshq,737594,2,1,Land Destruction,Goryo's Vengeance

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853226,2026-09-01,C64,Challenge,QF,BowBloBiw,2768190,claudio0907,1059076,2,1,Prowess,Broodscale Combo
+12853226,2026-09-01,C64,Challenge,QF,Latorretta,2708393,Selfeisek,2042214,2,1,Prowess,Mono-Black Midrange
+12853226,2026-09-01,C64,Challenge,QF,yunk3r,1113267,bkubit,2153835,2,0,Mono-Green Eldrazi,Goryo's Vengeance
+12853226,2026-09-01,C64,Challenge,QF,Craig_Long123,3364560,KingHairy,2185747,2,0,The Rock,Goryo's Vengeance
+12853226,2026-09-01,C64,Challenge,SF,Latorretta,2708393,Craig_Long123,3364560,2,1,Prowess,The Rock
+12853226,2026-09-01,C64,Challenge,SF,yunk3r,1113267,BowBloBiw,2768190,2,0,Mono-Green Eldrazi,Prowess
+12853226,2026-09-01,C64,Challenge,F,yunk3r,1113267,Latorretta,2708393,2,1,Mono-Green Eldrazi,Prowess
