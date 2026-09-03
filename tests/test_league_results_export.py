@@ -240,9 +240,7 @@ def test_independent_reproduction_of_published_baseline_rank() -> None:
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     season_mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)
 
-    event_dates_in_season = dates[season_mask].dropna()
-    coverage_end = event_dates_in_season.max() if not event_dates_in_season.empty else None
-    anchor = rank_change_anchor(as_of, coverage_end)
+    anchor = rank_change_anchor(as_of, season_end)
 
     baseline = all_results[season_mask & (dates < anchor)].copy()
     baseline["LoginID"] = baseline["LoginID"].astype(str).str.strip()

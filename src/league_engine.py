@@ -184,11 +184,12 @@ def rank_change_anchor(as_of: date, coverage_end: Optional[date] = None) -> date
 
     If *coverage_end* is given and the anchor as computed above would land AFTER it, the anchor is
     frozen instead at the most recent Wednesday on or before coverage_end -- and stays there
-    forever, for any as_of from then on. This is what stops a closed season's RankChange from
-    sliding into an ever-emptier window and decaying to 0 as days pass with no new events: once a
-    season has no more events coming (as_of has moved past its last actual EventDate), the
-    published RankChange is permanently the one measured over the last complete window that
-    actually contained events.
+    forever, for any as_of from then on. build_season_table passes the season's own calendar
+    EndDate here (never the max ingested EventDate -- an open season with normal event-to-rebuild
+    lag must not freeze just because this week's event hasn't landed yet). This is what stops a
+    closed season's RankChange from sliding into an ever-emptier window and decaying to 0 as days
+    pass after the season is over: once as_of moves past the season's own end date, the published
+    RankChange is permanently the one measured over the last complete window within the season.
     """
     days_since_wednesday = (as_of.weekday() - 2) % 7  # date.weekday(): Monday=0 ... Wednesday=2
     anchor = as_of - timedelta(days=days_since_wednesday)
@@ -810,11 +811,13 @@ def build_season_table(
     """Rebuilt from scratch every call by reading every file in results_dir whose EventDate falls
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
     propagates automatically. PrevRank/RankChange are computed live from the same raw files, with
-    the baseline date picked by rank_change_anchor(as_of, coverage_end) -- see that function's own
-    docstring for why this is a fixed weekly (Wednesday) boundary rather than a rolling "N days
-    back" window, and why it freezes once a season has stopped receiving new events. No snapshot is
-    involved in this pair; the returned table also carries the anchor actually used as
-    table.attrs["rank_change_anchor"] (an ISO date string) so a caller never has to recompute or
+    the baseline date picked by rank_change_anchor(as_of, coverage_end=season_end) -- see that
+    function's own docstring for why this is a fixed weekly (Wednesday) boundary rather than a
+    rolling "N days back" window, and why it freezes once as_of passes the season's own calendar
+    end date (never based on how much data happens to be ingested yet -- an open season with
+    normal event-to-rebuild lag must NOT freeze just because this week's event hasn't landed).
+    No snapshot is involved in this pair; the returned table also carries the anchor actually used
+    as table.attrs["rank_change_anchor"] (an ISO date string) so a caller never has to recompute or
     guess it.
 
     Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key),
@@ -844,9 +847,7 @@ def build_season_table(
     if current_ranked.empty:
         return pd.DataFrame(columns=PILOT_TABLE_COLS)
 
-    event_dates = pd.to_datetime(current_results["EventDate"], errors="coerce").dt.date.dropna()
-    coverage_end = event_dates.max() if not event_dates.empty else None
-    anchor = rank_change_anchor(as_of, coverage_end)
+    anchor = rank_change_anchor(as_of, season_end)
     prev_mask = season_mask & (dates < anchor)
     prev_results = all_results[prev_mask]
     prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
