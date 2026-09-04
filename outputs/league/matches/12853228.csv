@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853228,2026-09-02,C32,Challenge,QF,HolaChico,3485421,shindy,1237388,2,1,4c HollowOne,Land Destruction
+12853228,2026-09-02,C32,Challenge,QF,Manny-,2139100,SlankyPotato,3161045,2,1,Ruby Storm,Goryo's Vengeance
+12853228,2026-09-02,C32,Challenge,QF,EthanBird,2658587,Savior0117,2464763,2,0,Prowess,Belcher
+12853228,2026-09-02,C32,Challenge,QF,mommydom_manifesto,3227644,AzureMoon,3158693,2,1,Song of Creation,Living End
+12853228,2026-09-02,C32,Challenge,SF,EthanBird,2658587,Manny-,2139100,2,1,Prowess,Ruby Storm
+12853228,2026-09-02,C32,Challenge,SF,mommydom_manifesto,3227644,HolaChico,3485421,2,0,Song of Creation,4c HollowOne
+12853228,2026-09-02,C32,Challenge,F,mommydom_manifesto,3227644,EthanBird,2658587,2,1,Song of Creation,Prowess
