@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853667,2026-09-03,C64,Challenge,QF,OafMcNamara,1018764,cnoz,1555238,2,1,Dimir Midrange,Mono-Green Eldrazi
+12853667,2026-09-03,C64,Challenge,QF,Chichichi,2788809,KingCapivara,2126126,2,1,Mono-Green Eldrazi,Broodscale Combo
+12853667,2026-09-03,C64,Challenge,QF,Varo,923582,kthanakit26,2122697,2,0,Affinity,Land Destruction
+12853667,2026-09-03,C64,Challenge,QF,scipios,2454058,Lightspirit,3222070,2,0,Tron,Eldrazi Ramp
+12853667,2026-09-03,C64,Challenge,SF,scipios,2454058,OafMcNamara,1018764,2,0,Tron,Dimir Midrange
+12853667,2026-09-03,C64,Challenge,SF,Varo,923582,Chichichi,2788809,2,1,Affinity,Mono-Green Eldrazi
+12853667,2026-09-03,C64,Challenge,F,Varo,923582,scipios,2454058,2,0,Affinity,Tron
