@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853677,2026-09-04,C64,Challenge,QF,Watchwolf92,574591,rastaf,254536,2,1,4c HollowOne,Esper Blink
+12853677,2026-09-04,C64,Challenge,QF,xl_snapcaster,2232658,Thunus,3076886,2,1,Jeskai Energy,Mono-Green Eldrazi
+12853677,2026-09-04,C64,Challenge,QF,pepeteam,2272105,Retrisma,2700947,2,0,Goryo's Vengeance,Affinity
+12853677,2026-09-04,C64,Challenge,QF,D00mwake,1226387,Uagli1,2680052,2,1,Mono-Green Eldrazi,Broodscale Combo
+12853677,2026-09-04,C64,Challenge,SF,Watchwolf92,574591,pepeteam,2272105,2,0,4c HollowOne,Goryo's Vengeance
+12853677,2026-09-04,C64,Challenge,SF,D00mwake,1226387,xl_snapcaster,2232658,2,1,Mono-Green Eldrazi,Jeskai Energy
+12853677,2026-09-04,C64,Challenge,F,Watchwolf92,574591,D00mwake,1226387,2,1,4c HollowOne,Mono-Green Eldrazi
