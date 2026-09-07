@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853780,2026-09-05,C16,Challenge,QF,RespectTheCat,2788118,Foxantes,2092644,2,0,Esper Blink,Broodscale Combo
+12853780,2026-09-05,C16,Challenge,QF,ryuumei,933670,nahuel10,1942357,2,1,Domain Zoo,Land Destruction
+12853780,2026-09-05,C16,Challenge,QF,imthekiing,639998,bozo2112,2309846,2,1,Esper Blink,Prowess
+12853780,2026-09-05,C16,Challenge,QF,DelverOfBolts,2688845,JPA93,1181017,2,0,Prowess,Neobrand
+12853780,2026-09-05,C16,Challenge,SF,RespectTheCat,2788118,DelverOfBolts,2688845,2,1,Esper Blink,Prowess
+12853780,2026-09-05,C16,Challenge,SF,ryuumei,933670,imthekiing,639998,2,0,Domain Zoo,Esper Blink
+12853780,2026-09-05,C16,Challenge,F,ryuumei,933670,RespectTheCat,2788118,2,1,Domain Zoo,Esper Blink

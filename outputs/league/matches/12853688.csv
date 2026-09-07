@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853688,2026-09-05,C64,Challenge,QF,Chichichi,2788809,almostomniscient,2563273,2,1,Mono-Green Eldrazi,Esper Blink
+12853688,2026-09-05,C64,Challenge,QF,TheSandwichKing,2733023,Manny-,2139100,2,1,Dimir Midrange,Ruby Storm
+12853688,2026-09-05,C64,Challenge,QF,hugofreitas1,1997683,MyrRetriever,3006274,2,0,Ruby Storm,Broodscale Combo
+12853688,2026-09-05,C64,Challenge,QF,Gobern,1847500,MayoDominaria,1112102,2,1,Eldrazi Ramp,Jeskai Energy
+12853688,2026-09-05,C64,Challenge,SF,hugofreitas1,1997683,TheSandwichKing,2733023,2,0,Ruby Storm,Dimir Midrange
+12853688,2026-09-05,C64,Challenge,SF,Gobern,1847500,Chichichi,2788809,2,0,Eldrazi Ramp,Mono-Green Eldrazi
+12853688,2026-09-05,C64,Challenge,F,hugofreitas1,1997683,Gobern,1847500,2,0,Ruby Storm,Eldrazi Ramp

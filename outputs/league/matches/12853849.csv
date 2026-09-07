@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853849,2026-09-05,C32,Challenge,QF,keyaki,1964351,manohito,2908947,2,1,Neobrand,Tron
+12853849,2026-09-05,C32,Challenge,QF,Kritik,2707200,Cachorrowo,2720911,2,0,Land Destruction,Ruby Storm
+12853849,2026-09-05,C32,Challenge,QF,gazmon48,1636994,Proxymoron,3391075,2,1,Esper Blink,Broodscale Combo
+12853849,2026-09-05,C32,Challenge,QF,Reiam,3106168,toothymtg,3087786,2,0,Land Destruction,Broodscale Combo
+12853849,2026-09-05,C32,Challenge,SF,Reiam,3106168,gazmon48,1636994,2,0,Land Destruction,Esper Blink
+12853849,2026-09-05,C32,Challenge,SF,keyaki,1964351,Kritik,2707200,2,0,Neobrand,Land Destruction
+12853849,2026-09-05,C32,Challenge,F,Reiam,3106168,keyaki,1964351,2,1,Land Destruction,Neobrand
