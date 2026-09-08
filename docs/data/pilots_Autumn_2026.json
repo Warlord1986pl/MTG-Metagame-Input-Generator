@@ -42,7 +42,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 30,
+      "rank": 35,
       "results": [
         {
           "date": "2026-09-03",
@@ -54,6 +54,53 @@
           "gwp": 0.875,
           "points": 3,
           "swissPoints": 21,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1041920": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:2563273",
+          "opponentName": "almostomniscient",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:1041920",
+      "loginId": "1041920",
+      "name": "RCMerriam",
+      "points": 2,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 57,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 7,
+          "gwp": 0.68421,
+          "points": 2,
+          "swissPoints": 18,
           "tier": "C64"
         }
       ],
@@ -76,7 +123,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 74,
+      "rank": 91,
       "results": [
         {
           "date": "2026-09-01",
@@ -110,7 +157,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 155,
+      "rank": 179,
       "results": [
         {
           "date": "2026-09-01",
@@ -157,7 +204,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 46,
+      "rank": 58,
       "results": [
         {
           "date": "2026-09-01",
@@ -168,6 +215,99 @@
           "finish": 8,
           "gwp": 0.64706,
           "points": 2,
+          "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1071904": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1071904",
+      "loginId": "1071904",
+      "name": "tibalt_of_red_sub",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 180,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Dimir Mill",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 25,
+          "gwp": 0.5625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1074736": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:2918398",
+          "opponentName": "yulinl",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1758149",
+          "opponentName": "yama33",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 1,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:1074736",
+      "loginId": "1074736",
+      "name": "Aldreen",
+      "points": 3,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 36,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 3,
+          "gwp": 0.70588,
+          "points": 3,
           "swissPoints": 15,
           "tier": "C64"
         }
@@ -191,7 +331,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 82,
+      "rank": 99,
       "results": [
         {
           "date": "2026-09-01",
@@ -238,7 +378,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 47,
+      "rank": 59,
       "results": [
         {
           "date": "2026-09-05",
@@ -309,7 +449,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 8,
+      "rank": 10,
       "results": [
         {
           "date": "2026-09-01",
@@ -367,7 +507,7 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 2,
+        "starts": 3,
         "top16": 1,
         "top2": 1,
         "top4": 1,
@@ -380,8 +520,20 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 13,
+      "rank": 18,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 24,
+          "gwp": 0.52941,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-03",
           "deck": "Land Destruction",
@@ -426,7 +578,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 236,
+      "rank": 274,
       "results": [
         {
           "date": "2026-09-05",
@@ -472,7 +624,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 83,
+      "rank": 100,
       "results": [
         {
           "date": "2026-09-02",
@@ -519,7 +671,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 41,
+      "rank": 49,
       "results": [
         {
           "date": "2026-09-05",
@@ -548,6 +700,40 @@
       ],
       "xHandle": null
     },
+    "id:1205480": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1205480",
+      "loginId": "1205480",
+      "name": "CavalloGoloso",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 101,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 9,
+          "gwp": 0.58824,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
     "id:1210536": {
       "bracketMatches": [],
       "counts": {
@@ -565,7 +751,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 72,
+      "rank": 89,
       "results": [
         {
           "date": "2026-09-05",
@@ -623,7 +809,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 156,
+      "rank": 181,
       "results": [
         {
           "date": "2026-09-01",
@@ -694,7 +880,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 18,
+      "rank": 22,
       "results": [
         {
           "date": "2026-09-04",
@@ -728,7 +914,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 157,
+      "rank": 182,
       "results": [
         {
           "date": "2026-09-01",
@@ -811,7 +997,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 2,
+      "rank": 3,
       "results": [
         {
           "date": "2026-09-02",
@@ -864,6 +1050,53 @@
       ],
       "xHandle": null
     },
+    "id:1296445": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3087786",
+          "opponentName": "toothymtg",
+          "pilotDeck": "Land Destruction",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:1296445",
+      "loginId": "1296445",
+      "name": "ionez",
+      "points": 2,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 60,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 6,
+          "gwp": 0.68421,
+          "points": 2,
+          "swissPoints": 18,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
     "id:1353469": {
       "bracketMatches": [],
       "counts": {
@@ -881,7 +1114,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 158,
+      "rank": 183,
       "results": [
         {
           "date": "2026-09-02",
@@ -915,7 +1148,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 159,
+      "rank": 184,
       "results": [
         {
           "date": "2026-09-05",
@@ -962,7 +1195,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 48,
+      "rank": 61,
       "results": [
         {
           "date": "2026-09-02",
@@ -996,7 +1229,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 84,
+      "rank": 102,
       "results": [
         {
           "date": "2026-09-05",
@@ -1030,7 +1263,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 160,
+      "rank": 185,
       "results": [
         {
           "date": "2026-09-01",
@@ -1077,7 +1310,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 49,
+      "rank": 62,
       "results": [
         {
           "date": "2026-09-03",
@@ -1124,7 +1357,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 50,
+      "rank": 63,
       "results": [
         {
           "date": "2026-09-02",
@@ -1158,7 +1391,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 161,
+      "rank": 186,
       "results": [
         {
           "date": "2026-09-05",
@@ -1192,7 +1425,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 162,
+      "rank": 187,
       "results": [
         {
           "date": "2026-09-01",
@@ -1226,7 +1459,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 163,
+      "rank": 188,
       "results": [
         {
           "date": "2026-09-01",
@@ -1285,7 +1518,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 31,
+      "rank": 37,
       "results": [
         {
           "date": "2026-09-05",
@@ -1305,8 +1538,8 @@
     "id:1700365": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
-        "starts": 2,
+        "distinctDecks": 3,
+        "starts": 3,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -1319,8 +1552,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 125,
+      "rank": 157,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 23,
+          "gwp": 0.61111,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-04",
           "deck": "Domain Zoo",
@@ -1390,7 +1635,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 32,
+      "rank": 38,
       "results": [
         {
           "date": "2026-09-01",
@@ -1424,7 +1669,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 85,
+      "rank": 103,
       "results": [
         {
           "date": "2026-09-01",
@@ -1458,7 +1703,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 86,
+      "rank": 104,
       "results": [
         {
           "date": "2026-09-01",
@@ -1492,7 +1737,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 164,
+      "rank": 189,
       "results": [
         {
           "date": "2026-09-03",
@@ -1502,6 +1747,40 @@
           "eventId": "12853667",
           "finish": 24,
           "gwp": 0.58824,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1742159": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1742159",
+      "loginId": "1742159",
+      "name": "peter780108",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 190,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 18,
+          "gwp": 0.52632,
           "points": 0,
           "swissPoints": 12,
           "tier": "C64"
@@ -1526,7 +1805,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 87,
+      "rank": 105,
       "results": [
         {
           "date": "2026-09-05",
@@ -1560,7 +1839,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 237,
+      "rank": 275,
       "results": [
         {
           "date": "2026-09-02",
@@ -1589,6 +1868,145 @@
       ],
       "xHandle": null
     },
+    "id:1758149": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:2563273",
+          "opponentName": "almostomniscient",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:2114447",
+          "opponentName": "Zoob5555",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1074736",
+          "opponentName": "Aldreen",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 1,
+        "top4": 1,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:1758149",
+      "loginId": "1758149",
+      "name": "yama33",
+      "points": 4,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 23,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 2,
+          "gwp": 0.76471,
+          "points": 4,
+          "swissPoints": 18,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1758332": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1758332",
+      "loginId": "1758332",
+      "name": "marito9911",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 191,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Domain Zoo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 24,
+          "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1763618": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1763618",
+      "loginId": "1763618",
+      "name": "chinotron23",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 192,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Affinity",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 31,
+          "gwp": 0.58824,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
     "id:1773910": {
       "bracketMatches": [],
       "counts": {
@@ -1606,7 +2024,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 88,
+      "rank": 106,
       "results": [
         {
           "date": "2026-09-02",
@@ -1640,7 +2058,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 89,
+      "rank": 107,
       "results": [
         {
           "date": "2026-09-01",
@@ -1674,7 +2092,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 90,
+      "rank": 108,
       "results": [
         {
           "date": "2026-09-01",
@@ -1708,7 +2126,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 91,
+      "rank": 109,
       "results": [
         {
           "date": "2026-09-05",
@@ -1742,7 +2160,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 165,
+      "rank": 193,
       "results": [
         {
           "date": "2026-09-02",
@@ -1776,7 +2194,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 142,
+      "rank": 164,
       "results": [
         {
           "date": "2026-09-02",
@@ -1847,7 +2265,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 19,
+      "rank": 24,
       "results": [
         {
           "date": "2026-09-05",
@@ -1858,6 +2276,65 @@
           "finish": 2,
           "gwp": 0.68421,
           "points": 4,
+          "swissPoints": 18,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1872783": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Tron",
+          "opponentId": "id:2776772",
+          "opponentName": "narca",
+          "pilotDeck": "Dimir Midrange",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3087786",
+          "opponentName": "toothymtg",
+          "pilotDeck": "Dimir Midrange",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 1,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:1872783",
+      "loginId": "1872783",
+      "name": "henry_morehouse",
+      "points": 3,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 39,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Dimir Midrange",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 3,
+          "gwp": 0.72222,
+          "points": 3,
           "swissPoints": 18,
           "tier": "C64"
         }
@@ -1881,7 +2358,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 166,
+      "rank": 194,
       "results": [
         {
           "date": "2026-09-01",
@@ -1915,7 +2392,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 167,
+      "rank": 195,
       "results": [
         {
           "date": "2026-09-04",
@@ -1949,7 +2426,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 92,
+      "rank": 110,
       "results": [
         {
           "date": "2026-09-05",
@@ -1983,7 +2460,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 168,
+      "rank": 196,
       "results": [
         {
           "date": "2026-09-01",
@@ -2003,8 +2480,8 @@
     "id:1940271": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
+        "distinctDecks": 2,
+        "starts": 2,
         "top16": 0,
         "top2": 0,
         "top4": 0,
@@ -2017,8 +2494,20 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 169,
+      "rank": 276,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 21,
+          "gwp": 0.55556,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Prowess",
@@ -2182,7 +2671,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 170,
+      "rank": 197,
       "results": [
         {
           "date": "2026-09-01",
@@ -2253,7 +2742,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 20,
+      "rank": 25,
       "results": [
         {
           "date": "2026-09-05",
@@ -2300,7 +2789,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 51,
+      "rank": 64,
       "results": [
         {
           "date": "2026-09-01",
@@ -2334,7 +2823,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 126,
+      "rank": 145,
       "results": [
         {
           "date": "2026-09-05",
@@ -2380,7 +2869,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 93,
+      "rank": 111,
       "results": [
         {
           "date": "2026-09-02",
@@ -2451,7 +2940,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 9,
+      "rank": 11,
       "results": [
         {
           "date": "2026-09-05",
@@ -2485,8 +2974,8 @@
       ],
       "counts": {
         "distinctDecks": 2,
-        "starts": 3,
-        "top16": 1,
+        "starts": 4,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 1,
@@ -2495,11 +2984,23 @@
       "id": "id:2042214",
       "loginId": "2042214",
       "name": "Selfeisek",
-      "points": 2,
+      "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 71,
+      "rank": 54,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Mono-Black Midrange",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 16,
+          "gwp": 0.625,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Mono-Black Midrange",
@@ -2556,7 +3057,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 238,
+      "rank": 277,
       "results": [
         {
           "date": "2026-09-05",
@@ -2602,7 +3103,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 136,
+      "rank": 158,
       "results": [
         {
           "date": "2026-09-05",
@@ -2660,7 +3161,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 171,
+      "rank": 198,
       "results": [
         {
           "date": "2026-09-01",
@@ -2707,7 +3208,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 52,
+      "rank": 65,
       "results": [
         {
           "date": "2026-09-05",
@@ -2720,6 +3221,53 @@
           "points": 2,
           "swissPoints": 15,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2114447": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1758149",
+          "opponentName": "yama33",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:2114447",
+      "loginId": "2114447",
+      "name": "Zoob5555",
+      "points": 2,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 66,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 8,
+          "gwp": 0.66667,
+          "points": 2,
+          "swissPoints": 18,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -2754,7 +3302,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 53,
+      "rank": 67,
       "results": [
         {
           "date": "2026-09-03",
@@ -2801,7 +3349,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 54,
+      "rank": 68,
       "results": [
         {
           "date": "2026-09-03",
@@ -2835,7 +3383,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 172,
+      "rank": 199,
       "results": [
         {
           "date": "2026-09-05",
@@ -2869,7 +3417,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 173,
+      "rank": 200,
       "results": [
         {
           "date": "2026-09-03",
@@ -2886,12 +3434,46 @@
       ],
       "xHandle": null
     },
-    "id:2137107": {
+    "id:2134926": {
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
         "starts": 1,
-        "top16": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2134926",
+      "loginId": "2134926",
+      "name": "nikroulah",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 201,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "WBG",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 28,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2137107": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -2900,11 +3482,23 @@
       "id": "id:2137107",
       "loginId": "2137107",
       "name": "Arcbound_Papi",
-      "points": 1,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 94,
+      "rank": 84,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 12,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-02",
           "deck": "Affinity",
@@ -2974,7 +3568,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 6,
+      "rank": 8,
       "results": [
         {
           "date": "2026-09-05",
@@ -3027,6 +3621,40 @@
       ],
       "xHandle": null
     },
+    "id:2147397": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2147397",
+      "loginId": "2147397",
+      "name": "nv_goblin",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 202,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 18,
+          "gwp": 0.57895,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
     "id:2153835": {
       "bracketMatches": [
         {
@@ -3057,7 +3685,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 55,
+      "rank": 69,
       "results": [
         {
           "date": "2026-09-01",
@@ -3091,7 +3719,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 174,
+      "rank": 203,
       "results": [
         {
           "date": "2026-09-01",
@@ -3138,7 +3766,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 56,
+      "rank": 70,
       "results": [
         {
           "date": "2026-09-01",
@@ -3158,8 +3786,8 @@
     "id:2192378": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
+        "distinctDecks": 2,
+        "starts": 2,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -3172,8 +3800,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 95,
+      "rank": 146,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 22,
+          "gwp": 0.55,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "4c HollowOne",
@@ -3206,7 +3846,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 96,
+      "rank": 112,
       "results": [
         {
           "date": "2026-09-05",
@@ -3277,7 +3917,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 21,
+      "rank": 26,
       "results": [
         {
           "date": "2026-09-02",
@@ -3336,7 +3976,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 45,
+      "rank": 55,
       "results": [
         {
           "date": "2026-09-05",
@@ -3443,7 +4083,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 33,
+      "rank": 40,
       "results": [
         {
           "date": "2026-09-01",
@@ -3477,7 +4117,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 175,
+      "rank": 204,
       "results": [
         {
           "date": "2026-09-05",
@@ -3487,6 +4127,40 @@
           "eventId": "12853688",
           "finish": 29,
           "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2258623": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2258623",
+      "loginId": "2258623",
+      "name": "Kroma_",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 205,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 26,
+          "gwp": 0.55556,
           "points": 0,
           "swissPoints": 12,
           "tier": "C64"
@@ -3511,7 +4185,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 138,
+      "rank": 161,
       "results": [
         {
           "date": "2026-09-05",
@@ -3606,7 +4280,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 40,
+      "rank": 48,
       "results": [
         {
           "date": "2026-09-05",
@@ -3689,7 +4363,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 22,
+      "rank": 27,
       "results": [
         {
           "date": "2026-09-01",
@@ -3723,7 +4397,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 97,
+      "rank": 113,
       "results": [
         {
           "date": "2026-09-02",
@@ -3757,7 +4431,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 176,
+      "rank": 206,
       "results": [
         {
           "date": "2026-09-05",
@@ -3804,7 +4478,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 73,
+      "rank": 90,
       "results": [
         {
           "date": "2026-09-05",
@@ -3874,7 +4548,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 98,
+      "rank": 114,
       "results": [
         {
           "date": "2026-09-05",
@@ -3887,6 +4561,40 @@
           "points": 1,
           "swissPoints": 12,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2322146": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2322146",
+      "loginId": "2322146",
+      "name": "felider",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 207,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 22,
+          "gwp": 0.53333,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -3908,7 +4616,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 99,
+      "rank": 115,
       "results": [
         {
           "date": "2026-09-02",
@@ -3942,7 +4650,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 177,
+      "rank": 208,
       "results": [
         {
           "date": "2026-09-03",
@@ -3976,7 +4684,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 178,
+      "rank": 209,
       "results": [
         {
           "date": "2026-09-05",
@@ -4010,7 +4718,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 143,
+      "rank": 165,
       "results": [
         {
           "date": "2026-09-03",
@@ -4046,7 +4754,7 @@
       "priorNames": [
         "justAlice"
       ],
-      "rank": 179,
+      "rank": 210,
       "results": [
         {
           "date": "2026-09-01",
@@ -4080,7 +4788,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 180,
+      "rank": 211,
       "results": [
         {
           "date": "2026-09-01",
@@ -4151,7 +4859,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 23,
+      "rank": 28,
       "results": [
         {
           "date": "2026-09-03",
@@ -4163,6 +4871,40 @@
           "gwp": 0.68421,
           "points": 4,
           "swissPoints": 18,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2457575": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2457575",
+      "loginId": "2457575",
+      "name": "HealthyEgo",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 212,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 31,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -4185,7 +4927,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 100,
+      "rank": 116,
       "results": [
         {
           "date": "2026-09-05",
@@ -4232,7 +4974,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 68,
+      "rank": 80,
       "results": [
         {
           "date": "2026-09-02",
@@ -4278,7 +5020,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 181,
+      "rank": 213,
       "results": [
         {
           "date": "2026-09-03",
@@ -4312,7 +5054,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 182,
+      "rank": 214,
       "results": [
         {
           "date": "2026-09-04",
@@ -4383,7 +5125,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 5,
+      "rank": 7,
       "results": [
         {
           "date": "2026-09-04",
@@ -4427,6 +5169,42 @@
     "id:2563273": {
       "bracketMatches": [
         {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1758149",
+          "opponentName": "yama33",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1041920",
+          "opponentName": "RCMerriam",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:815932",
+          "opponentName": "unagieel",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-05",
           "event": "Modern Challenge 64",
           "eventId": "12853688",
@@ -4440,22 +5218,34 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
-        "top2": 0,
-        "top4": 0,
-        "top8": 1,
-        "wins": 0
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 2,
+        "top2": 1,
+        "top4": 1,
+        "top8": 2,
+        "wins": 1
       },
       "id": "id:2563273",
       "loginId": "2563273",
       "name": "almostomniscient",
-      "points": 2,
+      "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 57,
+      "rank": 2,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 1,
+          "gwp": 0.63158,
+          "points": 5,
+          "swissPoints": 18,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Esper Blink",
@@ -4488,7 +5278,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 127,
+      "rank": 147,
       "results": [
         {
           "date": "2026-09-05",
@@ -4534,7 +5324,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 101,
+      "rank": 117,
       "results": [
         {
           "date": "2026-09-03",
@@ -4554,8 +5344,8 @@
     "id:2618334": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
+        "distinctDecks": 2,
+        "starts": 2,
         "top16": 0,
         "top2": 0,
         "top4": 0,
@@ -4568,8 +5358,20 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 183,
+      "rank": 278,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 17,
+          "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-02",
           "deck": "Broodscale Combo",
@@ -4602,7 +5404,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 102,
+      "rank": 118,
       "results": [
         {
           "date": "2026-09-05",
@@ -4649,7 +5451,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 58,
+      "rank": 71,
       "results": [
         {
           "date": "2026-09-01",
@@ -4720,7 +5522,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 26,
+      "rank": 30,
       "results": [
         {
           "date": "2026-09-02",
@@ -4766,7 +5568,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 239,
+      "rank": 279,
       "results": [
         {
           "date": "2026-09-05",
@@ -4825,7 +5627,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 59,
+      "rank": 72,
       "results": [
         {
           "date": "2026-09-04",
@@ -4859,7 +5661,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 103,
+      "rank": 119,
       "results": [
         {
           "date": "2026-09-01",
@@ -4893,7 +5695,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 240,
+      "rank": 280,
       "results": [
         {
           "date": "2026-09-02",
@@ -4917,6 +5719,40 @@
           "gwp": 0.52941,
           "points": 0,
           "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2686516": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2686516",
+      "loginId": "2686516",
+      "name": "SGMY95",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 120,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Sam Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 11,
+          "gwp": 0.6875,
+          "points": 1,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -4964,7 +5800,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 34,
+      "rank": 41,
       "results": [
         {
           "date": "2026-09-05",
@@ -4998,7 +5834,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 104,
+      "rank": 121,
       "results": [
         {
           "date": "2026-09-05",
@@ -5032,7 +5868,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 105,
+      "rank": 122,
       "results": [
         {
           "date": "2026-09-01",
@@ -5052,9 +5888,9 @@
     "id:2695862": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -5063,11 +5899,23 @@
       "id": "id:2695862",
       "loginId": "2695862",
       "name": "JuanmaAT",
-      "points": 1,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 106,
+      "rank": 85,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 14,
+          "gwp": 0.66667,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Dimir Midrange",
@@ -5113,7 +5961,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 60,
+      "rank": 73,
       "results": [
         {
           "date": "2026-09-04",
@@ -5147,7 +5995,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 184,
+      "rank": 215,
       "results": [
         {
           "date": "2026-09-04",
@@ -5168,8 +6016,8 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
+        "starts": 2,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -5178,11 +6026,23 @@
       "id": "id:2707045",
       "loginId": "2707045",
       "name": "E_Kaminuma",
-      "points": 0,
+      "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 185,
+      "rank": 148,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Prowess",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 14,
+          "gwp": 0.64706,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Prowess",
@@ -5227,7 +6087,7 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 2,
+        "starts": 3,
         "top16": 2,
         "top2": 0,
         "top4": 1,
@@ -5240,8 +6100,20 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 27,
+      "rank": 32,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 29,
+          "gwp": 0.47368,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Land Destruction",
@@ -5310,8 +6182,8 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
+        "starts": 2,
+        "top16": 2,
         "top2": 1,
         "top4": 1,
         "top8": 1,
@@ -5320,11 +6192,23 @@
       "id": "id:2708393",
       "loginId": "2708393",
       "name": "Latorretta",
-      "points": 4,
+      "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 24,
+      "rank": 16,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Prowess",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 15,
+          "gwp": 0.63158,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-01",
           "deck": "Prowess",
@@ -5357,7 +6241,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 186,
+      "rank": 216,
       "results": [
         {
           "date": "2026-09-02",
@@ -5391,7 +6275,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 187,
+      "rank": 217,
       "results": [
         {
           "date": "2026-09-02",
@@ -5450,7 +6334,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 16,
+      "rank": 20,
       "results": [
         {
           "date": "2026-09-05",
@@ -5533,7 +6417,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 35,
+      "rank": 42,
       "results": [
         {
           "date": "2026-09-05",
@@ -5550,25 +6434,84 @@
       ],
       "xHandle": null
     },
-    "id:2747375": {
+    "id:2737954": {
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
         "starts": 1,
-        "top16": 0,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
         "top8": 0,
         "wins": 0
       },
+      "id": "id:2737954",
+      "loginId": "2737954",
+      "name": "MattettaM",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 123,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Ruby Storm",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 13,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2747375": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Prowess",
+          "opponentId": "id:3567825",
+          "opponentName": "aidiot",
+          "pilotDeck": "Burn",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
       "id": "id:2747375",
       "loginId": "2747375",
       "name": "DemianDesposito10",
-      "points": 0,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 188,
+      "rank": 81,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Burn",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 5,
+          "gwp": 0.77778,
+          "points": 2,
+          "swissPoints": 21,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Boros Burn",
@@ -5601,7 +6544,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 189,
+      "rank": 218,
       "results": [
         {
           "date": "2026-09-03",
@@ -5635,7 +6578,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 128,
+      "rank": 149,
       "results": [
         {
           "date": "2026-09-01",
@@ -5681,7 +6624,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 190,
+      "rank": 219,
       "results": [
         {
           "date": "2026-09-01",
@@ -5740,7 +6683,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 36,
+      "rank": 43,
       "results": [
         {
           "date": "2026-09-01",
@@ -5799,7 +6742,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 37,
+      "rank": 44,
       "results": [
         {
           "date": "2026-09-01",
@@ -5833,7 +6776,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 75,
+      "rank": 92,
       "results": [
         {
           "date": "2026-09-01",
@@ -5851,24 +6794,49 @@
       "xHandle": null
     },
     "id:2776772": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Dimir Midrange",
+          "opponentId": "id:1872783",
+          "opponentName": "henry_morehouse",
+          "pilotDeck": "Tron",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
+        "starts": 2,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
-        "top8": 0,
+        "top8": 1,
         "wins": 0
       },
       "id": "id:2776772",
       "loginId": "2776772",
       "name": "narca",
-      "points": 1,
+      "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 107,
+      "rank": 50,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Tron",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 8,
+          "gwp": 0.6,
+          "points": 2,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Tron",
@@ -5938,7 +6906,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 25,
+      "rank": 29,
       "results": [
         {
           "date": "2026-09-05",
@@ -6021,7 +6989,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 4,
+      "rank": 6,
       "results": [
         {
           "date": "2026-09-05",
@@ -6079,7 +7047,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 144,
+      "rank": 166,
       "results": [
         {
           "date": "2026-09-05",
@@ -6113,7 +7081,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 191,
+      "rank": 220,
       "results": [
         {
           "date": "2026-09-01",
@@ -6147,7 +7115,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 129,
+      "rank": 150,
       "results": [
         {
           "date": "2026-09-05",
@@ -6193,7 +7161,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 192,
+      "rank": 221,
       "results": [
         {
           "date": "2026-09-01",
@@ -6227,7 +7195,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 130,
+      "rank": 151,
       "results": [
         {
           "date": "2026-09-02",
@@ -6256,6 +7224,40 @@
       ],
       "xHandle": null
     },
+    "id:2860189": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2860189",
+      "loginId": "2860189",
+      "name": "TheLengend90",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 222,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 19,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
     "id:2871058": {
       "bracketMatches": [],
       "counts": {
@@ -6273,7 +7275,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 131,
+      "rank": 152,
       "results": [
         {
           "date": "2026-09-01",
@@ -6319,7 +7321,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 193,
+      "rank": 223,
       "results": [
         {
           "date": "2026-09-05",
@@ -6332,6 +7334,74 @@
           "points": 0,
           "swissPoints": 9,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2887338": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2887338",
+      "loginId": "2887338",
+      "name": "arturcosta",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 224,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Prowess",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 32,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2891700": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2891700",
+      "loginId": "2891700",
+      "name": "Ashigaruu",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 225,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 20,
+          "gwp": 0.625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -6355,7 +7425,7 @@
       "priorNames": [
         "MeninooNey"
       ],
-      "rank": 137,
+      "rank": 159,
       "results": [
         {
           "date": "2026-09-04",
@@ -6412,8 +7482,8 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
-        "starts": 2,
+        "distinctDecks": 3,
+        "starts": 3,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -6426,8 +7496,20 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 69,
+      "rank": 87,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Mono-Green Eldrazi",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 26,
+          "gwp": 0.55556,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Tron",
@@ -6458,9 +7540,9 @@
     "id:2909055": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -6469,11 +7551,23 @@
       "id": "id:2909055",
       "loginId": "2909055",
       "name": "bayjen_",
-      "points": 1,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 108,
+      "rank": 86,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Prowess",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 15,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Temur Breach",
@@ -6506,7 +7600,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 139,
+      "rank": 162,
       "results": [
         {
           "date": "2026-09-05",
@@ -6589,7 +7683,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 61,
+      "rank": 74,
       "results": [
         {
           "date": "2026-09-01",
@@ -6602,6 +7696,77 @@
           "points": 2,
           "swissPoints": 15,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2916207": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3087786",
+          "opponentName": "toothymtg",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Mono-Green Eldrazi",
+          "opponentId": "id:931591",
+          "opponentName": "TheAdonis",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Prowess",
+          "opponentId": "id:3567825",
+          "opponentName": "aidiot",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 1,
+        "top4": 1,
+        "top8": 1,
+        "wins": 1
+      },
+      "id": "id:2916207",
+      "loginId": "2916207",
+      "name": "FacadeJK",
+      "points": 5,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 12,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Domain Zoo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 1,
+          "gwp": 0.70588,
+          "points": 5,
+          "swissPoints": 18,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -6623,7 +7788,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 109,
+      "rank": 124,
       "results": [
         {
           "date": "2026-09-04",
@@ -6635,6 +7800,53 @@
           "gwp": 0.58824,
           "points": 1,
           "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2918398": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:1074736",
+          "opponentName": "Aldreen",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:2918398",
+      "loginId": "2918398",
+      "name": "yulinl",
+      "points": 2,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 75,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 6,
+          "gwp": 0.68421,
+          "points": 2,
+          "swissPoints": 18,
           "tier": "C64"
         }
       ],
@@ -6657,7 +7869,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 194,
+      "rank": 226,
       "results": [
         {
           "date": "2026-09-04",
@@ -6691,7 +7903,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 195,
+      "rank": 227,
       "results": [
         {
           "date": "2026-09-02",
@@ -6725,7 +7937,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 110,
+      "rank": 125,
       "results": [
         {
           "date": "2026-09-01",
@@ -6759,7 +7971,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 196,
+      "rank": 228,
       "results": [
         {
           "date": "2026-09-05",
@@ -6780,7 +7992,7 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -6793,8 +8005,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 111,
+      "rank": 153,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Affinity",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 21,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Affinity",
@@ -6827,7 +8051,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 112,
+      "rank": 126,
       "results": [
         {
           "date": "2026-09-02",
@@ -6861,7 +8085,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 197,
+      "rank": 229,
       "results": [
         {
           "date": "2026-09-05",
@@ -6895,7 +8119,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 198,
+      "rank": 230,
       "results": [
         {
           "date": "2026-09-02",
@@ -6929,7 +8153,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 199,
+      "rank": 231,
       "results": [
         {
           "date": "2026-09-05",
@@ -6963,7 +8187,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 200,
+      "rank": 232,
       "results": [
         {
           "date": "2026-09-01",
@@ -7010,7 +8234,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 62,
+      "rank": 76,
       "results": [
         {
           "date": "2026-09-01",
@@ -7043,8 +8267,8 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 2,
+        "distinctDecks": 2,
+        "starts": 3,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -7057,8 +8281,20 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 70,
+      "rank": 88,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 23,
+          "gwp": 0.58824,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Broodscale Combo",
@@ -7103,7 +8339,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 201,
+      "rank": 233,
       "results": [
         {
           "date": "2026-09-05",
@@ -7137,7 +8373,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 113,
+      "rank": 127,
       "results": [
         {
           "date": "2026-09-01",
@@ -7171,7 +8407,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 145,
+      "rank": 167,
       "results": [
         {
           "date": "2026-09-04",
@@ -7205,7 +8441,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 202,
+      "rank": 234,
       "results": [
         {
           "date": "2026-09-02",
@@ -7239,7 +8475,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 132,
+      "rank": 154,
       "results": [
         {
           "date": "2026-09-02",
@@ -7285,7 +8521,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 203,
+      "rank": 235,
       "results": [
         {
           "date": "2026-09-02",
@@ -7319,7 +8555,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 204,
+      "rank": 236,
       "results": [
         {
           "date": "2026-09-05",
@@ -7366,7 +8602,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 42,
+      "rank": 51,
       "results": [
         {
           "date": "2026-09-02",
@@ -7425,7 +8661,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 43,
+      "rank": 52,
       "results": [
         {
           "date": "2026-09-04",
@@ -7471,7 +8707,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 205,
+      "rank": 237,
       "results": [
         {
           "date": "2026-09-05",
@@ -7505,7 +8741,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 206,
+      "rank": 238,
       "results": [
         {
           "date": "2026-09-02",
@@ -7525,6 +8761,42 @@
     "id:3087786": {
       "bracketMatches": [
         {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:2916207",
+          "opponentName": "FacadeJK",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Land Destruction",
+          "opponentId": "id:1296445",
+          "opponentName": "ionez",
+          "pilotDeck": "Broodscale Combo",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Dimir Midrange",
+          "opponentId": "id:1872783",
+          "opponentName": "henry_morehouse",
+          "pilotDeck": "Broodscale Combo",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-05",
           "event": "Modern Challenge 32",
           "eventId": "12853849",
@@ -7539,21 +8811,33 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
-        "top2": 0,
-        "top4": 0,
-        "top8": 1,
+        "starts": 2,
+        "top16": 2,
+        "top2": 1,
+        "top4": 1,
+        "top8": 2,
         "wins": 0
       },
       "id": "id:3087786",
       "loginId": "3087786",
       "name": "toothymtg",
-      "points": 2,
+      "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 63,
+      "rank": 4,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 2,
+          "gwp": 0.61111,
+          "points": 4,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Broodscale Combo",
@@ -7573,8 +8857,8 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
+        "starts": 2,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -7583,11 +8867,23 @@
       "id": "id:30930",
       "loginId": "30930",
       "name": "Omegauo",
-      "points": 0,
+      "points": 1,
       "premierPoints": 0,
       "priorNames": [],
       "rank": 141,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Esper Blink",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 10,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-02",
           "deck": "Esper Blink",
@@ -7620,7 +8916,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 207,
+      "rank": 239,
       "results": [
         {
           "date": "2026-09-01",
@@ -7691,7 +8987,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 3,
+      "rank": 5,
       "results": [
         {
           "date": "2026-09-05",
@@ -7749,7 +9045,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 114,
+      "rank": 128,
       "results": [
         {
           "date": "2026-09-01",
@@ -7761,6 +9057,40 @@
           "gwp": 0.63158,
           "points": 1,
           "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3128402": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3128402",
+      "loginId": "3128402",
+      "name": "BulletBombFTW",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 240,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "UBRG",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 19,
+          "gwp": 0.44444,
+          "points": 0,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -7783,7 +9113,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 208,
+      "rank": 241,
       "results": [
         {
           "date": "2026-09-01",
@@ -7817,7 +9147,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 209,
+      "rank": 242,
       "results": [
         {
           "date": "2026-09-01",
@@ -7851,7 +9181,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 210,
+      "rank": 243,
       "results": [
         {
           "date": "2026-09-01",
@@ -7885,7 +9215,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 115,
+      "rank": 129,
       "results": [
         {
           "date": "2026-09-01",
@@ -7919,7 +9249,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 116,
+      "rank": 130,
       "results": [
         {
           "date": "2026-09-05",
@@ -7953,7 +9283,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 211,
+      "rank": 244,
       "results": [
         {
           "date": "2026-09-04",
@@ -7987,7 +9317,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 212,
+      "rank": 245,
       "results": [
         {
           "date": "2026-09-03",
@@ -8034,7 +9364,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 28,
+      "rank": 33,
       "results": [
         {
           "date": "2026-09-05",
@@ -8105,7 +9435,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 44,
+      "rank": 53,
       "results": [
         {
           "date": "2026-09-02",
@@ -8151,7 +9481,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 213,
+      "rank": 246,
       "results": [
         {
           "date": "2026-09-01",
@@ -8185,7 +9515,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 214,
+      "rank": 247,
       "results": [
         {
           "date": "2026-09-03",
@@ -8219,7 +9549,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 215,
+      "rank": 248,
       "results": [
         {
           "date": "2026-09-03",
@@ -8253,7 +9583,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 117,
+      "rank": 131,
       "results": [
         {
           "date": "2026-09-01",
@@ -8287,7 +9617,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 216,
+      "rank": 249,
       "results": [
         {
           "date": "2026-09-04",
@@ -8321,7 +9651,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 217,
+      "rank": 250,
       "results": [
         {
           "date": "2026-09-05",
@@ -8355,7 +9685,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 234,
+      "rank": 272,
       "results": [
         {
           "date": "2026-09-04",
@@ -8401,7 +9731,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 218,
+      "rank": 251,
       "results": [
         {
           "date": "2026-09-01",
@@ -8434,8 +9764,8 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
+        "distinctDecks": 2,
+        "starts": 2,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -8448,8 +9778,20 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 64,
+      "rank": 82,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 27,
+          "gwp": 0.55556,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-03",
           "deck": "Eldrazi Ramp",
@@ -8482,7 +9824,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 219,
+      "rank": 252,
       "results": [
         {
           "date": "2026-09-03",
@@ -8553,7 +9895,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 10,
+      "rank": 13,
       "results": [
         {
           "date": "2026-09-02",
@@ -8566,6 +9908,40 @@
           "points": 5,
           "swissPoints": 18,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3253411": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3253411",
+      "loginId": "3253411",
+      "name": "Ezra95",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 253,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 25,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -8600,7 +9976,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 65,
+      "rank": 77,
       "results": [
         {
           "date": "2026-09-01",
@@ -8613,6 +9989,40 @@
           "points": 2,
           "swissPoints": 15,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3261722": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3261722",
+      "loginId": "3261722",
+      "name": "alessandro81",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 254,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 20,
+          "gwp": 0.5625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -8634,7 +10044,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 133,
+      "rank": 155,
       "results": [
         {
           "date": "2026-09-05",
@@ -8680,7 +10090,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 220,
+      "rank": 255,
       "results": [
         {
           "date": "2026-09-02",
@@ -8693,6 +10103,40 @@
           "points": 0,
           "swissPoints": 12,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3298193": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3298193",
+      "loginId": "3298193",
+      "name": "bubblywubblytubbler",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 132,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 16,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -8714,7 +10158,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 221,
+      "rank": 256,
       "results": [
         {
           "date": "2026-09-02",
@@ -8727,6 +10171,40 @@
           "points": 0,
           "swissPoints": 9,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3311758": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3311758",
+      "loginId": "3311758",
+      "name": "Kollslaw",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 133,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 12,
+          "gwp": 0.6875,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -8748,7 +10226,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 222,
+      "rank": 257,
       "results": [
         {
           "date": "2026-09-01",
@@ -8782,7 +10260,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 223,
+      "rank": 258,
       "results": [
         {
           "date": "2026-09-05",
@@ -8816,7 +10294,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 118,
+      "rank": 134,
       "results": [
         {
           "date": "2026-09-02",
@@ -8834,24 +10312,49 @@
       "xHandle": null
     },
     "id:3358375": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:815932",
+          "opponentName": "unagieel",
+          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
-        "top8": 0,
+        "top8": 1,
         "wins": 0
       },
       "id": "id:3358375",
       "loginId": "3358375",
       "name": "acelerado440",
-      "points": 0,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 224,
+      "rank": 83,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 5,
+          "gwp": 0.68421,
+          "points": 2,
+          "swissPoints": 18,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-05",
           "deck": "Esper Blink",
@@ -8884,7 +10387,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 225,
+      "rank": 259,
       "results": [
         {
           "date": "2026-09-02",
@@ -8943,7 +10446,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 38,
+      "rank": 45,
       "results": [
         {
           "date": "2026-09-01",
@@ -8990,7 +10493,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 66,
+      "rank": 78,
       "results": [
         {
           "date": "2026-09-05",
@@ -9024,7 +10527,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 119,
+      "rank": 135,
       "results": [
         {
           "date": "2026-09-05",
@@ -9044,8 +10547,8 @@
     "id:3412574": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
-        "starts": 2,
+        "distinctDecks": 3,
+        "starts": 3,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -9058,8 +10561,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 134,
+      "rank": 160,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 28,
+          "gwp": 0.5625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-04",
           "deck": "Jeskai Blink",
@@ -9104,7 +10619,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 226,
+      "rank": 260,
       "results": [
         {
           "date": "2026-09-01",
@@ -9138,7 +10653,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 120,
+      "rank": 136,
       "results": [
         {
           "date": "2026-09-05",
@@ -9151,6 +10666,40 @@
           "points": 1,
           "swissPoints": 12,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3469379": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3469379",
+      "loginId": "3469379",
+      "name": "Dasikk",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 261,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Esper Blink",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 27,
+          "gwp": 0.5625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9174,7 +10723,7 @@
       "priorNames": [
         "MARZIANO"
       ],
-      "rank": 227,
+      "rank": 262,
       "results": [
         {
           "date": "2026-09-05",
@@ -9208,7 +10757,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 135,
+      "rank": 156,
       "results": [
         {
           "date": "2026-09-04",
@@ -9279,7 +10828,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 39,
+      "rank": 46,
       "results": [
         {
           "date": "2026-09-02",
@@ -9313,7 +10862,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 228,
+      "rank": 263,
       "results": [
         {
           "date": "2026-09-04",
@@ -9347,7 +10896,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 229,
+      "rank": 264,
       "results": [
         {
           "date": "2026-09-03",
@@ -9381,7 +10930,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 230,
+      "rank": 265,
       "results": [
         {
           "date": "2026-09-05",
@@ -9392,6 +10941,40 @@
           "finish": 18,
           "gwp": 0.66667,
           "points": 0,
+          "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3505107": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3505107",
+      "loginId": "3505107",
+      "name": "papajohns",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 137,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 11,
+          "gwp": 0.75,
+          "points": 1,
           "swissPoints": 15,
           "tier": "C64"
         }
@@ -9428,7 +11011,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 67,
+      "rank": 79,
       "results": [
         {
           "date": "2026-09-01",
@@ -9441,6 +11024,40 @@
           "points": 2,
           "swissPoints": 15,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3531021": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3531021",
+      "loginId": "3531021",
+      "name": "Akosmismus",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 138,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 13,
+          "gwp": 0.625,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9462,7 +11079,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 231,
+      "rank": 266,
       "results": [
         {
           "date": "2026-09-02",
@@ -9475,6 +11092,108 @@
           "points": 0,
           "swissPoints": 12,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3540949": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3540949",
+      "loginId": "3540949",
+      "name": "pedronavaja",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 267,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 32,
+          "gwp": 0.57895,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3542423": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3542423",
+      "loginId": "3542423",
+      "name": "PrismaticPrism",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 139,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Belcher",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 9,
+          "gwp": 0.66667,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3544040": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3544040",
+      "loginId": "3544040",
+      "name": "GWT",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 268,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 29,
+          "gwp": 0.625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9496,7 +11215,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 232,
+      "rank": 269,
       "results": [
         {
           "date": "2026-09-03",
@@ -9530,7 +11249,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 121,
+      "rank": 140,
       "results": [
         {
           "date": "2026-09-01",
@@ -9564,7 +11283,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 241,
+      "rank": 281,
       "results": [
         {
           "date": "2026-09-05",
@@ -9589,6 +11308,40 @@
           "points": 0,
           "swissPoints": 9,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3558262": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3558262",
+      "loginId": "3558262",
+      "name": "I_Cant_Read",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 270,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Mono-Black Midrange",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 30,
+          "gwp": 0.47059,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9647,7 +11400,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 15,
+      "rank": 19,
       "results": [
         {
           "date": "2026-09-04",
@@ -9705,7 +11458,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 233,
+      "rank": 271,
       "results": [
         {
           "date": "2026-09-05",
@@ -9718,6 +11471,65 @@
           "points": 0,
           "swissPoints": 6,
           "tier": "C16"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3567825": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Burn",
+          "opponentId": "id:2747375",
+          "opponentName": "DemianDesposito10",
+          "pilotDeck": "Prowess",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:2916207",
+          "opponentName": "FacadeJK",
+          "pilotDeck": "Prowess",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 1,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:3567825",
+      "loginId": "3567825",
+      "name": "aidiot",
+      "points": 3,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 47,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Prowess",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 4,
+          "gwp": 0.64706,
+          "points": 3,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9739,7 +11551,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 76,
+      "rank": 93,
       "results": [
         {
           "date": "2026-09-01",
@@ -9751,6 +11563,40 @@
           "gwp": 0.55556,
           "points": 1,
           "swissPoints": 15,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:453404": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:453404",
+      "loginId": "453404",
+      "name": "_Batutinha_",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 168,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 30,
+          "gwp": 0.55556,
+          "points": 0,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -9773,7 +11619,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 146,
+      "rank": 169,
       "results": [
         {
           "date": "2026-09-02",
@@ -9807,7 +11653,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 77,
+      "rank": 94,
       "results": [
         {
           "date": "2026-09-02",
@@ -9820,6 +11666,40 @@
           "points": 1,
           "swissPoints": 12,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:542229": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:542229",
+      "loginId": "542229",
+      "name": "Vonducky",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 170,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Eldrazi Tron",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 17,
+          "gwp": 0.70588,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -9841,7 +11721,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 140,
+      "rank": 163,
       "results": [
         {
           "date": "2026-09-05",
@@ -9912,7 +11792,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 11,
+      "rank": 14,
       "results": [
         {
           "date": "2026-09-04",
@@ -9958,7 +11838,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 147,
+      "rank": 171,
       "results": [
         {
           "date": "2026-09-01",
@@ -10017,7 +11897,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 29,
+      "rank": 34,
       "results": [
         {
           "date": "2026-09-05",
@@ -10051,7 +11931,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 122,
+      "rank": 142,
       "results": [
         {
           "date": "2026-09-03",
@@ -10097,7 +11977,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 148,
+      "rank": 172,
       "results": [
         {
           "date": "2026-09-04",
@@ -10168,7 +12048,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 14,
+      "rank": 17,
       "results": [
         {
           "date": "2026-09-02",
@@ -10251,7 +12131,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 17,
+      "rank": 21,
       "results": [
         {
           "date": "2026-09-01",
@@ -10285,7 +12165,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 78,
+      "rank": 95,
       "results": [
         {
           "date": "2026-09-05",
@@ -10319,7 +12199,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 149,
+      "rank": 173,
       "results": [
         {
           "date": "2026-09-02",
@@ -10353,7 +12233,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 150,
+      "rank": 174,
       "results": [
         {
           "date": "2026-09-05",
@@ -10387,7 +12267,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 151,
+      "rank": 175,
       "results": [
         {
           "date": "2026-09-05",
@@ -10405,24 +12285,61 @@
       "xHandle": null
     },
     "id:815932": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:3358375",
+          "opponentName": "acelerado440",
+          "pilotDeck": "Broodscale Combo",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853698",
+          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentId": "id:2563273",
+          "opponentName": "almostomniscient",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 1,
+        "starts": 2,
+        "top16": 2,
         "top2": 0,
-        "top4": 0,
-        "top8": 0,
+        "top4": 1,
+        "top8": 1,
         "wins": 0
       },
       "id": "id:815932",
       "loginId": "815932",
       "name": "unagieel",
-      "points": 1,
+      "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 79,
+      "rank": 31,
       "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 4,
+          "gwp": 0.63158,
+          "points": 3,
+          "swissPoints": 15,
+          "tier": "C64"
+        },
         {
           "date": "2026-09-04",
           "deck": "Broodscale Combo",
@@ -10455,7 +12372,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 152,
+      "rank": 176,
       "results": [
         {
           "date": "2026-09-05",
@@ -10489,7 +12406,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 153,
+      "rank": 177,
       "results": [
         {
           "date": "2026-09-05",
@@ -10502,6 +12419,40 @@
           "points": 0,
           "swissPoints": 9,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:840020": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:840020",
+      "loginId": "840020",
+      "name": "WanderingOnes",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 96,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "NEEDS_MANUAL_REVIEW",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853698",
+          "finish": 10,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C64"
         }
       ],
       "xHandle": null
@@ -10523,7 +12474,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 235,
+      "rank": 273,
       "results": [
         {
           "date": "2026-09-05",
@@ -10569,7 +12520,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 123,
+      "rank": 143,
       "results": [
         {
           "date": "2026-09-02",
@@ -10615,7 +12566,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 154,
+      "rank": 178,
       "results": [
         {
           "date": "2026-09-01",
@@ -10686,7 +12637,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 12,
+      "rank": 15,
       "results": [
         {
           "date": "2026-09-05",
@@ -10709,6 +12660,53 @@
           "finish": 1,
           "gwp": 0.76471,
           "points": 5,
+          "swissPoints": 18,
+          "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:931591": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-06",
+          "event": "Modern Challenge 64",
+          "eventId": "12853693",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:2916207",
+          "opponentName": "FacadeJK",
+          "pilotDeck": "Mono-Green Eldrazi",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:931591",
+      "loginId": "931591",
+      "name": "TheAdonis",
+      "points": 2,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 56,
+      "results": [
+        {
+          "date": "2026-09-06",
+          "deck": "Mono-Green Eldrazi",
+          "event": "Modern Challenge 64",
+          "eventClass": "Challenge",
+          "eventId": "12853693",
+          "finish": 7,
+          "gwp": 0.65,
+          "points": 2,
           "swissPoints": 18,
           "tier": "C64"
         }
@@ -10769,7 +12767,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 7,
+      "rank": 9,
       "results": [
         {
           "date": "2026-09-05",
@@ -10803,7 +12801,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 124,
+      "rank": 144,
       "results": [
         {
           "date": "2026-09-05",
@@ -10849,7 +12847,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 80,
+      "rank": 97,
       "results": [
         {
           "date": "2026-09-04",
@@ -10883,7 +12881,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 81,
+      "rank": 98,
       "results": [
         {
           "date": "2026-09-02",

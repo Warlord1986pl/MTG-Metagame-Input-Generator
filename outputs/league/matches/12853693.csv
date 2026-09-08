@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853693,2026-09-06,C64,Challenge,QF,aidiot,3567825,DemianDesposito10,2747375,2,0,Prowess,Burn
+12853693,2026-09-06,C64,Challenge,QF,toothymtg,3087786,ionez,1296445,2,0,Broodscale Combo,Land Destruction
+12853693,2026-09-06,C64,Challenge,QF,FacadeJK,2916207,TheAdonis,931591,2,1,Domain Zoo,Mono-Green Eldrazi
+12853693,2026-09-06,C64,Challenge,QF,henry_morehouse,1872783,narca,2776772,2,1,Dimir Midrange,Tron
+12853693,2026-09-06,C64,Challenge,SF,toothymtg,3087786,henry_morehouse,1872783,2,0,Broodscale Combo,Dimir Midrange
+12853693,2026-09-06,C64,Challenge,SF,FacadeJK,2916207,aidiot,3567825,2,0,Domain Zoo,Prowess
+12853693,2026-09-06,C64,Challenge,F,FacadeJK,2916207,toothymtg,3087786,2,1,Domain Zoo,Broodscale Combo
