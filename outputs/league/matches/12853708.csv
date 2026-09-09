@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853708,2026-09-07,C96,Challenge,QF,mommydom_manifesto,3227644,SomethinStupid,2388082,2,1,Prowess,Bant Midrange
+12853708,2026-09-07,C96,Challenge,QF,powered_by_VANYA,3169940,Dydyk95,2940494,2,0,Ruby Storm,Devoted Combo
+12853708,2026-09-07,C96,Challenge,QF,RespectTheCat,2788118,Lightspirit,3222070,2,1,Esper Blink,Eldrazi Ramp
+12853708,2026-09-07,C96,Challenge,QF,Gobern,1847500,Mistakenn,2129541,2,1,Eldrazi Ramp,Amulet Titan
+12853708,2026-09-07,C96,Challenge,SF,powered_by_VANYA,3169940,mommydom_manifesto,3227644,2,0,Ruby Storm,Prowess
+12853708,2026-09-07,C96,Challenge,SF,RespectTheCat,2788118,Gobern,1847500,2,1,Esper Blink,Eldrazi Ramp
+12853708,2026-09-07,C96,Challenge,F,powered_by_VANYA,3169940,RespectTheCat,2788118,2,0,Ruby Storm,Esper Blink

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853706,2026-09-07,C64,Challenge,QF,renatoaraujo,864036,Bok_Choy_,2999477,2,0,Land Destruction,Broodscale Combo
+12853706,2026-09-07,C64,Challenge,QF,rastaf,254536,Kollslaw,3311758,2,0,Esper Blink,Goryo's Vengeance
+12853706,2026-09-07,C64,Challenge,QF,toothymtg,3087786,Peytis,2861509,2,1,Broodscale Combo,Boros Energy
+12853706,2026-09-07,C64,Challenge,QF,mlex,2229031,duanceyao,1727039,2,1,Jeskai Energy,Prowess
+12853706,2026-09-07,C64,Challenge,SF,mlex,2229031,toothymtg,3087786,2,1,Jeskai Energy,Broodscale Combo
+12853706,2026-09-07,C64,Challenge,SF,renatoaraujo,864036,rastaf,254536,2,0,Land Destruction,Esper Blink
+12853706,2026-09-07,C64,Challenge,F,renatoaraujo,864036,mlex,2229031,2,0,Land Destruction,Jeskai Energy
