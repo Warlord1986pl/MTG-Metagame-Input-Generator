@@ -47,6 +47,19 @@ history and could otherwise get treated as established fact later:
    those new columns is simply blank for all 921 rows -- no value in any pre-existing column
    changed.
 
+## 2026-09-09 regeneration -- rank_change_anchor moved from weekly to daily
+
+`expected/pilot_league_Summer_2026.csv` and `expected/season_Summer_2026.json` were regenerated
+again after `league_engine.rank_change_anchor()` changed from "most recent Wednesday on or before
+as_of" to "as_of minus one day" (see that function's docstring). The old weekly anchor had a
+visible bug: on the anchor day itself (as_of == that Wednesday) the baseline and current windows
+were identical, so every pilot showed zero movement -- confirmed live on 2026-09-09, a Wednesday,
+where the real published site showed `movement: "same"` for all 315 Autumn-2026 pilots. A daily
+anchor can never land on as_of itself, so PrevRank/RankChange/movement legitimately differ from
+the pre-2026-09-09 fixture for almost every pilot; no other field changed (confirmed: only these
+two files differ, `pilots_Summer_2026.json` and `seasons.json` are untouched, and the full test
+suite passes against the regenerated fixture).
+
 ## Why frozen, not live
 
 `outputs/league/results` grows every week. A test that recomputes from the live directory and

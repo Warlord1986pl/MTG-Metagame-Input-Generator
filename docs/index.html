@@ -848,12 +848,12 @@
     var moveCard = el("div", { class: "card" });
     moveCard.appendChild(el("h2", {}, ["Movement and identity"]));
     moveCard.appendChild(el("p", {}, [
-      "The arrow next to a pilot's rank compares today's standings to the standings as of the most ",
-      "recent Wednesday -- a fixed weekly checkpoint, not a rolling number of days back, so it reads ",
-      "the same all week regardless of which day you look. A pilot who did not play that week can ",
-      "still drop in rank as other pilots pass them; that is a change in rank, not a loss of points. ",
-      "Once a season ends, this comparison point stops moving and stays fixed permanently at the last ",
-      "week the season actually had events in.",
+      "The arrow next to a pilot's rank compares today's standings to yesterday's, refreshed with ",
+      "every data sync -- a live day-over-day number rather than a fixed weekly checkpoint, so it ",
+      "moves as soon as new results land instead of waiting for a weekly reset. A pilot who did not ",
+      "play recently can still drop in rank as other pilots pass them; that is a change in rank, not ",
+      "a loss of points. Once a season ends, this comparison point stops moving and stays fixed ",
+      "permanently at the day before the season's last day.",
     ]));
     moveCard.appendChild(el("p", {}, [
       "Pilots are tracked by their MTGO account, not by display name, so a rename does not split one ",

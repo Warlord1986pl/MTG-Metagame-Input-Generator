@@ -115,19 +115,33 @@ def test_export_login_id_is_raw_not_resolved() -> None:
         print("  (no season had an aliased loginid's own raw results yet -- nothing to verify)")
 
 
-def test_rank_change_anchor_wednesday_alignment_and_freeze() -> None:
+def test_rank_change_anchor_is_daily_and_freezes_on_season_close() -> None:
     from league_engine import rank_change_anchor
 
-    # Unfrozen: as_of within the same Wed-Tue calendar week maps to the SAME anchor -- this is what
-    # actually fixes the old rolling "as_of - 7 days" baseline (a different answer every day).
-    assert rank_change_anchor(date(2026, 9, 2)) == date(2026, 9, 2)
+    # Unfrozen: anchor is always exactly one day back -- this is what fixes the old weekly
+    # (most-recent-Wednesday) checkpoint, which landed ON as_of itself once a week and made every
+    # pilot show zero movement that day.
+    assert rank_change_anchor(date(2026, 9, 2)) == date(2026, 9, 1)
     assert rank_change_anchor(date(2026, 9, 3)) == date(2026, 9, 2)
-    assert rank_change_anchor(date(2026, 9, 9)) == date(2026, 9, 9)
+    assert rank_change_anchor(date(2026, 9, 9)) == date(2026, 9, 8)
 
     # Frozen: once as_of has moved past coverage_end, the anchor pins permanently to
-    # coverage_end's own week -- confirmed against the real Summer 2026 dates (closed 2026-08-31).
-    for as_of in (date(2026, 9, 2), date(2026, 9, 3), date(2026, 9, 10), date(2026, 10, 1)):
-        assert rank_change_anchor(as_of, coverage_end=date(2026, 8, 31)) == date(2026, 8, 26)
+    # coverage_end - 1 day -- confirmed against the real Summer 2026 dates (closed 2026-08-31).
+    for as_of in (date(2026, 9, 1), date(2026, 9, 2), date(2026, 9, 10), date(2026, 10, 1)):
+        assert rank_change_anchor(as_of, coverage_end=date(2026, 8, 31)) == date(2026, 8, 30)
+    # as_of == coverage_end itself is still within the season -- not frozen yet.
+    assert rank_change_anchor(date(2026, 8, 31), coverage_end=date(2026, 8, 31)) == date(2026, 8, 30)
+
+
+def test_weekly_window_start_used_by_late_arrivals_unchanged() -> None:
+    """find_late_arrivals still needs a genuine weekly bucket -- confirms it kept the old
+    Wednesday-anchored math after rank_change_anchor itself moved to a daily baseline."""
+    from league_engine import weekly_window_start
+
+    assert weekly_window_start(date(2026, 9, 2)) == date(2026, 9, 2)  # a Wednesday itself
+    assert weekly_window_start(date(2026, 9, 3)) == date(2026, 9, 2)
+    assert weekly_window_start(date(2026, 9, 8)) == date(2026, 9, 2)
+    assert weekly_window_start(date(2026, 9, 9)) == date(2026, 9, 9)
 
 
 def test_manifest_includes_rank_change_anchor() -> None:

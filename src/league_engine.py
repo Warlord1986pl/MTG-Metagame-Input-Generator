@@ -166,37 +166,47 @@ def season_for_date(d: date) -> Tuple[str, date, date]:
     return f"Winter {y0}/{str(y0 + 1)[-2:]}", date(y0, 12, 1), end
 
 
+def weekly_window_start(d: date) -> date:
+    """The most recent Wednesday on or before *d* -- a fixed weekly (Wed-Tue) bucket boundary.
+
+    This used to be rank_change_anchor()'s own logic; it's kept as its own function because
+    league_results_export.find_late_arrivals still needs a genuine "which week does this event
+    belong to" answer (MTGO's Challenge/premier cadence is weekly) even though rank_change_anchor
+    itself moved to a daily baseline -- see that function's docstring for why the two diverged.
+    """
+    days_since_wednesday = (d.weekday() - 2) % 7  # date.weekday(): Monday=0 ... Wednesday=2
+    return d - timedelta(days=days_since_wednesday)
+
+
 def rank_change_anchor(as_of: date, coverage_end: Optional[date] = None) -> date:
     """The single source of truth for "which date is RankChange measured against" -- called both
     by build_season_table (to pick the PrevRank baseline) and by anything downstream that needs to
     report or re-derive the same value (league_site_export, league_results_export), so the anchor
     can never drift between what was actually used and what gets published about it.
 
-    anchor = the most recent Wednesday on or before *as_of*. An event dated ON that Wednesday
-    belongs to the NEXT weekly window, not this one -- build_season_table's baseline filter is
-    EventDate < anchor, so this stays a plain "most recent Wednesday <= as_of" rather than needing
-    a same-day special case here.
+    anchor = *as_of* minus one day -- i.e. "yesterday's standings." This used to be a fixed
+    weekly (most-recent-Wednesday) checkpoint, which gave a RankChange that stayed stable all week
+    but only actually moved once a week. Switched to daily because history-sync now runs up to 3x/
+    day and several Challenges land per day, so a week-long lag between "something happened" and
+    "the site's own RankChange reflects it" no longer matches the data's real cadence -- and the
+    old weekly anchor had a visible failure mode: on the anchor day itself (as_of == that
+    Wednesday), the baseline and current windows were identical, so EVERY pilot showed zero
+    movement, misleadingly, once a week. A daily anchor can't land on as_of itself (it's always one
+    full day back), so that degenerate case can't recur. Note this is a live, noisier number now --
+    anyone who wants a stable weekly report should reconstruct it from the underlying per-event
+    data (league_results_export's event-level CSV, or the weekly snapshots in
+    write_weekly_snapshot's snapshot_dir), not read the published RankChange as a weekly figure.
 
-    Within any single calendar week (Wed through the following Tue), every as_of maps to the SAME
-    anchor -- this is what actually fixes the old rolling "as_of - 7 days" baseline, which gave a
-    different answer on every single day. Consecutive weekly editions tile the season with no
-    overlap and no gap even if a download happens late; anchoring to as_of directly does not.
-
-    If *coverage_end* is given and the anchor as computed above would land AFTER it, the anchor is
-    frozen instead at the most recent Wednesday on or before coverage_end -- and stays there
-    forever, for any as_of from then on. build_season_table passes the season's own calendar
-    EndDate here (never the max ingested EventDate -- an open season with normal event-to-rebuild
-    lag must not freeze just because this week's event hasn't landed yet). This is what stops a
-    closed season's RankChange from sliding into an ever-emptier window and decaying to 0 as days
-    pass after the season is over: once as_of moves past the season's own end date, the published
-    RankChange is permanently the one measured over the last complete window within the season.
+    If *coverage_end* is given and *as_of* has moved past it, the anchor freezes at
+    coverage_end - 1 day and stays there forever, for any as_of from then on. build_season_table
+    passes the season's own calendar EndDate here (never the max ingested EventDate -- an open
+    season with normal event-to-rebuild lag must not freeze just because today's event hasn't
+    landed yet). This is what stops a closed season's RankChange from sliding into an
+    ever-emptier window and decaying to 0 as days pass after the season is over.
     """
-    days_since_wednesday = (as_of.weekday() - 2) % 7  # date.weekday(): Monday=0 ... Wednesday=2
-    anchor = as_of - timedelta(days=days_since_wednesday)
-    if coverage_end is not None and anchor > coverage_end:
-        frozen_days_since_wednesday = (coverage_end.weekday() - 2) % 7
-        anchor = coverage_end - timedelta(days=frozen_days_since_wednesday)
-    return anchor
+    if coverage_end is not None and as_of > coverage_end:
+        return coverage_end - timedelta(days=1)
+    return as_of - timedelta(days=1)
 
 
 def season_filename_slug(season: str) -> str:
@@ -812,10 +822,10 @@ def build_season_table(
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
     propagates automatically. PrevRank/RankChange are computed live from the same raw files, with
     the baseline date picked by rank_change_anchor(as_of, coverage_end=season_end) -- see that
-    function's own docstring for why this is a fixed weekly (Wednesday) boundary rather than a
-    rolling "N days back" window, and why it freezes once as_of passes the season's own calendar
-    end date (never based on how much data happens to be ingested yet -- an open season with
-    normal event-to-rebuild lag must NOT freeze just because this week's event hasn't landed).
+    function's own docstring for why this is a fixed "yesterday" daily boundary rather than a
+    weekly checkpoint, and why it freezes once as_of passes the season's own calendar end date
+    (never based on how much data happens to be ingested yet -- an open season with normal
+    event-to-rebuild lag must NOT freeze just because today's event hasn't landed).
     No snapshot is involved in this pair; the returned table also carries the anchor actually used
     as table.attrs["rank_change_anchor"] (an ISO date string) so a caller never has to recompute or
     guess it.

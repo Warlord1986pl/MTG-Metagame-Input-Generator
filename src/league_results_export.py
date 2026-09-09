@@ -351,7 +351,7 @@ def find_late_arrivals(export_df: pd.DataFrame, season_end: date) -> List[dict]:
     timestamp from its first export run, all after SeasonEnd -- every one of them would be a false
     positive without this guard).
     """
-    from league_engine import rank_change_anchor
+    from league_engine import weekly_window_start
 
     events = export_df.drop_duplicates(subset=["EventID"])[["EventID", "EventDate", "IngestedAt"]]
     late = []
@@ -364,7 +364,7 @@ def find_late_arrivals(export_df: pd.DataFrame, season_end: date) -> List[dict]:
             continue  # backfill of an already-closed season, not a late weekly arrival
 
         event_date = date.fromisoformat(row["EventDate"])
-        window_start = rank_change_anchor(as_of=event_date)  # no coverage_end -- just "which week"
+        window_start = weekly_window_start(event_date)  # a genuine weekly bucket, not RankChange's
         window_close = window_start + timedelta(days=7)
         if ingested_date >= window_close:
             late.append({
