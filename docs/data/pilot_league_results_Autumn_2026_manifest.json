@@ -36,7 +36,7 @@
       "WindowStart": "2026-09-02"
     }
   ],
-  "RankChangeAnchor": "2026-09-09",
+  "RankChangeAnchor": "2026-09-08",
   "as_of": "2026-09-09",
   "events": [
     {
@@ -127,7 +127,7 @@
   "events_challenge": 14,
   "events_premier": 0,
   "events_total": 14,
-  "generated_at": "2026-09-09T06:15:55Z",
+  "generated_at": "2026-09-09T12:15:33Z",
   "pilots_scoring": 179,
   "pilots_total": 316,
   "points_total": 434,
