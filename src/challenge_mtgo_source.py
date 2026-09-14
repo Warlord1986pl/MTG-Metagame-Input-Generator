@@ -383,18 +383,26 @@ def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
     """Parse one event's JSON blob into per-player rows with signature (all maindeck cards
     except basic lands, with quantities) and Place from final_rank.
 
-    Raises ChallengeSourceError if the rank set is not exactly {1..32}.
+    Raises ChallengePendingError if final_rank is posted but decklists are not yet published.
+    Raises ChallengeSourceError if the rank set is not a complete, gapless 1..N sequence matching
+    the event's own decklist count N. N is always derived from the event's own data, never
+    hardcoded to 32 -- mtgo.com runs real Challenges at several capacities (16/32/64/96/...), and
+    an event's `size` tier label (see MtgoRegistryEvent.size) is a schedule slot, not a guaranteed
+    attendance count, so a genuinely smaller field (e.g. a 31-player "Challenge 16") must parse
+    successfully rather than being permanently misclassified as malformed.
     """
     event_id = data.get("event_id")
+    raw_decklists = data.get("decklists", [])
     rank_by_login = {r["loginid"]: int(r["rank"]) for r in data.get("final_rank", [])}
-    ranks_set = set(rank_by_login.values())
-    if ranks_set != set(range(1, 33)):
-        raise ChallengeSourceError(
-            f"final_rank is not exactly {{1..32}} for mtgo.com event_id={event_id}: got {sorted(ranks_set)}"
+
+    if not raw_decklists:
+        raise ChallengePendingError(
+            f"mtgo.com event_id={event_id} has final_rank posted but 0 decklists published yet "
+            "-- not yet available, not malformed."
         )
 
     decks: List[MtgoEventDeck] = []
-    for d in data.get("decklists", []):
+    for d in raw_decklists:
         loginid = d["loginid"]
         place = rank_by_login.get(loginid)
         sig: Dict[str, int] = {}
@@ -407,14 +415,12 @@ def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
             sig[name] = sig.get(name, 0) + qty
         decks.append(MtgoEventDeck(loginid=loginid, player=d.get("player", ""), place=place, signature=sig))
 
-    if len(decks) != 32:
-        if len(decks) == 0:
-            raise ChallengePendingError(
-                f"mtgo.com event_id={event_id} has final_rank posted but 0 decklists published yet "
-                "-- not yet available, not malformed."
-            )
+    expected_ranks = set(range(1, len(decks) + 1))
+    ranks_set = set(rank_by_login.values())
+    if ranks_set != expected_ranks:
         raise ChallengeSourceError(
-            f"mtgo.com event_id={event_id} has {len(decks)} decklists, expected exactly 32."
+            f"final_rank is not a complete 1..{len(decks)} sequence for mtgo.com event_id={event_id} "
+            f"({len(decks)} decklist(s)): got {sorted(ranks_set)}"
         )
     return decks
 
@@ -821,7 +827,7 @@ def build_challenge_dataset(
         )
         event_rows[c.event_id] = rows
         classified = sum(1 for r in rows if r.deck != NEEDS_MANUAL_REVIEW)
-        emit(f"[mtgo-dataset] classified event {c.event_id}: {classified}/32 auto, {32 - classified}/32 review")
+        emit(f"[mtgo-dataset] classified event {c.event_id}: {classified}/{len(rows)} auto, {len(rows) - classified}/{len(rows)} review")
 
     # Premier events never touch Challenge stats/history CSV, but they get their own parallel
     # premier_history file (see sync_challenge_history_window call site) so manual review
@@ -851,7 +857,7 @@ def build_challenge_dataset(
         premier_rows[c.event_id] = rows
         premier_events.append(c)
         classified = sum(1 for r in rows if r.deck != NEEDS_MANUAL_REVIEW)
-        emit(f"[mtgo-dataset] classified premier event {c.event_id} ({c.slug}): {classified}/32 auto, {32 - classified}/32 review")
+        emit(f"[mtgo-dataset] classified premier event {c.event_id} ({c.slug}): {classified}/{len(rows)} auto, {len(rows) - classified}/{len(rows)} review")
 
     return ChallengeDatasetResult(
         challenge_events=challenge_events,
