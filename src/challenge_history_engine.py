@@ -1487,12 +1487,22 @@ def _check_challenge_invariants(
             dates = sorted(work.loc[work["EventID"] == eid, "EventDate"].unique())
             problems.append(f"event {eid}: maps to more than one EventDate ({dates})")
 
-    # 13: final_rank == {1..32} per event (re-verified end to end, in case anything downstream
-    # of the mtgo.com parse step dropped or duplicated a row).
+    # 13: final_rank is a complete, gapless 1..N sequence per event, N = that event's own real
+    # decklist count (re-verified end to end, in case anything downstream of the mtgo.com parse
+    # step dropped or duplicated a row). N is never hardcoded to 32: mtgo.com runs real Challenges
+    # at several capacities (16/32/64/96/...; see challenge_mtgo_source.MtgoRegistryEvent.size's
+    # own docstring), so a genuinely smaller field is a complete, valid event, not a corrupt
+    # 32-player one missing rows. This self-referential form (N = len(grp)) also fully subsumes
+    # the old, separate "every event has exactly 32 decklists" count check that used to sit here
+    # (dropped -- redundant once N is derived per event instead of asserted as a constant: a wrong
+    # row count fails this same check, since the sorted Place values can't span 1..N otherwise).
     for eid, grp in work.groupby("EventID"):
         places = sorted(grp["Place"].dropna().astype(int).tolist())
-        if places != list(range(1, 33)):
-            problems.append(f"event {eid}: Place values are not exactly 1..32 (got {places})")
+        expected_places = list(range(1, len(grp) + 1))
+        if places != expected_places:
+            problems.append(
+                f"event {eid}: Place values are not a complete 1..{len(grp)} sequence (got {places})"
+            )
 
     # 9: no event_id in more than one tier
     tier_per_event = work.groupby("EventID")["Tier"].nunique()
@@ -1506,14 +1516,16 @@ def _check_challenge_invariants(
         if overlap:
             problems.append(f"premier event_id(s) found inside Challenge history: {sorted(overlap)}")
 
-    # 12: every event contributes exactly 32 decklists
-    counts = work.groupby("EventID").size()
-    bad_counts = counts[counts != 32]
-    if not bad_counts.empty:
-        problems.append(f"event(s) without exactly 32 decklists: {bad_counts.to_dict()}")
-
     for tier in tiers:
         n = n_tier.get(tier, 0)
+        # Real total decklist count for this tier (sum of each of its events' actual field size),
+        # for the Top32EntryCount check below -- NOT 32*n. Top32EntryCount is a raw appearance
+        # count (see _presence_table: Top32EntryCount = Appearances, every decklist counted once,
+        # not a Place<=32 threshold), so it scales with real attendance, unlike WinnerCount/
+        # WinnerEventCount/Top8Count below: those ARE Place<=1/<=8 threshold cuts, constant per
+        # event (1 and 8 respectively) regardless of field size, since every real Challenge tier
+        # has attendance >= 8.
+        tier_decklists = int((work["Tier"].astype(str).str.strip() == str(tier)).sum())
         for label, tbl in (("Decks", tier_deck_tables.get(tier)), ("Archetypes", tier_arch_tables.get(tier))):
             if tbl is None or tbl.empty:
                 continue
@@ -1524,8 +1536,11 @@ def _check_challenge_invariants(
             if sum_winner_events != n:  # 4
                 problems.append(f"C{tier}_{label}: sum(WinnerEventCount)={sum_winner_events} != N_tier={n}")
             sum_top32entries = int(tbl["Top32EntryCount"].sum())
-            if sum_top32entries != 32 * n:  # 2
-                problems.append(f"C{tier}_{label}: sum(Top32EntryCount)={sum_top32entries} != 32*N_tier={32 * n}")
+            if sum_top32entries != tier_decklists:  # 2
+                problems.append(
+                    f"C{tier}_{label}: sum(Top32EntryCount)={sum_top32entries} != "
+                    f"tier's real decklist count={tier_decklists}"
+                )
             sum_top8 = int(tbl["Top8Count"].sum())
             if sum_top8 != 8 * n:  # 3
                 problems.append(f"C{tier}_{label}: sum(Top8Count)={sum_top8} != 8*N_tier={8 * n}")
@@ -1637,8 +1652,16 @@ def _check_challenge_invariants(
             problems.append(f"BestPilots: sum(Wins)={sum_wins} != N_all={n_all}")
         if sum_top8_pilots != 8 * n_all:
             problems.append(f"BestPilots: sum(Top8)={sum_top8_pilots} != 8*N_all={8 * n_all}")
-        if sum_top32_pilots != 32 * n_all:
-            problems.append(f"BestPilots: sum(Top32)={sum_top32_pilots} != 32*N_all={32 * n_all}")
+        # BestPilots' "Top32" is actually grp["Place"].count() (_presence_table's docstring/build
+        # above) -- a raw per-pilot appearance count, not a Place<=32 threshold despite the name --
+        # so its season total is every event's real decklist count summed, NOT 32*N_all. Wins/Top8
+        # stay exact per-event constants (Place==1/<=8), unaffected by real field size, same
+        # reasoning as the Top8Count check above.
+        real_total_decklists = len(work)
+        if sum_top32_pilots != real_total_decklists:
+            problems.append(
+                f"BestPilots: sum(Top32)={sum_top32_pilots} != real total decklists={real_total_decklists}"
+            )
 
         # This is the check the whole rebuild exists for: wins attributed to a deck ACROSS ALL
         # PILOTS (every raw winning row, whichever pilot it belongs to -- not read back out of
@@ -1859,8 +1882,9 @@ def run_challenge_statistics(
     # Rows still stuck at NEEDS_MANUAL_REVIEW (classifier could not confidently place them, and no
     # human resolution has been applied yet) are NOT dropped from the stats tables and NOT silently
     # merged into whatever real deck/archetype the classifier guessed second-best -- they get their
-    # own explicit "Unknown" row, so sum(Top32EntryCount) == 32 * event_count always holds and the
-    # gap is visible in the data instead of absorbed. This relabel is local to the stats tables
+    # own explicit "Unknown" row, so sum(Top32EntryCount) always equals the tier's real total
+    # decklist count and the gap is visible in the data instead of absorbed. This relabel is local
+    # to the stats tables
     # only -- the underlying history_csv keeps the literal NEEDS_MANUAL_REVIEW marker untouched, so
     # the review/rescan workflow (challenge_mtgo_source.py) still finds these rows correctly.
     unresolved_mask = hist_window["Deck"] == "NEEDS_MANUAL_REVIEW"
