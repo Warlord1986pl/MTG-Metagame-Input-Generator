@@ -26,9 +26,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+import shutil  # noqa: E402
+import tempfile  # noqa: E402
+from datetime import date  # noqa: E402
+
 import pandas as pd  # noqa: E402
 
-from league_site_export import _pilot_results_rows  # noqa: E402
+from league_engine import LEAGUE_RESULTS_COLS  # noqa: E402
+from league_site_export import _pilot_results_rows, build_season_site_data  # noqa: E402
 
 
 def test_deck_guess_wins_over_last_played_deck() -> None:
@@ -90,8 +95,72 @@ def test_falls_back_to_last_played_deck_when_deck_guess_blank() -> None:
     assert by_event["12853163"]["deck"] == ""
 
 
+def test_bracket_matches_use_the_same_resolved_deck_as_the_results_table() -> None:
+    """The bracket-matches list (head-to-head opponent history) has its own raw WinnerDeck/
+    LoserDeck columns (outputs/league/matches/<EventID>.csv, league_matches.py) -- same
+    NEEDS_MANUAL_REVIEW exposure risk as the Results table's raw Deck, found live on the same
+    real pilot/event. build_season_site_data must show the SAME already-resolved value
+    (DeckGuess, in this case) in bracketMatches as it does in that pilot's own "results" row for
+    the identical event, not the matches file's stale raw value.
+    """
+    tmp_dir = Path(tempfile.mkdtemp(prefix="site_export_bracket_regression_"))
+    try:
+        results_dir = tmp_dir / "results"
+        matches_dir = tmp_dir / "matches"
+        results_dir.mkdir()
+        matches_dir.mkdir()
+
+        def result_row(event_id, pilot, login_id, place, deck, deck_guess):
+            return {
+                "EventID": event_id, "EventDate": "2026-09-12", "Tier": "C64", "EventClass": "Challenge",
+                "Pilot": pilot, "LoginID": login_id, "Place": place, "Deck": deck, "DeckGuess": deck_guess,
+                "LeaguePoints": 5 if place == 1 else 4, "SwissRank": place, "SwissPoints": 20,
+                "OMWP": 0.55, "GWP": 0.7, "OGWP": 0.5,
+            }
+
+        pd.DataFrame(
+            [
+                result_row("90000001", "Winner", "1001", 1, "NEEDS_MANUAL_REVIEW", "Burn"),
+                result_row("90000001", "Runner", "1002", 2, "Tron", ""),
+            ],
+            columns=LEAGUE_RESULTS_COLS,
+        ).to_csv(results_dir / "90000001.csv", index=False, encoding="utf-8-sig")
+
+        pd.DataFrame([{
+            "EventID": "90000001", "EventDate": "2026-09-12", "Tier": "C64", "EventClass": "Challenge",
+            "Round": "F", "WinnerPilot": "Winner", "WinnerLoginID": "1001",
+            "LoserPilot": "Runner", "LoserLoginID": "1002", "WinnerGames": "2", "LoserGames": "0",
+            # Stale raw values, as if captured before this event was ever reclassified -- exactly
+            # the real production scenario.
+            "WinnerDeck": "NEEDS_MANUAL_REVIEW", "LoserDeck": "Tron",
+        }]).to_csv(matches_dir / "90000001.csv", index=False, encoding="utf-8-sig")
+
+        _season_doc, pilots_doc = build_season_site_data(
+            results_dir, "Autumn 2026", date(2026, 9, 1), date(2026, 11, 30), as_of=date(2026, 9, 14),
+            matches_dir=matches_dir,
+        )
+        pilots = pilots_doc["pilots"]
+        winner = pilots["id:1001"]
+        assert winner["results"][0]["deck"] == "Burn"
+        match = winner["bracketMatches"][0]
+        assert match["pilotDeck"] == "Burn", (
+            f"bracketMatches must show the same resolved deck as the Results table, not the raw "
+            f"matches-file value: got {match['pilotDeck']!r}"
+        )
+        assert match["opponentDeck"] == "Tron"
+
+        runner = pilots["id:1002"]
+        runner_match = runner["bracketMatches"][0]
+        assert runner_match["pilotDeck"] == "Tron"
+        assert runner_match["opponentDeck"] == "Burn"
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_deck_guess_wins_over_last_played_deck()
     print("OK: test_deck_guess_wins_over_last_played_deck")
     test_falls_back_to_last_played_deck_when_deck_guess_blank()
     print("OK: test_falls_back_to_last_played_deck_when_deck_guess_blank")
+    test_bracket_matches_use_the_same_resolved_deck_as_the_results_table()
+    print("OK: test_bracket_matches_use_the_same_resolved_deck_as_the_results_table")

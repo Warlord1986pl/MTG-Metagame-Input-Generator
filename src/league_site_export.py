@@ -39,7 +39,7 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -262,6 +262,11 @@ def build_season_site_data(
 
     season_pilots: List[dict] = []
     pilots_doc_entries: Dict[str, dict] = {}
+    # (pilot key, eventId) -> the SAME already-resolved deck _pilot_results_rows computed for that
+    # exact appearance (real Deck, else DeckGuess, else last-played-deck) -- reused below for
+    # bracketMatches instead of re-deriving the fallback a second time from the matches CSV's own
+    # raw WinnerDeck/LoserDeck (which, like the raw results Deck, can be NEEDS_MANUAL_REVIEW).
+    resolved_deck_by_key_event: Dict[Tuple[str, str], str] = {}
 
     profile_map = pilot_identity.load_profiles()
 
@@ -322,6 +327,8 @@ def build_season_site_data(
 
         grp = results_by_key.get(key)
         results_rows = _pilot_results_rows(grp) if grp is not None else []
+        for rr in results_rows:
+            resolved_deck_by_key_event[(key, rr["eventId"])] = rr["deck"]
         if grp is not None:
             decks = grp["Deck"].astype(str).str.strip()
             distinct_decks = int(decks[decks != ""].nunique())
@@ -383,6 +390,13 @@ def build_season_site_data(
             event_id = str(r.get("EventID", "")).strip()
             winner_deck = str(r.get("WinnerDeck", "")).strip()
             loser_deck = str(r.get("LoserDeck", "")).strip()
+            # Same already-resolved deck as this pilot's own "Results" table row for this exact
+            # event (real Deck, else DeckGuess, else last-played-deck) -- never the matches CSV's
+            # own raw, possibly-NEEDS_MANUAL_REVIEW value. Falls back to the raw value only if this
+            # (pilot, event) pair is missing from the lookup for some reason (defensive; shouldn't
+            # happen for anyone already in pilots_doc_entries).
+            winner_deck_resolved = resolved_deck_by_key_event.get((w_key, event_id), winner_deck)
+            loser_deck_resolved = resolved_deck_by_key_event.get((l_key, event_id), loser_deck)
 
             w_name = names.get(w_key, {}).get("current") or str(r.get("WinnerPilot", "")).strip()
             l_name = names.get(l_key, {}).get("current") or str(r.get("LoserPilot", "")).strip()
@@ -392,14 +406,14 @@ def build_season_site_data(
                     "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
                     "round": round_label, "result": "W",
                     "opponentId": l_key, "opponentName": l_name,
-                    "pilotDeck": winner_deck, "opponentDeck": loser_deck,
+                    "pilotDeck": winner_deck_resolved, "opponentDeck": loser_deck_resolved,
                 })
             if l_key in pilots_doc_entries:
                 pilots_doc_entries[l_key]["bracketMatches"].append({
                     "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
                     "round": round_label, "result": "L",
                     "opponentId": w_key, "opponentName": w_name,
-                    "pilotDeck": loser_deck, "opponentDeck": winner_deck,
+                    "pilotDeck": loser_deck_resolved, "opponentDeck": winner_deck_resolved,
                 })
 
     season_doc = {
