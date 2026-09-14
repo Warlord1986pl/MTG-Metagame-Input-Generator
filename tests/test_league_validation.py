@@ -36,6 +36,7 @@ FIXTURE = REPO_ROOT / "tests" / "fixtures" / "league" / "pilot_league_validation
 
 N_EVENTS = 89
 N_PREMIER_EVENTS = 4
+N_STARTS = 2848  # == EXPECTED["sum_starts"] below; this frozen fixture predates any non-32 event
 
 # Only quantities confirmed to be STABLE (independent of which prior snapshot/table the current
 # one happens to be diffed against) are asserted here -- see the discussion that established this:
@@ -126,7 +127,7 @@ def test_full_run_validates_and_matches_expected_numbers() -> None:
     ]
     assert actual_top5 == EXPECTED_TOP5, f"top-5 order/values changed: {actual_top5}"
 
-    le.validate_league(df, N_EVENTS, N_PREMIER_EVENTS)
+    le.validate_league(df, N_EVENTS, N_PREMIER_EVENTS, N_STARTS)
 
 
 # --------------------------------------------------------------------------------------------
@@ -141,11 +142,32 @@ def test_corrupted_points_row_raises_with_loginid() -> None:
     target["Points"] = target["Points"] + 1
 
     try:
-        le.validate_league(rows, N_EVENTS, N_PREMIER_EVENTS)
+        le.validate_league(rows, N_EVENTS, N_PREMIER_EVENTS, N_STARTS)
     except AssertionError as exc:
         assert bad_lid in str(exc), f"AssertionError message must name LoginID {bad_lid}: {exc}"
     else:
         raise AssertionError("expected AssertionError for a corrupted Points row, got none")
+
+
+# --------------------------------------------------------------------------------------------
+# 3. The Starts invariant must come from the passed-in n_starts, not a hardcoded 32*n_events --
+#    regression for the real production bug (2026-09-14): a season containing a real, smaller
+#    MTGO "Challenge 16" event (attendance < 32) legitimately has sum(Starts) != 32*n_events, so
+#    validate_league must trust its caller's real total rather than deriving one from event count.
+# --------------------------------------------------------------------------------------------
+
+def test_starts_check_uses_the_passed_in_total_not_32_times_n_events() -> None:
+    df = _load_fixture()
+    # This fixture's real sum(Starts) is N_STARTS (2848). Passing a different n_starts, with the
+    # data itself unchanged, must raise -- if validate_league still derived its expectation
+    # internally as 32*n_events (2848 either way for this fixture), this deliberately-wrong value
+    # would be silently ignored and no AssertionError would fire.
+    try:
+        le.validate_league(df, N_EVENTS, N_PREMIER_EVENTS, N_STARTS + 1)
+    except AssertionError as exc:
+        assert "Starts" in str(exc), f"AssertionError must name the Starts column: {exc}"
+    else:
+        raise AssertionError("expected AssertionError for a wrong n_starts, got none")
 
 
 # --------------------------------------------------------------------------------------------
@@ -431,6 +453,8 @@ if __name__ == "__main__":
     print("OK: test_full_run_validates_and_matches_expected_numbers")
     test_corrupted_points_row_raises_with_loginid()
     print("OK: test_corrupted_points_row_raises_with_loginid")
+    test_starts_check_uses_the_passed_in_total_not_32_times_n_events()
+    print("OK: test_starts_check_uses_the_passed_in_total_not_32_times_n_events")
     test_two_consecutive_builds_are_byte_identical()
     print("OK: test_two_consecutive_builds_are_byte_identical")
     test_rank_independent_of_input_row_order()

@@ -1127,7 +1127,7 @@ def _validate_num(v: object) -> Optional[int]:
     return int(float(v))
 
 
-def validate_league(rows, n_events: int, n_premier_events: int) -> None:
+def validate_league(rows, n_events: int, n_premier_events: int, n_starts: int) -> None:
     """Hard invariants for a rebuilt season table -- run immediately before writing the CSV (see
     run_league_update). Every violation raises AssertionError naming the offending LoginID and
     values; there are no warnings and no silent pass-through here, by design (see this feature's
@@ -1139,6 +1139,16 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
     CSV). *n_events* is the season's total event count across both EventClasses; *n_premier_events*
     is the Premier-only subset -- both counted the same way check_league_invariants already does
     (season_results["EventID"].nunique()).
+
+    *n_starts* is the season's real total attendance -- sum of every event's actual field size,
+    i.e. len(season_results), the total pilot-per-event appearance row count. It is NOT derivable
+    as 32*n_events: mtgo.com runs real Challenges at several capacities (16/32/64/96/...; see
+    challenge_mtgo_source.MtgoRegistryEvent.size's own docstring), so a season containing e.g. a
+    31-player "Challenge 16" event has fewer total Starts than a flat 32-per-event count would
+    predict. Top16/Top8/Top4/Top2/Wins stay exactly 16/8/4/2/1 per event regardless of field size
+    (they're Place-threshold cuts from build_season_table -- Place<=16/8/4/2/1 -- not field-size
+    fractions, and every observed real event has attendance >= 16), so only the Starts check below
+    needs a real, passed-in total rather than a derived constant.
 
     Check 14 re-derives the FULL 9-key tie-break chain from zero (see _rank_table's docstring for
     the rule; _full_tie_break_key here is an independent re-implementation of it, not a call into
@@ -1196,7 +1206,7 @@ def validate_league(rows, n_events: int, n_premier_events: int) -> None:
         return sum((num(r.get(col)) or 0) for r in rows)
 
     for col, expected in [
-        ("Starts", 32 * n_events), ("Top16", 16 * n_events), ("Top8", 8 * n_events),
+        ("Starts", n_starts), ("Top16", 16 * n_events), ("Top8", 8 * n_events),
         ("Top4", 4 * n_events), ("Top2", 2 * n_events), ("Wins", 1 * n_events),
     ]:
         actual = col_sum(col)
@@ -1810,7 +1820,7 @@ def run_league_update(
             season_results.get("EventClass", pd.Series(dtype=str)).astype(str).str.strip() == "Premier"
         ]["EventID"].nunique()
         try:
-            validate_league(table, n_events_season, n_premier_season)
+            validate_league(table, n_events_season, n_premier_season, len(season_results))
         except AssertionError as exc:
             raise LeagueBlockingError(
                 f"validate_league failed for {season}: {exc}"
