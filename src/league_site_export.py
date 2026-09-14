@@ -166,11 +166,11 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
         event_class = str(r.get("EventClass", "Challenge")).strip()
         deck = str(r.get("Deck", "")).strip()
         # A pilot's site profile is a general-audience page -- the raw NEEDS_MANUAL_REVIEW marker
-        # (still-unclassified deck, see challenge_mtgo_source.py) is meaningful internal pipeline
-        # state, not something to show verbatim here. Same relabel challenge_history_engine.py
-        # already applies to its own stats tables, reused here for the site's per-pilot history.
+        # (still-unclassified deck, see challenge_mtgo_source.py) is internal pipeline state, not
+        # something a reader needs. Emptied out (not relabeled "Unknown") so the page's existing
+        # r.deck || "-" fallback renders it exactly like any other missing deck value.
         if deck == "NEEDS_MANUAL_REVIEW":
-            deck = "Unknown"
+            deck = ""
         rows.append({
             "date": str(r.get("EventDate", "")).strip(),
             "eventId": str(r.get("EventID", "")).strip(),
