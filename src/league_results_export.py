@@ -14,8 +14,9 @@ writing this (see this repo's session notes, not repeated here):
   LoginID-uniqueness checks -- those already exist in league_engine.check_league_invariants and
   validate_league, and both already run (and would already have raised) inside run_league_update,
   which always runs before this module's export_results_and_manifest is called. This module's own
-  validation is scoped to what's genuinely new: full 1..32 placement coverage per event (existing
-  checks only guard against *duplicate* placements, not full coverage), and an independent
+  validation is scoped to what's genuinely new: full, gapless 1..N placement coverage per event, N
+  being that event's own real attendance, not a hardcoded 32 (existing checks only guard against
+  *duplicate* placements, not full coverage), and an independent
   reconciliation of this export's own row set against league_engine.build_season_table's live
   output for the same window -- proving THIS module's date-window filtering didn't drift from the
   canonical one, not re-litigating arithmetic already guarded upstream.
@@ -270,15 +271,20 @@ def build_results_rows(
 
 
 def check_placement_integrity(export_df: pd.DataFrame) -> List[dict]:
-    """The one genuinely new per-event check (see module docstring): each EventID must have
-    exactly 32 rows, Placement 1..32 each present exactly once. league_engine.check_league_invariants
-    already guards against *duplicate* (EventID, Place) pairs but not full 1..32 *coverage* -- this
-    is the coverage half of that same guarantee.
+    """The one genuinely new per-event check (see module docstring): each EventID's Placement
+    values must be a complete, gapless 1..N run with no duplicates, N being that event's own row
+    count. league_engine.check_league_invariants already guards against *duplicate* (EventID,
+    Place) pairs but not full coverage -- this is the coverage half of that same guarantee.
+
+    N is derived per-event (len(grp)), never hardcoded to 32: mtgo.com runs real Challenges at
+    several capacities (16/32/64/96/...; see challenge_mtgo_source.MtgoRegistryEvent.size's own
+    docstring), so a genuinely smaller field (e.g. a 31-player "Challenge 16") is a complete,
+    valid 1..31 event, not a corrupt 1..32 one missing its 32nd row.
     """
     offending = []
-    expected = list(range(1, 33))
     for event_id, grp in export_df.groupby("EventID"):
         placements = sorted(int(p) for p in grp["Placement"].dropna())
+        expected = list(range(1, len(grp) + 1))
         if placements != expected:
             missing = sorted(set(expected) - set(placements))
             dupes = sorted({p for p in placements if placements.count(p) > 1})

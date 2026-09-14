@@ -24,7 +24,32 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import pandas as pd
 
-from league_results_export import build_results_rows, reconcile_with_season_table
+from league_results_export import build_results_rows, check_placement_integrity, reconcile_with_season_table
+
+
+def test_placement_integrity_accepts_a_real_sub_32_field() -> None:
+    """Regression for the real production bug (2026-09-14): a genuine 'Modern Challenge 16' event
+    with real attendance under 32 (e.g. 31 players, Placement 1..31 with no gaps) is a COMPLETE,
+    valid event, not a corrupt 32-player one missing its last row -- mtgo.com runs Challenges at
+    several real capacities (16/32/64/96/...). check_placement_integrity must key its expected
+    range off each event's own row count, not a hardcoded 32.
+    """
+    df = pd.DataFrame({
+        "EventID": ["evt-31"] * 31 + ["evt-32"] * 32,
+        "Placement": list(range(1, 32)) + list(range(1, 33)),
+    })
+    issues = check_placement_integrity(df)
+    assert issues == [], f"expected no issues for complete 1..31 and 1..32 events, got {issues}"
+
+
+def test_placement_integrity_still_catches_a_real_gap() -> None:
+    """A genuinely incomplete event (5 rows, but Placement skips 5) must still be flagged --
+    the fix must not turn this check into a no-op."""
+    df = pd.DataFrame({"EventID": ["evt-gap"] * 5, "Placement": [1, 2, 3, 4, 6]})
+    issues = check_placement_integrity(df)
+    assert len(issues) == 1
+    assert issues[0]["EventID"] == "evt-gap"
+    assert issues[0]["missing_placements"] == [5]
 
 
 def _season_config_rows(league_dir: Path) -> List[Tuple[str, date, date]]:
