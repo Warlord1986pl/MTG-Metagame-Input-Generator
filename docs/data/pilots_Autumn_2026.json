@@ -161,7 +161,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -402,7 +402,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2918398",
           "opponentName": "yulinl",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Azorius Control",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -411,10 +411,10 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Affinity",
           "opponentId": "id:1758149",
           "opponentName": "yama33",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Azorius Control",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -439,7 +439,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Azorius Control",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -987,7 +987,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Affinity",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -1262,7 +1262,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 6,
         "top16": 3,
         "top2": 0,
@@ -1328,7 +1328,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Devoted Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -1947,7 +1947,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2199282",
           "opponentName": "azax",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Prowess",
           "result": "L",
           "round": "QF",
           "tier": "C32"
@@ -1972,7 +1972,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -2957,7 +2957,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -3225,7 +3225,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2563273",
           "opponentName": "almostomniscient",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Affinity",
           "result": "L",
           "round": "F",
           "tier": "C64"
@@ -3237,7 +3237,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2114447",
           "opponentName": "Zoob5555",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Affinity",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -3246,17 +3246,17 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Azorius Control",
           "opponentId": "id:1074736",
           "opponentName": "Aldreen",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Affinity",
           "result": "W",
           "round": "SF",
           "tier": "C64"
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 2,
@@ -3286,7 +3286,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Affinity",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -3570,7 +3570,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -4179,7 +4179,7 @@
     "id:1940271": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 0,
         "top2": 0,
@@ -4197,7 +4197,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -5084,7 +5084,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Devoted Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -5349,7 +5349,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 7,
         "top16": 3,
         "top2": 1,
@@ -5427,7 +5427,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Mono-Black Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -5893,7 +5893,7 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Affinity",
           "opponentId": "id:1758149",
           "opponentName": "yama33",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -5921,7 +5921,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -6402,7 +6402,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Affinity",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -6467,7 +6467,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 5,
         "top16": 4,
         "top2": 0,
@@ -6533,7 +6533,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -6779,7 +6779,7 @@
     "id:2192378": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 0,
@@ -6797,7 +6797,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "4c HollowOne",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -6831,14 +6831,14 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2618500",
           "opponentName": "Jumba",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C64"
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 0,
@@ -6856,7 +6856,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -6899,7 +6899,7 @@
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
           "eventId": "12853730",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Prowess",
           "opponentId": "id:1412491",
           "opponentName": "bruno_bto",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -6939,7 +6939,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -7378,7 +7378,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 3,
+        "distinctDecks": 2,
         "starts": 7,
         "top16": 3,
         "top2": 0,
@@ -7456,7 +7456,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Burn",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -7502,7 +7502,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -7760,7 +7760,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -8759,7 +8759,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -8858,7 +8858,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 5,
         "top16": 4,
         "top2": 0,
@@ -8924,7 +8924,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Belcher",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -9163,7 +9163,7 @@
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
           "eventId": "12853730",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Prowess",
           "opponentId": "id:3056706",
           "opponentName": "Xsper",
           "pilotDeck": "Esper Blink",
@@ -9282,7 +9282,7 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Affinity",
           "opponentId": "id:1758149",
           "opponentName": "yama33",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -9346,7 +9346,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -9503,7 +9503,7 @@
     "id:2618334": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 0,
         "top2": 0,
@@ -9521,7 +9521,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -9564,7 +9564,7 @@
           "date": "2026-09-12",
           "event": "Modern Challenge 64",
           "eventId": "12854081",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2198387",
           "opponentName": "svessesvv",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -9604,7 +9604,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Tron",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -9925,7 +9925,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 3,
+        "distinctDecks": 2,
         "starts": 5,
         "top16": 1,
         "top2": 0,
@@ -9991,7 +9991,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Tron",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -10293,7 +10293,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Izzet Murktide",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -10317,7 +10317,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -10623,7 +10623,7 @@
     "id:2695862": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 0,
@@ -10641,7 +10641,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -11140,7 +11140,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 1,
@@ -11170,7 +11170,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Jeskai Energy",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -11186,7 +11186,7 @@
     "id:2714690": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 0,
@@ -11216,7 +11216,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -11259,17 +11259,17 @@
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
           "eventId": "12853730",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Esper Blink",
           "opponentId": "id:736792",
           "opponentName": "Misplacedginger",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Ruby Storm",
           "result": "L",
           "round": "QF",
           "tier": "C32"
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 6,
         "top16": 5,
         "top2": 0,
@@ -11347,7 +11347,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -12437,7 +12437,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -12580,7 +12580,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -14192,7 +14192,7 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Azorius Control",
           "opponentId": "id:1074736",
           "opponentName": "Aldreen",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -14220,7 +14220,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -14288,7 +14288,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Neobrand",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -14631,7 +14631,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "WBG",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -14995,7 +14995,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 4,
         "top16": 2,
         "top2": 0,
@@ -15025,7 +15025,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -15598,14 +15598,14 @@
           "opponentDeck": "Esper Blink",
           "opponentId": "id:254536",
           "opponentName": "rastaf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Prowess",
           "result": "L",
           "round": "QF",
           "tier": "C32"
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 4,
         "top16": 3,
         "top2": 0,
@@ -15659,7 +15659,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -15832,7 +15832,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -16596,7 +16596,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "4c Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -17200,7 +17200,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Tron",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -17302,7 +17302,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Tron",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -17551,7 +17551,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 6,
         "top16": 3,
         "top2": 1,
@@ -17617,7 +17617,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Eldrazi Ramp",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -17953,7 +17953,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -18114,7 +18114,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -18346,7 +18346,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Jeskai Energy",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -18448,7 +18448,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -18735,7 +18735,7 @@
           "opponentDeck": "Broodscale Combo",
           "opponentId": "id:815932",
           "opponentName": "unagieel",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "4c HollowOne",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -18772,7 +18772,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "4c HollowOne",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -19313,7 +19313,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "WUR",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -20009,7 +20009,7 @@
     "id:3505107": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 0,
@@ -20039,7 +20039,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Belcher",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -20356,7 +20356,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 4,
         "top16": 2,
         "top2": 0,
@@ -20410,7 +20410,7 @@
         },
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -20536,7 +20536,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Land Destruction",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",
@@ -20751,7 +20751,7 @@
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
           "eventId": "12853730",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Esper Blink",
           "opponentId": "id:736792",
           "opponentName": "Misplacedginger",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -20815,7 +20815,7 @@
         },
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Land Destruction",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -20954,7 +20954,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "4c Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -21182,7 +21182,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Song of Creation",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -21216,7 +21216,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Devoted Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -21284,7 +21284,7 @@
       "results": [
         {
           "date": "2026-09-12",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Azorius Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12854081",
@@ -21932,10 +21932,10 @@
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
           "eventId": "12853730",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Ruby Storm",
           "opponentId": "id:2720911",
           "opponentName": "Cachorrowo",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Esper Blink",
           "result": "W",
           "round": "QF",
           "tier": "C32"
@@ -21947,7 +21947,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:3560747",
           "opponentName": "ipadkid",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Esper Blink",
           "result": "L",
           "round": "SF",
           "tier": "C32"
@@ -21966,7 +21966,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 0,
@@ -21984,7 +21984,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -22147,7 +22147,7 @@
       "results": [
         {
           "date": "2026-09-02",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "WBRG",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12853730",
@@ -22271,7 +22271,7 @@
           "date": "2026-09-06",
           "event": "Modern Challenge 64",
           "eventId": "12853698",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "4c HollowOne",
           "opponentId": "id:3358375",
           "opponentName": "acelerado440",
           "pilotDeck": "Broodscale Combo",
@@ -22471,7 +22471,7 @@
       "results": [
         {
           "date": "2026-09-06",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853698",

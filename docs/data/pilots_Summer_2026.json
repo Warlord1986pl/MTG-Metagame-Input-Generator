@@ -1101,7 +1101,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Mill",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -2324,7 +2324,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Devoted Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -2885,7 +2885,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Land Destruction",
           "opponentId": "id:603790",
           "opponentName": "AzNsOuL",
           "pilotDeck": "Goryo's Vengeance",
@@ -6118,7 +6118,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:2720911",
           "opponentName": "Cachorrowo",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Goryo's Vengeance",
           "result": "W",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -6127,17 +6127,17 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Ruby Storm",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Goryo's Vengeance",
           "result": "L",
           "round": "SF",
           "tier": "modern-showcase-challenge"
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 3,
         "top16": 1,
         "top2": 0,
@@ -6155,7 +6155,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -6915,7 +6915,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -10706,7 +10706,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Miracles",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -12639,7 +12639,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Living End",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -13223,7 +13223,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Grixis Reanimator",
           "opponentId": "id:2143659",
           "opponentName": "innaig88",
           "pilotDeck": "Ruby Storm",
@@ -13235,7 +13235,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Tron",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
           "pilotDeck": "Ruby Storm",
@@ -16418,7 +16418,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -17403,7 +17403,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:1997683",
           "opponentName": "hugofreitas1",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Grixis Reanimator",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -17428,7 +17428,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Grixis Reanimator",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -17871,7 +17871,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "4c HollowOne",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -19373,7 +19373,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -21627,7 +21627,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:254536",
           "opponentName": "rastaf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Ruby Storm",
           "result": "L",
           "round": "F",
           "tier": "modern-showcase-challenge"
@@ -21639,7 +21639,7 @@
           "opponentDeck": "Belcher",
           "opponentId": "id:3122660",
           "opponentName": "E90_DeliveryBoy",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Ruby Storm",
           "result": "W",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -21648,10 +21648,10 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1428769",
           "opponentName": "Xwhale",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Ruby Storm",
           "result": "W",
           "round": "SF",
           "tier": "modern-showcase-challenge"
@@ -21676,7 +21676,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -23939,7 +23939,7 @@
         },
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Grixis Reanimator",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -24171,7 +24171,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Ruby Storm",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -24307,7 +24307,7 @@
         },
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -24459,7 +24459,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Esper Blink",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -25081,7 +25081,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Domain Zoo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -25718,7 +25718,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Tron",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
           "pilotDeck": "NEEDS_MANUAL_REVIEW",
@@ -25806,7 +25806,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -28706,7 +28706,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -30234,7 +30234,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 5,
+        "distinctDecks": 4,
         "starts": 10,
         "top16": 3,
         "top2": 0,
@@ -30252,7 +30252,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Living End",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -32170,7 +32170,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1428769",
           "opponentName": "Xwhale",
           "pilotDeck": "Ruby Storm",
@@ -32506,7 +32506,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -33331,7 +33331,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 5,
+        "distinctDecks": 4,
         "starts": 6,
         "top16": 4,
         "top2": 0,
@@ -33349,7 +33349,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -35862,7 +35862,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Land Destruction",
           "opponentId": "id:603790",
           "opponentName": "AzNsOuL",
           "pilotDeck": "Domain Zoo",
@@ -37261,7 +37261,7 @@
     "id:2865888": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 5,
         "top16": 0,
         "top2": 0,
@@ -37279,7 +37279,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Living End",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -38232,7 +38232,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Indomitable Creativity",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -38970,7 +38970,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -40208,7 +40208,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -40504,7 +40504,7 @@
           "opponentDeck": "NEEDS_MANUAL_REVIEW",
           "opponentId": "id:2621451",
           "opponentName": "SanPop",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Tron",
           "result": "L",
           "round": "F",
           "tier": "C64"
@@ -40516,7 +40516,7 @@
           "opponentDeck": "Broodscale Combo",
           "opponentId": "id:815932",
           "opponentName": "unagieel",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Tron",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -40528,7 +40528,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:1997683",
           "opponentName": "hugofreitas1",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Tron",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -40553,7 +40553,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Tron",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -40980,7 +40980,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 3,
+        "distinctDecks": 2,
         "starts": 3,
         "top16": 3,
         "top2": 0,
@@ -40998,7 +40998,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -41342,7 +41342,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -41376,7 +41376,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -42026,7 +42026,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Azorius Control",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -43460,7 +43460,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -43690,7 +43690,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -45039,7 +45039,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -45496,7 +45496,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -47556,7 +47556,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -47963,7 +47963,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -50246,7 +50246,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Ruby Storm",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
           "pilotDeck": "Belcher",
@@ -54174,7 +54174,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Affinity",
           "opponentId": "id:449733",
           "opponentName": "levelerlover",
           "pilotDeck": "Goryo's Vengeance",
@@ -55106,7 +55106,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -56086,7 +56086,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 0,
@@ -56104,7 +56104,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Sultai Ritual",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -56623,7 +56623,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Ruby Storm",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -59541,7 +59541,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Affinity",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -59645,7 +59645,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Prowess",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -60984,7 +60984,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Boros Energy",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -64522,7 +64522,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "BRG",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -64652,7 +64652,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -65238,7 +65238,7 @@
         },
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Dimir Midrange",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -66408,7 +66408,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:3220713",
           "opponentName": "DskBayWolf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Affinity",
           "result": "L",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -66433,7 +66433,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Affinity",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -66848,7 +66848,7 @@
         },
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Domain Zoo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -68077,7 +68077,7 @@
         },
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Hammer Time",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -68418,7 +68418,7 @@
           "opponentDeck": "Domain Zoo",
           "opponentId": "id:2822464",
           "opponentName": "Pleyboy",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Land Destruction",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -68430,7 +68430,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1155358",
           "opponentName": "oosunq",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "Land Destruction",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -68455,7 +68455,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Land Destruction",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -69544,7 +69544,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "WG",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -70639,7 +70639,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Goryo's Vengeance",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -71023,7 +71023,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "Tron",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
           "pilotDeck": "Broodscale Combo",
@@ -71177,7 +71177,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -72587,7 +72587,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "UBR",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -72987,7 +72987,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "Jeskai Energy",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
