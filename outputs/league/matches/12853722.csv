@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853722,2026-09-08,C64,Challenge,QF,jayrod115,2760324,Rvng,649380,2,1,Boros Energy,Goryo's Vengeance
+12853722,2026-09-08,C64,Challenge,QF,Porks,2796105,Uagli1,2680052,2,1,Tron,Broodscale Combo
+12853722,2026-09-08,C64,Challenge,QF,HuUeBR,2981401,Cachorrowo,2720911,2,1,Broodscale Combo,Ruby Storm
+12853722,2026-09-08,C64,Challenge,QF,RNicoF,2753736,peter780108,1742159,2,1,Living End,Esper Blink
+12853722,2026-09-08,C64,Challenge,SF,Porks,2796105,RNicoF,2753736,2,0,Tron,Living End
+12853722,2026-09-08,C64,Challenge,SF,jayrod115,2760324,HuUeBR,2981401,2,1,Boros Energy,Broodscale Combo
+12853722,2026-09-08,C64,Challenge,F,jayrod115,2760324,Porks,2796105,2,0,Boros Energy,Tron

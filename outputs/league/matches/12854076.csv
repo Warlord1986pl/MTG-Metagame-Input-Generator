@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854076,2026-09-12,C16,Challenge,QF,Lollopollo2001,2373595,Athenani,3293663,2,0,Boros Energy,Devoted Combo
+12854076,2026-09-12,C16,Challenge,QF,albert62,1574579,felider,2322146,2,0,Esper Blink,Mono-Green Eldrazi
+12854076,2026-09-12,C16,Challenge,QF,ejk,1952341,pepeteam,2272105,2,1,Prowess,Goryo's Vengeance
+12854076,2026-09-12,C16,Challenge,QF,bubblywubblytubbler,3298193,Stanshine,993288,2,1,Prowess,4c HollowOne
+12854076,2026-09-12,C16,Challenge,SF,albert62,1574579,bubblywubblytubbler,3298193,2,1,Esper Blink,Prowess
+12854076,2026-09-12,C16,Challenge,SF,ejk,1952341,Lollopollo2001,2373595,2,0,Prowess,Boros Energy
+12854076,2026-09-12,C16,Challenge,F,albert62,1574579,ejk,1952341,2,0,Esper Blink,Prowess

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853724,2026-09-09,C32,Challenge,QF,eclipse4343,2714224,LucasG1ggs,750888,2,0,Jeskai Energy,Land Destruction
+12853724,2026-09-09,C32,Challenge,QF,Darkchrome6538,2877405,claudio0907,1059076,2,1,Esper Blink,Broodscale Combo
+12853724,2026-09-09,C32,Challenge,QF,musasabi,1210536,oinkmage22,2858193,2,0,Devoted Combo,Dimir Midrange
+12853724,2026-09-09,C32,Challenge,QF,ejk,1952341,SlankyPotato,3161045,2,0,Prowess,Dimir Midrange
+12853724,2026-09-09,C32,Challenge,SF,eclipse4343,2714224,ejk,1952341,2,1,Jeskai Energy,Prowess
+12853724,2026-09-09,C32,Challenge,SF,Darkchrome6538,2877405,musasabi,1210536,1,0,Esper Blink,Devoted Combo
+12853724,2026-09-09,C32,Challenge,F,Darkchrome6538,2877405,eclipse4343,2714224,2,0,Esper Blink,Jeskai Energy

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853784,2026-09-08,C16,Challenge,QF,Reiam,3106168,Gobern,1847500,2,0,Land Destruction,Eldrazi Ramp
+12853784,2026-09-08,C16,Challenge,QF,oskiyaa,1111702,Latorretta,2708393,2,0,Neobrand,Prowess
+12853784,2026-09-08,C16,Challenge,QF,TrueHero,2569009,manohito,2908947,2,1,WURG,Mono-Green Eldrazi
+12853784,2026-09-08,C16,Challenge,QF,morris,1198783,komattaman,2690217,2,0,Esper Blink,Broodscale Combo
+12853784,2026-09-08,C16,Challenge,SF,TrueHero,2569009,Reiam,3106168,2,0,WURG,Land Destruction
+12853784,2026-09-08,C16,Challenge,SF,oskiyaa,1111702,morris,1198783,2,0,Neobrand,Esper Blink
+12853784,2026-09-08,C16,Challenge,F,oskiyaa,1111702,TrueHero,2569009,2,1,Neobrand,WURG
