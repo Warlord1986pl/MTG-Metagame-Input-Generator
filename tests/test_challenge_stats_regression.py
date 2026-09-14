@@ -108,6 +108,69 @@ def test_challenge_stats_matches_frozen_ground_truth() -> None:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
+def test_challenge_stats_accepts_a_real_sub_32_challenge_16_event() -> None:
+    """Regression for the real production bug (2026-09-14, see PR #1-3): a genuine 'Modern
+    Challenge 16' event with real attendance under 32 is a COMPLETE, valid event, not a corrupt
+    32-player one missing rows -- mtgo.com runs Challenges at several real capacities. Before this
+    fix, _check_challenge_invariants hardcoded every check (Place coverage, decklist count,
+    Top32EntryCount/BestPilots Top32 sums) to assume exactly 32 per event, so this synthetic
+    16-player Challenge-16 event mixed with a normal 32-player Challenge would have made the whole
+    xlsx refuse to write.
+    """
+    tmp_dir = Path(tempfile.mkdtemp(prefix="challenge_stats_c16_regression_"))
+    try:
+        rows = []
+        for place in range(1, 33):  # a normal, complete 32-player Challenge 32
+            rows.append({
+                "EventDate": "2026-09-08", "Format": "Modern", "Tier": 32,
+                "EventSlug": "modern-challenge-32", "EventID": "90000001", "Place": place,
+                "Deck": "TestDeck", "Archetype": "TestArchetype", "Pilot": f"c32pilot{place}",
+            })
+        for place in range(1, 17):  # a real, complete 16-player Challenge 16 -- NOT missing rows
+            rows.append({
+                "EventDate": "2026-09-08", "Format": "Modern", "Tier": 16,
+                "EventSlug": "modern-challenge-16", "EventID": "90000002", "Place": place,
+                "Deck": "TestDeck", "Archetype": "TestArchetype", "Pilot": f"c16pilot{place}",
+            })
+        history_csv = tmp_dir / "challenge_history_modern.csv"
+        pd.DataFrame(rows).to_csv(history_csv, index=False, encoding="utf-8-sig")
+
+        completeness = CompletenessSummary(
+            registry_count=2, fetched_count=2, complete=True, missing=[],
+            tier_counts_registry={32: 1, 16: 1}, tier_counts_fetched={32: 1, 16: 1},
+            premier_checked=True, premier_count=0, premier_events=[], premier_note="",
+        )
+        result = run_challenge_statistics(
+            history_csv=history_csv,
+            output_dir=tmp_dir / "stats_out",
+            format_name="Modern",
+            week_start=date(2026, 9, 8),
+            week_end=date(2026, 9, 8),
+            completeness=completeness,
+        )
+
+        assert result.excel_path.exists(), "xlsx was not written -- an invariant check must have failed"
+
+        xl = pd.ExcelFile(result.excel_path)
+        c32 = xl.parse("C32_Decks")
+        assert int(c32["Top32EntryCount"].sum()) == 32
+        c16 = xl.parse("C16_Decks")
+        assert int(c16["Top32EntryCount"].sum()) == 16, (
+            f"a complete 16-player Challenge-16 event must contribute 16, not 32: "
+            f"got {int(c16['Top32EntryCount'].sum())}"
+        )
+
+        deck_all = xl.parse("ALL_Decks")
+        assert int(deck_all["Top32EntryCount"].sum()) == 48  # 32 + 16, not 2*32=64
+
+        pilots = xl.parse("BestPilots")
+        assert int(pilots["Top32"].sum()) == 48
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_challenge_stats_matches_frozen_ground_truth()
     print("OK: challenge stats regression test passed.")
+    test_challenge_stats_accepts_a_real_sub_32_challenge_16_event()
+    print("OK: challenge stats accepts a real sub-32 Challenge-16 event.")
