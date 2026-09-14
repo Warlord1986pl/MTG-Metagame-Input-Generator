@@ -164,6 +164,13 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
     for _, r in g.iterrows():
         tier = str(r.get("Tier", "")).strip()
         event_class = str(r.get("EventClass", "Challenge")).strip()
+        deck = str(r.get("Deck", "")).strip()
+        # A pilot's site profile is a general-audience page -- the raw NEEDS_MANUAL_REVIEW marker
+        # (still-unclassified deck, see challenge_mtgo_source.py) is meaningful internal pipeline
+        # state, not something to show verbatim here. Same relabel challenge_history_engine.py
+        # already applies to its own stats tables, reused here for the site's per-pilot history.
+        if deck == "NEEDS_MANUAL_REVIEW":
+            deck = "Unknown"
         rows.append({
             "date": str(r.get("EventDate", "")).strip(),
             "eventId": str(r.get("EventID", "")).strip(),
@@ -171,7 +178,7 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
             "tier": tier,
             "eventClass": event_class,
             "finish": _to_int_or_none(r.get("Place")),
-            "deck": str(r.get("Deck", "")).strip(),
+            "deck": deck,
             "points": _to_int_or_none(r.get("LeaguePoints")) or 0,
             "swissPoints": _to_int_or_none(r.get("SwissPoints")),
             "gwp": _to_float_or_none(r.get("GWP")),
