@@ -45,6 +45,12 @@ HISTORY_COLS: List[str] = [
     "EventID",
     "Place",
     "Deck",
+    # The classifier's own nearest-neighbor guess (see challenge_mtgo_source.classify_deck),
+    # populated only when Deck == NEEDS_MANUAL_REVIEW. Purely informational -- the Review Queue /
+    # manual-confirmation workflow that governs Deck itself is completely unaffected by this
+    # column; empty ("") for every already-resolved row and for any row synced before this column
+    # existed (load_challenge_history backfills it, same as PlayerCount/LoginID below).
+    "DeckGuess",
     "Archetype",
     "Pilot",
     # The stable per-account id from the mtgo.com JSON (decklists[]/standings[]/final_rank[]
@@ -182,6 +188,9 @@ def append_to_challenge_history(
                 "EventID": str(event_info.get("event_id") or ""),
                 "Place": str(row.get("Place") or ""),
                 "Deck": str(row.get("Deck") or "").strip(),
+                # No classifier guess available from this legacy local-recon path either -- same
+                # reasoning as PlayerCount above.
+                "DeckGuess": "",
                 "Archetype": str(row.get("Archetype") or "").strip(),
                 "Pilot": str(row.get("Pilot") or "").strip(),
                 # No loginid available from this legacy local-recon path either -- same reasoning
@@ -300,6 +309,7 @@ def sync_challenge_history_window(
                     "EventID": event.event_id,
                     "Place": str(row.place),
                     "Deck": deck,
+                    "DeckGuess": getattr(row, "deck_guess", "") or "",
                     "Archetype": archetype,
                     # PILOT NAMES ARE FROZEN AT FIRST CAPTURE. mtgo.com (and MTGGoldfish, which
                     # most Challenge rows' Pilot actually comes from via _parse_single_challenge --

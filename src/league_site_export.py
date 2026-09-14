@@ -159,12 +159,20 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
 
     A still-unclassified event's raw Deck value (the literal internal marker
     NEEDS_MANUAL_REVIEW, see challenge_mtgo_source.py) is never shown as-is on this
-    general-audience page. Instead it's filled in with this SAME identity's own most recent
-    PRIOR resolved deck -- pilots overwhelmingly keep playing one deck across consecutive
-    events, so their last confirmed choice is the single best guess available, and it's
-    reused for every consecutive unresolved event until the next real, resolved one. An
-    event with no earlier resolved deck at all for this identity (its first-ever appearance,
-    still unclassified) has nothing to infer from and stays blank.
+    general-audience page. Two-tier fallback instead, in priority order:
+      1. DeckGuess -- the classifier's own nearest-neighbor label for this exact event
+         (challenge_mtgo_source.classify_deck's nearest_label, carried through regardless of
+         whether it cleared the auto-accept confidence threshold; see HISTORY_COLS/
+         LEAGUE_RESULTS_COLS). This is available for the large majority of NEEDS_MANUAL_REVIEW
+         rows -- a real signal computed from this exact decklist, just one the Review Queue
+         workflow (Deck itself) deliberately never auto-accepts.
+      2. This SAME identity's own most recent PRIOR resolved deck -- pilots overwhelmingly keep
+         playing one deck across consecutive events, so their last confirmed choice is the next
+         best guess, reused for every consecutive unresolved event until the next real
+         resolution. Only used when DeckGuess is itself blank (e.g. too few known decks in the
+         library yet to compute a nearest neighbor at all).
+    An event with neither available (this identity's first-ever appearance, still unclassified,
+    with no classifier signal yet) stays blank.
     """
     g = grp.copy()
     g["_Date"] = pd.to_datetime(g["EventDate"], errors="coerce")
@@ -182,6 +190,7 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
             "eventClass": event_class,
             "finish": _to_int_or_none(r.get("Place")),
             "deck": str(r.get("Deck", "")).strip(),
+            "_deckGuess": str(r.get("DeckGuess", "")).strip(),
             "points": _to_int_or_none(r.get("LeaguePoints")) or 0,
             "swissPoints": _to_int_or_none(r.get("SwissPoints")),
             "gwp": _to_float_or_none(r.get("GWP")),
@@ -192,9 +201,10 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
     last_resolved = ""
     for row in reversed(rows):
         if row["deck"] == "NEEDS_MANUAL_REVIEW":
-            row["deck"] = last_resolved
+            row["deck"] = row["_deckGuess"] or last_resolved
         elif row["deck"]:
             last_resolved = row["deck"]
+        del row["_deckGuess"]
     return rows
 
 

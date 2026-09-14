@@ -77,6 +77,12 @@ LEAGUE_RESULTS_COLS: List[str] = [
     "LoginID",
     "Place",
     "Deck",
+    # The classifier's own nearest-neighbor guess (challenge_history_engine.HISTORY_COLS'
+    # DeckGuess, sourced originally from challenge_mtgo_source.classify_deck), carried through
+    # here so the site can show a best-effort deck for a still-NEEDS_MANUAL_REVIEW event without
+    # touching the Review Queue workflow that governs Deck itself. Empty for every already-
+    # resolved row.
+    "DeckGuess",
     "LeaguePoints",
     # Swiss standings, sourced from the already-cached mtgo.com event JSON (see league_matches.py)
     # -- data capture only, no scoring or season logic reads these. SwissRank is the Swiss-round
@@ -418,6 +424,7 @@ def sync_challenge_league_results(
         tier = f"C{size}"
         pilots = g["Pilot"].astype(str).str.strip()
         decks = g["Deck"].astype(str).str.strip()
+        deck_guesses = g["DeckGuess"].astype(str).str.strip()
         login_ids = g["LoginID"].astype(str).str.strip() if "LoginID" in g.columns else pd.Series([""] * len(g), index=g.index)
 
         # deck_by_loginid correlates this ONE event's own results rows (by history's own LoginID
@@ -439,6 +446,7 @@ def sync_challenge_league_results(
             "LoginID": login_ids,
             "Place": g["Place"],
             "Deck": decks,
+            "DeckGuess": deck_guesses,
             "LeaguePoints": g["Place"].apply(league_points_for_place),
             **{col: login_ids.map(lambda lid: swiss.get(lid, {}).get(col, "")) for col in SWISS_FIELDS},
         })[LEAGUE_RESULTS_COLS]
@@ -519,6 +527,7 @@ def sync_premier_league_results(
         tier = str(g["EventSlug"].iloc[0]).strip() or "Premier"
         pilots = g["Pilot"].astype(str).str.strip()
         decks = g["Deck"].astype(str).str.strip()
+        deck_guesses = g["DeckGuess"].astype(str).str.strip()
         login_ids = g["LoginID"].astype(str).str.strip() if "LoginID" in g.columns else pd.Series([""] * len(g), index=g.index)
 
         # deck_by_loginid correlates same-event results against the bracket JSON -- see the
@@ -539,6 +548,7 @@ def sync_premier_league_results(
             "LoginID": login_ids,
             "Place": g["Place"],
             "Deck": decks,
+            "DeckGuess": deck_guesses,
             "LeaguePoints": g["Place"].apply(premier_points_for_place),
             **{col: login_ids.map(lambda lid: swiss.get(lid, {}).get(col, "")) for col in SWISS_FIELDS},
         })[LEAGUE_RESULTS_COLS]
