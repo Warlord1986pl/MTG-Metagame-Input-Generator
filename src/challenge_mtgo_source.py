@@ -551,6 +551,10 @@ class ChallengeEventRow:
     archetype: str
     pilot: str
     loginid: str
+    # The classifier's own nearest-neighbor guess, populated only when needs_review -- i.e. Deck
+    # is NEEDS_MANUAL_REVIEW. Purely informational, never fed back into Deck/Archetype: the Review
+    # Queue / manual-confirmation workflow is untouched by this. See classify_deck's nearest_label.
+    deck_guess: str = ""
 
 
 @dataclass
@@ -662,7 +666,7 @@ def _classify_event_decks(
             )
             rows.append(ChallengeEventRow(
                 place=d.place, deck=NEEDS_MANUAL_REVIEW, archetype=NEEDS_MANUAL_REVIEW,
-                pilot=d.player, loginid=d.loginid,
+                pilot=d.player, loginid=d.loginid, deck_guess=result.nearest_label or "",
             ))
         else:
             deck_label = result.predicted_label or NEEDS_MANUAL_REVIEW
@@ -1265,6 +1269,8 @@ def rescan_history_for_unresolved(
         return []
     hist = pd.read_csv(history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
     hist["EventID"] = hist["EventID"].astype(str).str.strip().str.replace(r"\.0$", "", regex=True)
+    if "DeckGuess" not in hist.columns:
+        hist["DeckGuess"] = ""
     unresolved = hist[hist["Deck"] == NEEDS_MANUAL_REVIEW]
     if unresolved.empty:
         return []
@@ -1282,6 +1288,7 @@ def rescan_history_for_unresolved(
 
     review_items: List[ReviewItem] = []
     auto_resolved = 0
+    guesses_updated = 0
 
     for event_id, group in unresolved.groupby("EventID"):
         if not event_id:
@@ -1323,6 +1330,12 @@ def rescan_history_for_unresolved(
                         url=url, format_name=format_name, kind=kind,
                     )
                 )
+                # Purely informational (see ChallengeEventRow.deck_guess) -- never touches Deck/
+                # Archetype, so this can never bypass the Review Queue's manual-confirmation gate.
+                new_guess = result.nearest_label or ""
+                if str(hist.loc[idx, "DeckGuess"]) != new_guess:
+                    hist.loc[idx, "DeckGuess"] = new_guess
+                    guesses_updated += 1
             else:
                 deck_label = result.predicted_label or NEEDS_MANUAL_REVIEW
                 hist.loc[idx, "Deck"] = deck_label
@@ -1330,10 +1343,10 @@ def rescan_history_for_unresolved(
                 auto_resolved += 1
                 emit(f"[rescan] event {event_id} pilot={pilot!r}: auto-resolved -> {deck_label!r}")
 
-    if auto_resolved:
+    if auto_resolved or guesses_updated:
         hist["EventID"] = hist["EventID"].astype(str).str.replace(r"\.0$", "", regex=True)
         hist.to_csv(history_csv, index=False, encoding="utf-8-sig")
-        emit(f"[rescan] {auto_resolved} deck(s) auto-resolved and written to {history_csv}")
+        emit(f"[rescan] {auto_resolved} deck(s) auto-resolved, {guesses_updated} DeckGuess value(s) updated, written to {history_csv}")
 
     return review_items
 
