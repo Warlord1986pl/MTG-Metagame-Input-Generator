@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854060,2026-09-10,C64,Challenge,QF,KingCapivara,2126126,Martin_Dominguez,1755256,2,1,Broodscale Combo,Land Destruction
+12854060,2026-09-10,C64,Challenge,QF,Lightspirit,3222070,Ale_Mtg,2683189,2,1,Eldrazi Ramp,Izzet Murktide
+12854060,2026-09-10,C64,Challenge,QF,Clesss,2250193,Mistakenn,2129541,2,0,Esper Blink,Amulet Titan
+12854060,2026-09-10,C64,Challenge,QF,Venom01,3535587,MahfuzVanGogh,1932562,2,1,Prowess,UBRG
+12854060,2026-09-10,C64,Challenge,SF,Lightspirit,3222070,Venom01,3535587,2,0,Eldrazi Ramp,Prowess
+12854060,2026-09-10,C64,Challenge,SF,KingCapivara,2126126,Clesss,2250193,2,1,Broodscale Combo,Esper Blink
+12854060,2026-09-10,C64,Challenge,F,KingCapivara,2126126,Lightspirit,3222070,2,0,Broodscale Combo,Eldrazi Ramp

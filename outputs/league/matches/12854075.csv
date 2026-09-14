@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854075,2026-09-12,C64,Challenge,QF,Linden_43,3041704,CarlosZ,194753,2,1,Grixis Midrange,Dimir Midrange
+12854075,2026-09-12,C64,Challenge,QF,Piglet,1402171,Dasikk,3469379,2,1,WBG,Prowess
+12854075,2026-09-12,C64,Challenge,QF,Marxelo,277034,Xsper,3056706,2,1,WBG,Prowess
+12854075,2026-09-12,C64,Challenge,QF,yama33,1758149,triosk,670831,2,1,Affinity,Neobrand
+12854075,2026-09-12,C64,Challenge,SF,yama33,1758149,Marxelo,277034,2,1,Affinity,WBG
+12854075,2026-09-12,C64,Challenge,SF,Linden_43,3041704,Piglet,1402171,2,1,Grixis Midrange,WBG
+12854075,2026-09-12,C64,Challenge,F,yama33,1758149,Linden_43,3041704,2,1,Affinity,Grixis Midrange

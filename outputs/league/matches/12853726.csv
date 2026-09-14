@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853726,2026-09-09,C96,Challenge,QF,Brunes,2764694,MahfuzVanGogh,1932562,2,1,Prowess,UBRG
+12853726,2026-09-09,C96,Challenge,QF,makaaaa,3154401,rastaf,254536,2,0,Broodscale Combo,Esper Blink
+12853726,2026-09-09,C96,Challenge,QF,Alakai,676549,Mistakenn,2129541,2,1,Azorius Control,Amulet Titan
+12853726,2026-09-09,C96,Challenge,QF,Savior0117,2464763,henry_morehouse,1872783,2,1,Belcher,Bant Midrange
+12853726,2026-09-09,C96,Challenge,SF,makaaaa,3154401,Brunes,2764694,2,1,Broodscale Combo,Prowess
+12853726,2026-09-09,C96,Challenge,SF,Alakai,676549,Savior0117,2464763,2,0,Azorius Control,Belcher
+12853726,2026-09-09,C96,Challenge,F,Alakai,676549,makaaaa,3154401,2,0,Azorius Control,Broodscale Combo

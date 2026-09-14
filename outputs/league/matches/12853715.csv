@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12853715,2026-09-08,C32,Challenge,QF,Chub_Toad_,2702720,EthanBird,2658587,2,1,Living End,Prowess
+12853715,2026-09-08,C32,Challenge,QF,quinniac,2261440,Savior0117,2464763,2,1,Burn,Belcher
+12853715,2026-09-08,C32,Challenge,QF,Selfeisek,2042214,HouseOfManaMTG,2669359,2,1,Mono-Black Midrange,Mono-Green Eldrazi
+12853715,2026-09-08,C32,Challenge,QF,TheColorOfBoom,3359144,KillerWhale01,3247117,2,0,Broodscale Combo,Boros Energy
+12853715,2026-09-08,C32,Challenge,SF,Chub_Toad_,2702720,TheColorOfBoom,3359144,2,1,Living End,Broodscale Combo
+12853715,2026-09-08,C32,Challenge,SF,Selfeisek,2042214,quinniac,2261440,2,1,Mono-Black Midrange,Burn
+12853715,2026-09-08,C32,Challenge,F,Selfeisek,2042214,Chub_Toad_,2702720,2,1,Mono-Black Midrange,Living End

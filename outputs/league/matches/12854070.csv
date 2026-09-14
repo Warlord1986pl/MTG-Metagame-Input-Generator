@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854070,2026-09-11,C64,Challenge,QF,KingCapivara,2126126,rastaf,254536,2,0,Broodscale Combo,Esper Blink
+12854070,2026-09-11,C64,Challenge,QF,Imaeda,1304755,pedronavaja,3540949,2,1,Domain Zoo,Broodscale Combo
+12854070,2026-09-11,C64,Challenge,QF,Sodeq,1754547,xfile,2449332,2,0,Broodscale Combo,Broodscale Combo
+12854070,2026-09-11,C64,Challenge,QF,JPA93,1181017,Mistakenn,2129541,2,0,Prowess,Amulet Titan
+12854070,2026-09-11,C64,Challenge,SF,Sodeq,1754547,Imaeda,1304755,2,0,Broodscale Combo,Domain Zoo
+12854070,2026-09-11,C64,Challenge,SF,KingCapivara,2126126,JPA93,1181017,2,1,Broodscale Combo,Prowess
+12854070,2026-09-11,C64,Challenge,F,Sodeq,1754547,KingCapivara,2126126,2,0,Broodscale Combo,Broodscale Combo
