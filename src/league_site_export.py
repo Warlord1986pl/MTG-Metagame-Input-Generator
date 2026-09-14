@@ -155,7 +155,17 @@ def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
 
 def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
     """One row per event this identity appeared in, most recent first (ties broken by EventID
-    ascending, for determinism when two events share a date)."""
+    ascending, for determinism when two events share a date).
+
+    A still-unclassified event's raw Deck value (the literal internal marker
+    NEEDS_MANUAL_REVIEW, see challenge_mtgo_source.py) is never shown as-is on this
+    general-audience page. Instead it's filled in with this SAME identity's own most recent
+    PRIOR resolved deck -- pilots overwhelmingly keep playing one deck across consecutive
+    events, so their last confirmed choice is the single best guess available, and it's
+    reused for every consecutive unresolved event until the next real, resolved one. An
+    event with no earlier resolved deck at all for this identity (its first-ever appearance,
+    still unclassified) has nothing to infer from and stays blank.
+    """
     g = grp.copy()
     g["_Date"] = pd.to_datetime(g["EventDate"], errors="coerce")
     g = g.sort_values(["_Date", "EventID"], ascending=[False, True], kind="mergesort")
@@ -176,6 +186,15 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
             "swissPoints": _to_int_or_none(r.get("SwissPoints")),
             "gwp": _to_float_or_none(r.get("GWP")),
         })
+
+    # rows is newest-first; walk it oldest-first to carry each resolved deck forward onto any
+    # later NEEDS_MANUAL_REVIEW event, until the next real resolution.
+    last_resolved = ""
+    for row in reversed(rows):
+        if row["deck"] == "NEEDS_MANUAL_REVIEW":
+            row["deck"] = last_resolved
+        elif row["deck"]:
+            last_resolved = row["deck"]
     return rows
 
 
