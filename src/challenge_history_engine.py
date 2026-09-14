@@ -1429,6 +1429,24 @@ _SMALL_SAMPLE_EVENT_THRESHOLD = 6
 # landing every row on 1, so skipping BestPlace at this granularity does not hide that failure mode.
 _ARCHETYPE_LEVEL_SKIP_COLS: set = {"BestPlace"}
 
+# Same granularity argument as _ARCHETYPE_LEVEL_SKIP_COLS, but for the event-frequency-% columns,
+# and only at their structural ceiling: 100.0 means "this group appeared in every event in scope",
+# which is Events == N_events -- saturation, not a dropped value. With ~7 broad archetype buckets
+# and 32 decklists per event, every bucket being represented in every event is the ordinary steady
+# state (confirmed live on the 2026-08-24..09-06 window: 6 events, 7 archetypes, all at 100.0,
+# while the same window's C32_Decks spread normally). Restricted to archetype granularity on
+# purpose -- at Deck granularity, dozens of narrow decks all hitting every event is not a plausible
+# steady state, so a constant 100.0 there stays a failure.
+#
+# This does not hide the failure mode the check exists for. A merge/groupby that drops values
+# fills 0 or a sentinel (still caught by the all-zero branch and by any other constant), and the
+# ceiling case is independently pinned from two directions: check 7 ties every *EventFreqPct to
+# count/N_tier on the 1/N grid, and checks 1-4 tie the underlying counts to N_tier (which is why
+# a fake all-100.0 WinnerEventFreqPct cannot slip through here -- check 4's
+# sum(WinnerEventCount)==N_tier fails first).
+_ARCHETYPE_LEVEL_SATURATION_OK_COLS: set = set(_EVENT_FREQ_PCT_COLS)
+_SATURATION_PCT = 100.0
+
 
 def _check_no_degenerate_columns(label: str, tbl: pd.DataFrame, n_events: Optional[int] = None) -> List[str]:
     """A metric column that is entirely constant or entirely zero across every row of a tab
@@ -1451,6 +1469,12 @@ def _check_no_degenerate_columns(label: str, tbl: pd.DataFrame, n_events: Option
             continue
         values = pd.to_numeric(tbl[col], errors="coerce").dropna()
         if values.empty:
+            continue
+        if (
+            is_archetype_level
+            and col in _ARCHETYPE_LEVEL_SATURATION_OK_COLS
+            and (values == _SATURATION_PCT).all()
+        ):
             continue
         if (values == 0).all():
             problems.append(f"{label}: column {col!r} is zero for every row ({len(values)} rows)")

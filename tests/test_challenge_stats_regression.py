@@ -108,6 +108,47 @@ def test_challenge_stats_matches_frozen_ground_truth() -> None:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
+def test_saturated_archetype_event_freq_is_not_degenerate() -> None:
+    """An event-frequency-% column pinned at 100.0 for every archetype means every broad bucket
+    was represented in every event -- the ordinary steady state with ~7 buckets over 32 decklists
+    per event, not a dropped-value bug. Live case that aborted the whole xlsx write: the
+    2026-08-24..09-06 C32 window (6 events, 7 archetypes, all at PresencePct/Top32EventFreqPct
+    100.0). The exemption is deliberately narrow -- archetype granularity only, ceiling value
+    only -- so the three cases below must all still fail.
+    """
+    from challenge_history_engine import _check_no_degenerate_columns  # noqa: E402
+
+    saturated = pd.DataFrame({
+        "Archetype": ["Aggro", "Blink", "Combo", "Control", "Graveyard", "Midrange", "Ramp"],
+        "PresencePct": [100.0] * 7,
+        "Top32EventFreqPct": [100.0] * 7,
+        "Top8EventFreqPct": [16.67, 33.33, 50.0, 16.67, 83.33, 100.0, 50.0],
+        "WinnerEventFreqPct": [16.67, 0.0, 16.67, 33.33, 0.0, 16.67, 16.67],
+        "AvgPlace": [12.1, 14.0, 15.3, 16.8, 17.2, 13.4, 18.9],
+    })
+    assert _check_no_degenerate_columns("C32_Archetypes", saturated, n_events=6) == []
+
+    # Deck granularity: dozens of narrow decks in every single event is not a plausible steady
+    # state, so the ceiling stays a failure there.
+    at_deck_level = _check_no_degenerate_columns(
+        "C32_Decks", saturated.rename(columns={"Archetype": "Deck"}), n_events=6
+    )
+    assert any("PresencePct" in p for p in at_deck_level), at_deck_level
+
+    # Constant at anything other than the ceiling is still the dropped-value signature.
+    constant_mid = saturated.assign(PresencePct=50.0, Top32EventFreqPct=50.0)
+    assert any(
+        "PresencePct" in p for p in _check_no_degenerate_columns("C32_Archetypes", constant_mid, n_events=6)
+    )
+
+    # All-zero is untouched by the exemption.
+    all_zero = saturated.assign(PresencePct=0.0)
+    assert any(
+        "is zero for every row" in p
+        for p in _check_no_degenerate_columns("C32_Archetypes", all_zero, n_events=6)
+    )
+
+
 def test_challenge_stats_accepts_a_real_sub_32_challenge_16_event() -> None:
     """Regression for the real production bug (2026-09-14, see PR #1-3): a genuine 'Modern
     Challenge 16' event with real attendance under 32 is a COMPLETE, valid event, not a corrupt
@@ -172,5 +213,7 @@ def test_challenge_stats_accepts_a_real_sub_32_challenge_16_event() -> None:
 if __name__ == "__main__":
     test_challenge_stats_matches_frozen_ground_truth()
     print("OK: challenge stats regression test passed.")
+    test_saturated_archetype_event_freq_is_not_degenerate()
+    print("OK: saturated archetype event-freq is not flagged as degenerate.")
     test_challenge_stats_accepts_a_real_sub_32_challenge_16_event()
     print("OK: challenge stats accepts a real sub-32 Challenge-16 event.")
