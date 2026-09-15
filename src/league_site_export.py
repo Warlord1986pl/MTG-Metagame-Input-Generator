@@ -244,11 +244,21 @@ def build_season_site_data(
     season_end: date,
     as_of: date,
     matches_dir: Optional[Path] = None,
+    snapshot_dir: Optional[Path] = None,
 ) -> tuple:
     """Returns (season_doc, pilots_doc) for one season -- pure computation, no file I/O, so it can
     be unit-tested and diffed without touching disk.
+
+    *snapshot_dir* (new 2026-09-15): passed straight through to build_season_table so the site's
+    own PrevRank/movement uses the same weekly-snapshot baseline as the CSV export instead of the
+    open-season live filter that was silently always reporting zero movement -- see
+    build_season_table's own docstring. Left None (as before) only by a caller with no
+    outputs/league/snapshots to offer, which now also means that caller's PrevRank falls back to
+    the live filter rather than being wrong in a new way.
     """
-    table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
+    table = build_season_table(
+        results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
+    )
     all_results = load_all_league_results(results_dir)
     names = _name_history(all_results)
 
@@ -455,6 +465,7 @@ def export_league_site(
 
     results_dir = league_dir / "results"
     matches_dir = league_dir / "matches"
+    snapshot_dir = league_dir / "snapshots"
     config_csv = league_dir / "season_config.csv"
     if not config_csv.exists():
         _write_json({"currentSeason": None, "seasons": []}, docs_data_dir / "seasons.json")
@@ -484,6 +495,7 @@ def export_league_site(
 
         season_doc, pilots_doc = build_season_site_data(
             results_dir, season, s_start, s_end, as_of=as_of, matches_dir=matches_dir,
+            snapshot_dir=snapshot_dir,
         )
         _write_json(season_doc, docs_data_dir / f"season_{slug}.json")
         _write_json(pilots_doc, docs_data_dir / f"pilots_{slug}.json")

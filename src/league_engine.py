@@ -830,27 +830,49 @@ def build_season_table(
 ) -> pd.DataFrame:
     """Rebuilt from scratch every call by reading every file in results_dir whose EventDate falls
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
-    propagates automatically. PrevRank/RankChange are computed live from the same raw files, with
-    the baseline date picked by rank_change_anchor(as_of, coverage_end=season_end) -- see that
-    function's own docstring for why this is a fixed "yesterday" daily boundary rather than a
-    weekly checkpoint, and why it freezes once as_of passes the season's own calendar end date
-    (never based on how much data happens to be ingested yet -- an open season with normal
-    event-to-rebuild lag must NOT freeze just because today's event hasn't landed).
-    No snapshot is involved in this pair; the returned table also carries the anchor actually used
-    as table.attrs["rank_change_anchor"] (an ISO date string) so a caller never has to recompute or
-    guess it.
+    propagates automatically.
 
-    Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key),
-    including for the PrevRank lookup: matching prev-vs-current by identity rather than by raw
-    Pilot string is what stops a rename inside the cutoff window from showing up as one pilot
-    vanishing and a different one appearing from nowhere.
+    PrevRank/RankChange source (fixed 2026-09-15): for an OPEN season (as_of <= season_end) with a
+    usable *snapshot_dir*, PrevRank comes from the same weekly snapshot DELTA_COLS already uses
+    (see _load_latest_snapshot_before) -- the real, frozen standings as of the newest ISO week
+    strictly before as_of's own week, joined by LoginID. This replaced a live re-derivation
+    ("filter these same raw files to EventDate < rank_change_anchor(as_of)") that looked correct in
+    isolation but was silently broken in production: mtgo.com data routinely lands 2-8 real days
+    after its own EventDate (see league_results_export.find_late_arrivals), so on every single day
+    the newest EventDate actually on disk was already older than as_of - 1, making the "before
+    anchor" filter and the unfiltered current set identical -- confirmed live on 2026-09-14 and
+    2026-09-15, both showing movement: "same" for every pilot in the published Autumn 2026 site
+    JSON (450/450, then 464/464) while the snapshot-based DPoints for that exact same rebuild showed
+    real nonzero deltas for 75 pilots, proving the underlying data plainly had changed and only the
+    live re-derivation failed to see it. A weekly snapshot can't have this failure mode: it is a
+    genuine point-in-time capture from a distinct ISO week, not a same-day slice of the same lagged
+    data current_ranked is already built from.
 
-    DELTA_COLS (PrevPoints/DPoints/...) are a separate, snapshot-based pair: when *snapshot_dir* is
-    given, the newest weekly snapshot older than isocalendar(as_of) is loaded (see
-    _load_latest_snapshot_before) as the delta base; left None (no snapshot lookup at all, e.g. a
-    read-only caller like league_site_export/pilot_identity_cli that doesn't want the stderr noise
-    of a missing-snapshot warning), or when no snapshot exists yet, every DELTA_COLS cell stays
-    blank -- never 0, since 0 is a legitimate delta.
+    For a CLOSED season (as_of > season_end) or when no *snapshot_dir* / no prior-week snapshot is
+    available yet (a season's first week, or a read-only caller that never passes snapshot_dir),
+    PrevRank falls back to the original live filter -- baseline date
+    rank_change_anchor(as_of, coverage_end=season_end); see that function's own docstring for the
+    freeze behavior once as_of passes the season's calendar end date. This fallback is what
+    test_independent_reproduction_of_published_baseline_rank still exercises against the closed,
+    frozen Summer 2026 season, where it was never broken (a closed season's data stops changing, so
+    "before anchor" and "current" reliably differ by exactly the tail the freeze is supposed to cut
+    off) -- only the open-season, ever-advancing-as_of case was.
+    Either way the returned table carries the anchor actually used (even when it did not drive
+    PrevRank this call) as table.attrs["rank_change_anchor"] (an ISO date string), so a caller never
+    has to recompute or guess it.
+
+    Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key). The
+    live-filter fallback path matches prev-vs-current by identity rather than raw Pilot string,
+    which is what stops a rename inside the cutoff window from showing up as one pilot vanishing and
+    a different one appearing from nowhere; the snapshot path only has LoginID to key on (a
+    name-only, pre-2026-07-13 fallback identity gets blank PrevRank from a snapshot, same as it
+    already gets blank DELTA_COLS -- see write_weekly_snapshot).
+
+    DELTA_COLS (PrevPoints/DPoints/...) share the same snapshot lookup this now uses for PrevRank:
+    when *snapshot_dir* is given, the newest weekly snapshot older than isocalendar(as_of) is loaded
+    as the delta base; left None (no snapshot lookup at all, e.g. a read-only caller like
+    pilot_identity_cli that doesn't want the stderr noise of a missing-snapshot warning), or when no
+    snapshot exists yet, every DELTA_COLS cell stays blank -- never 0, since 0 is a legitimate delta.
     """
     all_results = load_all_league_results(results_dir)
     if all_results.empty:
@@ -868,15 +890,6 @@ def build_season_table(
         return pd.DataFrame(columns=PILOT_TABLE_COLS)
 
     anchor = rank_change_anchor(as_of, season_end)
-    prev_mask = season_mask & (dates < anchor)
-    prev_results = all_results[prev_mask]
-    prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
-    prev_rank_lookup = (
-        prev_ranked.set_index("_Key")["Rank"] if not prev_ranked.empty else pd.Series(dtype="int64")
-    )
-
-    current_ranked["PrevRank"] = current_ranked["_Key"].map(prev_rank_lookup).astype("Int64")
-    current_ranked["RankChange"] = (current_ranked["PrevRank"] - current_ranked["Rank"]).astype("Int64")
 
     base_snapshot = None
     if snapshot_dir is not None:
@@ -884,6 +897,29 @@ def build_season_table(
         base_snapshot, _base_week = _load_latest_snapshot_before(
             snapshot_dir, season_name, _iso_week(as_of), log=log
         )
+
+    # Prefer the snapshot baseline for an open season -- see the module docstring above for why the
+    # live "EventDate < anchor" filter is unreliable there (real ingestion lag routinely exceeds the
+    # anchor's own 1-day gap). A closed season, or no usable snapshot yet, keeps the live filter.
+    if base_snapshot is not None and not base_snapshot.empty and as_of <= season_end:
+        # base_snapshot is already indexed by LoginID (see _load_latest_snapshot_before) -- same
+        # duplicate-index guard _apply_deltas uses below, checked here too since this lookup runs
+        # first and .map() would otherwise silently keep only one of two duplicate rows.
+        if base_snapshot.index.duplicated().any():
+            dupes = sorted(set(base_snapshot.index[base_snapshot.index.duplicated()]))
+            raise AssertionError(f"[league] snapshot has duplicate LoginID {dupes}, cannot compute PrevRank")
+        lid_series = current_ranked["LoginID"].astype(str).str.strip()
+        current_ranked["PrevRank"] = lid_series.map(base_snapshot["Rank"]).astype("Int64")
+    else:
+        prev_mask = season_mask & (dates < anchor)
+        prev_results = all_results[prev_mask]
+        prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
+        prev_rank_lookup = (
+            prev_ranked.set_index("_Key")["Rank"] if not prev_ranked.empty else pd.Series(dtype="int64")
+        )
+        current_ranked["PrevRank"] = current_ranked["_Key"].map(prev_rank_lookup).astype("Int64")
+
+    current_ranked["RankChange"] = (current_ranked["PrevRank"] - current_ranked["Rank"]).astype("Int64")
     current_ranked = _apply_deltas(current_ranked, base_snapshot)
 
     # Set on the object actually being returned, not earlier -- pandas' .attrs propagation through
