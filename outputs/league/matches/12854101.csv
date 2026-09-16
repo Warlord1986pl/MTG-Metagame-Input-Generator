@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854101,2026-09-14,C96,Challenge,QF,Sciacallo_Rosso,940897,manohito,2908947,2,0,Ruby Storm,Broodscale Combo
+12854101,2026-09-14,C96,Challenge,QF,Matts,2631782,GodOfSlaughter,1185021,2,0,Affinity,Broodscale Combo
+12854101,2026-09-14,C96,Challenge,QF,Misplacedginger,736792,surgetemelo,3473231,2,0,WBG,Goryo's Vengeance
+12854101,2026-09-14,C96,Challenge,QF,Mistakenn,2129541,Laplasjan,1706283,2,0,Amulet Titan,Esper Blink
+12854101,2026-09-14,C96,Challenge,SF,Sciacallo_Rosso,940897,Matts,2631782,2,0,Ruby Storm,Affinity
+12854101,2026-09-14,C96,Challenge,SF,Misplacedginger,736792,Mistakenn,2129541,2,0,WBG,Amulet Titan
+12854101,2026-09-14,C96,Challenge,F,Sciacallo_Rosso,940897,Misplacedginger,736792,2,1,Ruby Storm,WBG

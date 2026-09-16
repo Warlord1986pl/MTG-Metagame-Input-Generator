@@ -17,7 +17,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 294,
+      "rank": 301,
       "results": [
         {
           "date": "2026-09-12",
@@ -38,7 +38,7 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 0,
         "top2": 0,
         "top4": 0,
@@ -51,8 +51,20 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 295,
+      "rank": 456,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Prowess",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 32,
+          "gwp": 0.625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-07",
           "deck": "Prowess",
@@ -110,7 +122,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 80,
+      "rank": 83,
       "results": [
         {
           "date": "2026-09-03",
@@ -157,7 +169,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 116,
+      "rank": 120,
       "results": [
         {
           "date": "2026-09-06",
@@ -191,7 +203,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 170,
+      "rank": 175,
       "results": [
         {
           "date": "2026-09-01",
@@ -225,7 +237,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 296,
+      "rank": 302,
       "results": [
         {
           "date": "2026-09-01",
@@ -284,7 +296,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 50,
+      "rank": 51,
       "results": [
         {
           "date": "2026-09-11",
@@ -342,7 +354,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 271,
+      "rank": 279,
       "results": [
         {
           "date": "2026-09-09",
@@ -376,7 +388,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 297,
+      "rank": 303,
       "results": [
         {
           "date": "2026-09-06",
@@ -435,7 +447,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 81,
+      "rank": 84,
       "results": [
         {
           "date": "2026-09-06",
@@ -469,7 +481,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 180,
+      "rank": 186,
       "results": [
         {
           "date": "2026-09-01",
@@ -482,6 +494,40 @@
           "points": 1,
           "swissPoints": 12,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:1096192": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:1096192",
+      "loginId": "1096192",
+      "name": "Kikis",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 304,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Prowess",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 22,
+          "gwp": 0.61111,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -540,7 +586,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 44,
+      "rank": 45,
       "results": [
         {
           "date": "2026-09-10",
@@ -611,7 +657,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 117,
+      "rank": 121,
       "results": [
         {
           "date": "2026-09-05",
@@ -682,7 +728,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 33,
+      "rank": 34,
       "results": [
         {
           "date": "2026-09-01",
@@ -716,7 +762,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 298,
+      "rank": 305,
       "results": [
         {
           "date": "2026-09-12",
@@ -787,7 +833,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 55,
+      "rank": 56,
       "results": [
         {
           "date": "2026-09-09",
@@ -869,7 +915,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 448,
+      "rank": 457,
       "results": [
         {
           "date": "2026-09-05",
@@ -915,7 +961,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 299,
+      "rank": 306,
       "results": [
         {
           "date": "2026-09-11",
@@ -949,7 +995,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 300,
+      "rank": 307,
       "results": [
         {
           "date": "2026-09-12",
@@ -983,7 +1029,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 181,
+      "rank": 187,
       "results": [
         {
           "date": "2026-09-02",
@@ -1017,7 +1063,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 301,
+      "rank": 308,
       "results": [
         {
           "date": "2026-09-13",
@@ -1088,7 +1134,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 21,
+      "rank": 23,
       "results": [
         {
           "date": "2026-09-11",
@@ -1142,24 +1188,49 @@
       "xHandle": null
     },
     "id:1185021": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Affinity",
+          "opponentId": "id:2631782",
+          "opponentName": "Matts",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "QF",
+          "tier": "C96"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
+        "starts": 2,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
-        "top8": 0,
+        "top8": 1,
         "wins": 0
       },
       "id": "id:1185021",
       "loginId": "1185021",
       "name": "GodOfSlaughter",
-      "points": 0,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 302,
+      "rank": 143,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 5,
+          "gwp": 0.72222,
+          "points": 2,
+          "swissPoints": 18,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Broodscale Combo",
@@ -1192,7 +1263,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 303,
+      "rank": 309,
       "results": [
         {
           "date": "2026-09-08",
@@ -1251,7 +1322,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 82,
+      "rank": 85,
       "results": [
         {
           "date": "2026-09-08",
@@ -1285,7 +1356,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 182,
+      "rank": 188,
       "results": [
         {
           "date": "2026-09-06",
@@ -1344,7 +1415,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 56,
+      "rank": 57,
       "results": [
         {
           "date": "2026-09-12",
@@ -1438,7 +1509,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 304,
+      "rank": 310,
       "results": [
         {
           "date": "2026-09-07",
@@ -1472,7 +1543,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 305,
+      "rank": 311,
       "results": [
         {
           "date": "2026-09-01",
@@ -1543,7 +1614,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 58,
+      "rank": 60,
       "results": [
         {
           "date": "2026-09-04",
@@ -1577,7 +1648,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 306,
+      "rank": 312,
       "results": [
         {
           "date": "2026-09-01",
@@ -1660,7 +1731,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 20,
+      "rank": 22,
       "results": [
         {
           "date": "2026-09-02",
@@ -1730,7 +1801,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 183,
+      "rank": 189,
       "results": [
         {
           "date": "2026-09-09",
@@ -1777,7 +1848,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 118,
+      "rank": 122,
       "results": [
         {
           "date": "2026-09-06",
@@ -1836,7 +1907,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 102,
+      "rank": 106,
       "results": [
         {
           "date": "2026-09-13",
@@ -1894,7 +1965,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 307,
+      "rank": 313,
       "results": [
         {
           "date": "2026-09-02",
@@ -1953,7 +2024,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 78,
+      "rank": 82,
       "results": [
         {
           "date": "2026-09-12",
@@ -2048,7 +2119,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 119,
+      "rank": 123,
       "results": [
         {
           "date": "2026-09-02",
@@ -2082,7 +2153,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 184,
+      "rank": 190,
       "results": [
         {
           "date": "2026-09-05",
@@ -2116,7 +2187,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 308,
+      "rank": 314,
       "results": [
         {
           "date": "2026-09-01",
@@ -2150,7 +2221,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 151,
+      "rank": 155,
       "results": [
         {
           "date": "2026-09-09",
@@ -2209,7 +2280,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 120,
+      "rank": 124,
       "results": [
         {
           "date": "2026-09-03",
@@ -2256,7 +2327,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 121,
+      "rank": 125,
       "results": [
         {
           "date": "2026-09-02",
@@ -2290,7 +2361,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 309,
+      "rank": 315,
       "results": [
         {
           "date": "2026-09-05",
@@ -2361,7 +2432,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 34,
+      "rank": 35,
       "results": [
         {
           "date": "2026-09-12",
@@ -2395,7 +2466,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 310,
+      "rank": 316,
       "results": [
         {
           "date": "2026-09-01",
@@ -2429,7 +2500,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 152,
+      "rank": 156,
       "results": [
         {
           "date": "2026-09-08",
@@ -2475,7 +2546,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 311,
+      "rank": 317,
       "results": [
         {
           "date": "2026-09-01",
@@ -2509,7 +2580,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 312,
+      "rank": 318,
       "results": [
         {
           "date": "2026-09-10",
@@ -2568,7 +2639,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 70,
+      "rank": 72,
       "results": [
         {
           "date": "2026-09-07",
@@ -2614,7 +2685,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 313,
+      "rank": 319,
       "results": [
         {
           "date": "2026-09-09",
@@ -2648,7 +2719,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 269,
+      "rank": 277,
       "results": [
         {
           "date": "2026-09-12",
@@ -2755,7 +2826,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 93,
+      "rank": 97,
       "results": [
         {
           "date": "2026-09-08",
@@ -2787,6 +2858,18 @@
     "id:1706283": {
       "bracketMatches": [
         {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Amulet Titan",
+          "opponentId": "id:2129541",
+          "opponentName": "Mistakenn",
+          "pilotDeck": "Esper Blink",
+          "result": "L",
+          "round": "QF",
+          "tier": "C96"
+        },
+        {
           "date": "2026-09-13",
           "event": "Modern Challenge 64",
           "eventId": "12854091",
@@ -2801,21 +2884,33 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 2,
-        "top16": 1,
+        "starts": 3,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
-        "top8": 1,
+        "top8": 2,
         "wins": 0
       },
       "id": "id:1706283",
       "loginId": "1706283",
       "name": "Laplasjan",
-      "points": 2,
+      "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 139,
+      "rank": 75,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Esper Blink",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 6,
+          "gwp": 0.70588,
+          "points": 2,
+          "swissPoints": 18,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Esper Blink",
@@ -2860,7 +2955,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 185,
+      "rank": 191,
       "results": [
         {
           "date": "2026-09-01",
@@ -2894,7 +2989,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 314,
+      "rank": 320,
       "results": [
         {
           "date": "2026-09-07",
@@ -2941,7 +3036,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 74,
+      "rank": 76,
       "results": [
         {
           "date": "2026-09-07",
@@ -2999,7 +3094,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 315,
+      "rank": 321,
       "results": [
         {
           "date": "2026-09-03",
@@ -3046,7 +3141,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 140,
+      "rank": 144,
       "results": [
         {
           "date": "2026-09-08",
@@ -3129,7 +3224,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 35,
+      "rank": 36,
       "results": [
         {
           "date": "2026-09-11",
@@ -3176,7 +3271,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 141,
+      "rank": 145,
       "results": [
         {
           "date": "2026-09-10",
@@ -3222,7 +3317,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 186,
+      "rank": 192,
       "results": [
         {
           "date": "2026-09-05",
@@ -3256,7 +3351,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 449,
+      "rank": 458,
       "results": [
         {
           "date": "2026-09-02",
@@ -3375,7 +3470,7 @@
       "points": 9,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 7,
+      "rank": 8,
       "results": [
         {
           "date": "2026-09-12",
@@ -3421,7 +3516,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 316,
+      "rank": 322,
       "results": [
         {
           "date": "2026-09-06",
@@ -3455,7 +3550,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 317,
+      "rank": 323,
       "results": [
         {
           "date": "2026-09-06",
@@ -3489,7 +3584,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 187,
+      "rank": 193,
       "results": [
         {
           "date": "2026-09-02",
@@ -3523,7 +3618,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 153,
+      "rank": 157,
       "results": [
         {
           "date": "2026-09-08",
@@ -3569,7 +3664,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 188,
+      "rank": 194,
       "results": [
         {
           "date": "2026-09-01",
@@ -3603,7 +3698,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 189,
+      "rank": 195,
       "results": [
         {
           "date": "2026-09-05",
@@ -3637,7 +3732,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 318,
+      "rank": 324,
       "results": [
         {
           "date": "2026-09-13",
@@ -3671,7 +3766,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 319,
+      "rank": 325,
       "results": [
         {
           "date": "2026-09-02",
@@ -3705,7 +3800,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 272,
+      "rank": 280,
       "results": [
         {
           "date": "2026-09-02",
@@ -3739,7 +3834,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 320,
+      "rank": 326,
       "results": [
         {
           "date": "2026-09-12",
@@ -3773,7 +3868,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 321,
+      "rank": 327,
       "results": [
         {
           "date": "2026-09-09",
@@ -3867,7 +3962,7 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 5,
+        "starts": 6,
         "top16": 5,
         "top2": 1,
         "top4": 2,
@@ -3882,6 +3977,18 @@
       "priorNames": [],
       "rank": 4,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Eldrazi Ramp",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 25,
+          "gwp": 0.5625,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Eldrazi Ramp",
@@ -3962,7 +4069,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 322,
+      "rank": 328,
       "results": [
         {
           "date": "2026-09-09",
@@ -3996,7 +4103,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 323,
+      "rank": 329,
       "results": [
         {
           "date": "2026-09-09",
@@ -4067,7 +4174,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 48,
+      "rank": 49,
       "results": [
         {
           "date": "2026-09-09",
@@ -4125,7 +4232,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 324,
+      "rank": 330,
       "results": [
         {
           "date": "2026-09-01",
@@ -4159,7 +4266,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 325,
+      "rank": 331,
       "results": [
         {
           "date": "2026-09-04",
@@ -4218,7 +4325,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 72,
+      "rank": 74,
       "results": [
         {
           "date": "2026-09-10",
@@ -4264,7 +4371,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 190,
+      "rank": 196,
       "results": [
         {
           "date": "2026-09-05",
@@ -4298,7 +4405,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 326,
+      "rank": 332,
       "results": [
         {
           "date": "2026-09-01",
@@ -4369,7 +4476,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 45,
+      "rank": 46,
       "results": [
         {
           "date": "2026-09-13",
@@ -4427,7 +4534,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 327,
+      "rank": 333,
       "results": [
         {
           "date": "2026-09-08",
@@ -4522,7 +4629,7 @@
       "points": 10,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 6,
+      "rank": 7,
       "results": [
         {
           "date": "2026-09-12",
@@ -4628,7 +4735,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 450,
+      "rank": 459,
       "results": [
         {
           "date": "2026-09-09",
@@ -4687,7 +4794,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 112,
+      "rank": 116,
       "results": [
         {
           "date": "2026-09-12",
@@ -4721,7 +4828,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 451,
+      "rank": 460,
       "results": [
         {
           "date": "2026-09-11",
@@ -4767,7 +4874,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 191,
+      "rank": 197,
       "results": [
         {
           "date": "2026-09-08",
@@ -4862,7 +4969,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 22,
+      "rank": 24,
       "results": [
         {
           "date": "2026-09-12",
@@ -4944,7 +5051,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 273,
+      "rank": 281,
       "results": [
         {
           "date": "2026-09-08",
@@ -5015,7 +5122,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 59,
+      "rank": 61,
       "results": [
         {
           "date": "2026-09-05",
@@ -5062,7 +5169,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 142,
+      "rank": 146,
       "results": [
         {
           "date": "2026-09-08",
@@ -5108,7 +5215,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 452,
+      "rank": 461,
       "results": [
         {
           "date": "2026-09-08",
@@ -5154,7 +5261,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 245,
+      "rank": 251,
       "results": [
         {
           "date": "2026-09-05",
@@ -5200,7 +5307,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 328,
+      "rank": 334,
       "results": [
         {
           "date": "2026-09-12",
@@ -5234,7 +5341,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 329,
+      "rank": 335,
       "results": [
         {
           "date": "2026-09-11",
@@ -5268,7 +5375,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 192,
+      "rank": 198,
       "results": [
         {
           "date": "2026-09-02",
@@ -5339,7 +5446,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 18,
+      "rank": 20,
       "results": [
         {
           "date": "2026-09-12",
@@ -5409,7 +5516,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 330,
+      "rank": 336,
       "results": [
         {
           "date": "2026-09-07",
@@ -5456,7 +5563,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 143,
+      "rank": 147,
       "results": [
         {
           "date": "2026-09-12",
@@ -5551,7 +5658,7 @@
       "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 14,
+      "rank": 15,
       "results": [
         {
           "date": "2026-09-12",
@@ -5657,7 +5764,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 453,
+      "rank": 462,
       "results": [
         {
           "date": "2026-09-05",
@@ -5703,7 +5810,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 262,
+      "rank": 270,
       "results": [
         {
           "date": "2026-09-05",
@@ -5761,7 +5868,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 274,
+      "rank": 282,
       "results": [
         {
           "date": "2026-09-12",
@@ -5795,7 +5902,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 331,
+      "rank": 337,
       "results": [
         {
           "date": "2026-09-13",
@@ -5829,7 +5936,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 332,
+      "rank": 338,
       "results": [
         {
           "date": "2026-09-01",
@@ -5863,7 +5970,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 193,
+      "rank": 199,
       "results": [
         {
           "date": "2026-09-07",
@@ -5897,7 +6004,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 333,
+      "rank": 339,
       "results": [
         {
           "date": "2026-09-07",
@@ -5931,7 +6038,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 334,
+      "rank": 340,
       "results": [
         {
           "date": "2026-09-12",
@@ -5965,7 +6072,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 335,
+      "rank": 341,
       "results": [
         {
           "date": "2026-09-12",
@@ -6012,7 +6119,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 98,
+      "rank": 102,
       "results": [
         {
           "date": "2026-09-09",
@@ -6058,7 +6165,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 336,
+      "rank": 342,
       "results": [
         {
           "date": "2026-09-09",
@@ -6092,7 +6199,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 337,
+      "rank": 343,
       "results": [
         {
           "date": "2026-09-09",
@@ -6139,7 +6246,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 144,
+      "rank": 148,
       "results": [
         {
           "date": "2026-09-13",
@@ -6198,7 +6305,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 122,
+      "rank": 126,
       "results": [
         {
           "date": "2026-09-03",
@@ -6375,7 +6482,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 338,
+      "rank": 344,
       "results": [
         {
           "date": "2026-09-05",
@@ -6394,6 +6501,30 @@
     },
     "id:2129541": {
       "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Esper Blink",
+          "opponentId": "id:1706283",
+          "opponentName": "Laplasjan",
+          "pilotDeck": "Amulet Titan",
+          "result": "W",
+          "round": "QF",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "WBG",
+          "opponentId": "id:736792",
+          "opponentName": "Misplacedginger",
+          "pilotDeck": "Amulet Titan",
+          "result": "L",
+          "round": "SF",
+          "tier": "C96"
+        },
         {
           "date": "2026-09-11",
           "event": "Modern Challenge 64",
@@ -6445,21 +6576,33 @@
       ],
       "counts": {
         "distinctDecks": 2,
-        "starts": 6,
-        "top16": 4,
+        "starts": 7,
+        "top16": 5,
         "top2": 0,
-        "top4": 0,
-        "top8": 4,
+        "top4": 1,
+        "top8": 5,
         "wins": 0
       },
       "id": "id:2129541",
       "loginId": "2129541",
       "name": "Mistakenn",
-      "points": 8,
+      "points": 11,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 12,
+      "rank": 5,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Amulet Titan",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 3,
+          "gwp": 0.66667,
+          "points": 3,
+          "swissPoints": 18,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Amulet Titan",
@@ -6552,7 +6695,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 339,
+      "rank": 345,
       "results": [
         {
           "date": "2026-09-07",
@@ -6586,7 +6729,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 340,
+      "rank": 346,
       "results": [
         {
           "date": "2026-09-06",
@@ -6620,7 +6763,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 160,
+      "rank": 164,
       "results": [
         {
           "date": "2026-09-07",
@@ -6715,7 +6858,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 23,
+      "rank": 25,
       "results": [
         {
           "date": "2026-09-07",
@@ -6797,7 +6940,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 341,
+      "rank": 347,
       "results": [
         {
           "date": "2026-09-06",
@@ -6844,7 +6987,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 123,
+      "rank": 127,
       "results": [
         {
           "date": "2026-09-01",
@@ -6878,7 +7021,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 194,
+      "rank": 200,
       "results": [
         {
           "date": "2026-09-12",
@@ -6912,7 +7055,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 342,
+      "rank": 348,
       "results": [
         {
           "date": "2026-09-01",
@@ -6946,7 +7089,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 343,
+      "rank": 349,
       "results": [
         {
           "date": "2026-09-09",
@@ -6993,7 +7136,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 124,
+      "rank": 128,
       "results": [
         {
           "date": "2026-09-01",
@@ -7027,7 +7170,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 246,
+      "rank": 252,
       "results": [
         {
           "date": "2026-09-06",
@@ -7086,7 +7229,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 99,
+      "rank": 103,
       "results": [
         {
           "date": "2026-09-12",
@@ -7169,7 +7312,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 60,
+      "rank": 62,
       "results": [
         {
           "date": "2026-09-02",
@@ -7240,7 +7383,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 61,
+      "rank": 63,
       "results": [
         {
           "date": "2026-09-07",
@@ -7299,7 +7442,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 110,
+      "rank": 113,
       "results": [
         {
           "date": "2026-09-05",
@@ -7406,7 +7549,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 83,
+      "rank": 86,
       "results": [
         {
           "date": "2026-09-01",
@@ -7440,7 +7583,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 344,
+      "rank": 350,
       "results": [
         {
           "date": "2026-09-05",
@@ -7499,7 +7642,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 84,
+      "rank": 87,
       "results": [
         {
           "date": "2026-09-10",
@@ -7533,7 +7676,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 195,
+      "rank": 201,
       "results": [
         {
           "date": "2026-09-07",
@@ -7567,7 +7710,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 345,
+      "rank": 351,
       "results": [
         {
           "date": "2026-09-06",
@@ -7626,7 +7769,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 57,
+      "rank": 58,
       "results": [
         {
           "date": "2026-09-10",
@@ -7732,7 +7875,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 346,
+      "rank": 352,
       "results": [
         {
           "date": "2026-09-12",
@@ -7803,7 +7946,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 29,
+      "rank": 31,
       "results": [
         {
           "date": "2026-09-12",
@@ -7922,7 +8065,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 62,
+      "rank": 64,
       "results": [
         {
           "date": "2026-09-01",
@@ -7956,7 +8099,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 347,
+      "rank": 353,
       "results": [
         {
           "date": "2026-09-12",
@@ -7990,7 +8133,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 196,
+      "rank": 202,
       "results": [
         {
           "date": "2026-09-13",
@@ -8024,7 +8167,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 197,
+      "rank": 203,
       "results": [
         {
           "date": "2026-09-02",
@@ -8058,7 +8201,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 247,
+      "rank": 253,
       "results": [
         {
           "date": "2026-09-09",
@@ -8104,7 +8247,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 454,
+      "rank": 463,
       "results": [
         {
           "date": "2026-09-12",
@@ -8150,7 +8293,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 348,
+      "rank": 354,
       "results": [
         {
           "date": "2026-09-05",
@@ -8184,7 +8327,7 @@
       ],
       "counts": {
         "distinctDecks": 2,
-        "starts": 5,
+        "starts": 6,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -8197,8 +8340,20 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 165,
+      "rank": 173,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Boros Burn",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 30,
+          "gwp": 0.5,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-08",
           "deck": "Boros Burn",
@@ -8279,7 +8434,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 198,
+      "rank": 204,
       "results": [
         {
           "date": "2026-09-05",
@@ -8326,7 +8481,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 145,
+      "rank": 149,
       "results": [
         {
           "date": "2026-09-12",
@@ -8372,7 +8527,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 199,
+      "rank": 205,
       "results": [
         {
           "date": "2026-09-02",
@@ -8419,7 +8574,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 125,
+      "rank": 129,
       "results": [
         {
           "date": "2026-09-12",
@@ -8478,7 +8633,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 94,
+      "rank": 98,
       "results": [
         {
           "date": "2026-09-12",
@@ -8537,7 +8692,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 126,
+      "rank": 130,
       "results": [
         {
           "date": "2026-09-07",
@@ -8571,7 +8726,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 349,
+      "rank": 355,
       "results": [
         {
           "date": "2026-09-03",
@@ -8605,7 +8760,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 200,
+      "rank": 206,
       "results": [
         {
           "date": "2026-09-11",
@@ -8639,7 +8794,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 350,
+      "rank": 356,
       "results": [
         {
           "date": "2026-09-05",
@@ -8673,7 +8828,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 201,
+      "rank": 207,
       "results": [
         {
           "date": "2026-09-08",
@@ -8707,7 +8862,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 461,
+      "rank": 470,
       "results": [
         {
           "date": "2026-09-10",
@@ -8765,7 +8920,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 351,
+      "rank": 357,
       "results": [
         {
           "date": "2026-09-12",
@@ -8799,7 +8954,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 352,
+      "rank": 358,
       "results": [
         {
           "date": "2026-09-09",
@@ -8835,7 +8990,7 @@
       "priorNames": [
         "justAlice"
       ],
-      "rank": 353,
+      "rank": 359,
       "results": [
         {
           "date": "2026-09-01",
@@ -8882,7 +9037,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 107,
+      "rank": 109,
       "results": [
         {
           "date": "2026-09-11",
@@ -8989,7 +9144,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 63,
+      "rank": 65,
       "results": [
         {
           "date": "2026-09-03",
@@ -9023,7 +9178,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 354,
+      "rank": 360,
       "results": [
         {
           "date": "2026-09-06",
@@ -9057,7 +9212,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 202,
+      "rank": 208,
       "results": [
         {
           "date": "2026-09-05",
@@ -9140,7 +9295,7 @@
       "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 10,
+      "rank": 12,
       "results": [
         {
           "date": "2026-09-09",
@@ -9222,7 +9377,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 355,
+      "rank": 361,
       "results": [
         {
           "date": "2026-09-11",
@@ -9256,7 +9411,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 356,
+      "rank": 362,
       "results": [
         {
           "date": "2026-09-07",
@@ -9269,6 +9424,40 @@
           "points": 0,
           "swissPoints": 15,
           "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:249618": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:249618",
+      "loginId": "249618",
+      "name": "cdiegor",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 176,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 15,
+          "gwp": 0.625,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -9290,7 +9479,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 263,
+      "rank": 271,
       "results": [
         {
           "date": "2026-09-12",
@@ -9348,7 +9537,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 357,
+      "rank": 363,
       "results": [
         {
           "date": "2026-09-04",
@@ -9610,7 +9799,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 15,
+      "rank": 17,
       "results": [
         {
           "date": "2026-09-06",
@@ -9693,7 +9882,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 47,
+      "rank": 48,
       "results": [
         {
           "date": "2026-09-08",
@@ -9751,7 +9940,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 203,
+      "rank": 209,
       "results": [
         {
           "date": "2026-09-03",
@@ -9785,7 +9974,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 455,
+      "rank": 464,
       "results": [
         {
           "date": "2026-09-06",
@@ -9868,7 +10057,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 41,
+      "rank": 43,
       "results": [
         {
           "date": "2026-09-13",
@@ -9914,7 +10103,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 248,
+      "rank": 254,
       "results": [
         {
           "date": "2026-09-10",
@@ -9943,6 +10132,65 @@
       ],
       "xHandle": null
     },
+    "id:2631782": {
+      "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:1185021",
+          "opponentName": "GodOfSlaughter",
+          "pilotDeck": "Affinity",
+          "result": "W",
+          "round": "QF",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Ruby Storm",
+          "opponentId": "id:940897",
+          "opponentName": "Sciacallo_Rosso",
+          "pilotDeck": "Affinity",
+          "result": "L",
+          "round": "SF",
+          "tier": "C96"
+        }
+      ],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 1,
+        "top8": 1,
+        "wins": 0
+      },
+      "id": "id:2631782",
+      "loginId": "2631782",
+      "name": "Matts",
+      "points": 3,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 88,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Affinity",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 4,
+          "gwp": 0.70588,
+          "points": 3,
+          "swissPoints": 18,
+          "tier": "C96"
+        }
+      ],
+      "xHandle": null
+    },
     "id:2636302": {
       "bracketMatches": [],
       "counts": {
@@ -9960,7 +10208,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 204,
+      "rank": 210,
       "results": [
         {
           "date": "2026-09-05",
@@ -9994,7 +10242,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 154,
+      "rank": 158,
       "results": [
         {
           "date": "2026-09-12",
@@ -10053,7 +10301,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 127,
+      "rank": 131,
       "results": [
         {
           "date": "2026-09-01",
@@ -10136,7 +10384,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 19,
+      "rank": 21,
       "results": [
         {
           "date": "2026-09-08",
@@ -10219,7 +10467,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 166,
+      "rank": 170,
       "results": [
         {
           "date": "2026-09-12",
@@ -10301,7 +10549,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 205,
+      "rank": 211,
       "results": [
         {
           "date": "2026-09-08",
@@ -10335,7 +10583,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 358,
+      "rank": 364,
       "results": [
         {
           "date": "2026-09-08",
@@ -10394,7 +10642,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 51,
+      "rank": 52,
       "results": [
         {
           "date": "2026-09-10",
@@ -10452,7 +10700,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 161,
+      "rank": 165,
       "results": [
         {
           "date": "2026-09-13",
@@ -10510,7 +10758,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 206,
+      "rank": 212,
       "results": [
         {
           "date": "2026-09-01",
@@ -10581,7 +10829,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 53,
+      "rank": 54,
       "results": [
         {
           "date": "2026-09-12",
@@ -10651,7 +10899,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 207,
+      "rank": 213,
       "results": [
         {
           "date": "2026-09-06",
@@ -10696,8 +10944,8 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
-        "starts": 4,
+        "distinctDecks": 3,
+        "starts": 5,
         "top16": 1,
         "top2": 0,
         "top4": 1,
@@ -10710,8 +10958,20 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 106,
+      "rank": 114,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "URG",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 23,
+          "gwp": 0.64706,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Prowess",
@@ -10780,7 +11040,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 208,
+      "rank": 214,
       "results": [
         {
           "date": "2026-09-05",
@@ -10814,7 +11074,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 209,
+      "rank": 215,
       "results": [
         {
           "date": "2026-09-01",
@@ -10861,7 +11121,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 146,
+      "rank": 150,
       "results": [
         {
           "date": "2026-09-09",
@@ -10907,7 +11167,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 359,
+      "rank": 365,
       "results": [
         {
           "date": "2026-09-12",
@@ -10941,7 +11201,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 155,
+      "rank": 159,
       "results": [
         {
           "date": "2026-09-06",
@@ -11000,7 +11260,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 128,
+      "rank": 132,
       "results": [
         {
           "date": "2026-09-04",
@@ -11034,7 +11294,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 360,
+      "rank": 366,
       "results": [
         {
           "date": "2026-09-04",
@@ -11105,7 +11365,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 64,
+      "rank": 66,
       "results": [
         {
           "date": "2026-09-08",
@@ -11139,7 +11399,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 249,
+      "rank": 255,
       "results": [
         {
           "date": "2026-09-06",
@@ -11210,7 +11470,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 76,
+      "rank": 79,
       "results": [
         {
           "date": "2026-09-07",
@@ -11329,7 +11589,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 16,
+      "rank": 18,
       "results": [
         {
           "date": "2026-09-08",
@@ -11400,7 +11660,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 129,
+      "rank": 133,
       "results": [
         {
           "date": "2026-09-13",
@@ -11434,7 +11694,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 361,
+      "rank": 367,
       "results": [
         {
           "date": "2026-09-07",
@@ -11551,7 +11811,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 250,
+      "rank": 256,
       "results": [
         {
           "date": "2026-09-07",
@@ -11634,7 +11894,7 @@
       "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 13,
+      "rank": 14,
       "results": [
         {
           "date": "2026-09-09",
@@ -11728,7 +11988,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 362,
+      "rank": 368,
       "results": [
         {
           "date": "2026-09-08",
@@ -11762,7 +12022,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 456,
+      "rank": 465,
       "results": [
         {
           "date": "2026-09-11",
@@ -11833,7 +12093,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 85,
+      "rank": 89,
       "results": [
         {
           "date": "2026-09-05",
@@ -11867,7 +12127,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 210,
+      "rank": 216,
       "results": [
         {
           "date": "2026-09-06",
@@ -11901,7 +12161,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 275,
+      "rank": 283,
       "results": [
         {
           "date": "2026-09-07",
@@ -11935,7 +12195,7 @@
       ],
       "counts": {
         "distinctDecks": 2,
-        "starts": 5,
+        "starts": 6,
         "top16": 2,
         "top2": 0,
         "top4": 0,
@@ -11948,8 +12208,20 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 111,
+      "rank": 115,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Boros Burn",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 29,
+          "gwp": 0.58824,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Burn",
@@ -12030,7 +12302,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 363,
+      "rank": 369,
       "results": [
         {
           "date": "2026-09-03",
@@ -12064,7 +12336,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 251,
+      "rank": 257,
       "results": [
         {
           "date": "2026-09-01",
@@ -12135,7 +12407,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 95,
+      "rank": 99,
       "results": [
         {
           "date": "2026-09-08",
@@ -12181,7 +12453,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 457,
+      "rank": 466,
       "results": [
         {
           "date": "2026-09-13",
@@ -12227,7 +12499,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 364,
+      "rank": 370,
       "results": [
         {
           "date": "2026-09-07",
@@ -12298,7 +12570,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 36,
+      "rank": 37,
       "results": [
         {
           "date": "2026-09-08",
@@ -12381,7 +12653,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 25,
+      "rank": 27,
       "results": [
         {
           "date": "2026-09-09",
@@ -12464,7 +12736,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 86,
+      "rank": 90,
       "results": [
         {
           "date": "2026-09-01",
@@ -12523,7 +12795,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 69,
+      "rank": 71,
       "results": [
         {
           "date": "2026-09-12",
@@ -12582,7 +12854,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 100,
+      "rank": 104,
       "results": [
         {
           "date": "2026-09-06",
@@ -12653,7 +12925,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 87,
+      "rank": 91,
       "results": [
         {
           "date": "2026-09-12",
@@ -12915,7 +13187,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 26,
+      "rank": 28,
       "results": [
         {
           "date": "2026-09-05",
@@ -12997,7 +13269,7 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 1,
         "top2": 1,
         "top4": 1,
@@ -13010,8 +13282,20 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 65,
+      "rank": 69,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Tron",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 21,
+          "gwp": 0.73333,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-08",
           "deck": "Tron",
@@ -13044,7 +13328,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 365,
+      "rank": 371,
       "results": [
         {
           "date": "2026-09-12",
@@ -13078,7 +13362,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 276,
+      "rank": 284,
       "results": [
         {
           "date": "2026-09-05",
@@ -13112,7 +13396,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 240,
+      "rank": 246,
       "results": [
         {
           "date": "2026-09-12",
@@ -13158,7 +13442,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 366,
+      "rank": 372,
       "results": [
         {
           "date": "2026-09-10",
@@ -13192,7 +13476,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 367,
+      "rank": 373,
       "results": [
         {
           "date": "2026-09-08",
@@ -13205,6 +13489,40 @@
           "points": 0,
           "swissPoints": 9,
           "tier": "C32"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2822464": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2822464",
+      "loginId": "2822464",
+      "name": "Pleyboy",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 217,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Domain Zoo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 12,
+          "gwp": 0.71429,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -13226,7 +13544,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 264,
+      "rank": 272,
       "results": [
         {
           "date": "2026-09-12",
@@ -13284,7 +13602,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 252,
+      "rank": 258,
       "results": [
         {
           "date": "2026-09-09",
@@ -13330,7 +13648,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 162,
+      "rank": 166,
       "results": [
         {
           "date": "2026-09-09",
@@ -13388,7 +13706,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 253,
+      "rank": 259,
       "results": [
         {
           "date": "2026-09-11",
@@ -13434,7 +13752,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 368,
+      "rank": 374,
       "results": [
         {
           "date": "2026-09-07",
@@ -13468,7 +13786,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 369,
+      "rank": 375,
       "results": [
         {
           "date": "2026-09-01",
@@ -13502,8 +13820,8 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 3,
-        "top16": 2,
+        "starts": 4,
+        "top16": 3,
         "top2": 0,
         "top4": 0,
         "top8": 1,
@@ -13512,11 +13830,23 @@
       "id": "id:2858193",
       "loginId": "2858193",
       "name": "oinkmage22",
-      "points": 3,
+      "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 103,
+      "rank": 80,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Dimir Midrange",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 14,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-09",
           "deck": "Dimir Midrange",
@@ -13573,7 +13903,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 370,
+      "rank": 376,
       "results": [
         {
           "date": "2026-09-06",
@@ -13620,7 +13950,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 130,
+      "rank": 134,
       "results": [
         {
           "date": "2026-09-07",
@@ -13654,7 +13984,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 371,
+      "rank": 377,
       "results": [
         {
           "date": "2026-09-12",
@@ -13688,7 +14018,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 254,
+      "rank": 260,
       "results": [
         {
           "date": "2026-09-01",
@@ -13734,7 +14064,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 372,
+      "rank": 378,
       "results": [
         {
           "date": "2026-09-05",
@@ -13805,7 +14135,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 46,
+      "rank": 47,
       "results": [
         {
           "date": "2026-09-12",
@@ -13842,6 +14172,40 @@
           "points": 0,
           "swissPoints": 12,
           "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:2880819": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:2880819",
+      "loginId": "2880819",
+      "name": "zuranthus",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 379,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Affinity",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 20,
+          "gwp": 0.625,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -13888,7 +14252,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 88,
+      "rank": 92,
       "results": [
         {
           "date": "2026-09-13",
@@ -13922,7 +14286,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 373,
+      "rank": 380,
       "results": [
         {
           "date": "2026-09-06",
@@ -13956,7 +14320,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 255,
+      "rank": 261,
       "results": [
         {
           "date": "2026-09-07",
@@ -13989,8 +14353,8 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 8,
-        "top16": 4,
+        "starts": 9,
+        "top16": 5,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -13999,13 +14363,25 @@
       "id": "id:2903591",
       "loginId": "2903591",
       "name": "MeninoNey",
-      "points": 4,
+      "points": 5,
       "premierPoints": 0,
       "priorNames": [
         "MeninooNey"
       ],
-      "rank": 79,
+      "rank": 59,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Living End",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 10,
+          "gwp": 0.625,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Living End",
@@ -14122,7 +14498,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 374,
+      "rank": 381,
       "results": [
         {
           "date": "2026-09-12",
@@ -14141,6 +14517,18 @@
     },
     "id:2908947": {
       "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Ruby Storm",
+          "opponentId": "id:940897",
+          "opponentName": "Sciacallo_Rosso",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "QF",
+          "tier": "C96"
+        },
         {
           "date": "2026-09-08",
           "event": "Modern Challenge 16",
@@ -14168,21 +14556,33 @@
       ],
       "counts": {
         "distinctDecks": 3,
-        "starts": 7,
-        "top16": 4,
+        "starts": 8,
+        "top16": 5,
         "top2": 0,
         "top4": 0,
-        "top8": 2,
+        "top8": 3,
         "wins": 0
       },
       "id": "id:2908947",
       "loginId": "2908947",
       "name": "manohito",
-      "points": 6,
+      "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 31,
+      "rank": 16,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 8,
+          "gwp": 0.66667,
+          "points": 2,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Broodscale Combo",
@@ -14287,7 +14687,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 104,
+      "rank": 108,
       "results": [
         {
           "date": "2026-09-12",
@@ -14345,7 +14745,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 168,
+      "rank": 172,
       "results": [
         {
           "date": "2026-09-08",
@@ -14440,7 +14840,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 131,
+      "rank": 135,
       "results": [
         {
           "date": "2026-09-01",
@@ -14511,7 +14911,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 24,
+      "rank": 26,
       "results": [
         {
           "date": "2026-09-10",
@@ -14569,7 +14969,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 375,
+      "rank": 382,
       "results": [
         {
           "date": "2026-09-09",
@@ -14603,7 +15003,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 211,
+      "rank": 218,
       "results": [
         {
           "date": "2026-09-04",
@@ -14650,7 +15050,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 132,
+      "rank": 136,
       "results": [
         {
           "date": "2026-09-06",
@@ -14684,7 +15084,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 376,
+      "rank": 383,
       "results": [
         {
           "date": "2026-09-04",
@@ -14718,7 +15118,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 377,
+      "rank": 384,
       "results": [
         {
           "date": "2026-09-02",
@@ -14752,7 +15152,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 212,
+      "rank": 219,
       "results": [
         {
           "date": "2026-09-01",
@@ -14786,7 +15186,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 378,
+      "rank": 385,
       "results": [
         {
           "date": "2026-09-05",
@@ -14820,7 +15220,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 379,
+      "rank": 386,
       "results": [
         {
           "date": "2026-09-12",
@@ -14867,7 +15267,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 147,
+      "rank": 151,
       "results": [
         {
           "date": "2026-09-11",
@@ -14913,7 +15313,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 256,
+      "rank": 262,
       "results": [
         {
           "date": "2026-09-06",
@@ -14959,7 +15359,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 380,
+      "rank": 387,
       "results": [
         {
           "date": "2026-09-09",
@@ -14993,7 +15393,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 213,
+      "rank": 220,
       "results": [
         {
           "date": "2026-09-12",
@@ -15027,7 +15427,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 381,
+      "rank": 388,
       "results": [
         {
           "date": "2026-09-08",
@@ -15061,7 +15461,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 214,
+      "rank": 221,
       "results": [
         {
           "date": "2026-09-02",
@@ -15095,7 +15495,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 382,
+      "rank": 389,
       "results": [
         {
           "date": "2026-09-05",
@@ -15129,7 +15529,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 383,
+      "rank": 390,
       "results": [
         {
           "date": "2026-09-02",
@@ -15163,7 +15563,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 384,
+      "rank": 391,
       "results": [
         {
           "date": "2026-09-05",
@@ -15222,7 +15622,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 96,
+      "rank": 100,
       "results": [
         {
           "date": "2026-09-08",
@@ -15281,7 +15681,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 133,
+      "rank": 137,
       "results": [
         {
           "date": "2026-09-01",
@@ -15315,7 +15715,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 385,
+      "rank": 392,
       "results": [
         {
           "date": "2026-09-08",
@@ -15362,7 +15762,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 134,
+      "rank": 138,
       "results": [
         {
           "date": "2026-09-07",
@@ -15396,7 +15796,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 386,
+      "rank": 393,
       "results": [
         {
           "date": "2026-09-11",
@@ -15443,7 +15843,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 108,
+      "rank": 110,
       "results": [
         {
           "date": "2026-09-08",
@@ -15513,7 +15913,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 387,
+      "rank": 394,
       "results": [
         {
           "date": "2026-09-05",
@@ -15547,7 +15947,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 215,
+      "rank": 222,
       "results": [
         {
           "date": "2026-09-01",
@@ -15581,7 +15981,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 216,
+      "rank": 223,
       "results": [
         {
           "date": "2026-09-08",
@@ -15615,7 +16015,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 277,
+      "rank": 285,
       "results": [
         {
           "date": "2026-09-04",
@@ -15649,7 +16049,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 388,
+      "rank": 395,
       "results": [
         {
           "date": "2026-09-02",
@@ -15683,7 +16083,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 217,
+      "rank": 224,
       "results": [
         {
           "date": "2026-09-12",
@@ -15717,7 +16117,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 163,
+      "rank": 167,
       "results": [
         {
           "date": "2026-09-08",
@@ -15775,7 +16175,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 389,
+      "rank": 396,
       "results": [
         {
           "date": "2026-09-02",
@@ -15809,7 +16209,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 218,
+      "rank": 225,
       "results": [
         {
           "date": "2026-09-09",
@@ -15867,7 +16267,7 @@
       ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 1,
         "top2": 1,
         "top4": 1,
@@ -15880,8 +16280,20 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 66,
+      "rank": 70,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Grixis Midrange",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 17,
+          "gwp": 0.61111,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Grixis Midrange",
@@ -15914,7 +16326,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 458,
+      "rank": 467,
       "results": [
         {
           "date": "2026-09-12",
@@ -15960,7 +16372,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 219,
+      "rank": 226,
       "results": [
         {
           "date": "2026-09-07",
@@ -15994,7 +16406,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 390,
+      "rank": 397,
       "results": [
         {
           "date": "2026-09-05",
@@ -16053,7 +16465,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 54,
+      "rank": 55,
       "results": [
         {
           "date": "2026-09-12",
@@ -16123,7 +16535,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 220,
+      "rank": 227,
       "results": [
         {
           "date": "2026-09-08",
@@ -16170,7 +16582,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 77,
+      "rank": 81,
       "results": [
         {
           "date": "2026-09-13",
@@ -16240,7 +16652,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 391,
+      "rank": 398,
       "results": [
         {
           "date": "2026-09-05",
@@ -16274,8 +16686,8 @@
       ],
       "counts": {
         "distinctDecks": 2,
-        "starts": 2,
-        "top16": 1,
+        "starts": 3,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 1,
@@ -16284,11 +16696,23 @@
       "id": "id:3085636",
       "loginId": "3085636",
       "name": "GigaChadSigmaMale",
-      "points": 2,
+      "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 148,
+      "rank": 107,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 13,
+          "gwp": 0.63158,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Broodscale Combo",
@@ -16406,7 +16830,7 @@
       "points": 9,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 8,
+      "rank": 10,
       "results": [
         {
           "date": "2026-09-07",
@@ -16451,7 +16875,7 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 2,
+        "starts": 3,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -16464,8 +16888,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 239,
+      "rank": 268,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Esper Blink",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 26,
+          "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-06",
           "deck": "Esper Blink",
@@ -16510,7 +16946,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 221,
+      "rank": 228,
       "results": [
         {
           "date": "2026-09-12",
@@ -16523,6 +16959,40 @@
           "points": 1,
           "swissPoints": 15,
           "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3095953": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3095953",
+      "loginId": "3095953",
+      "name": "DelverFofoqueiro",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 399,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Boros Burn",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 18,
+          "gwp": 0.73333,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -16544,7 +17014,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 392,
+      "rank": 400,
       "results": [
         {
           "date": "2026-09-01",
@@ -16639,7 +17109,7 @@
       "points": 10,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 5,
+      "rank": 6,
       "results": [
         {
           "date": "2026-09-09",
@@ -16721,7 +17191,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 265,
+      "rank": 273,
       "results": [
         {
           "date": "2026-09-09",
@@ -16779,7 +17249,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 222,
+      "rank": 229,
       "results": [
         {
           "date": "2026-09-07",
@@ -16813,7 +17283,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 459,
+      "rank": 468,
       "results": [
         {
           "date": "2026-09-08",
@@ -16859,7 +17329,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 393,
+      "rank": 401,
       "results": [
         {
           "date": "2026-09-12",
@@ -16893,7 +17363,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 223,
+      "rank": 230,
       "results": [
         {
           "date": "2026-09-11",
@@ -16927,7 +17397,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 394,
+      "rank": 402,
       "results": [
         {
           "date": "2026-09-09",
@@ -16961,7 +17431,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 395,
+      "rank": 403,
       "results": [
         {
           "date": "2026-09-13",
@@ -16995,7 +17465,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 396,
+      "rank": 404,
       "results": [
         {
           "date": "2026-09-08",
@@ -17029,7 +17499,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 397,
+      "rank": 405,
       "results": [
         {
           "date": "2026-09-06",
@@ -17063,7 +17533,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 398,
+      "rank": 406,
       "results": [
         {
           "date": "2026-09-01",
@@ -17097,7 +17567,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 399,
+      "rank": 407,
       "results": [
         {
           "date": "2026-09-12",
@@ -17131,7 +17601,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 400,
+      "rank": 408,
       "results": [
         {
           "date": "2026-09-08",
@@ -17165,7 +17635,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 401,
+      "rank": 409,
       "results": [
         {
           "date": "2026-09-01",
@@ -17199,7 +17669,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 402,
+      "rank": 410,
       "results": [
         {
           "date": "2026-09-01",
@@ -17233,7 +17703,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 224,
+      "rank": 231,
       "results": [
         {
           "date": "2026-09-13",
@@ -17267,7 +17737,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 225,
+      "rank": 232,
       "results": [
         {
           "date": "2026-09-01",
@@ -17287,9 +17757,9 @@
     "id:3143623": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 2,
-        "top16": 1,
+        "distinctDecks": 2,
+        "starts": 3,
+        "top16": 2,
         "top2": 0,
         "top4": 0,
         "top8": 0,
@@ -17298,11 +17768,23 @@
       "id": "id:3143623",
       "loginId": "3143623",
       "name": "Fransadness",
-      "points": 1,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 257,
+      "rank": 168,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Prowess",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 11,
+          "gwp": 0.55556,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-08",
           "deck": "Jeskai Energy",
@@ -17347,7 +17829,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 403,
+      "rank": 411,
       "results": [
         {
           "date": "2026-09-04",
@@ -17404,8 +17886,8 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 3,
+        "distinctDecks": 2,
+        "starts": 4,
         "top16": 1,
         "top2": 1,
         "top4": 1,
@@ -17418,8 +17900,20 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 73,
+      "rank": 78,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Dimir Mill",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 24,
+          "gwp": 0.55,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-10",
           "deck": "Broodscale Combo",
@@ -17489,7 +17983,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 75,
+      "rank": 77,
       "results": [
         {
           "date": "2026-09-05",
@@ -17572,7 +18066,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 52,
+      "rank": 53,
       "results": [
         {
           "date": "2026-09-09",
@@ -17630,7 +18124,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 404,
+      "rank": 412,
       "results": [
         {
           "date": "2026-09-01",
@@ -17701,7 +18195,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 37,
+      "rank": 38,
       "results": [
         {
           "date": "2026-09-07",
@@ -17713,6 +18207,40 @@
           "gwp": 0.84211,
           "points": 5,
           "swissPoints": 24,
+          "tier": "C96"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3170769": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3170769",
+      "loginId": "3170769",
+      "name": "Bunbuneru",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 233,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Land Destruction",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 9,
+          "gwp": 0.6875,
+          "points": 1,
+          "swissPoints": 15,
           "tier": "C96"
         }
       ],
@@ -17735,7 +18263,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 226,
+      "rank": 234,
       "results": [
         {
           "date": "2026-09-12",
@@ -17769,7 +18297,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 405,
+      "rank": 413,
       "results": [
         {
           "date": "2026-09-03",
@@ -17803,7 +18331,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 406,
+      "rank": 414,
       "results": [
         {
           "date": "2026-09-03",
@@ -17837,7 +18365,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 258,
+      "rank": 263,
       "results": [
         {
           "date": "2026-09-12",
@@ -17883,7 +18411,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 407,
+      "rank": 415,
       "results": [
         {
           "date": "2026-09-04",
@@ -17917,7 +18445,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 408,
+      "rank": 416,
       "results": [
         {
           "date": "2026-09-05",
@@ -17951,7 +18479,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 462,
+      "rank": 471,
       "results": [
         {
           "date": "2026-09-10",
@@ -18009,7 +18537,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 409,
+      "rank": 417,
       "results": [
         {
           "date": "2026-09-01",
@@ -18104,7 +18632,7 @@
       "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 11,
+      "rank": 13,
       "results": [
         {
           "date": "2026-09-10",
@@ -18198,7 +18726,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 410,
+      "rank": 418,
       "results": [
         {
           "date": "2026-09-03",
@@ -18293,7 +18821,7 @@
       "points": 8,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 9,
+      "rank": 11,
       "results": [
         {
           "date": "2026-09-13",
@@ -18351,7 +18879,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 227,
+      "rank": 235,
       "results": [
         {
           "date": "2026-09-12",
@@ -18385,7 +18913,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 411,
+      "rank": 419,
       "results": [
         {
           "date": "2026-09-08",
@@ -18419,7 +18947,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 412,
+      "rank": 420,
       "results": [
         {
           "date": "2026-09-08",
@@ -18466,7 +18994,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 135,
+      "rank": 139,
       "results": [
         {
           "date": "2026-09-08",
@@ -18500,7 +19028,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 413,
+      "rank": 421,
       "results": [
         {
           "date": "2026-09-06",
@@ -18534,7 +19062,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 228,
+      "rank": 236,
       "results": [
         {
           "date": "2026-09-10",
@@ -18581,7 +19109,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 149,
+      "rank": 152,
       "results": [
         {
           "date": "2026-09-08",
@@ -18614,7 +19142,7 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -18627,8 +19155,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 229,
+      "rank": 264,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Esper Blink",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 28,
+          "gwp": 0.55556,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-10",
           "deck": "Esper Blink",
@@ -18661,7 +19201,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 414,
+      "rank": 422,
       "results": [
         {
           "date": "2026-09-06",
@@ -18695,7 +19235,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 259,
+      "rank": 265,
       "results": [
         {
           "date": "2026-09-05",
@@ -18741,7 +19281,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 415,
+      "rank": 423,
       "results": [
         {
           "date": "2026-09-02",
@@ -18788,7 +19328,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 136,
+      "rank": 140,
       "results": [
         {
           "date": "2026-09-12",
@@ -18822,7 +19362,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 416,
+      "rank": 424,
       "results": [
         {
           "date": "2026-09-08",
@@ -18881,7 +19421,7 @@
       "points": 4,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 71,
+      "rank": 73,
       "results": [
         {
           "date": "2026-09-12",
@@ -18927,7 +19467,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 417,
+      "rank": 425,
       "results": [
         {
           "date": "2026-09-12",
@@ -18961,7 +19501,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 418,
+      "rank": 426,
       "results": [
         {
           "date": "2026-09-08",
@@ -18995,7 +19535,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 419,
+      "rank": 427,
       "results": [
         {
           "date": "2026-09-02",
@@ -19042,7 +19582,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 101,
+      "rank": 105,
       "results": [
         {
           "date": "2026-09-07",
@@ -19088,7 +19628,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 464,
+      "rank": 473,
       "results": [
         {
           "date": "2026-09-13",
@@ -19146,7 +19686,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 278,
+      "rank": 286,
       "results": [
         {
           "date": "2026-09-10",
@@ -19180,7 +19720,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 460,
+      "rank": 469,
       "results": [
         {
           "date": "2026-09-10",
@@ -19226,7 +19766,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 420,
+      "rank": 428,
       "results": [
         {
           "date": "2026-09-12",
@@ -19260,7 +19800,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 156,
+      "rank": 160,
       "results": [
         {
           "date": "2026-09-12",
@@ -19319,7 +19859,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 159,
+      "rank": 163,
       "results": [
         {
           "date": "2026-09-09",
@@ -19402,7 +19942,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 97,
+      "rank": 101,
       "results": [
         {
           "date": "2026-09-08",
@@ -19448,7 +19988,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 421,
+      "rank": 429,
       "results": [
         {
           "date": "2026-09-11",
@@ -19482,7 +20022,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 422,
+      "rank": 430,
       "results": [
         {
           "date": "2026-09-12",
@@ -19516,7 +20056,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 230,
+      "rank": 237,
       "results": [
         {
           "date": "2026-09-07",
@@ -19575,7 +20115,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 89,
+      "rank": 93,
       "results": [
         {
           "date": "2026-09-01",
@@ -19609,7 +20149,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 423,
+      "rank": 431,
       "results": [
         {
           "date": "2026-09-07",
@@ -19643,7 +20183,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 424,
+      "rank": 432,
       "results": [
         {
           "date": "2026-09-09",
@@ -19677,7 +20217,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 425,
+      "rank": 433,
       "results": [
         {
           "date": "2026-09-12",
@@ -19724,7 +20264,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 137,
+      "rank": 141,
       "results": [
         {
           "date": "2026-09-05",
@@ -19758,7 +20298,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 231,
+      "rank": 238,
       "results": [
         {
           "date": "2026-09-11",
@@ -19792,7 +20332,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 157,
+      "rank": 161,
       "results": [
         {
           "date": "2026-09-12",
@@ -19838,7 +20378,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 232,
+      "rank": 239,
       "results": [
         {
           "date": "2026-09-12",
@@ -19872,7 +20412,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 233,
+      "rank": 240,
       "results": [
         {
           "date": "2026-09-13",
@@ -19906,7 +20446,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 266,
+      "rank": 274,
       "results": [
         {
           "date": "2026-09-06",
@@ -19964,7 +20504,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 426,
+      "rank": 434,
       "results": [
         {
           "date": "2026-09-09",
@@ -19998,7 +20538,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 427,
+      "rank": 435,
       "results": [
         {
           "date": "2026-09-10",
@@ -20032,7 +20572,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 428,
+      "rank": 436,
       "results": [
         {
           "date": "2026-09-01",
@@ -20066,7 +20606,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 234,
+      "rank": 241,
       "results": [
         {
           "date": "2026-09-05",
@@ -20171,7 +20711,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 429,
+      "rank": 437,
       "results": [
         {
           "date": "2026-09-08",
@@ -20205,7 +20745,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 430,
+      "rank": 438,
       "results": [
         {
           "date": "2026-09-10",
@@ -20218,6 +20758,40 @@
           "points": 0,
           "swissPoints": 12,
           "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3466233": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 1,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3466233",
+      "loginId": "3466233",
+      "name": "DUSHAN179",
+      "points": 1,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 242,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 16,
+          "gwp": 0.61111,
+          "points": 1,
+          "swissPoints": 15,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -20239,7 +20813,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 431,
+      "rank": 439,
       "results": [
         {
           "date": "2026-09-10",
@@ -20286,7 +20860,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 167,
+      "rank": 171,
       "results": [
         {
           "date": "2026-09-12",
@@ -20368,7 +20942,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 432,
+      "rank": 440,
       "results": [
         {
           "date": "2026-09-13",
@@ -20386,26 +20960,51 @@
       "xHandle": null
     },
     "id:3473231": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "WBG",
+          "opponentId": "id:736792",
+          "opponentName": "Misplacedginger",
+          "pilotDeck": "Goryo's Vengeance",
+          "result": "L",
+          "round": "QF",
+          "tier": "C96"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
+        "starts": 2,
+        "top16": 1,
         "top2": 0,
         "top4": 0,
-        "top8": 0,
+        "top8": 1,
         "wins": 0
       },
       "id": "id:3473231",
       "loginId": "3473231",
       "name": "surgetemelo",
-      "points": 0,
+      "points": 2,
       "premierPoints": 0,
       "priorNames": [
         "MARZIANO"
       ],
-      "rank": 433,
+      "rank": 153,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 7,
+          "gwp": 0.70588,
+          "points": 2,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-05",
           "deck": "Goryo's Vengeance",
@@ -20438,7 +21037,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 267,
+      "rank": 275,
       "results": [
         {
           "date": "2026-09-11",
@@ -20521,7 +21120,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 90,
+      "rank": 94,
       "results": [
         {
           "date": "2026-09-02",
@@ -20555,7 +21154,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 434,
+      "rank": 441,
       "results": [
         {
           "date": "2026-09-12",
@@ -20589,7 +21188,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 435,
+      "rank": 442,
       "results": [
         {
           "date": "2026-09-04",
@@ -20623,7 +21222,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 436,
+      "rank": 443,
       "results": [
         {
           "date": "2026-09-03",
@@ -20657,7 +21256,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 437,
+      "rank": 444,
       "results": [
         {
           "date": "2026-09-05",
@@ -20691,7 +21290,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 438,
+      "rank": 445,
       "results": [
         {
           "date": "2026-09-10",
@@ -20725,7 +21324,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 260,
+      "rank": 266,
       "results": [
         {
           "date": "2026-09-07",
@@ -20784,7 +21383,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 138,
+      "rank": 142,
       "results": [
         {
           "date": "2026-09-01",
@@ -20818,7 +21417,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 235,
+      "rank": 243,
       "results": [
         {
           "date": "2026-09-12",
@@ -20852,7 +21451,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 439,
+      "rank": 446,
       "results": [
         {
           "date": "2026-09-08",
@@ -20886,7 +21485,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 236,
+      "rank": 244,
       "results": [
         {
           "date": "2026-09-06",
@@ -20957,7 +21556,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 49,
+      "rank": 50,
       "results": [
         {
           "date": "2026-09-13",
@@ -21015,7 +21614,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 237,
+      "rank": 245,
       "results": [
         {
           "date": "2026-09-07",
@@ -21049,7 +21648,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 440,
+      "rank": 447,
       "results": [
         {
           "date": "2026-09-08",
@@ -21096,7 +21695,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 109,
+      "rank": 111,
       "results": [
         {
           "date": "2026-09-11",
@@ -21152,8 +21751,8 @@
     "id:3542423": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 3,
+        "distinctDecks": 2,
+        "starts": 4,
         "top16": 3,
         "top2": 0,
         "top4": 0,
@@ -21166,8 +21765,20 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 105,
+      "rank": 112,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Broodscale Combo",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 27,
+          "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-12",
           "deck": "Belcher",
@@ -21211,7 +21822,7 @@
       "bracketMatches": [],
       "counts": {
         "distinctDecks": 1,
-        "starts": 1,
+        "starts": 2,
         "top16": 1,
         "top2": 0,
         "top4": 0,
@@ -21224,8 +21835,20 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 238,
+      "rank": 267,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Goryo's Vengeance",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 19,
+          "gwp": 0.66667,
+          "points": 0,
+          "swissPoints": 15,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-10",
           "deck": "Goryo's Vengeance",
@@ -21258,7 +21881,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 441,
+      "rank": 448,
       "results": [
         {
           "date": "2026-09-06",
@@ -21292,7 +21915,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 442,
+      "rank": 449,
       "results": [
         {
           "date": "2026-09-03",
@@ -21326,7 +21949,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 158,
+      "rank": 162,
       "results": [
         {
           "date": "2026-09-08",
@@ -21372,7 +21995,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 268,
+      "rank": 276,
       "results": [
         {
           "date": "2026-09-08",
@@ -21430,7 +22053,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 443,
+      "rank": 450,
       "results": [
         {
           "date": "2026-09-06",
@@ -21501,7 +22124,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 30,
+      "rank": 32,
       "results": [
         {
           "date": "2026-09-13",
@@ -21595,7 +22218,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 444,
+      "rank": 451,
       "results": [
         {
           "date": "2026-09-05",
@@ -21654,7 +22277,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 91,
+      "rank": 95,
       "results": [
         {
           "date": "2026-09-06",
@@ -21667,6 +22290,40 @@
           "points": 3,
           "swissPoints": 15,
           "tier": "C64"
+        }
+      ],
+      "xHandle": null
+    },
+    "id:3571961": {
+      "bracketMatches": [],
+      "counts": {
+        "distinctDecks": 1,
+        "starts": 1,
+        "top16": 0,
+        "top2": 0,
+        "top4": 0,
+        "top8": 0,
+        "wins": 0
+      },
+      "id": "id:3571961",
+      "loginId": "3571961",
+      "name": "NathanDrake",
+      "points": 0,
+      "premierPoints": 0,
+      "priorNames": [],
+      "rank": 452,
+      "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Prowess",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 31,
+          "gwp": 0.52632,
+          "points": 0,
+          "swissPoints": 12,
+          "tier": "C96"
         }
       ],
       "xHandle": null
@@ -21688,7 +22345,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 445,
+      "rank": 453,
       "results": [
         {
           "date": "2026-09-12",
@@ -21722,7 +22379,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 150,
+      "rank": 154,
       "results": [
         {
           "date": "2026-09-12",
@@ -21768,7 +22425,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 169,
+      "rank": 174,
       "results": [
         {
           "date": "2026-09-07",
@@ -21802,7 +22459,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 279,
+      "rank": 287,
       "results": [
         {
           "date": "2026-09-08",
@@ -21836,7 +22493,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 241,
+      "rank": 247,
       "results": [
         {
           "date": "2026-09-08",
@@ -21882,7 +22539,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 280,
+      "rank": 288,
       "results": [
         {
           "date": "2026-09-06",
@@ -21916,7 +22573,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 281,
+      "rank": 289,
       "results": [
         {
           "date": "2026-09-02",
@@ -21950,7 +22607,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 171,
+      "rank": 177,
       "results": [
         {
           "date": "2026-09-02",
@@ -21984,7 +22641,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 282,
+      "rank": 290,
       "results": [
         {
           "date": "2026-09-06",
@@ -22018,7 +22675,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 446,
+      "rank": 454,
       "results": [
         {
           "date": "2026-09-12",
@@ -22101,7 +22758,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 38,
+      "rank": 39,
       "results": [
         {
           "date": "2026-09-04",
@@ -22147,7 +22804,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 283,
+      "rank": 291,
       "results": [
         {
           "date": "2026-09-01",
@@ -22181,7 +22838,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 270,
+      "rank": 278,
       "results": [
         {
           "date": "2026-09-12",
@@ -22215,7 +22872,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 284,
+      "rank": 292,
       "results": [
         {
           "date": "2026-09-08",
@@ -22274,7 +22931,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 92,
+      "rank": 96,
       "results": [
         {
           "date": "2026-09-08",
@@ -22357,7 +23014,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 27,
+      "rank": 29,
       "results": [
         {
           "date": "2026-09-13",
@@ -22415,7 +23072,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 172,
+      "rank": 178,
       "results": [
         {
           "date": "2026-09-09",
@@ -22449,7 +23106,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 173,
+      "rank": 179,
       "results": [
         {
           "date": "2026-09-12",
@@ -22496,7 +23153,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 113,
+      "rank": 117,
       "results": [
         {
           "date": "2026-09-12",
@@ -22567,7 +23224,7 @@
       "points": 7,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 17,
+      "rank": 19,
       "results": [
         {
           "date": "2026-09-09",
@@ -22637,7 +23294,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 285,
+      "rank": 293,
       "results": [
         {
           "date": "2026-09-11",
@@ -22671,7 +23328,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 447,
+      "rank": 455,
       "results": [
         {
           "date": "2026-09-08",
@@ -22702,6 +23359,42 @@
     },
     "id:736792": {
       "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Ruby Storm",
+          "opponentId": "id:940897",
+          "opponentName": "Sciacallo_Rosso",
+          "pilotDeck": "WBG",
+          "result": "L",
+          "round": "F",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Goryo's Vengeance",
+          "opponentId": "id:3473231",
+          "opponentName": "surgetemelo",
+          "pilotDeck": "WBG",
+          "result": "W",
+          "round": "QF",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Amulet Titan",
+          "opponentId": "id:2129541",
+          "opponentName": "Mistakenn",
+          "pilotDeck": "WBG",
+          "result": "W",
+          "round": "SF",
+          "tier": "C96"
+        },
         {
           "date": "2026-09-02",
           "event": "Modern Challenge 32",
@@ -22740,22 +23433,34 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 2,
-        "top16": 2,
-        "top2": 0,
-        "top4": 1,
-        "top8": 2,
+        "distinctDecks": 2,
+        "starts": 3,
+        "top16": 3,
+        "top2": 1,
+        "top4": 2,
+        "top8": 3,
         "wins": 0
       },
       "id": "id:736792",
       "loginId": "736792",
       "name": "Misplacedginger",
-      "points": 5,
+      "points": 9,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 42,
+      "rank": 9,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "WBG",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 2,
+          "gwp": 0.68421,
+          "points": 4,
+          "swissPoints": 18,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-02",
           "deck": "Esper Blink",
@@ -22837,7 +23542,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 40,
+      "rank": 42,
       "results": [
         {
           "date": "2026-09-08",
@@ -22883,7 +23588,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 174,
+      "rank": 180,
       "results": [
         {
           "date": "2026-09-05",
@@ -22917,7 +23622,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 286,
+      "rank": 294,
       "results": [
         {
           "date": "2026-09-02",
@@ -22964,7 +23669,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 164,
+      "rank": 169,
       "results": [
         {
           "date": "2026-09-13",
@@ -23034,7 +23739,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 175,
+      "rank": 181,
       "results": [
         {
           "date": "2026-09-13",
@@ -23068,7 +23773,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 287,
+      "rank": 295,
       "results": [
         {
           "date": "2026-09-05",
@@ -23127,7 +23832,7 @@
       "points": 6,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 28,
+      "rank": 30,
       "results": [
         {
           "date": "2026-09-13",
@@ -23197,7 +23902,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 288,
+      "rank": 296,
       "results": [
         {
           "date": "2026-09-05",
@@ -23231,7 +23936,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 289,
+      "rank": 297,
       "results": [
         {
           "date": "2026-09-05",
@@ -23265,7 +23970,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 290,
+      "rank": 298,
       "results": [
         {
           "date": "2026-09-12",
@@ -23299,7 +24004,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 176,
+      "rank": 182,
       "results": [
         {
           "date": "2026-09-06",
@@ -23333,7 +24038,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 291,
+      "rank": 299,
       "results": [
         {
           "date": "2026-09-09",
@@ -23367,7 +24072,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 177,
+      "rank": 183,
       "results": [
         {
           "date": "2026-09-11",
@@ -23401,7 +24106,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 463,
+      "rank": 472,
       "results": [
         {
           "date": "2026-09-08",
@@ -23496,7 +24201,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 39,
+      "rank": 40,
       "results": [
         {
           "date": "2026-09-12",
@@ -23542,7 +24247,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 242,
+      "rank": 248,
       "results": [
         {
           "date": "2026-09-12",
@@ -23588,7 +24293,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 243,
+      "rank": 249,
       "results": [
         {
           "date": "2026-09-02",
@@ -23634,7 +24339,7 @@
       "points": 0,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 292,
+      "rank": 300,
       "results": [
         {
           "date": "2026-09-01",
@@ -23705,7 +24410,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 43,
+      "rank": 44,
       "results": [
         {
           "date": "2026-09-08",
@@ -23776,7 +24481,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 114,
+      "rank": 118,
       "results": [
         {
           "date": "2026-09-06",
@@ -23847,7 +24552,7 @@
       "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 32,
+      "rank": 33,
       "results": [
         {
           "date": "2026-09-05",
@@ -23865,24 +24570,73 @@
       "xHandle": null
     },
     "id:940897": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "WBG",
+          "opponentId": "id:736792",
+          "opponentName": "Misplacedginger",
+          "pilotDeck": "Ruby Storm",
+          "result": "W",
+          "round": "F",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:2908947",
+          "opponentName": "manohito",
+          "pilotDeck": "Ruby Storm",
+          "result": "W",
+          "round": "QF",
+          "tier": "C96"
+        },
+        {
+          "date": "2026-09-14",
+          "event": "Modern Challenge 96",
+          "eventId": "12854101",
+          "opponentDeck": "Affinity",
+          "opponentId": "id:2631782",
+          "opponentName": "Matts",
+          "pilotDeck": "Ruby Storm",
+          "result": "W",
+          "round": "SF",
+          "tier": "C96"
+        }
+      ],
       "counts": {
-        "distinctDecks": 1,
-        "starts": 1,
-        "top16": 0,
-        "top2": 0,
-        "top4": 0,
-        "top8": 0,
-        "wins": 0
+        "distinctDecks": 2,
+        "starts": 2,
+        "top16": 1,
+        "top2": 1,
+        "top4": 1,
+        "top8": 1,
+        "wins": 1
       },
       "id": "id:940897",
       "loginId": "940897",
       "name": "Sciacallo_Rosso",
-      "points": 0,
+      "points": 5,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 293,
+      "rank": 41,
       "results": [
+        {
+          "date": "2026-09-14",
+          "deck": "Ruby Storm",
+          "event": "Modern Challenge 96",
+          "eventClass": "Challenge",
+          "eventId": "12854101",
+          "finish": 1,
+          "gwp": 0.77778,
+          "points": 5,
+          "swissPoints": 21,
+          "tier": "C96"
+        },
         {
           "date": "2026-09-13",
           "deck": "Broodscale Combo",
@@ -23915,7 +24669,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 261,
+      "rank": 269,
       "results": [
         {
           "date": "2026-09-12",
@@ -23973,7 +24727,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 178,
+      "rank": 184,
       "results": [
         {
           "date": "2026-09-04",
@@ -24007,7 +24761,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 179,
+      "rank": 185,
       "results": [
         {
           "date": "2026-09-08",
@@ -24054,7 +24808,7 @@
       "points": 2,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 115,
+      "rank": 119,
       "results": [
         {
           "date": "2026-09-12",
@@ -24088,7 +24842,7 @@
       "points": 1,
       "premierPoints": 0,
       "priorNames": [],
-      "rank": 244,
+      "rank": 250,
       "results": [
         {
           "date": "2026-09-09",
