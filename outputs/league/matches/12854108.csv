@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854108,2026-09-15,C32,Challenge,QF,Grogore,2664302,Manny-,2139100,2,1,Prowess,Ruby Storm
+12854108,2026-09-15,C32,Challenge,QF,zturchan,476834,niuwaid001,2372533,2,1,WBG,Living End
+12854108,2026-09-15,C32,Challenge,QF,DemianDesposito10,2747375,oinkmage22,2858193,2,0,Boros Burn,Dimir Midrange
+12854108,2026-09-15,C32,Challenge,QF,PrismaticPrism,3542423,ChinaNO2,2881508,2,0,Broodscale Combo,Affinity
+12854108,2026-09-15,C32,Challenge,SF,Grogore,2664302,PrismaticPrism,3542423,2,1,Prowess,Broodscale Combo
+12854108,2026-09-15,C32,Challenge,SF,zturchan,476834,DemianDesposito10,2747375,2,0,WBG,Boros Burn
+12854108,2026-09-15,C32,Challenge,F,Grogore,2664302,zturchan,476834,2,0,Prowess,WBG

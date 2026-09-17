@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854109,2026-09-15,C16,Challenge,QF,Latorretta,2708393,kanister,1205292,2,0,Prowess,URG
+12854109,2026-09-15,C16,Challenge,QF,McWinSauce,803141,duke12,6062,2,0,WBG,Broodscale Combo
+12854109,2026-09-15,C16,Challenge,QF,Tetsubou,1700365,JPA93,1181017,2,1,Goryo's Vengeance,Neobrand
+12854109,2026-09-15,C16,Challenge,QF,pepeteam,2272105,Scappie,1129308,2,1,Goryo's Vengeance,Jeskai Energy
+12854109,2026-09-15,C16,Challenge,SF,McWinSauce,803141,pepeteam,2272105,2,1,WBG,Goryo's Vengeance
+12854109,2026-09-15,C16,Challenge,SF,Latorretta,2708393,Tetsubou,1700365,2,1,Prowess,Goryo's Vengeance
+12854109,2026-09-15,C16,Challenge,F,Latorretta,2708393,McWinSauce,803141,2,1,Prowess,WBG

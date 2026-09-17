@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854115,2026-09-15,C64,Challenge,QF,Off1ine__,2856617,Malox11,2993027,2,0,Goryo's Vengeance,Broodscale Combo
+12854115,2026-09-15,C64,Challenge,QF,TheSchnook,3198544,Univerce,2926088,2,1,Broodscale Combo,Broodscale Combo
+12854115,2026-09-15,C64,Challenge,QF,Mistakenn,2129541,prophopper,3244221,2,0,Amulet Titan,Broodscale Combo
+12854115,2026-09-15,C64,Challenge,QF,Baggedmilkman,2806459,Rvng,649380,2,0,Devoted Combo,Goryo's Vengeance
+12854115,2026-09-15,C64,Challenge,SF,Mistakenn,2129541,Off1ine__,2856617,2,0,Amulet Titan,Goryo's Vengeance
+12854115,2026-09-15,C64,Challenge,SF,TheSchnook,3198544,Baggedmilkman,2806459,2,0,Broodscale Combo,Devoted Combo
+12854115,2026-09-15,C64,Challenge,F,Mistakenn,2129541,TheSchnook,3198544,2,1,Amulet Titan,Broodscale Combo
