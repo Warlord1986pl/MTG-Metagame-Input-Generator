@@ -175,44 +175,56 @@ def season_for_date(d: date) -> Tuple[str, date, date]:
 def weekly_window_start(d: date) -> date:
     """The most recent Wednesday on or before *d* -- a fixed weekly (Wed-Tue) bucket boundary.
 
-    This used to be rank_change_anchor()'s own logic; it's kept as its own function because
-    league_results_export.find_late_arrivals still needs a genuine "which week does this event
-    belong to" answer (MTGO's Challenge/premier cadence is weekly) even though rank_change_anchor
-    itself moved to a daily baseline -- see that function's docstring for why the two diverged.
+    Used only by league_results_export.find_late_arrivals ("which week does this event belong
+    to"). Not related to RankChange, which uses edition weeks from the season start -- see
+    rank_change_anchor / edition_week_start.
     """
     days_since_wednesday = (d.weekday() - 2) % 7  # date.weekday(): Monday=0 ... Wednesday=2
     return d - timedelta(days=days_since_wednesday)
 
 
-def rank_change_anchor(as_of: date, coverage_end: Optional[date] = None) -> date:
-    """The single source of truth for "which date is RankChange measured against" -- called both
-    by build_season_table (to pick the PrevRank baseline) and by anything downstream that needs to
-    report or re-derive the same value (league_site_export, league_results_export), so the anchor
-    can never drift between what was actually used and what gets published about it.
+# Seasons whose calendar end falls before this date keep the anchor they were published with
+# (as_of - 1 day, frozen at season_end - 1 -- see _legacy_daily_anchor). Summer 2026 is closed and
+# its published files must never change; every season ending on or after this date uses the
+# edition-week anchor below.
+RANK_CHANGE_EDITION_WEEK_SINCE = date(2026, 9, 1)
 
-    anchor = *as_of* minus one day -- i.e. "yesterday's standings." This used to be a fixed
-    weekly (most-recent-Wednesday) checkpoint, which gave a RankChange that stayed stable all week
-    but only actually moved once a week. Switched to daily because history-sync now runs up to 3x/
-    day and several Challenges land per day, so a week-long lag between "something happened" and
-    "the site's own RankChange reflects it" no longer matches the data's real cadence -- and the
-    old weekly anchor had a visible failure mode: on the anchor day itself (as_of == that
-    Wednesday), the baseline and current windows were identical, so EVERY pilot showed zero
-    movement, misleadingly, once a week. A daily anchor can't land on as_of itself (it's always one
-    full day back), so that degenerate case can't recur. Note this is a live, noisier number now --
-    anyone who wants a stable weekly report should reconstruct it from the underlying per-event
-    data (league_results_export's event-level CSV, or the weekly snapshots in
-    write_weekly_snapshot's snapshot_dir), not read the published RankChange as a weekly figure.
 
-    If *coverage_end* is given and *as_of* has moved past it, the anchor freezes at
-    coverage_end - 1 day and stays there forever, for any as_of from then on. build_season_table
-    passes the season's own calendar EndDate here (never the max ingested EventDate -- an open
-    season with normal event-to-rebuild lag must not freeze just because today's event hasn't
-    landed yet). This is what stops a closed season's RankChange from sliding into an
-    ever-emptier window and decaying to 0 as days pass after the season is over.
-    """
-    if coverage_end is not None and as_of > coverage_end:
-        return coverage_end - timedelta(days=1)
+def edition_week_start(d: date, season_start: date) -> date:
+    """Start of the 7-day edition week containing *d*. Edition weeks run from the season's own
+    start day (Autumn 2026 started Tuesday 2026-09-01, so its weeks are Tuesday-Monday)."""
+    return season_start + timedelta(days=7 * ((d - season_start).days // 7))
+
+
+def _legacy_daily_anchor(as_of: date, season_end: date) -> date:
+    if as_of > season_end:
+        return season_end - timedelta(days=1)
     return as_of - timedelta(days=1)
+
+
+def rank_change_anchor(as_of: date, season_start: date, season_end: date) -> date:
+    """The single source of truth for "which date is RankChange measured against" -- called by
+    build_season_table and published unchanged as rankChangeAnchor / RankChangeAnchor, so the
+    anchor reported is always the anchor used.
+
+    PrevRank is the rank in a table rebuilt from the season's results with EventDate < anchor, by
+    the same rule as the current table -- reproducible from the published results CSV alone.
+
+    anchor = start of the PREVIOUS edition week (see edition_week_start), i.e. RankChange covers
+    the last complete edition week plus the current one so far: 7 days on the first day of a week,
+    13 days on its last. Stable for the whole week. Clamped to season_start in the season's first
+    week (empty baseline: every pilot is new). Once as_of passes season_end the anchor is computed
+    from season_end and stays there, so a closed season's RankChange never decays.
+
+    Events that land after the anchor but are dated before it go into the baseline, never into
+    the movement: RankChange reflects when events were played, not when they were ingested.
+
+    Seasons ending before RANK_CHANGE_EDITION_WEEK_SINCE keep their original daily anchor.
+    """
+    if season_end < RANK_CHANGE_EDITION_WEEK_SINCE:
+        return _legacy_daily_anchor(as_of, season_end)
+    reference = min(as_of, season_end)
+    return max(season_start, edition_week_start(reference, season_start) - timedelta(days=7))
 
 
 def season_filename_slug(season: str) -> str:
@@ -832,34 +844,13 @@ def build_season_table(
     in [season_start, season_end] -- never an incremented running total, so a corrected event file
     propagates automatically.
 
-    PrevRank/RankChange source (fixed 2026-09-15): for an OPEN season (as_of <= season_end) with a
-    usable *snapshot_dir*, PrevRank comes from the same weekly snapshot DELTA_COLS already uses
-    (see _load_latest_snapshot_before) -- the real, frozen standings as of the newest ISO week
-    strictly before as_of's own week, joined by LoginID. This replaced a live re-derivation
-    ("filter these same raw files to EventDate < rank_change_anchor(as_of)") that looked correct in
-    isolation but was silently broken in production: mtgo.com data routinely lands 2-8 real days
-    after its own EventDate (see league_results_export.find_late_arrivals), so on every single day
-    the newest EventDate actually on disk was already older than as_of - 1, making the "before
-    anchor" filter and the unfiltered current set identical -- confirmed live on 2026-09-14 and
-    2026-09-15, both showing movement: "same" for every pilot in the published Autumn 2026 site
-    JSON (450/450, then 464/464) while the snapshot-based DPoints for that exact same rebuild showed
-    real nonzero deltas for 75 pilots, proving the underlying data plainly had changed and only the
-    live re-derivation failed to see it. A weekly snapshot can't have this failure mode: it is a
-    genuine point-in-time capture from a distinct ISO week, not a same-day slice of the same lagged
-    data current_ranked is already built from.
-
-    For a CLOSED season (as_of > season_end) or when no *snapshot_dir* / no prior-week snapshot is
-    available yet (a season's first week, or a read-only caller that never passes snapshot_dir),
-    PrevRank falls back to the original live filter -- baseline date
-    rank_change_anchor(as_of, coverage_end=season_end); see that function's own docstring for the
-    freeze behavior once as_of passes the season's calendar end date. This fallback is what
-    test_independent_reproduction_of_published_baseline_rank still exercises against the closed,
-    frozen Summer 2026 season, where it was never broken (a closed season's data stops changing, so
-    "before anchor" and "current" reliably differ by exactly the tail the freeze is supposed to cut
-    off) -- only the open-season, ever-advancing-as_of case was.
-    Either way the returned table carries the anchor actually used (even when it did not drive
-    PrevRank this call) as table.attrs["rank_change_anchor"] (an ISO date string), so a caller never
-    has to recompute or guess it.
+    PrevRank/RankChange: PrevRank is the rank in the same table rebuilt from this season's results
+    with EventDate < rank_change_anchor(as_of, season_start, season_end) -- the start of the
+    previous edition week (see that function). Reproducible from the published results export
+    alone, and the anchor actually used is returned as table.attrs["rank_change_anchor"] (an ISO
+    date string) and published as-is. This replaced (2026-09-24) the weekly ISO snapshot baseline,
+    whose content depended on when cron last ran in the previous ISO week (during the 2026-09-17..24
+    stall it froze at data through 2026-09-15) and which the published anchor did not describe.
 
     Grouped and ranked by identity (LoginID, falling back to display name -- see _identity_key). The
     live-filter fallback path matches prev-vs-current by identity rather than raw Pilot string,
@@ -868,8 +859,7 @@ def build_season_table(
     name-only, pre-2026-07-13 fallback identity gets blank PrevRank from a snapshot, same as it
     already gets blank DELTA_COLS -- see write_weekly_snapshot).
 
-    DELTA_COLS (PrevPoints/DPoints/...) share the same snapshot lookup this now uses for PrevRank:
-    when *snapshot_dir* is given, the newest weekly snapshot older than isocalendar(as_of) is loaded
+    DELTA_COLS (PrevPoints/DPoints/...) come from the weekly snapshot: when *snapshot_dir* is given, the newest weekly snapshot older than isocalendar(as_of) is loaded
     as the delta base; left None (no snapshot lookup at all, e.g. a read-only caller like
     pilot_identity_cli that doesn't want the stderr noise of a missing-snapshot warning), or when no
     snapshot exists yet, every DELTA_COLS cell stays blank -- never 0, since 0 is a legitimate delta.
@@ -889,35 +879,23 @@ def build_season_table(
     if current_ranked.empty:
         return pd.DataFrame(columns=PILOT_TABLE_COLS)
 
-    anchor = rank_change_anchor(as_of, season_end)
+    anchor = rank_change_anchor(as_of, season_start, season_end)
 
+    prev_mask = season_mask & (dates < anchor)
+    prev_results = all_results[prev_mask]
+    prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
+    prev_rank_lookup = (
+        prev_ranked.set_index("_Key")["Rank"] if not prev_ranked.empty else pd.Series(dtype="int64")
+    )
+    current_ranked["PrevRank"] = current_ranked["_Key"].map(prev_rank_lookup).astype("Int64")
+
+    # DELTA_COLS (PrevPoints/DPoints/...) still come from the weekly ISO snapshot -- unchanged here.
     base_snapshot = None
     if snapshot_dir is not None:
         season_name, _s, _e = season_for_date(season_start)
         base_snapshot, _base_week = _load_latest_snapshot_before(
             snapshot_dir, season_name, _iso_week(as_of), log=log
         )
-
-    # Prefer the snapshot baseline for an open season -- see the module docstring above for why the
-    # live "EventDate < anchor" filter is unreliable there (real ingestion lag routinely exceeds the
-    # anchor's own 1-day gap). A closed season, or no usable snapshot yet, keeps the live filter.
-    if base_snapshot is not None and not base_snapshot.empty and as_of <= season_end:
-        # base_snapshot is already indexed by LoginID (see _load_latest_snapshot_before) -- same
-        # duplicate-index guard _apply_deltas uses below, checked here too since this lookup runs
-        # first and .map() would otherwise silently keep only one of two duplicate rows.
-        if base_snapshot.index.duplicated().any():
-            dupes = sorted(set(base_snapshot.index[base_snapshot.index.duplicated()]))
-            raise AssertionError(f"[league] snapshot has duplicate LoginID {dupes}, cannot compute PrevRank")
-        lid_series = current_ranked["LoginID"].astype(str).str.strip()
-        current_ranked["PrevRank"] = lid_series.map(base_snapshot["Rank"]).astype("Int64")
-    else:
-        prev_mask = season_mask & (dates < anchor)
-        prev_results = all_results[prev_mask]
-        prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
-        prev_rank_lookup = (
-            prev_ranked.set_index("_Key")["Rank"] if not prev_ranked.empty else pd.Series(dtype="int64")
-        )
-        current_ranked["PrevRank"] = current_ranked["_Key"].map(prev_rank_lookup).astype("Int64")
 
     current_ranked["RankChange"] = (current_ranked["PrevRank"] - current_ranked["Rank"]).astype("Int64")
     current_ranked = _apply_deltas(current_ranked, base_snapshot)
