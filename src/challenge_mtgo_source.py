@@ -57,6 +57,7 @@ PREMIER_SUFFIXES = {
     "showcase-challenge",
     "showcase-qualifier",
     "rc-super-qualifier",
+    "rc-qualifier",
     "super-qualifier",
     "qualifier",
     "champions-showcase",
