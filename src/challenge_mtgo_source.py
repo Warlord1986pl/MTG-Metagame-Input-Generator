@@ -691,7 +691,8 @@ def build_challenge_dataset(
     """Build the full labeled Challenge dataset for a window, mtgo.com-first.
 
     Every mtgo.com event_id in the window is fetched. Challenge events with a unique (tier,date)
-    get their Deck label transferred from MTGGoldfish by (event,pilot) join. For (tier,date)
+    get their Deck label transferred from MTGGoldfish by (event,place) join; LoginID and
+    Pilot always come from mtgo.com (see ingest_labeled_event). For (tier,date)
     collisions -- MTGGoldfish can only ever expose one roster per (tier,date) -- the roster is
     matched to whichever event_id's pilot set it actually belongs to (ChallengeSourceError if
     that match isn't decisive); the other event_id(s) in the collision are labeled by a
@@ -781,32 +782,68 @@ def build_challenge_dataset(
     event_rows: Dict[str, List[ChallengeEventRow]] = {}
 
     def ingest_labeled_event(c: MtgoRegistryEvent, mg_df: pd.DataFrame, mtgo_decks: List[MtgoEventDeck]) -> None:
-        # Deliberately name-keyed: this is the one place loginid gets *discovered* in the first
-        # place, by correlating MTGGoldfish's roster (mg_df, source of Pilot for this event) against
-        # mtgo.com's roster (mtgo_decks, source of loginid) via normalized display name -- there is
-        # no id to key on yet. This is a same-event, same-moment correlation between two live
-        # fetches, not an identity lookup across time, so it doesn't carry the rename risk that
-        # name-keying history/the league table would.
-        mtgo_by_pilot = {normalize_name(d.player): d for d in mtgo_decks}
+        # MTGGoldfish's roster (mg_df) supplies only the human-assigned Deck label; the account
+        # (LoginID) always comes from mtgo.com's own final_rank, joined by Place -- never by display
+        # name. Name-joining silently dropped the LoginID whenever MTGGoldfish still showed an
+        # account's previous name: 12854500 (C16, 2026-09-19) place 13 is LoginID 2111039, which
+        # mtgo.com lists as "Overman220" while MTGGoldfish still said "Jetpool" (its name on
+        # 2026-08-15), so the row was written with an empty LoginID. Place is unique per event
+        # (parse_mtgo_event enforces a complete 1..N final_rank) and was verified to agree with the
+        # persisted history for all 2395 id-bearing rows on record (2026-09-24), so this join yields
+        # the same row as the old name-join wherever the names match.
+        #
+        # Raises ChallengeSourceError (caller quarantines the event as ERROR, which defers the
+        # window) rather than ever writing a row without a LoginID.
+        mtgo_by_place = {d.place: d for d in mtgo_decks}
         rows: List[ChallengeEventRow] = []
+        signatures: List[Tuple[str, Dict[str, int]]] = []
+        renamed: List[str] = []
         for _, row in mg_df.iterrows():
             raw_deck = str(row.get("Deck") or "")
             pilot = str(row.get("Pilot") or "")
             place = int(row.get("Place"))
             deck_label = canonical_deck(raw_deck)
             archetype = archetype_for(deck_label, raw_deck)
-            mtgo_deck = mtgo_by_pilot.get(normalize_name(pilot))
-            loginid = mtgo_deck.loginid if mtgo_deck else ""
-            rows.append(ChallengeEventRow(place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=loginid))
-            if mtgo_deck is not None:
-                library.append((deck_label, mtgo_deck.signature))
+            mtgo_deck = mtgo_by_place.get(place)
+            if mtgo_deck is None or not str(mtgo_deck.loginid).strip():
+                raise ChallengeSourceError(
+                    f"event {c.event_id}: MTGGoldfish place {place} ({pilot!r}) has no LoginID in "
+                    "mtgo.com's final_rank -- refusing to write a row without one"
+                )
+            if normalize_name(mtgo_deck.player) != normalize_name(pilot):
+                renamed.append(f"place {place}: MTGGoldfish {pilot!r} -> mtgo.com {mtgo_deck.player!r} (LoginID {mtgo_deck.loginid})")
+                pilot = mtgo_deck.player
+            rows.append(ChallengeEventRow(place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=mtgo_deck.loginid))
+            signatures.append((deck_label, mtgo_deck.signature))
+        # A handful of mismatches are account renames MTGGoldfish hasn't picked up yet; many of
+        # them mean the two rosters are not the same event at all.
+        if len(renamed) > max(2, len(rows) // 4):
+            raise ChallengeSourceError(
+                f"event {c.event_id}: {len(renamed)}/{len(rows)} MTGGoldfish names disagree with "
+                f"mtgo.com at the same place -- rosters look misaligned: {renamed[:5]}"
+            )
+        for note in renamed:
+            emit(f"[mtgo-dataset] WARN {c.event_id} name differs, using mtgo.com's: {note}")
+        library.extend(signatures)
         event_rows[c.event_id] = rows
+
+    quarantined: set = set()
+
+    def ingest_or_quarantine(c: MtgoRegistryEvent, mg_df: pd.DataFrame) -> bool:
+        try:
+            ingest_labeled_event(c, mg_df, mtgo_decks_by_event[c.event_id])
+            return True
+        except ChallengeSourceError as exc:
+            quarantined.add(c.event_id)
+            skipped_events.append(SkippedEvent(c.event_id, c.date, c.size, "challenge", c.url, "ERROR", str(exc)))
+            emit(f"[mtgo-dataset] ERROR C{c.size} {c.date} ({c.event_id}): {exc}")
+            return False
 
     for c in clean:
         challenge_info = {"slug": c.slug, "challenge_size": c.size, "event_date": c.date, "mtgo_url": c.url}
         _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
-        ingest_labeled_event(c, mg_df, mtgo_decks_by_event[c.event_id])
-        emit(f"[mtgo-dataset] clean C{c.size} {c.date} ({c.event_id}): labeled from MTGGoldfish")
+        if ingest_or_quarantine(c, mg_df):
+            emit(f"[mtgo-dataset] clean C{c.size} {c.date} ({c.event_id}): labeled from MTGGoldfish")
 
     unresolved_events: List[MtgoRegistryEvent] = []
     for (size, dt), evs in ambiguous.items():
@@ -816,7 +853,7 @@ def build_challenge_dataset(
         mg_pilots = mg_df["Pilot"].tolist()
         winner_eid = resolve_ambiguous_event(mg_pilots, event_ids, mtgo_decks_by_event)
         winner_event = next(e for e in evs if e.event_id == winner_eid)
-        ingest_labeled_event(winner_event, mg_df, mtgo_decks_by_event[winner_eid])
+        ingest_or_quarantine(winner_event, mg_df)
         emit(
             f"[mtgo-dataset] collision C{size} {dt}: MTGGoldfish roster resolved to event {winner_eid}; "
             f"remaining {[eid for eid in event_ids if eid != winner_eid]} need classification"
@@ -863,6 +900,17 @@ def build_challenge_dataset(
         premier_events.append(c)
         classified = sum(1 for r in rows if r.deck != NEEDS_MANUAL_REVIEW)
         emit(f"[mtgo-dataset] classified premier event {c.event_id} ({c.slug}): {classified}/{len(rows)} auto, {len(rows) - classified}/{len(rows)} review")
+
+    # Quarantined events are reported as ERROR via skipped_events (so the completeness gate defers
+    # the window) and must not also count as fetched.
+    challenge_events = [c for c in challenge_events if c.event_id not in quarantined]
+    tier_counts = Counter(c.size for c in challenge_events)
+    missing_ids = [
+        (eid, r.place) for eid, rs in list(event_rows.items()) + list(premier_rows.items())
+        for r in rs if not str(r.loginid).strip()
+    ]
+    if missing_ids:
+        raise ChallengeSourceError(f"rows without a LoginID reached the dataset: {missing_ids[:20]}")
 
     return ChallengeDatasetResult(
         challenge_events=challenge_events,
