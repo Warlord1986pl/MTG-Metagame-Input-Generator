@@ -405,3 +405,45 @@ def test_independent_reproduction_of_published_baseline_rank() -> None:
         f"independent reproduction disagreed with the published baseline for "
         f"{len(mismatches)}/{len(my_rank_by_lid)} pilots: {mismatches[:10]}"
     )
+
+
+def test_manifest_carries_sha256_of_the_written_csv_and_output_is_stable() -> None:
+    """The site downloads the results CSV as ?v=<results_csv_sha256> so a CDN can never pair a
+    stale CSV with a fresh table; the hash must be of the exact bytes written. Two exports of the
+    same input must also produce byte-identical CSVs (and so the same hash)."""
+    import hashlib
+    import json
+    import shutil
+    import tempfile
+
+    from league_results_export import export_results_and_manifest
+
+    league_dir = REPO_ROOT / "outputs" / "league"
+    if not (league_dir / "results").exists() or not (league_dir / "season_config.csv").exists():
+        print("  (no league data on disk -- nothing to verify yet)")
+        return
+
+    hashes = []
+    for _run in range(2):
+        tmp = Path(tempfile.mkdtemp(prefix="results_sha_"))
+        log_copy = tmp / "ingestion_log.csv"
+        if (league_dir / "ingestion_log.csv").exists():
+            shutil.copyfile(league_dir / "ingestion_log.csv", log_copy)
+        export_results_and_manifest(
+            results_dir=league_dir / "results",
+            season_config_csv=league_dir / "season_config.csv",
+            docs_data_dir=tmp / "data",
+            format_name="modern",
+            ingestion_log_path=log_copy,
+            season_registry_path=tmp / "pilot_league_seasons.csv",
+            as_of=date(2026, 9, 24),
+        )
+        run_hashes = {}
+        for manifest_path in sorted((tmp / "data").glob("pilot_league_results_*_manifest.json")):
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            csv_path = manifest_path.with_name(manifest_path.name.replace("_manifest.json", ".csv"))
+            actual = hashlib.sha256(csv_path.read_bytes()).hexdigest()
+            assert manifest["results_csv_sha256"] == actual, manifest_path.name
+            run_hashes[csv_path.name] = actual
+        hashes.append(run_hashes)
+    assert hashes[0] == hashes[1], "results CSV bytes differ between two exports of the same input"

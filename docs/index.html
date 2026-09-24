@@ -340,6 +340,51 @@
     URL.revokeObjectURL(url);
   }
 
+  // The results CSV is fetched under ?v=<sha256 from its manifest>, never the bare URL: Cytrus
+  // sits behind Cloudflare, which caches *.csv at the edge (not *.json), and on 2026-09-24 served a
+  // week-old results file next to a fresh season table. The manifest itself is fetched no-store,
+  // so its hash always names the file written in the same run as the table on screen. As a last
+  // check the download is refused if its row count differs from the table's total Starts.
+  var resultsDownloadNote = null;
+
+  function showResultsDownloadNote(text) {
+    if (!resultsDownloadNote) return;
+    resultsDownloadNote.textContent = text;
+    resultsDownloadNote.style.display = text ? "" : "none";
+  }
+
+  function downloadResultsCsv() {
+    var slug = state.currentSlug;
+    var doc = state.seasonDoc;
+    if (!slug || !doc) return;
+    showResultsDownloadNote("");
+    var filename = "pilot_league_results_" + slug + ".csv";
+    loadResultsManifest(slug).then(function (manifest) {
+      var version = (manifest && (manifest.results_csv_sha256 || manifest.generated_at)) || String(Date.now());
+      return fetch(DATA_DIR + "/" + filename + "?v=" + encodeURIComponent(version), { cache: "no-store" });
+    }).then(function (r) {
+      if (!r.ok) throw new Error("Failed to load " + filename + " (" + r.status + ")");
+      return r.text();
+    }).then(function (text) {
+      var rows = text.split(/\r?\n/).filter(function (line) { return line.length > 0; }).length - 1;
+      var starts = (doc.pilots || []).reduce(function (sum, p) { return sum + (p.starts || 0); }, 0);
+      if (rows !== starts) {
+        showResultsDownloadNote("Event-level results are out of sync with the table (" + rows +
+          " rows vs " + starts + " starts). Reload the page in a few minutes and try again.");
+        return;
+      }
+      var blob = new Blob([text], { type: "text/csv;charset=utf-8;" });
+      var url = URL.createObjectURL(blob);
+      var link = el("a", { href: url, download: filename });
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }).catch(function (err) {
+      showResultsDownloadNote(String(err && err.message ? err.message : err));
+    });
+  }
+
   function fmtPct(x) {
     return (x * 100).toFixed(1) + "%";
   }
@@ -534,13 +579,14 @@
       onclick: downloadSeasonCsv,
     }, ["Download season as CSV"]));
 
-    card.appendChild(el("a", {
+    card.appendChild(el("button", {
       class: "csv-download",
-      style: "display:inline-block; margin-left:8px; text-decoration:none;",
-      href: DATA_DIR + "/pilot_league_results_" + state.currentSlug + ".csv",
-      download: "pilot_league_results_" + state.currentSlug + ".csv",
+      style: "margin-left:8px;",
+      onclick: downloadResultsCsv,
       title: "One row per pilot per event appearance -- lets any weekly window be reconstructed by filtering EventDate",
     }, ["Download event-level results (CSV)"]));
+    resultsDownloadNote = el("p", { class: "note", style: "display:none;" }, []);
+    card.appendChild(resultsDownloadNote);
 
     card.appendChild(el("p", { class: "note" },
       ["A pilot who did not play in the last week can drop in rank without losing any points. Movement reflects rank, not points lost."]));
