@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854539,2026-09-22,C64,Challenge,QF,RNicoF,2753736,Riftbound,3502250,2,1,Living End,Tron
+12854539,2026-09-22,C64,Challenge,QF,ShadowTitan1,2130633,Univerce,2926088,2,1,Domain Zoo,Broodscale Combo
+12854539,2026-09-22,C64,Challenge,QF,schnda,20216,Reiam,3106168,2,1,Broodscale Combo,Land Destruction
+12854539,2026-09-22,C64,Challenge,QF,sioutis_kk,3499660,Chocolate_Branco,3466224,2,1,Affinity,Tron
+12854539,2026-09-22,C64,Challenge,SF,RNicoF,2753736,sioutis_kk,3499660,2,1,Living End,Affinity
+12854539,2026-09-22,C64,Challenge,SF,schnda,20216,ShadowTitan1,2130633,2,0,Broodscale Combo,Domain Zoo
+12854539,2026-09-22,C64,Challenge,F,schnda,20216,RNicoF,2753736,2,1,Broodscale Combo,Living End

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854523,2026-09-21,C32,Challenge,QF,jakobpablo,2856109,Bugsy69,2537822,2,0,Broodscale Combo,Affinity
+12854523,2026-09-21,C32,Challenge,QF,Ivan_Draw_Go,2679669,yPrincipe,2636883,2,1,Broodscale Combo,Tron
+12854523,2026-09-21,C32,Challenge,QF,NathanOfTheGiltLeaf,2968680,rastaf,254536,2,1,WBG,Esper Blink
+12854523,2026-09-21,C32,Challenge,QF,ashame,2761370,xfile,2449332,2,0,Eldrazi Ramp,Broodscale Combo
+12854523,2026-09-21,C32,Challenge,SF,ashame,2761370,NathanOfTheGiltLeaf,2968680,2,1,Eldrazi Ramp,WBG
+12854523,2026-09-21,C32,Challenge,SF,jakobpablo,2856109,Ivan_Draw_Go,2679669,2,0,Broodscale Combo,Broodscale Combo
+12854523,2026-09-21,C32,Challenge,F,ashame,2761370,jakobpablo,2856109,2,0,Eldrazi Ramp,Broodscale Combo

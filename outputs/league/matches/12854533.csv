@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854533,2026-09-22,C16,Challenge,QF,kasiso,2257869,TrueHero,2569009,2,1,Mardu Energy,Abzan Midrange
+12854533,2026-09-22,C16,Challenge,QF,unagieel,815932,wigglegenie,2338634,2,0,Broodscale Combo,Land Destruction
+12854533,2026-09-22,C16,Challenge,QF,Serosocram,3477626,ChuChuMTFKR,2886707,2,1,Esper Reanimator,Boros Energy
+12854533,2026-09-22,C16,Challenge,QF,myk_60_csa,777432,Michelizzi,3561179,2,0,Land Destruction,Belcher
+12854533,2026-09-22,C16,Challenge,SF,Serosocram,3477626,unagieel,815932,2,1,Esper Reanimator,Broodscale Combo
+12854533,2026-09-22,C16,Challenge,SF,kasiso,2257869,myk_60_csa,777432,2,1,Mardu Energy,Land Destruction
+12854533,2026-09-22,C16,Challenge,F,Serosocram,3477626,kasiso,2257869,2,0,Esper Reanimator,Mardu Energy

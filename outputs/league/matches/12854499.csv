@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854499,2026-09-19,C64,Challenge,QF,Mistakenn,2129541,toothymtg,3087786,2,0,Amulet Titan,Broodscale Combo
+12854499,2026-09-19,C64,Challenge,QF,E90_DeliveryBoy,3122660,nahuel10,1942357,2,0,Belcher,Prowess
+12854499,2026-09-19,C64,Challenge,QF,ShadowTitan1,2130633,markgabriele,2664963,2,1,The Rock,Prowess
+12854499,2026-09-19,C64,Challenge,QF,ResponsiblyStupid,3050181,niuwaid001,2372533,2,0,Broodscale Combo,Living End
+12854499,2026-09-19,C64,Challenge,SF,Mistakenn,2129541,ResponsiblyStupid,3050181,2,1,Amulet Titan,Broodscale Combo
+12854499,2026-09-19,C64,Challenge,SF,E90_DeliveryBoy,3122660,ShadowTitan1,2130633,2,0,Belcher,The Rock
+12854499,2026-09-19,C64,Challenge,F,Mistakenn,2129541,E90_DeliveryBoy,3122660,1,0,Amulet Titan,Belcher

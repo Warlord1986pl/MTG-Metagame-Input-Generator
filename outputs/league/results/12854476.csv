@@ -1,0 +1,33 @@
+EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
+12854476,2026-09-19,modern-rc-qualifier,Premier,ItsSwiftyTime,2847686,1,NEEDS_MANUAL_REVIEW,Affinity,10,2,24,0.60494,0.77273,0.53427
+12854476,2026-09-19,modern-rc-qualifier,Premier,AllanonCEW,3062019,2,Tron,,8,5,24,0.55278,0.70833,0.54054
+12854476,2026-09-19,modern-rc-qualifier,Premier,RespectTheCat,2788118,3,Esper Blink,,6,1,24,0.68364,0.66667,0.61111
+12854476,2026-09-19,modern-rc-qualifier,Premier,Cachorrowo,2720911,4,Ruby Storm,,6,3,24,0.60185,0.70833,0.53935
+12854476,2026-09-19,modern-rc-qualifier,Premier,Gerschi,1084298,5,WBRG,,4,4,24,0.56296,0.80952,0.52333
+12854476,2026-09-19,modern-rc-qualifier,Premier,Curtisaxel,1911445,6,NEEDS_MANUAL_REVIEW,Boros Energy,4,6,21,0.65432,0.65217,0.58448
+12854476,2026-09-19,modern-rc-qualifier,Premier,AlexanderRosdahl,1635278,7,NEEDS_MANUAL_REVIEW,Broodscale Combo,4,7,21,0.62346,0.69565,0.56082
+12854476,2026-09-19,modern-rc-qualifier,Premier,MikeyCoppola365,2627543,8,Prowess,,4,8,21,0.62015,0.66667,0.57003
+12854476,2026-09-19,modern-rc-qualifier,Premier,Zeect,3446637,9,Esper Blink,,2,9,21,0.61164,0.63636,0.54969
+12854476,2026-09-19,modern-rc-qualifier,Premier,itstime,3086606,10,Prowess,,2,10,21,0.60371,0.64000,0.54536
+12854476,2026-09-19,modern-rc-qualifier,Premier,makaaaa,3154401,11,Broodscale Combo,,2,11,21,0.59436,0.68182,0.55112
+12854476,2026-09-19,modern-rc-qualifier,Premier,Brunes,2764694,12,Broodscale Combo,,2,12,21,0.59436,0.64000,0.57460
+12854476,2026-09-19,modern-rc-qualifier,Premier,ziofrancone,2676196,13,Broodscale Combo,,2,13,21,0.58519,0.65217,0.54271
+12854476,2026-09-19,modern-rc-qualifier,Premier,Chichichi,2788809,14,Mono-Green Eldrazi,,2,14,21,0.58157,0.64000,0.54312
+12854476,2026-09-19,modern-rc-qualifier,Premier,Dasikk,3469379,15,Esper Blink,,2,15,21,0.57284,0.70000,0.55131
+12854476,2026-09-19,modern-rc-qualifier,Premier,chagu,3315179,16,Broodscale Combo,,2,16,21,0.54167,0.64000,0.53916
+12854476,2026-09-19,modern-rc-qualifier,Premier,Varo,923582,17,Affinity,,0,17,21,0.53704,0.66667,0.52760
+12854476,2026-09-19,modern-rc-qualifier,Premier,Timojinn,3482097,18,Prowess,,0,18,21,0.53413,0.70000,0.49199
+12854476,2026-09-19,modern-rc-qualifier,Premier,Mateusf34,2602240,19,NEEDS_MANUAL_REVIEW,Prowess,0,19,18,0.67901,0.60000,0.60169
+12854476,2026-09-19,modern-rc-qualifier,Premier,ipadkid,3560747,20,NEEDS_MANUAL_REVIEW,Dimir Murktide,0,20,18,0.67161,0.56522,0.60844
+12854476,2026-09-19,modern-rc-qualifier,Premier,GrowingPaynes,2311307,21,NEEDS_MANUAL_REVIEW,The Rock,0,21,18,0.64198,0.59091,0.58471
+12854476,2026-09-19,modern-rc-qualifier,Premier,MisterTwin,3190187,22,Neobrand,,0,22,18,0.63757,0.59091,0.56188
+12854476,2026-09-19,modern-rc-qualifier,Premier,LucasG1ggs,750888,23,Broodscale Combo,,0,23,18,0.61905,0.57692,0.57939
+12854476,2026-09-19,modern-rc-qualifier,Premier,hugofreitas1,1997683,24,Ruby Storm,,0,24,18,0.61729,0.59091,0.56378
+12854476,2026-09-19,modern-rc-qualifier,Premier,SanPop,2621451,25,Broodscale Combo,,0,25,18,0.61111,0.56000,0.55852
+12854476,2026-09-19,modern-rc-qualifier,Premier,crazythursday,3116151,26,NEEDS_MANUAL_REVIEW,Neobrand,0,26,18,0.60053,0.62500,0.57251
+12854476,2026-09-19,modern-rc-qualifier,Premier,SuperCow12653,2064081,27,Land Destruction,,0,27,18,0.59259,0.59091,0.55207
+12854476,2026-09-19,modern-rc-qualifier,Premier,DelverOfBolts,2688845,28,NEEDS_MANUAL_REVIEW,Prowess,0,28,18,0.59229,0.56000,0.55894
+12854476,2026-09-19,modern-rc-qualifier,Premier,DawsonCreep,2865556,29,Devoted Combo,,0,29,18,0.59083,0.66667,0.55070
+12854476,2026-09-19,modern-rc-qualifier,Premier,hellisreal,3551942,30,NEEDS_MANUAL_REVIEW,BRG,0,30,18,0.59074,0.60870,0.54001
+12854476,2026-09-19,modern-rc-qualifier,Premier,medvedev,741295,31,NEEDS_MANUAL_REVIEW,Esper Blink,0,31,18,0.58201,0.56522,0.53887
+12854476,2026-09-19,modern-rc-qualifier,Premier,shindy,1237388,32,Land Destruction,,0,32,18,0.57871,0.54545,0.55309

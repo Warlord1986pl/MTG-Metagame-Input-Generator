@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854510,2026-09-20,C32,Challenge,QF,connormc02,1221790,nedyahiske,2404093,2,1,Broodscale Combo,Boros Energy
+12854510,2026-09-20,C32,Challenge,QF,ShikiXYZ,1188705,notoary,2969698,1,0,Prowess,WBG
+12854510,2026-09-20,C32,Challenge,QF,eclipse4343,2714224,ChinaNO2,2881508,2,0,Jeskai Energy,Affinity
+12854510,2026-09-20,C32,Challenge,QF,Bagoot,1155448,ShadowTitan1,2130633,2,1,Tron,Jeskai Energy
+12854510,2026-09-20,C32,Challenge,SF,connormc02,1221790,ShikiXYZ,1188705,2,1,Broodscale Combo,Prowess
+12854510,2026-09-20,C32,Challenge,SF,Bagoot,1155448,eclipse4343,2714224,2,0,Tron,Jeskai Energy
+12854510,2026-09-20,C32,Challenge,F,Bagoot,1155448,connormc02,1221790,2,1,Tron,Broodscale Combo

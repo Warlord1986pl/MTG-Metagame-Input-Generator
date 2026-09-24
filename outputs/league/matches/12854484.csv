@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854484,2026-09-17,C64,Challenge,QF,Kritik,2707200,rastaf,254536,2,1,Land Destruction,Esper Blink
+12854484,2026-09-17,C64,Challenge,QF,Special_Boy,3058922,ResponsiblyStupid,3050181,2,1,Prowess,Broodscale Combo
+12854484,2026-09-17,C64,Challenge,QF,pepeteam,2272105,SanPop,2621451,1,0,Goryo's Vengeance,Broodscale Combo
+12854484,2026-09-17,C64,Challenge,QF,Rashek,2702005,haoqinglangou,2390663,2,1,Boros Energy,Goryo's Vengeance
+12854484,2026-09-17,C64,Challenge,SF,Rashek,2702005,Kritik,2707200,2,0,Boros Energy,Land Destruction
+12854484,2026-09-17,C64,Challenge,SF,Special_Boy,3058922,pepeteam,2272105,2,1,Prowess,Goryo's Vengeance
+12854484,2026-09-17,C64,Challenge,F,Special_Boy,3058922,Rashek,2702005,2,1,Prowess,Boros Energy

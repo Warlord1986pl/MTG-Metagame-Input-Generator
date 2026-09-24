@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854117,2026-09-16,C32,Challenge,QF,Selfeisek,2042214,Manny-,2139100,2,1,Mono-Black Midrange,Ruby Storm
+12854117,2026-09-16,C32,Challenge,QF,DemianDesposito10,2747375,Flossing,1054408,2,1,Boros Burn,WBG
+12854117,2026-09-16,C32,Challenge,QF,Venom01,3535587,eclipse4343,2714224,2,1,Prowess,Jeskai Energy
+12854117,2026-09-16,C32,Challenge,QF,DannyStarchild,1802874,makaaaa,3154401,2,0,Prowess,Broodscale Combo
+12854117,2026-09-16,C32,Challenge,SF,DemianDesposito10,2747375,DannyStarchild,1802874,2,1,Boros Burn,Prowess
+12854117,2026-09-16,C32,Challenge,SF,Venom01,3535587,Selfeisek,2042214,2,1,Prowess,Mono-Black Midrange
+12854117,2026-09-16,C32,Challenge,F,Venom01,3535587,DemianDesposito10,2747375,2,0,Prowess,Boros Burn

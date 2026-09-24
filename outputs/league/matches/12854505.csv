@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854505,2026-09-19,C64,Challenge,QF,Manny-,2139100,Jumba,2618500,2,0,Ruby Storm,Tron
+12854505,2026-09-19,C64,Challenge,QF,Iaashadow,2712707,The_Lion91,3468770,2,0,NEEDS_MANUAL_REVIEW,Ruby Storm
+12854505,2026-09-19,C64,Challenge,QF,RGNKPheonix20,1995507,TooPoorToPlay,3189030,2,1,Tron,NEEDS_MANUAL_REVIEW
+12854505,2026-09-19,C64,Challenge,QF,MeninoNey,2903591,gyyby297,1526577,2,1,Living End,Broodscale Combo
+12854505,2026-09-19,C64,Challenge,SF,Iaashadow,2712707,RGNKPheonix20,1995507,2,0,NEEDS_MANUAL_REVIEW,Tron
+12854505,2026-09-19,C64,Challenge,SF,MeninoNey,2903591,Manny-,2139100,2,1,Living End,Ruby Storm
+12854505,2026-09-19,C64,Challenge,F,Iaashadow,2712707,MeninoNey,2903591,2,1,NEEDS_MANUAL_REVIEW,Living End

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854120,2026-09-16,C96,Challenge,QF,simoneromarm,2676235,FranBenitez91,319589,2,1,Prowess,Prowess
+12854120,2026-09-16,C96,Challenge,QF,Nangurus,2045661,MercurialChemister,2839061,2,1,Broodscale Combo,WBG
+12854120,2026-09-16,C96,Challenge,QF,Rashek,2702005,TomBombadi1,2607787,2,1,Boros Energy,Broodscale Combo
+12854120,2026-09-16,C96,Challenge,QF,Reiam,3106168,Aced5,10594,2,1,Land Destruction,Jeskai Energy
+12854120,2026-09-16,C96,Challenge,SF,simoneromarm,2676235,Nangurus,2045661,2,0,Prowess,Broodscale Combo
+12854120,2026-09-16,C96,Challenge,SF,Reiam,3106168,Rashek,2702005,2,1,Land Destruction,Boros Energy
+12854120,2026-09-16,C96,Challenge,F,simoneromarm,2676235,Reiam,3106168,2,1,Prowess,Land Destruction

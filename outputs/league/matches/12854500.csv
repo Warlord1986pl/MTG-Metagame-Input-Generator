@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854500,2026-09-19,C16,Challenge,QF,bubblywubblytubbler,3298193,HouseOfManaMTG,2669359,2,1,Prowess,Eldrazi Ramp
+12854500,2026-09-19,C16,Challenge,QF,TrueHero,2569009,HotspringsGames,3492944,2,1,5c Midrange,Ruby Storm
+12854500,2026-09-19,C16,Challenge,QF,TonyRockyHorror9,3422248,wutey,2916560,2,0,Belcher,Broodscale Combo
+12854500,2026-09-19,C16,Challenge,QF,JV_7777,2045296,GWT,3544040,2,1,Broodscale Combo,Esper Control
+12854500,2026-09-19,C16,Challenge,SF,bubblywubblytubbler,3298193,TrueHero,2569009,2,1,Prowess,5c Midrange
+12854500,2026-09-19,C16,Challenge,SF,JV_7777,2045296,TonyRockyHorror9,3422248,2,0,Broodscale Combo,Belcher
+12854500,2026-09-19,C16,Challenge,F,bubblywubblytubbler,3298193,JV_7777,2045296,2,1,Prowess,Broodscale Combo

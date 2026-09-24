@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854525,2026-09-21,C96,Challenge,QF,hugofreitas1,1997683,Mikebrav,726347,2,1,Ruby Storm,Boros Energy
+12854525,2026-09-21,C96,Challenge,QF,ShowTime_,949859,ejk,1952341,2,1,Domain Zoo,Broodscale Combo
+12854525,2026-09-21,C96,Challenge,QF,Xenowan,2614008,Erik157751,2578127,2,0,Belcher,Ruby Storm
+12854525,2026-09-21,C96,Challenge,QF,Azja,2751360,Clesss,2250193,2,1,Broodscale Combo,Esper Blink
+12854525,2026-09-21,C96,Challenge,SF,ShowTime_,949859,Azja,2751360,2,1,Domain Zoo,Broodscale Combo
+12854525,2026-09-21,C96,Challenge,SF,Xenowan,2614008,hugofreitas1,1997683,2,1,Belcher,Ruby Storm
+12854525,2026-09-21,C96,Challenge,F,ShowTime_,949859,Xenowan,2614008,2,0,Domain Zoo,Belcher

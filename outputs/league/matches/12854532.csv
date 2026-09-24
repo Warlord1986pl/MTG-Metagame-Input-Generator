@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854532,2026-09-22,C32,Challenge,QF,quinniac,2261440,Reiam,3106168,2,0,Burn,Land Destruction
+12854532,2026-09-22,C32,Challenge,QF,EthanBird,2658587,ResponsiblyStupid,3050181,2,1,Prowess,Broodscale Combo
+12854532,2026-09-22,C32,Challenge,QF,kasiso,2257869,parasisnotcool,3135948,2,0,Mardu Energy,Neobrand
+12854532,2026-09-22,C32,Challenge,QF,felider,2322146,Cachorrowo,2720911,2,0,Broodscale Combo,Tron
+12854532,2026-09-22,C32,Challenge,SF,EthanBird,2658587,kasiso,2257869,2,0,Prowess,Mardu Energy
+12854532,2026-09-22,C32,Challenge,SF,felider,2322146,quinniac,2261440,2,1,Broodscale Combo,Burn
+12854532,2026-09-22,C32,Challenge,F,felider,2322146,EthanBird,2658587,2,1,Broodscale Combo,Prowess

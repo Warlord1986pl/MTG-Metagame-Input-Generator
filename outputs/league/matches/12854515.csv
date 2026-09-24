@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854515,2026-09-20,C64,Challenge,QF,WanderingOnes,840020,Tatsumaki_,1741838,2,0,Broodscale Combo,Prowess
+12854515,2026-09-20,C64,Challenge,QF,maximusdee,1805036,Varo,923582,2,1,Ruby Storm,Affinity
+12854515,2026-09-20,C64,Challenge,QF,felider,2322146,Kroma_,2258623,2,0,Broodscale Combo,WBG
+12854515,2026-09-20,C64,Challenge,QF,BressD1,1940271,TheKG,1965391,2,1,Prowess,Esper Blink
+12854515,2026-09-20,C64,Challenge,SF,maximusdee,1805036,felider,2322146,2,1,Ruby Storm,Broodscale Combo
+12854515,2026-09-20,C64,Challenge,SF,BressD1,1940271,WanderingOnes,840020,2,1,Prowess,Broodscale Combo
+12854515,2026-09-20,C64,Challenge,F,BressD1,1940271,maximusdee,1805036,2,1,Prowess,Ruby Storm

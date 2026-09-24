@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854476,2026-09-19,modern-rc-qualifier,Premier,QF,Cachorrowo,2720911,Curtisaxel,1911445,2,0,Ruby Storm,NEEDS_MANUAL_REVIEW
+12854476,2026-09-19,modern-rc-qualifier,Premier,QF,AllanonCEW,3062019,Gerschi,1084298,2,0,Tron,WBRG
+12854476,2026-09-19,modern-rc-qualifier,Premier,QF,RespectTheCat,2788118,MikeyCoppola365,2627543,2,0,Esper Blink,Prowess
+12854476,2026-09-19,modern-rc-qualifier,Premier,QF,ItsSwiftyTime,2847686,AlexanderRosdahl,1635278,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12854476,2026-09-19,modern-rc-qualifier,Premier,SF,ItsSwiftyTime,2847686,Cachorrowo,2720911,2,1,NEEDS_MANUAL_REVIEW,Ruby Storm
+12854476,2026-09-19,modern-rc-qualifier,Premier,SF,AllanonCEW,3062019,RespectTheCat,2788118,2,0,Tron,Esper Blink
+12854476,2026-09-19,modern-rc-qualifier,Premier,F,ItsSwiftyTime,2847686,AllanonCEW,3062019,2,0,NEEDS_MANUAL_REVIEW,Tron
