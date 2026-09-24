@@ -44,11 +44,11 @@ def test_dry_run_writes_nothing() -> None:
     assert (outputs / "challenge_history_modern.csv").read_bytes() == before
 
 
-def test_apply_fills_only_the_login_id_from_the_source() -> None:
+def test_apply_takes_login_id_and_name_from_the_source() -> None:
     outputs = _setup()
     assert repair.main(["--outputs", str(outputs), "--apply"]) == 0
     after = (outputs / "challenge_history_modern.csv").read_bytes()
-    expected = b"\xef\xbb\xbf" + (HEADER + LEGACY + GOOD + BROKEN.replace("Jetpool,\n", "Jetpool,2111039\n")).encode("utf-8")
+    expected = b"\xef\xbb\xbf" + (HEADER + LEGACY + GOOD + BROKEN.replace("Jetpool,\n", "Overman220,2111039\n")).encode("utf-8")
     assert after == expected, after
     # Idempotent: a second run finds nothing to do.
     assert repair.main(["--outputs", str(outputs), "--apply"]) == 0
@@ -64,6 +64,6 @@ def test_unresolvable_row_fails_and_writes_nothing() -> None:
 
 if __name__ == "__main__":
     test_dry_run_writes_nothing()
-    test_apply_fills_only_the_login_id_from_the_source()
+    test_apply_takes_login_id_and_name_from_the_source()
     test_unresolvable_row_fails_and_writes_nothing()
     print("All repair_missing_loginids tests passed.")

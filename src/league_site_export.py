@@ -113,8 +113,11 @@ def _pilot_key(login_id: str, name: str) -> str:
 
 
 def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
-    """One entry per identity across the FULL results history on disk (not season-scoped -- a
-    rename can predate the season being rendered), keyed by the same id _pilot_key produces:
+    """One entry per identity across the results history on disk up to the rendered season's end
+    (not season-scoped at the start -- a rename can predate the season being rendered -- but never
+    later: the caller passes only rows with EventDate <= season_end, so a closed season never
+    picks up a name first used in a later season and its published files stay frozen; see
+    build_season_site_data), keyed by the same id _pilot_key produces:
     {"current": Pilot value of the row with the latest EventDate, "prior": [other distinct Pilot
     values, oldest first]}.
 
@@ -260,7 +263,11 @@ def build_season_site_data(
         results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
     )
     all_results = load_all_league_results(results_dir)
-    names = _name_history(all_results)
+    # Names known by the end of THIS season only. A later season's rename (first case: LoginID
+    # 2111039, "Jetpool" in Summer 2026, "Overman220" on mtgo.com from 12854500 in Autumn 2026)
+    # must show up as a prior name in that later season, not rewrite the closed season's files.
+    history_dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
+    names = _name_history(all_results[(history_dates <= season_end).fillna(False)])
 
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     season_mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)

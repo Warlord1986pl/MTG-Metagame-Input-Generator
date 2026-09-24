@@ -4,10 +4,12 @@
 For every history row that has an EventID but no LoginID, this looks up that event's durably
 cached mtgo.com blob (outputs/cache/mtgo_json/<format>/<EventID>.json -- the same raw record the
 row was originally parsed from), takes the final_rank entry at the row's Place, and writes that
-entry's LoginID. Keyed strictly by (EventID, Place) against the source record: never by name,
-never across events, never a merge. Only the LoginID field is written; the stored Pilot string is
-left as it is (the display name follows the pipeline's own latest-name-wins rule from there, and
-rewriting it here would also change prior-name lists in already-closed seasons).
+entry's LoginID together with the display name mtgo.com's decklist gives that LoginID in that
+same event -- the same two fields the fixed parser (challenge_mtgo_source.ingest_labeled_event)
+takes from mtgo.com. Keyed strictly by (EventID, Place) against the source record: never by name,
+never across events, never a merge. A prior name then appears through the pipeline's normal
+rename handling (league_site_export._name_history, scoped to each season's end so a closed season
+is not rewritten).
 
 Anything that cannot be resolved from the source (no cached blob, incomplete final_rank, no entry
 at that Place, no decklist for that LoginID) is reported and makes the script exit 1 without
@@ -79,8 +81,8 @@ def repair_file(path: Path, cache_dir: Path, apply: bool) -> Tuple[List[str], Li
             problems.append(f"{where}: {why}")
             continue
         new_id, new_name = found
-        changes.append(f"{where}: LoginID '' -> {new_id} (mtgo.com currently shows this account as {new_name!r})")
-        fields[col["LoginID"]] = new_id
+        changes.append(f"{where}: LoginID '' -> {new_id}, Pilot {fields[col['Pilot']]!r} -> {new_name!r}")
+        fields[col["LoginID"]], fields[col["Pilot"]] = new_id, new_name
         buf = io.StringIO()
         csv.writer(buf, lineterminator=ending or "").writerow(fields)
         lines[i] = buf.getvalue()
