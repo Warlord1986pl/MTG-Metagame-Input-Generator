@@ -338,6 +338,11 @@ def normalize_card_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
 
 
+def _is_cacheable_event_blob(data: dict) -> bool:
+    """A blob is final (safe to cache durably) only once both decklists and final_rank are posted."""
+    return bool(data.get("decklists")) and bool(data.get("final_rank"))
+
+
 def fetch_mtgo_event_json(
     event_id: str, url: str, cache_dir: Path, log: Optional[Callable[[str], None]] = None
 ) -> dict:
@@ -346,13 +351,20 @@ def fetch_mtgo_event_json(
     A blob with an empty "decklists" list (final_rank posted, decklists not yet published) is
     deliberately NOT written to the durable cache -- caching it would permanently freeze the event
     as empty even after MTGO later publishes the real decklists, defeating the "retried on a later
-    run" contract for PENDING events. Everything else (including a genuinely malformed blob) is
-    cached as before.
+    run" contract for PENDING events. The same applies to a blob whose decklists are published but
+    whose final_rank is not yet: mtgo.com posts an event in stages, and caching that intermediate
+    state froze 12854120 (C96, 2026-09-16) as ERROR forever on Mikrus, blocking the watermark for a
+    week. Such a blob is neither written nor trusted if already on disk -- it is re-fetched live.
+    Everything else (including a genuinely malformed blob) is cached as before.
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{event_id}.json"
     if cache_path.exists():
-        return json.loads(cache_path.read_text(encoding="utf-8"))
+        cached = json.loads(cache_path.read_text(encoding="utf-8"))
+        if _is_cacheable_event_blob(cached):
+            return cached
+        if log:
+            log(f"[mtgo-fetch] event {event_id}: cached blob has no final_rank yet, re-fetching live")
 
     last_err = None
     for attempt in range(5):
@@ -360,10 +372,13 @@ def fetch_mtgo_event_json(
         m = re.search(r"window\.MTGO\.decklists\.data\s*=\s*(\{.*?\});", html, flags=re.DOTALL)
         if m:
             data = json.loads(m.group(1))
-            if data.get("decklists"):
+            if _is_cacheable_event_blob(data):
                 cache_path.write_text(json.dumps(data), encoding="utf-8")
             elif log:
-                log(f"[mtgo-fetch] event {event_id}: 0 decklists published yet, not caching (will retry live next run)")
+                log(
+                    f"[mtgo-fetch] event {event_id}: decklists or final_rank not published yet, "
+                    "not caching (will retry live next run)"
+                )
             return data
         last_err = f"blob not found (page len={len(html)}, attempt {attempt + 1}/5)"
         if log:
