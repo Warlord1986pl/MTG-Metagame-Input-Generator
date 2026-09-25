@@ -190,8 +190,8 @@
       "WindowStart": "2026-09-16"
     }
   ],
-  "RankChangeAnchor": "2026-09-23",
-  "as_of": "2026-09-24",
+  "RankChangeAnchor": "2026-09-24",
+  "as_of": "2026-09-25",
   "events": [
     {
       "date": "2026-09-01",
@@ -456,20 +456,32 @@
       "event_id": "12854539",
       "rows": 32,
       "type": "challenge"
+    },
+    {
+      "date": "2026-09-23",
+      "event_id": "12854541",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-09-23",
+      "event_id": "12854975",
+      "rows": 32,
+      "type": "challenge"
     }
   ],
-  "events_challenge": 43,
+  "events_challenge": 45,
   "events_premier": 1,
-  "events_total": 44,
-  "generated_at": "2026-09-24T08:10:36Z",
-  "pilots_scoring": 397,
-  "pilots_total": 645,
-  "points_total": 1395,
-  "results_csv_sha256": "c60105c992fd3cc80d9410dcd119649f9076b61d1d92239c7bee2388c3b66f87",
+  "events_total": 46,
+  "generated_at": "2026-09-25T00:16:15Z",
+  "pilots_scoring": 404,
+  "pilots_total": 659,
+  "points_total": 1457,
+  "results_csv_sha256": "51d6360e99ea12415b52c9a4bf4bd124c53c6a35bb963f73111439d1891f0289",
   "season": "Autumn 2026",
   "season_end": "2026-11-30",
   "season_start": "2026-09-01",
-  "starts_total": 1404,
+  "starts_total": 1468,
   "validation": {
     "all_passed": true,
     "checks": [
