@@ -5,6 +5,7 @@ pattern,archetype,match_type,priority
 4c HollowOne,Graveyard,exact,1
 4c Midrange,Midrange,exact,1
 4c Omnath,Midrange,exact,1
+5c HollowOne,Graveyard,exact,1
 5c Midrange,Midrange,exact,1
 Affinity,Aggro,exact,1
 Amulet Titan,Combo,exact,1
