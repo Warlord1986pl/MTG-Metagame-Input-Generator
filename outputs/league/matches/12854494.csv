@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854494,2026-09-18,C64,Challenge,QF,Patxi,821319,oskiyaa,1111702,2,1,Jeskai Energy,Neobrand
+12854494,2026-09-18,C64,Challenge,QF,Omegauo,30930,hugofreitas1,1997683,2,1,Esper Blink,Ruby Storm
+12854494,2026-09-18,C64,Challenge,QF,Odin2015,3306092,Ale_Mtg,2683189,2,0,Eldrazi Tron,Izzet Murktide
+12854494,2026-09-18,C64,Challenge,QF,TheSchnook,3198544,Misplacedginger,736792,2,1,Broodscale Combo,Devoted Combo
+12854494,2026-09-18,C64,Challenge,SF,Odin2015,3306092,TheSchnook,3198544,2,1,Eldrazi Tron,Broodscale Combo
+12854494,2026-09-18,C64,Challenge,SF,Omegauo,30930,Patxi,821319,2,1,Esper Blink,Jeskai Energy
+12854494,2026-09-18,C64,Challenge,F,Omegauo,30930,Odin2015,3306092,2,0,Esper Blink,Eldrazi Tron

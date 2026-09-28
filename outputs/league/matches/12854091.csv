@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854091,2026-09-13,C64,Challenge,QF,MasterGarrix,3452649,Venom01,3535587,2,1,Prowess,Prowess
+12854091,2026-09-13,C64,Challenge,QF,Rvng,649380,Palenisk0,2709708,2,0,Goryo's Vengeance,The Rock
+12854091,2026-09-13,C64,Challenge,QF,BressD1,1940271,Laplasjan,1706283,2,0,Prowess,Esper Blink
+12854091,2026-09-13,C64,Challenge,QF,myra00,2884439,GigaChadSigmaMale,3085636,2,1,Broodscale Combo,Broodscale Combo
+12854091,2026-09-13,C64,Challenge,SF,BressD1,1940271,myra00,2884439,2,0,Prowess,Broodscale Combo
+12854091,2026-09-13,C64,Challenge,SF,MasterGarrix,3452649,Rvng,649380,2,0,Prowess,Goryo's Vengeance
+12854091,2026-09-13,C64,Challenge,F,BressD1,1940271,MasterGarrix,3452649,2,0,Prowess,Prowess
