@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854911,2026-09-25,C64,Challenge,QF,Dydyk95,2940494,Erik157751,2578127,2,0,Azorius Control,Ruby Storm
+12854911,2026-09-25,C64,Challenge,QF,Tree42o,875470,Lightspirit,3222070,2,0,Affinity,Eldrazi Ramp
+12854911,2026-09-25,C64,Challenge,QF,ShadowTitan1,2130633,Riftbound,3502250,2,1,Domain Zoo,Tron
+12854911,2026-09-25,C64,Challenge,QF,MercurialChemister,2839061,Venom01,3535587,2,1,WBG,Izzet Murktide
+12854911,2026-09-25,C64,Challenge,SF,ShadowTitan1,2130633,Tree42o,875470,2,0,Domain Zoo,Affinity
+12854911,2026-09-25,C64,Challenge,SF,Dydyk95,2940494,MercurialChemister,2839061,2,0,Azorius Control,WBG
+12854911,2026-09-25,C64,Challenge,F,Dydyk95,2940494,ShadowTitan1,2130633,2,1,Azorius Control,Domain Zoo

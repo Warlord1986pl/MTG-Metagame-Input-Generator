@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854922,2026-09-26,C64,Challenge,QF,katuo079595,1937688,Lightspirit,3222070,2,0,Broodscale Combo,Eldrazi Ramp
+12854922,2026-09-26,C64,Challenge,QF,WolfgangCloud,771092,deftjad,2276700,1,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12854922,2026-09-26,C64,Challenge,QF,Fatcaster_Mage,2660106,pedronavaja,3540949,2,0,NEEDS_MANUAL_REVIEW,Broodscale Combo
+12854922,2026-09-26,C64,Challenge,QF,wasian_persuasion,3531442,hugofreitas1,1997683,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12854922,2026-09-26,C64,Challenge,SF,wasian_persuasion,3531442,katuo079595,1937688,2,0,NEEDS_MANUAL_REVIEW,Broodscale Combo
+12854922,2026-09-26,C64,Challenge,SF,WolfgangCloud,771092,Fatcaster_Mage,2660106,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12854922,2026-09-26,C64,Challenge,F,WolfgangCloud,771092,wasian_persuasion,3531442,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW

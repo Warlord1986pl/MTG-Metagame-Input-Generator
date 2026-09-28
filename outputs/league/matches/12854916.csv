@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854916,2026-09-26,C64,Challenge,QF,CarlosZ,194753,MTGHolic,2942139,2,0,Dimir Midrange,Jeskai Energy
+12854916,2026-09-26,C64,Challenge,QF,WanderingOnes,840020,toothymtg,3087786,2,1,Broodscale Combo,Broodscale Combo
+12854916,2026-09-26,C64,Challenge,QF,IronBeagle,2972314,UninspiredMehjagic,3050754,2,0,Esper Blink,Boros Energy
+12854916,2026-09-26,C64,Challenge,QF,Bugsy69,2537822,Arcbound_Papi,2137107,2,1,Affinity,Affinity
+12854916,2026-09-26,C64,Challenge,SF,WanderingOnes,840020,CarlosZ,194753,2,1,Broodscale Combo,Dimir Midrange
+12854916,2026-09-26,C64,Challenge,SF,IronBeagle,2972314,Bugsy69,2537822,2,1,Esper Blink,Affinity
+12854916,2026-09-26,C64,Challenge,F,WanderingOnes,840020,IronBeagle,2972314,2,0,Broodscale Combo,Esper Blink
