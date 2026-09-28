@@ -407,14 +407,12 @@ def test_log_blocking_summary_and_main_exit_code() -> None:
 
     fake_result = mig.GenerationRunResult(
         week_start=date(2026, 1, 1), week_end=date(2026, 1, 7), run_dir=Path("."),
-        row_count=0, mapped_from_user=0, primary_count=0, fallback_count=0,
-        imputed_count=0, rogue_threshold=0.5,
+        row_count=0, mapped_from_user=0, rogue_threshold=0.5,
         blocking_failures=["league snapshot not written for week 32 (Summer 2026): boom -- next week's deltas will be empty"],
     )
     clean_result = mig.GenerationRunResult(
         week_start=date(2026, 1, 8), week_end=date(2026, 1, 14), run_dir=Path("."),
-        row_count=0, mapped_from_user=0, primary_count=0, fallback_count=0,
-        imputed_count=0, rogue_threshold=0.5,
+        row_count=0, mapped_from_user=0, rogue_threshold=0.5,
     )
 
     logged: list = []

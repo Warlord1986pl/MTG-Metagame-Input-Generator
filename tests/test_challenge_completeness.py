@@ -32,6 +32,26 @@ WEEK_START = date(2026, 7, 13)
 WEEK_END = date(2026, 7, 26)
 
 
+def _copy_fixture_with_reviews_resolved(dest: Path) -> None:
+    """Copy FIXTURE to *dest*, replacing its (real, currently unresolved) NEEDS_MANUAL_REVIEW rows
+    with a placeholder resolved deck.
+
+    FIXTURE is a real slice of history that happens to still have ~41 NEEDS_MANUAL_REVIEW rows in
+    it (see test_challenge_stats_regression.py, which tests against those rows directly). This
+    module's tests are about the completeness/status.json contract, an orthogonal axis -- since
+    run_challenge_statistics() now fails closed (raises ChallengeReviewRequiredError) whenever any
+    row is still NEEDS_MANUAL_REVIEW, using the fixture unmodified here would make every test below
+    fail on the review gate before ever reaching the completeness logic under test.
+    """
+    import pandas as pd
+
+    df = pd.read_csv(FIXTURE)
+    mask = df["Deck"] == "NEEDS_MANUAL_REVIEW"
+    df.loc[mask, "Deck"] = "Test Placeholder Deck"
+    df.loc[mask, "Archetype"] = "Test Placeholder Archetype"
+    df.to_csv(dest, index=False, encoding="utf-8-sig")
+
+
 @contextmanager
 def _patched(obj, name, replacement):
     original = getattr(obj, name)
@@ -56,7 +76,7 @@ def test_fail_closed() -> None:
     tmp_dir = Path(tempfile.mkdtemp(prefix="challenge_fail_closed_"))
     try:
         history_csv = tmp_dir / "challenge_history_modern.csv"
-        shutil.copyfile(FIXTURE, history_csv)
+        _copy_fixture_with_reviews_resolved(history_csv)
 
         # "a fetch stub that drops one event": registry says 25 events existed, only 24 made it in.
         dropped = SkippedEvent(
@@ -129,7 +149,7 @@ def test_status_never_null() -> None:
     tmp_dir = Path(tempfile.mkdtemp(prefix="challenge_status_never_null_"))
     try:
         history_csv = tmp_dir / "challenge_history_modern.csv"
-        shutil.copyfile(FIXTURE, history_csv)
+        _copy_fixture_with_reviews_resolved(history_csv)
 
         # Refusing to write complete=true with a null registry_count is a hard error, not a
         # silently-accepted state -- this IS the bug this whole gate exists to prevent.

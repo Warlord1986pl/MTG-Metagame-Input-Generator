@@ -17,13 +17,13 @@ pip install -r requirements.txt
 
 ### Run weekly generation (CLI)
 ```sh
-python src/metagame_input_generator.py --format Modern --history-points 1 --metagame-window-days 14 --my-deck "Domain Zoo" --my-window-days 90 --my-fallback-window-days 180 --rogue-threshold 0.5 --include-challenge-decklist
+python src/metagame_input_generator.py --format Modern --history-points 1 --metagame-window-days 14 --rogue-threshold 0.5 --include-challenge-decklist
 ```
 
 ### PowerShell launchers
 ```powershell
 # Single weekly snapshot
-./run_weekly.ps1 -Format Modern -MyDeck "Domain Zoo"
+./run_weekly.ps1 -Format Modern
 
 # 4 history points anchored to a specific Sunday
 ./run_history_4.ps1 -AnchorSunday 2026-03-15
@@ -72,6 +72,8 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 | `gui_app.py` | PySide6 desktop GUI wrapping all of the above. QSettings persists backup URL between sessions. |
 | `change_model.py` | Reads/writes the `docs/` CSV config files (aliases, archetype rules, mappings, catalog). |
 | `preset_cli.py` | Interactive terminal CLI with saved state in `.preset_cli_state.json`. |
+| `alias_check.py` | Card-list gate for a deck-alias merge (`check_alias`, `check_window_against_baseline`, `run_alias_checks_for_window`) — see "Deck-alias merge gate" below. |
+| `check_alias_cli.py` | `python src/check_alias_cli.py check-alias --source X --target Y --window YYYY-MM-DD:YYYY-MM-DD` — the manual pre-merge gate, run before adding a row to `deck_aliases.csv`. |
 
 ### Data flow
 
@@ -112,15 +114,58 @@ Resolves one or more MTGO loginids to a single canonical `pilot_id`, so a real p
 | File | Columns | Purpose |
 |---|---|---|
 | `archetype_rules.csv` | `pattern, archetype, match_type, priority` | Maps deck name patterns → archetype labels. `match_type` is `exact`, `contains`, or `regex`. Lower `priority` value = applied first. |
-| `deck_aliases.csv` | `pattern, canonical_name, match_type, priority` | Canonicalizes raw deck names. Same matching semantics as archetype rules. |
+| `deck_aliases.csv` | `pattern, canonical_name, match_type, priority, archetype, comment` | Canonicalizes raw deck names. Same matching semantics as archetype rules. `archetype`/`comment` are optional trailing columns (added 2026-09 for the WBG→Devoted Combo merge) — blank on every pre-existing row, documentation/audit only (not read as an override; actual archetype resolution still runs through `user_deck_mapping.csv`/`challenge_deck_mapping.csv`/`archetype_rules.csv`, which must independently agree — see below). `change_model.py`'s `ALIASES_COLUMNS` includes both so a GUI-driven rewrite of this file never silently truncates them. |
 | `user_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Exact overrides for Meta deck names (applied before alias rules). |
-| `challenge_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Additive overrides for Challenge-only deck names (merged with user mapping at runtime). |
+| `challenge_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Additive overrides for Challenge-only deck names (merged with user mapping at runtime). **Takes precedence over `deck_aliases.csv` for Challenge data** — a raw name present here resolves via `mapped_deck or canonicalize_deck_name(...)`, so editing `deck_aliases.csv` alone does not merge a Challenge deck name; both files must agree (see "Deck-alias merge gate" below). |
+| `alias_check_config.csv` | `key, value` | `min_similarity` (default `0.55`): the maindeck-multiset-similarity cutoff `alias_check.py` uses to verdict a merge safe/partial/dangerous. Config, not code, so a verdict stays inspectable after the fact. |
 | `archetype_catalog.csv` | `archetype` | Known archetype list shown in the GUI's Review Queue dropdown. |
+
+### Deck-alias merge gate
+
+A deck-name alias that collapses one raw name into another canonical deck (e.g. an MTGO color-code
+placeholder like `WBG` folded into `Devoted Combo`) must never be applied on the strength of the
+name alone — the name gives no guarantee every list filed under it is actually the same deck, and a
+bad merge inflates that deck's share and skews the whole field's rogue/median cuts.
+
+- `python src/check_alias_cli.py check-alias --source WBG --target "Devoted Combo" --window 2026-08-31:2026-09-13`
+  is the **manual pre-merge gate** — run it against current (not-yet-merged) history before adding
+  a row to `deck_aliases.csv`. It compares every source-name list's maindeck card multiset (basic
+  lands excluded — the same scope `challenge_mtgo_source.multiset_similarity()` uses for its own
+  nearest-neighbor classifier, reused here rather than a second mechanism) against every
+  target-name list and prints median/min/max similarity, the cards common to every list compared,
+  and an explicit verdict (`safe` / `partial` / `dangerous`) against `docs/alias_check_config.csv`'s
+  `min_similarity`. Exit code is non-zero unless the verdict is `safe`.
+- Once an alias is live, ingestion resolves the raw name away immediately, so no row ever has
+  `Deck == "WBG"` again — the *auto* gate (`run_alias_checks_for_window`, wired into
+  `run_generation()` right after the Challenge history sync) therefore checks differently: for
+  every alias in `deck_aliases.csv` whose `pattern != canonical_name` (a true merge, not a
+  self-mapping), it compares **this window's** lists under the canonical name against a reference
+  library of that canonical name's lists from **before** the window (`check_window_against_baseline`
+  in `alias_check.py`) — catching drift going forward without needing the vanished raw label. This
+  always writes `alias_report_<window>.csv` into the run dir, even when empty (empty = every
+  checked list matched; a non-empty file is never "nothing to see", and a list below threshold must
+  never be silently absorbed).
+- Applying a merge touches **three** files that must agree, not one: `docs/deck_aliases.csv` (the
+  canonicalization rule + `archetype`/`comment` documentation), and — because
+  `user_deck_mapping.csv`/`challenge_deck_mapping.csv` are applied *before* `deck_aliases.csv` and
+  set canonical name + archetype directly — `docs/user_deck_mapping.csv` and
+  `docs/challenge_deck_mapping.csv`, if the raw name already has a row there (as `WBG` did, mapping
+  to itself with archetype `Midrange`). Editing `deck_aliases.csv` alone silently does nothing for a
+  raw name that already has a higher-precedence mapping row.
+- Retroactively relabeling an **already-synced** history window (so a trend line doesn't have a raw
+  name still sitting mid-history) cannot go through a normal resync: `sync_challenge_history_window`
+  treats any already-resolved `Deck` value as sticky and will not overwrite it with a fresh
+  classification, on purpose (see the Pilot-freezing note below for why). The sanctioned path is the
+  same one used for a human Review Queue correction, `apply_challenge_review_selections()` (one
+  `{event_id, pilot, resolved_deck}` selection per affected row) — it re-derives `Archetype` through
+  the normal alias/mapping/rules pipeline and is safe to run across the full history (not just the
+  window under test), since it only touches rows matched by `(EventID, Pilot)` and never re-fetches
+  anything over the network.
 
 ### Key design decisions
 
 - `normalize_name()` lowercases and collapses whitespace — all rule comparisons go through it.
-- The `My Deck Winrate` column is imputed to `0.5` when no matchup data exists; imputed rows get a yellow fill in XLSX. 180-day fallback rows get green fill.
+- No "my deck" matchup-winrate column exists anywhere in the pipeline (removed 2026-09; the old `My Deck Winrate` column silently imputed `0.5` for zero-game rows, indistinguishable from a real 50% result). Missing data is `None`/blank, never a value that could also be read as a real result.
 - Rogue grouping: decks with `Meta < rogue_threshold` (default 0.5%) are collapsed into a single "Rogue" row in the `_rogue_grouped` outputs.
 - `change_model.py` creates `.bak` backups of CSV files before writing to prevent data loss from GUI edits.
 - The GUI saves/restores settings (backup URL, form fields) via `QSettings` with org `GitHubCopilot` / app `MTG Metagame Studio`.

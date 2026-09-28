@@ -1,9 +1,6 @@
 param(
     [string]$Format = "Modern",
-    [string]$MyDeck = "Domain Zoo",
     [int]$MetagameWindowDays = 14,
-    [int]$MyWindowDays = 90,
-    [int]$MyFallbackWindowDays = 180,
     [double]$RogueThreshold = 0.5,
     [bool]$IncludeChallengeDecklist = $true,
     [bool]$PublishSite = $true
@@ -21,9 +18,6 @@ $cliArgs = @(
     "--format", $Format,
     "--history-points", "1",
     "--metagame-window-days", "$MetagameWindowDays",
-    "--my-deck", $MyDeck,
-    "--my-window-days", "$MyWindowDays",
-    "--my-fallback-window-days", "$MyFallbackWindowDays",
     "--rogue-threshold", "$RogueThreshold"
 )
 

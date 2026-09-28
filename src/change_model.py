@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List
 
 
-ALIASES_COLUMNS = ["pattern", "canonical_name", "match_type", "priority"]
+ALIASES_COLUMNS = ["pattern", "canonical_name", "match_type", "priority", "archetype", "comment"]
 ARCHETYPE_COLUMNS = ["pattern", "archetype", "match_type", "priority"]
 MAPPING_COLUMNS = ["raw_name", "canonical_name", "archetype"]
 ARCHETYPE_CATALOG_COLUMNS = ["archetype"]

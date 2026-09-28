@@ -71,7 +71,6 @@ PALETTE_PRESETS: dict[str, dict[str, dict[str, str]]] = {
 TREND_THRESHOLD_DECK = 0.5
 TREND_THRESHOLD_ARCHETYPE = 0.2
 MIN_GAMES_FOR_WINRATE_CHARTS = 50
-MIN_GAMES_FOR_TRUSTED = 150
 PREP_PRIORITY_COLORS: dict[str, str] = {
     "Very High Prep Priority": "red",
     "High Prep Priority": "orange",
@@ -156,10 +155,6 @@ def _deck_color_override(deck_name: str, deck_colors: dict[str, str]) -> Optiona
 
 def _legend_color(label: str, legend_colors: dict[str, str], fallback: str) -> str:
     return legend_colors.get(_normalize_key(label), fallback)
-
-
-def _trust_label(games: float) -> str:
-    return "Trusted" if float(games) >= float(MIN_GAMES_FOR_TRUSTED) else "Sample"
 
 
 def prep_priority(quartile: str) -> str:
@@ -251,12 +246,6 @@ def _normalize_numeric(df: pd.DataFrame) -> pd.DataFrame:
         out["Meta"] = as_float(out["Meta"], percent_like=False)
     if "Winrate" in out.columns:
         out["Winrate"] = as_float(out["Winrate"], percent_like=True)
-    if "My Deck Winrate" in out.columns:
-        out["My Deck Winrate"] = as_float(out["My Deck Winrate"], percent_like=True)
-    elif "My Winrate" in out.columns:
-        out["My Deck Winrate"] = as_float(out["My Winrate"], percent_like=True)
-    else:
-        out["My Deck Winrate"] = pd.NA
 
     return out
 
@@ -313,21 +302,14 @@ def _aggregate_by_archetype(df_results: pd.DataFrame) -> pd.DataFrame:
     for archetype, group in df.groupby("Archetype", dropna=False):
         meta = pd.to_numeric(group["Meta"], errors="coerce").fillna(0)
         wr = pd.to_numeric(group["Winrate"], errors="coerce")
-        my_wr = pd.to_numeric(group.get("My Deck Winrate", pd.Series(dtype=float)), errors="coerce")
 
         wr_value = float((wr.fillna(0) * meta).sum() / meta.sum()) if meta.sum() > 0 else float(wr.dropna().mean())
-        valid_my = my_wr.notna()
-        if valid_my.any() and float(meta[valid_my].sum()) > 0:
-            my_wr_value = float((my_wr[valid_my] * meta[valid_my]).sum() / meta[valid_my].sum())
-        else:
-            my_wr_value = pd.NA
 
         rows.append(
             {
                 "Archetype": str(archetype),
                 "Meta": float(meta.sum()),
                 "Winrate": wr_value,
-                "My Deck Winrate": my_wr_value,
                 "Deck Display Name": str(archetype),
             }
         )
@@ -363,8 +345,7 @@ def _create_encounter_chart(
         colors.append(override if override is not None else base_colors[i])
     bars = ax.bar(range(count), show_df["Encounter Probability"], color=colors, alpha=0.8, edgecolor="black", linewidth=0.5)
 
-    my_wr_series = pd.to_numeric(show_df.get("My Deck Winrate", pd.Series([pd.NA] * count)), errors="coerce")
-    for bar, prob, prep, my_wr in zip(bars, show_df["Encounter Probability"], show_df["Prep Priority"], my_wr_series):
+    for bar, prob, prep in zip(bars, show_df["Encounter Probability"], show_df["Prep Priority"]):
         label = f"{float(prob):.1%}"
         prep_color = _legend_color(str(prep), legend_colors, PREP_PRIORITY_COLORS.get(str(prep), "black"))
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.015, label, ha="center", va="bottom", fontsize=11, color=prep_color)
@@ -422,60 +403,30 @@ def _create_encounter_chart(
     return out_path
 
 
+def _wilson_ci(p_hat: float, n: float, z: float = 1.959963984540054) -> tuple[float, float]:
+    """95% Wilson score interval for a binomial proportion. Not symmetric around p_hat -- see
+    the record-probability chart, which draws it as asymmetric yerr bars for exactly that reason.
+    n<=0 collapses to (p_hat, p_hat): a game-count-less deck gets no interval, not a fake one.
+    """
+    if n <= 0:
+        return p_hat, p_hat
+    denom = 1.0 + (z * z) / n
+    center = (p_hat + (z * z) / (2 * n)) / denom
+    margin = (z * ((p_hat * (1 - p_hat) / n + (z * z) / (4 * n * n)) ** 0.5)) / denom
+    return max(0.0, center - margin), min(1.0, center + margin)
+
+
 def _create_record_probability_chart(
-    player_winrate: float,
     df_results: pd.DataFrame,
     rounds: int,
     file_tag: str,
     output_dir: Path,
-    player_deck_name: str,
     deck_colors: dict[str, str],
     legend_colors: dict[str, str],
 ) -> Optional[Path]:
-    records = calculate_binomial_records(player_winrate, rounds)
-    labels = list(records.keys())
-    probs = list(records.values())
+    fig, ax2 = plt.subplots(1, 1, figsize=(20, 12))
+    fig.suptitle(f"Expected Wins per Deck - {file_tag} ({rounds}-round event)", fontsize=16, y=0.99)
 
-    fig, axes = plt.subplots(1, 2, figsize=(20, 9))
-    fig.suptitle(f"Record Probability Analysis - {file_tag} ({rounds}-round event)", fontsize=15, y=1.01)
-
-    ax1 = axes[0]
-    bar_colors_left = plt.cm.RdYlGn(np.linspace(0, 1, len(labels)))
-    bars = ax1.bar(labels, probs, color=bar_colors_left, edgecolor="black", linewidth=0.6, alpha=0.9)
-    for bar, prob in zip(bars, probs):
-        ax1.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 0.005,
-            f"{prob:.1%}",
-            ha="center",
-            va="bottom",
-            fontsize=11,
-            fontweight="bold",
-        )
-    ax1.set_xlabel("Record (W-L)", fontsize=12)
-    ax1.set_ylabel("Probability", fontsize=12)
-    ax1.set_title(
-        f"{player_deck_name} Record Distribution\nOverall Winrate: {player_winrate:.1%} | "
-        f"Expected: {player_winrate * rounds:.1f}-{(1 - player_winrate) * rounds:.1f}",
-        fontsize=13,
-    )
-    ax1.set_ylim(0, max(probs) * 1.25)
-    ax1.tick_params(axis="x", labelsize=10)
-    best_idx = int(np.argmax(probs)) if probs else 0
-    if probs:
-        bars[best_idx].set_edgecolor("gold")
-        bars[best_idx].set_linewidth(3)
-        ax1.text(
-            bars[best_idx].get_x() + bars[best_idx].get_width() / 2,
-            max(probs) * 1.15,
-            "Most likely",
-            ha="center",
-            fontsize=9,
-            color="goldenrod",
-            fontweight="bold",
-        )
-
-    ax2 = axes[1]
     games_col = None
     for candidate in ["Winrate Game Count", "Match Count", "Matches", "Games"]:
         if candidate in df_results.columns:
@@ -493,9 +444,9 @@ def _create_record_probability_chart(
             f"Expected Wins per Deck\nOnly decks with >= {MIN_GAMES_FOR_WINRATE_CHARTS} games",
             fontsize=13,
         )
-        ax2.set_xlabel("Expected Wins", fontsize=12)
-        ax2.set_xlim(0, rounds + 0.5)
-        ax2.grid(axis="x", alpha=0.3, linestyle="--")
+        ax2.set_ylabel("Expected Wins", fontsize=14)
+        ax2.set_ylim(0, rounds + 0.5)
+        ax2.grid(axis="y", alpha=0.3, linestyle="--")
         if games_col is None:
             msg = "No game-count column found in input data."
         else:
@@ -512,27 +463,51 @@ def _create_record_probability_chart(
         )
     else:
         top = eligible.head(20).reset_index(drop=True)
-        expected_wins = pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5) * rounds
+        winrates = pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5)
+        expected_wins = winrates * rounds
+        ci_lo = []
+        ci_hi = []
+        for wr, n in zip(winrates, top["_games"]):
+            lo, hi = _wilson_ci(float(wr), float(n))
+            ci_lo.append(lo * rounds)
+            ci_hi.append(hi * rounds)
+        yerr_lo = [max(0.0, w - lo) for w, lo in zip(expected_wins, ci_lo)]
+        yerr_hi = [max(0.0, hi - w) for w, hi in zip(expected_wins, ci_hi)]
+
         top_colors = []
         for _, row in top.iterrows():
             wr = float(pd.to_numeric(row.get("Winrate"), errors="coerce") or 0.5)
             top_colors.append(plt.cm.RdYlGn(plt.Normalize(vmin=0, vmax=1)(wr)))
-        ax2.barh(range(len(top)), expected_wins, color=top_colors, edgecolor="black", linewidth=0.5, alpha=0.9)
-        ax2.set_yticks(range(len(top)))
+        count = len(top)
+        ax2.bar(
+            range(count),
+            expected_wins,
+            yerr=[yerr_lo, yerr_hi],
+            color=top_colors,
+            edgecolor="black",
+            linewidth=0.5,
+            alpha=0.9,
+            error_kw=dict(ecolor="black", elinewidth=1, capsize=3),
+        )
+        ax2.set_xticks(range(count))
+        rotation_angle = 30 if count < 12 else 45 if count < 20 else 60
         labels = [
-            f"{str(deck)} (n={int(g)}, {_trust_label(g)})"
-            for deck, g in zip(top["Deck Display Name"].astype(str), top["_games"])
+            f"{str(deck)} ({wr:.0%}, CI {lo * 100:.0f} to {hi * 100:.0f}, n={int(g)})"
+            for deck, wr, lo, hi, g in zip(
+                top["Deck Display Name"].astype(str), winrates,
+                [c / rounds for c in ci_lo], [c / rounds for c in ci_hi], top["_games"],
+            )
         ]
-        ax2.set_yticklabels(labels, fontsize=8)
-        ax2.set_xlabel("Expected Wins", fontsize=12)
+        ax2.set_xticklabels(labels, fontsize=9, rotation=rotation_angle, ha="right")
+        ax2.set_ylabel("Expected Wins", fontsize=14)
         ax2.set_title(
-            f"Expected Wins per Deck\nBased on deck winrate | {rounds} rounds | min {MIN_GAMES_FOR_WINRATE_CHARTS} games | Trusted >= {MIN_GAMES_FOR_TRUSTED}",
+            f"Based on deck winrate + 95% Wilson CI\n{rounds} rounds | min {MIN_GAMES_FOR_WINRATE_CHARTS} games",
             fontsize=13,
         )
-        ax2.set_xlim(0, rounds + 0.5)
-        ax2.grid(axis="x", alpha=0.3, linestyle="--")
-        for i, (wins, wr) in enumerate(zip(expected_wins, pd.to_numeric(top["Winrate"], errors="coerce").fillna(0.5))):
-            ax2.text(float(wins) + 0.05, i, f"{float(wins):.2f} ({float(wr):.1%})", va="center", fontsize=8)
+        ax2.set_ylim(0, rounds + 1.0)
+        ax2.grid(axis="y", alpha=0.3, linestyle="--")
+        for i, (wins, hi) in enumerate(zip(expected_wins, ci_hi)):
+            ax2.text(i, float(hi) + 0.1, f"{float(wins):.2f}", ha="center", va="bottom", fontsize=9)
 
     sm2 = plt.cm.ScalarMappable(cmap=plt.cm.RdYlGn, norm=plt.Normalize(vmin=0, vmax=1))
     sm2.set_array([])
@@ -541,17 +516,10 @@ def _create_record_probability_chart(
     cbar2.set_ticks([0, 0.25, 0.5, 0.75, 1.0])
     cbar2.set_ticklabels(["0%", "25%", "50%", "75%", "100%"])
 
-    info_text = (
-        f"Comparison reference:\n"
-        f"{player_deck_name}: WR={player_winrate:.1%}, Expected={player_winrate * rounds:.2f} wins\n"
-        "Use this to compare your deck against top meta decks"
-    )
-    fig.text(0.5, -0.02, info_text, ha="center", fontsize=10, bbox=dict(boxstyle="round", facecolor="lightblue", alpha=0.5))
-
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15)
+    plt.subplots_adjust(bottom=0.4)
     out_path = output_dir / f"record_probability_{file_tag}.png"
-    plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
+    plt.savefig(out_path, dpi=200, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return out_path
 
@@ -708,8 +676,6 @@ def run_statistics(
     total_players: int = 1000,
     rounds: int = 5,
     min_encounter_pct: float = 5.0,
-    player_deck_name: str = "My Deck",
-    player_winrate: float = 0.5,
     weeks_back: int = 4,
     output_profile: str = "full",
     palette_name: str = "classic",
@@ -807,10 +773,6 @@ def run_statistics(
     total_players = max(10, int(total_players))
     rounds = max(1, min(int(rounds), total_players))
     min_encounter_threshold = max(0.0, min(float(min_encounter_pct) / 100.0, 1.0))
-    player_winrate = float(player_winrate)
-    if player_winrate > 1:
-        player_winrate = player_winrate / 100.0
-    player_winrate = max(0.01, min(player_winrate, 0.99))
 
     df_new = _calculate_metrics(df_new, total_players, rounds)
     df_new["WeekIndex"] = week_index
@@ -818,10 +780,12 @@ def run_statistics(
     df_new["WeekStart"] = week_start_tag if week_start_tag is not None else pd.NA
     df_new["WeekEnd"] = week_end_tag if week_end_tag is not None else pd.NA
 
+    # Only strictly earlier weeks feed the trend: re-running an older week after a later one is
+    # already in history must not let that later week's Meta leak into this week's Trend Label.
     history_for_trend = df_history
     if len(df_history) > 0 and "WeekIndex" in df_history.columns:
-        same_week_mask = pd.to_numeric(df_history["WeekIndex"], errors="coerce") == week_index
-        history_for_trend = df_history[~same_week_mask].copy()
+        not_prior_mask = pd.to_numeric(df_history["WeekIndex"], errors="coerce") >= week_index
+        history_for_trend = df_history[~not_prior_mask].copy()
 
     def _trend_history_by_deck(level: str) -> dict[str, list[float]]:
         # Scoped to one Level so a Deck and an Archetype bucket that happen to share a name can
@@ -926,12 +890,10 @@ def run_statistics(
             normalized_legend_colors,
         )
         record_chart = _create_record_probability_chart(
-            player_winrate,
             df_new,
             rounds,
             file_tag,
             output_dir,
-            player_deck_name,
             normalized_deck_colors,
             normalized_legend_colors,
         )
@@ -1042,8 +1004,6 @@ def rebuild_history_from_dirs(
     total_players: int = 1000,
     rounds: int = 5,
     min_encounter_pct: float = 5.0,
-    player_deck_name: str = "My Deck",
-    player_winrate: float = 0.5,
     weeks_back: int = 4,
     output_profile: str = "full",
     palette_name: str = "classic",
@@ -1089,8 +1049,6 @@ def rebuild_history_from_dirs(
                 total_players=total_players,
                 rounds=rounds,
                 min_encounter_pct=min_encounter_pct,
-                player_deck_name=player_deck_name,
-                player_winrate=player_winrate,
                 weeks_back=weeks_back,
                 output_profile=output_profile,
                 palette_name=palette_name,

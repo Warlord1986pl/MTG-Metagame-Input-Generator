@@ -137,37 +137,6 @@ def discover_formats(window_days: int = 14) -> List[str]:
     return available
 
 
-def fetch_decks_for_format(format_name: str, window_days: int = 14) -> List[str]:
-    end_date = date.today()
-    start_date = end_date - timedelta(days=max(1, window_days - 1))
-    payload = api_get(
-        "metagame",
-        {
-            "format": format_name,
-            "min_date": start_date.isoformat(),
-            "max_date": end_date.isoformat(),
-            "limit": API_LIMIT,
-        },
-    )
-
-    rows = payload.get("data") or []
-    if not isinstance(rows, list):
-        return []
-
-    decks: List[str] = []
-    seen = set()
-    for row in rows:
-        name = str(row.get("archetype") or "").strip()
-        if not name:
-            continue
-        key = name.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        decks.append(name)
-    return decks
-
-
 def ask_int(prompt: str, default: int) -> int:
     while True:
         raw = ask(prompt, str(default))
@@ -240,7 +209,6 @@ def load_result_rows(run_dir: Path) -> List[Dict[str, str]]:
                     "deck": deck_name,
                     "archetype": str(row.get("Archetype") or "").strip(),
                     "meta": str(row.get("Meta") or "").strip(),
-                    "my_wr": str(row.get("My Deck Winrate") or "").strip(),
                 }
             )
     return rows
@@ -272,7 +240,6 @@ def _print_deck_table(rows: List[Dict[str, str]]) -> None:
         ("deck",      "Deck",       28, "left"),
         ("meta",      "Meta%",       7, "right"),
         ("archetype", "Archetype",  16, "left"),
-        ("my_wr",     "My WR",       8, "right"),
         ("raw_deck",  "Raw Name",   28, "left"),
     ]
     SEP = "  "
@@ -284,18 +251,11 @@ def _print_deck_table(rows: List[Dict[str, str]]) -> None:
             meta_str = f"{float(meta_str):.2f}"
         except (ValueError, TypeError):
             pass
-        wr_str = item.get("my_wr", "")
-        try:
-            wr_val = float(wr_str)
-            wr_str = f"{wr_val * 100:.1f}%" if wr_val > 0 else "-"
-        except (ValueError, TypeError):
-            wr_str = "-"
         cells = [
             str(idx),
             item.get("deck", ""),
             meta_str,
             item.get("archetype", ""),
-            wr_str,
             item.get("raw_deck", ""),
         ]
         print(SEP.join(_fmt(cell, w, a) for cell, (_, _, w, a) in zip(cells, COLS)))
@@ -439,29 +399,14 @@ def create_preset(base_dir: Path) -> Path:
         print("Could not fetch format list from API. Falling back to manual input.")
         format_name = ask("Format (e.g. Modern, Pioneer, Standard)", "Modern")
 
-    print(f"Fetching decks for format '{format_name}' (last 14 days)...")
-    try:
-        decks = fetch_decks_for_format(format_name, window_days=14)
-    except Exception:
-        decks = []
-
-    if decks:
-        my_deck = menu_select_from_list("Available decks", decks, 1)
-    else:
-        print("Could not fetch deck list from API. Falling back to manual input.")
-        my_deck = ask("Your deck (exact deck name)", "Domain Zoo")
-
-    default_name = f"{slugify(format_name)}_{slugify(my_deck)}"
+    default_name = slugify(format_name)
     preset_name = ask("Preset name", default_name)
     preset_path = preset_files(base_dir) / f"{preset_name}.json"
 
     data = {
         "name": preset_name,
         "format": format_name,
-        "my_deck": my_deck,
         "metagame_window_days": ask_int("Metagame window days (integer, usually 7 or 14)", 14),
-        "my_window_days": ask_int("My deck primary window days (integer)", 90),
-        "my_fallback_window_days": ask_int("My deck fallback window days (integer)", 180),
         "rogue_threshold": ask_float("Rogue threshold % (number, e.g. 0.5)", 0.5),
         "history_points_default": ask_int("Default history points", 4),
     }
@@ -552,17 +497,9 @@ def run_preset(base_dir: Path, preset_path: Path) -> None:
         str(history_points),
         "--metagame-window-days",
         str(preset["metagame_window_days"]),
-        "--my-deck",
-        preset["my_deck"],
-        "--my-window-days",
-        str(preset["my_window_days"]),
-        "--my-fallback-window-days",
-        str(preset["my_fallback_window_days"]),
         "--rogue-threshold",
         str(preset["rogue_threshold"]),
         "--metagame-limit",
-        str(API_LIMIT),
-        "--matchup-limit",
         str(API_LIMIT),
         "--rules-file",
         str(pdir / "configs" / "archetype_rules.csv"),

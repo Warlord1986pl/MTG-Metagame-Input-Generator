@@ -24,13 +24,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 import pandas as pd
-from openpyxl.styles import PatternFill
 
 try:
     from challenge_history_engine import (
         append_to_challenge_history,
         run_challenge_statistics,
         sync_challenge_history_window,
+        ChallengeReviewRequiredError,
     )
 except ImportError:
     try:
@@ -38,11 +38,17 @@ except ImportError:
             append_to_challenge_history,
             run_challenge_statistics,
             sync_challenge_history_window,
+            ChallengeReviewRequiredError,
         )
     except ImportError:
         append_to_challenge_history = None  # type: ignore[assignment]
         run_challenge_statistics = None  # type: ignore[assignment]
         sync_challenge_history_window = None  # type: ignore[assignment]
+
+        class ChallengeReviewRequiredError(RuntimeError):  # type: ignore[no-redef]
+            """Fallback so `except ChallengeReviewRequiredError` stays valid syntax when
+            challenge_history_engine itself failed to import -- run_challenge_statistics is None in
+            that case, so this is never actually raised."""
 
 try:
     from statistics_engine import run_statistics
@@ -72,6 +78,14 @@ except ImportError:
         from .league_site_export import export_league_site
     except ImportError:
         export_league_site = None  # type: ignore[assignment]
+
+try:
+    from alias_check import run_alias_checks_for_window
+except ImportError:
+    try:
+        from .alias_check import run_alias_checks_for_window
+    except ImportError:
+        run_alias_checks_for_window = None  # type: ignore[assignment]
 
 
 API_BASE = "https://api.videreproject.com"
@@ -186,9 +200,6 @@ class GenerationRunResult:
     run_dir: Path
     row_count: int
     mapped_from_user: int
-    primary_count: int
-    fallback_count: int
-    imputed_count: int
     rogue_threshold: float
     csv_path: Optional[Path] = None
     xlsx_path: Optional[Path] = None
@@ -1004,74 +1015,6 @@ def apply_archetype_overrides(raw_deck_name: str, deck_name: str, meta_share: Op
     return archetype
 
 
-def extract_my_deck_matchups(
-    format_name: str,
-    my_deck: str,
-    start_date: date,
-    end_date: date,
-    limit: int,
-    aliases: List[DeckAliasRule],
-) -> Dict[str, tuple[float, int]]:
-    payload = api_get(
-        "matchups",
-        {
-            "format": format_name,
-            "min_date": start_date.isoformat(),
-            "max_date": end_date.isoformat(),
-            "limit": limit,
-        },
-    )
-
-    data = payload.get("data") or []
-    if not isinstance(data, list):
-        return {}
-
-    my_canonical = canonicalize_deck_name(my_deck, aliases)
-    my_norm = normalize_name(my_canonical)
-    exact = None
-    contains = None
-
-    for row in data:
-        archetype = row.get("archetype")
-        if not archetype:
-            continue
-        row_canonical = canonicalize_deck_name(str(archetype), aliases)
-        row_norm = normalize_name(row_canonical)
-        if row_norm == my_norm:
-            exact = row
-            break
-        if my_norm in row_norm or row_norm in my_norm:
-            contains = row
-
-    selected = exact or contains
-    if not selected:
-        return {}
-
-    grouped_wr: Dict[str, List[tuple[float, int]]] = defaultdict(list)
-    for matchup in selected.get("matchups", []):
-        opponent = matchup.get("archetype")
-        if not opponent:
-            continue
-        opponent_canonical = canonicalize_deck_name(str(opponent), aliases)
-        wr = parse_percent(matchup.get("game_winrate"), decimal=True)
-        if wr is None:
-            continue
-        games = parse_count(matchup.get("game_count"))
-        grouped_wr[normalize_name(opponent_canonical)].append((wr, games))
-
-    # If multiple source matchups collapse into one canonical deck family
-    # (e.g. Izzet Prowess + Izzet Steel-Cutter -> Prowess), use their mean.
-    out: Dict[str, tuple[float, int]] = {}
-    for opponent_norm, wr_values in grouped_wr.items():
-        total_games = sum(g for _, g in wr_values)
-        if total_games > 0:
-            weighted_wr = sum(wr * g for wr, g in wr_values) / total_games
-            out[opponent_norm] = (float(weighted_wr), int(total_games))
-        else:
-            out[opponent_norm] = (float(sum(wr for wr, _ in wr_values) / len(wr_values)), 0)
-    return out
-
-
 def fetch_available_decks(
     format_name: str,
     start_date: date,
@@ -1110,16 +1053,12 @@ def build_dataset(
     format_name: str,
     week_start: date,
     week_end: date,
-    my_deck: str,
-    my_window_days: int,
-    my_fallback_window_days: int,
     rogue_threshold: float,
     rules: List[ArchetypeRule],
     aliases: List[DeckAliasRule],
     user_mapping: Dict[str, UserDeckMapping],
     metagame_limit: int,
-    matchup_limit: int,
-) -> tuple[pd.DataFrame, int, Dict[str, int]]:
+) -> tuple[pd.DataFrame, int]:
     metagame_payload = api_get(
         "metagame",
         {
@@ -1132,28 +1071,6 @@ def build_dataset(
     metagame_data = metagame_payload.get("data") or []
     if not isinstance(metagame_data, list) or not metagame_data:
         raise RuntimeError("Brak danych metagame dla zadanego tygodnia.")
-
-    my_start = week_end - timedelta(days=max(1, my_window_days))
-    my_wr_primary = extract_my_deck_matchups(
-        format_name=format_name,
-        my_deck=my_deck,
-        start_date=my_start,
-        end_date=week_end,
-        limit=matchup_limit,
-        aliases=aliases,
-    )
-
-    my_wr_fallback: Dict[str, tuple[float, int]] = {}
-    if my_fallback_window_days > my_window_days:
-        fallback_start = week_end - timedelta(days=max(1, my_fallback_window_days))
-        my_wr_fallback = extract_my_deck_matchups(
-            format_name=format_name,
-            my_deck=my_deck,
-            start_date=fallback_start,
-            end_date=week_end,
-            limit=matchup_limit,
-            aliases=aliases,
-        )
 
     rows = []
     mapped_from_user = 0
@@ -1174,20 +1091,6 @@ def build_dataset(
         archetype = normalize_archetype_label(archetype_raw)
         archetype = apply_archetype_overrides(raw_deck_name, deck_name, meta_share, archetype)
 
-        deck_lookup_name = deck_name
-
-        deck_norm = normalize_name(deck_lookup_name)
-        if deck_norm in my_wr_primary:
-            my_wr, my_wr_games = my_wr_primary[deck_norm]
-            my_wr_source = "primary"
-        elif deck_norm in my_wr_fallback:
-            my_wr, my_wr_games = my_wr_fallback[deck_norm]
-            my_wr_source = "fallback"
-        else:
-            my_wr = pd.NA
-            my_wr_games = 0
-            my_wr_source = "none"
-
         rows.append(
             {
                 "Raw Deck": raw_deck_name,
@@ -1196,9 +1099,6 @@ def build_dataset(
                 "Winrate": winrate,
                 "Winrate Game Count": parse_count(entry.get("game_count")),
                 "Archetype": archetype,
-                "My Deck Winrate": my_wr,
-                "My Deck Winrate Game Count": my_wr_games,
-                "My Deck Winrate Source": my_wr_source,
             }
         )
 
@@ -1221,7 +1121,6 @@ def build_dataset(
         grp = grp.copy()
         grp["Winrate Game Count"] = pd.to_numeric(grp["Winrate Game Count"], errors="coerce").fillna(0).astype(int)
         grp["Winrate"] = pd.to_numeric(grp["Winrate"], errors="coerce")
-        grp["My Deck Winrate"] = pd.to_numeric(grp["My Deck Winrate"], errors="coerce")
 
         games_total = int(grp["Winrate Game Count"].sum())
         if games_total > 0:
@@ -1230,27 +1129,6 @@ def build_dataset(
             weighted_winrate = float(grp["Winrate"].mean())
 
         meta_share = float(pd.to_numeric(grp["Meta"], errors="coerce").fillna(0).sum())
-
-        sources = grp["My Deck Winrate Source"].astype(str)
-        if (sources == "primary").any():
-            my_wr_source = "primary"
-        elif (sources == "fallback").any():
-            my_wr_source = "fallback"
-        else:
-            my_wr_source = "none"
-
-        if my_wr_source == "primary":
-            wr_slice = grp.loc[sources == "primary", "My Deck Winrate"]
-            wr_games_slice = grp.loc[sources == "primary", "My Deck Winrate Game Count"]
-        elif my_wr_source == "fallback":
-            wr_slice = grp.loc[sources == "fallback", "My Deck Winrate"]
-            wr_games_slice = grp.loc[sources == "fallback", "My Deck Winrate Game Count"]
-        else:
-            wr_slice = pd.Series([], dtype=float)
-            wr_games_slice = pd.Series([], dtype=float)
-
-        my_wr_value = float(wr_slice.dropna().mean()) if not wr_slice.dropna().empty else pd.NA
-        my_wr_games = int(pd.to_numeric(wr_games_slice, errors="coerce").fillna(0).max()) if not wr_games_slice.empty else 0
 
         archetypes = [normalize_archetype_label(str(a)) for a in grp["Archetype"].tolist()]
         archetype = pd.Series(archetypes).mode().iloc[0] if archetypes else "Unknown"
@@ -1264,14 +1142,10 @@ def build_dataset(
                 "Winrate": weighted_winrate,
                 "Winrate Game Count": games_total,
                 "Archetype": archetype,
-                "My Deck Winrate": my_wr_value,
-                "My Deck Winrate Game Count": my_wr_games,
-                "My Deck Winrate Source": my_wr_source,
             }
         )
 
     df = pd.DataFrame(grouped_rows)
-    source = df["My Deck Winrate Source"].copy()
     df = df[
         [
             "Deck",
@@ -1280,23 +1154,13 @@ def build_dataset(
             "Winrate",
             "Winrate Game Count",
             "Archetype",
-            "My Deck Winrate",
-            "My Deck Winrate Game Count",
         ]
     ].copy()
     df["Archetype"] = df["Archetype"].apply(normalize_archetype_label)
-    df["My Deck Winrate Fallback180"] = source.eq("fallback")
-    df["My Deck Winrate Imputed"] = source.eq("none")
-    df.loc[df["My Deck Winrate Imputed"], "My Deck Winrate"] = 0.5
     df = df.sort_values("Meta", ascending=False).reset_index(drop=True)
-    for col in ["Meta", "Winrate", "My Deck Winrate"]:
+    for col in ["Meta", "Winrate"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").round(2)
-    stats = {
-        "primary": int(source.eq("primary").sum()),
-        "fallback": int(source.eq("fallback").sum()),
-        "imputed": int(source.eq("none").sum()),
-    }
-    return df, mapped_from_user, stats
+    return df, mapped_from_user
 
 
 def _fallback_path(path: Path) -> Path:
@@ -1407,12 +1271,10 @@ def export_outputs(
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     output_xlsx.parent.mkdir(parents=True, exist_ok=True)
 
-    export_df = df.drop(columns=["My Deck Winrate Imputed", "My Deck Winrate Fallback180"], errors="ignore").copy()
-    for col in ["Meta", "Winrate", "My Deck Winrate"]:
+    export_df = df.copy()
+    for col in ["Meta", "Winrate"]:
         if col in export_df.columns:
             export_df[col] = pd.to_numeric(export_df[col], errors="coerce").round(2)
-    imputed_flags = df.get("My Deck Winrate Imputed", pd.Series([False] * len(df))).astype(bool).tolist()
-    fallback180_flags = df.get("My Deck Winrate Fallback180", pd.Series([False] * len(df))).astype(bool).tolist()
 
     final_csv: Optional[Path] = None
     final_xlsx: Optional[Path] = None
@@ -1423,33 +1285,15 @@ def export_outputs(
         except Exception:
             raise
 
-    yellow_fill = PatternFill(fill_type="solid", start_color="FFF59D", end_color="FFF59D")
-    green_fill = PatternFill(fill_type="solid", start_color="C8E6C9", end_color="C8E6C9")
-    wr_col_idx = export_df.columns.get_loc("My Deck Winrate") + 1
-
     if include_xlsx:
         final_xlsx = output_xlsx
         try:
             with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
                 export_df.to_excel(writer, index=False)
-                ws = writer.sheets["Sheet1"]
-                for row_idx, is_imputed in enumerate(imputed_flags, start=2):
-                    if is_imputed:
-                        ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
-                for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
-                    if is_fallback:
-                        ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
         except PermissionError:
             final_xlsx = _fallback_path(output_xlsx)
             with pd.ExcelWriter(final_xlsx, engine="openpyxl") as writer:
                 export_df.to_excel(writer, index=False)
-                ws = writer.sheets["Sheet1"]
-                for row_idx, is_imputed in enumerate(imputed_flags, start=2):
-                    if is_imputed:
-                        ws.cell(row=row_idx, column=wr_col_idx).fill = yellow_fill
-                for row_idx, is_fallback in enumerate(fallback180_flags, start=2):
-                    if is_fallback:
-                        ws.cell(row=row_idx, column=wr_col_idx).fill = green_fill
 
     return final_csv, final_xlsx
 
@@ -1467,17 +1311,6 @@ def aggregate_by_deck(df: pd.DataFrame) -> pd.DataFrame:
             if s and normalize_archetype_label(s) != "Unknown"
         ]
         return known[0] if known else "Unknown"
-
-    def merge_my_wr(series: pd.Series, meta_series: pd.Series):
-        mask = pd.Series(series).notna()
-        if not mask.any():
-            return pd.NA
-        wr_valid = pd.Series(series)[mask].astype(float)
-        meta_valid = pd.Series(meta_series)[mask].astype(float)
-        total_meta = meta_valid.sum()
-        if total_meta > 0:
-            return (wr_valid * meta_valid).sum() / total_meta
-        return wr_valid.mean()
 
     def merge_count(series: pd.Series) -> int:
         return int(pd.to_numeric(series, errors="coerce").fillna(0).sum())
@@ -1497,10 +1330,6 @@ def aggregate_by_deck(df: pd.DataFrame) -> pd.DataFrame:
                     ),
                     "Winrate Game Count": merge_count(g.get("Winrate Game Count", pd.Series(dtype=float))),
                     "Archetype": merge_archetype(g["Archetype"]),
-                    "My Deck Winrate": merge_my_wr(g.get("My Deck Winrate", pd.Series(dtype=float)), g["Meta"]),
-                    "My Deck Winrate Game Count": merge_count(g.get("My Deck Winrate Game Count", pd.Series(dtype=float))),
-                    "My Deck Winrate Fallback180": bool(g.get("My Deck Winrate Fallback180", pd.Series(dtype=bool)).fillna(False).any()),
-                    "My Deck Winrate Imputed": bool(g.get("My Deck Winrate Imputed", pd.Series(dtype=bool)).fillna(False).any()),
                 }
             )
         )
@@ -1550,17 +1379,6 @@ def aggregate_rogue_bucket(df: pd.DataFrame) -> pd.DataFrame:
     else:
         winrate_agg = float(winrate_vals.dropna().mean()) if winrate_vals.notna().any() else 0.5
 
-    my_wr_vals = pd.to_numeric(rogue_rows["My Deck Winrate"], errors="coerce")
-    my_wr_mask = my_wr_vals.notna()
-    if my_wr_mask.any():
-        my_meta = meta_vals[my_wr_mask]
-        if my_meta.sum() > 0:
-            my_wr_agg = float((my_wr_vals[my_wr_mask] * my_meta).sum() / my_meta.sum())
-        else:
-            my_wr_agg = float(my_wr_vals[my_wr_mask].mean())
-    else:
-        my_wr_agg = 0.5
-
     source_names = sorted(
         set(rogue_rows["Source Deck Names"].dropna().astype(str).tolist())
         | set(rogue_rows["Deck"].dropna().astype(str).tolist())
@@ -1574,10 +1392,6 @@ def aggregate_rogue_bucket(df: pd.DataFrame) -> pd.DataFrame:
         "Winrate Game Count": int(pd.to_numeric(rogue_rows["Winrate Game Count"], errors="coerce").fillna(0).sum()),
         "Archetype": "Mixed",
         "Meta Tier": "Rogue",
-        "My Deck Winrate": my_wr_agg,
-        "My Deck Winrate Game Count": int(pd.to_numeric(rogue_rows["My Deck Winrate Game Count"], errors="coerce").fillna(0).sum()),
-        "My Deck Winrate Fallback180": bool(rogue_rows.get("My Deck Winrate Fallback180", pd.Series(dtype=bool)).fillna(False).any()),
-        "My Deck Winrate Imputed": bool(rogue_rows.get("My Deck Winrate Imputed", pd.Series(dtype=bool)).fillna(False).any()),
     }
 
     combined = pd.concat([keep_rows, pd.DataFrame([rogue_row])], ignore_index=True)
@@ -1676,11 +1490,6 @@ def export_grouped_xml(df: pd.DataFrame, path: Path) -> Path:
             deck_node.set("meta", _fmt_num(row.get("Meta"), 4))
             deck_node.set("winrate", _fmt_num(row.get("Winrate"), 4))
             deck_node.set("winrate_game_count", str(int(pd.to_numeric(row.get("Winrate Game Count"), errors="coerce") or 0)))
-            deck_node.set("my_deck_winrate", _fmt_num(row.get("My Deck Winrate"), 4))
-            deck_node.set(
-                "my_deck_winrate_game_count",
-                str(int(pd.to_numeric(row.get("My Deck Winrate Game Count"), errors="coerce") or 0)),
-            )
 
     tree = ET.ElementTree(root)
     try:
@@ -1693,10 +1502,7 @@ def export_grouped_xml(df: pd.DataFrame, path: Path) -> Path:
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Buduje plik wejściowy do MTG-Metagame-Analyzer: tygodniowy metagame + "
-            "My Deck Winrate z dłuższego okna matchupów (np. Domain Zoo)."
-        )
+        description="Buduje plik wejściowy do MTG-Metagame-Analyzer: tygodniowy metagame."
     )
     parser.add_argument("--format", dest="format_name", default="Modern")
     parser.add_argument("--week-start", help="YYYY-MM-DD (tryb ręczny)")
@@ -1706,12 +1512,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("--anchor-sunday", help="YYYY-MM-DD, domyślnie ostatnia niedziela")
     parser.add_argument("--history-output-dir", default="outputs/history", help="(deprecated – use --outputs-base)")
     parser.add_argument("--outputs-base", default=None, help="katalog bazowy; jeśli pominięty – wyprowadzany z --history-output-dir")
-    parser.add_argument("--my-deck", default="Domain Zoo")
-    parser.add_argument("--my-window-days", type=int, default=90, help="np. 30 lub 90")
-    parser.add_argument("--my-fallback-window-days", type=int, default=180, help="okno fallback dla brakow, np. 180")
     parser.add_argument("--rogue-threshold", type=float, default=0.5, help="próg Meta (%%) poniżej którego deck wpada do Rogue")
     parser.add_argument("--metagame-limit", type=int, default=64)
-    parser.add_argument("--matchup-limit", type=int, default=300)
     parser.add_argument(
         "--rules-file",
         default="docs/archetype_rules.csv",
@@ -1843,20 +1645,44 @@ def interactive_menu() -> argparse.Namespace:
         except ValueError:
             print("Wpisz numer (1-6).")
     
-    # Pytanie o deck
     print(f"\nWybrano: {format_choice}")
-    my_deck = input("Podaj nazwę Twojego decka [Domain Zoo]: ").strip()
-    if not my_deck:
-        my_deck = "Domain Zoo"
-    
-    print(f"\nTwój deck: {my_deck}")
     print("\nUruchamiam generator...\n")
-    
+
     # Zwróć args w tym samym formacie co parse_args()
     args = parse_args([])
     args.format_name = format_choice
-    args.my_deck = my_deck
     return args
+
+
+def _still_unresolved_review_items(
+    review_items: list, challenge_history_csv: Path, premier_history_csv: Path
+) -> list:
+    """Drop review items whose (EventID, Pilot) row is already resolved in the persistent history.
+
+    The classifier re-flags the same decks on every run (place=1 always needs confirmation), but
+    sync_challenge_history_window keeps an already-resolved Deck sticky -- so once a human has
+    named a deck via the Review Queue, the fresh review item is stale and must not block the
+    window again. Fail-closed: an item is kept unless its history row exists with a real Deck.
+    """
+    resolved_keys: Dict[str, set] = {}
+    for kind, path in (("challenge", challenge_history_csv), ("premier", premier_history_csv)):
+        keys: set = set()
+        try:
+            if path is not None and Path(path).exists():
+                hist = pd.read_csv(path, dtype=str, keep_default_na=False)
+                done = hist[(hist["Deck"].str.strip() != "") & (hist["Deck"] != "NEEDS_MANUAL_REVIEW")]
+                keys = {
+                    (str(e).strip(), str(p).strip()) for e, p in zip(done["EventID"], done["Pilot"])
+                }
+        except Exception:
+            keys = set()
+        resolved_keys[kind] = keys
+    return [
+        item
+        for item in review_items
+        if (str(item.event_id).strip(), str(item.pilot).strip())
+        not in resolved_keys.get(getattr(item, "kind", "challenge"), set())
+    ]
 
 
 def _write_challenge_failure_status(run_dir: Path, week_start: date, week_end: date, reason: str, log) -> None:
@@ -1932,19 +1758,15 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
     results: List[GenerationRunResult] = []
 
     for idx, (week_start, week_end) in enumerate(windows, start=1):
-        dataset, mapped_from_user, my_wr_stats = build_dataset(
+        dataset, mapped_from_user = build_dataset(
             format_name=args.format_name,
             week_start=week_start,
             week_end=week_end,
-            my_deck=args.my_deck,
-            my_window_days=args.my_window_days,
-            my_fallback_window_days=args.my_fallback_window_days,
             rogue_threshold=args.rogue_threshold,
             rules=rules,
             aliases=aliases,
             user_mapping=user_mapping,
             metagame_limit=args.metagame_limit,
-            matchup_limit=args.matchup_limit,
         )
 
         run_dir = compute_run_dir(outputs_base, week_start, week_end)
@@ -2146,6 +1968,87 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     )
                     premier_history_path = premier_history_csv
 
+                # Fail-closed gate: refuse to compute Challenge statistics for this window while
+                # ANY deck (Challenge or Premier) is still NEEDS_MANUAL_REVIEW. History has already
+                # been synced above (with the literal NEEDS_MANUAL_REVIEW marker intact) so the
+                # Review Queue / apply_challenge_review.py workflow can still resolve these rows --
+                # only the statistics/chart step is blocked, and nothing here gets bucketed under an
+                # "Unknown" placeholder. See challenge_history_engine.ChallengeReviewRequiredError,
+                # which enforces the same gate a second time for the Challenge-only side if this
+                # function is ever called on its own (e.g. from the GUI's Statistics tab).
+                # Gate on what the history still has unresolved, not on the fresh classifier output:
+                # rows a human already named stay resolved across resyncs (sticky), while the
+                # classifier keeps re-flagging them (e.g. every place=1) on each run.
+                pending_review = _still_unresolved_review_items(
+                    challenge_dataset.review_items, challenge_history_csv, premier_history_csv
+                )
+                already_resolved = len(challenge_dataset.review_items) - len(pending_review)
+                if already_resolved:
+                    log(
+                        f"[challenge-stats] {already_resolved} flagged deck(s) already resolved in history "
+                        "(Review Queue) -- not blocking statistics for them."
+                    )
+                    pending_keys = {(str(i.event_id), str(i.pilot)) for i in pending_review}
+                    challenge_review_items = [
+                        d for d in challenge_review_items
+                        if (str(d["event_id"]), str(d["pilot"])) in pending_keys
+                    ]
+                if pending_review:
+                    review_summary = [
+                        {
+                            "EventID": item.event_id,
+                            "EventDate": item.date,
+                            "Kind": item.kind,
+                            "Tier": item.size,
+                            "Place": item.place,
+                            "Pilot": item.pilot,
+                            "DeckGuess": item.nearest_label or "",
+                        }
+                        for item in pending_review
+                    ]
+                    log(
+                        f"[challenge-stats] ABORT: {len(review_summary)} deck(s) (Challenge + Premier) "
+                        "still need manual review -- refusing to compute challenge_statistics.xlsx for "
+                        "this window:"
+                    )
+                    for item in review_summary:
+                        log(
+                            f"  - EventID={item['EventID']} {item['EventDate']} {item['Kind']} "
+                            f"Tier{item['Tier']} place={item['Place']} pilot={item['Pilot']} "
+                            f"(guess: {item['DeckGuess'] or 'n/a'})"
+                        )
+                    challenge_stats_dir = run_dir / "statistics" / "challenges"
+                    challenge_stats_dir.mkdir(parents=True, exist_ok=True)
+                    (challenge_stats_dir / "challenge_statistics.status.json").write_text(
+                        json.dumps(
+                            {
+                                "complete": False,
+                                "needs_review_count": len(review_summary),
+                                "needs_review": review_summary,
+                                "window_start": week_start.isoformat(),
+                                "window_end": week_end.isoformat(),
+                            },
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                    review_error = ChallengeReviewRequiredError(
+                        f"{len(review_summary)} Challenge/Premier deck(s) still need manual review for "
+                        f"{week_start.isoformat()}..{week_end.isoformat()}; resolve via the Review Queue "
+                        "/ apply_challenge_review.py against the *_needs_review_*.csv already written "
+                        f"for this window before statistics can be computed. Unresolved: {review_summary}"
+                    )
+                    # Carried as plain attributes (not exception args) so a caller with a UI --
+                    # currently only gui_app.py's GeneratorWorker -- can open the same rich Review
+                    # Queue dialog it already has for the (now unreachable) success-path popup,
+                    # instead of just showing this exception's text. challenge_review_items is the
+                    # dict shape ChallengeReviewDialog already expects (built above, right before
+                    # write_review_items_csv); a headless caller (CLI/tests) can ignore both.
+                    review_error.review_items = challenge_review_items
+                    review_error.history_csv = challenge_history_csv
+                    review_error.premier_history_csv = premier_history_csv
+                    raise review_error
+
                 if (
                     run_challenge_statistics is not None
                     and challenge_history_path is not None
@@ -2168,6 +2071,27 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         allow_partial=bool(getattr(args, "allow_partial", False)),
                     )
                     challenge_stats_path = ch_stats_result.excel_path
+
+                # Gate: any raw deck name currently folded into a different canonical name by
+                # docs/deck_aliases.csv (a true merge, not a self-mapping) gets its card lists
+                # re-checked against the target every run -- a list that stops matching after the
+                # alias was added must never be silently absorbed. Always writes the report file,
+                # even when empty, so "no file" can never be mistaken for "nothing to check".
+                if run_alias_checks_for_window is not None and challenge_history_path is not None:
+                    try:
+                        run_alias_checks_for_window(
+                            history_csv=challenge_history_path,
+                            mtgo_json_cache_dir=outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name),
+                            aliases_csv=Path(args.aliases_file),
+                            alias_check_config_csv=Path(args.aliases_file).parent / "alias_check_config.csv",
+                            format_name=args.format_name,
+                            window_start=week_start,
+                            window_end=week_end,
+                            report_out_path=run_dir / f"alias_report_{week_start.isoformat()}_to_{week_end.isoformat()}.csv",
+                            log=log,
+                        )
+                    except Exception as alias_check_err:
+                        log(f"[WARN] alias-check gate skipped (non-blocking): {alias_check_err}")
 
                 if run_league_update is not None and challenge_history_path is not None:
                     league_dir = outputs_base / "league"
@@ -2210,6 +2134,17 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 log(f"[ERROR] [BLOCKING] {league_err}")
                 window_blocking_failures.append(str(league_err))
                 _write_challenge_failure_status(run_dir, week_start, week_end, str(league_err), log)
+            except ChallengeReviewRequiredError as review_err:
+                # Treated the same as LeagueBlockingError above, not like an ordinary
+                # ChallengeSourceError: a still-unresolved deck is a data-integrity gap, not a
+                # transient fetch problem, so it must affect the run's overall outcome instead of
+                # completing "successfully" with a WARN buried in the log. The raiser (either the
+                # combined Challenge+Premier check above, or run_challenge_statistics() itself for
+                # the Challenge-only case) already wrote a structured challenge_statistics.status.json
+                # with needs_review_count/needs_review -- do not overwrite it with the generic
+                # failure-status shape here.
+                log(f"[ERROR] [BLOCKING] Challenge statistics withheld: {review_err}")
+                window_blocking_failures.append(str(review_err))
             except ChallengeSourceError as challenge_err:
                 log(f"[ERROR] Challenge report STOPPED (not a silent skip): {challenge_err}")
                 _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
@@ -2237,8 +2172,6 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     total_players=1000,
                     rounds=5,
                     min_encounter_pct=5.0,
-                    player_deck_name=args.my_deck or "My Deck",
-                    player_winrate=0.5,
                     weeks_back=4,
                     output_profile="full",
                     palette_name="classic",
@@ -2251,11 +2184,7 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
             except Exception as metagame_err:
                 log(f"[WARN] Metagame statistics skipped: {metagame_err}")
 
-        log(
-            f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | "
-            f"rows={len(dataset)} | primary={my_wr_stats['primary']} | "
-            f"180d={my_wr_stats['fallback']} | 50%={my_wr_stats['imputed']}"
-        )
+        log(f"[OK] P{idx} {week_start.isoformat()}..{week_end.isoformat()} | rows={len(dataset)}")
         log(f"[OK] Rogue threshold: Meta < {args.rogue_threshold}%")
         log(f"[OK] CSV: {final_csv}")
         if final_xlsx is not None:
@@ -2293,9 +2222,6 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 run_dir=run_dir,
                 row_count=len(dataset),
                 mapped_from_user=mapped_from_user,
-                primary_count=my_wr_stats["primary"],
-                fallback_count=my_wr_stats["fallback"],
-                imputed_count=my_wr_stats["imputed"],
                 rogue_threshold=args.rogue_threshold,
                 csv_path=final_csv,
                 xlsx_path=final_xlsx,

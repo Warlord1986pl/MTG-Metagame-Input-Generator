@@ -57,6 +57,7 @@ PREMIER_SUFFIXES = {
     "showcase-challenge",
     "showcase-qualifier",
     "rc-super-qualifier",
+    "rc-qualifier",
     "super-qualifier",
     "qualifier",
     "champions-showcase",
@@ -335,6 +336,41 @@ def build_mtgo_registry(
 
 def normalize_card_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
+
+
+def _event_date_from_json(data: dict) -> Optional[str]:
+    """The event's own date (YYYY-MM-DD) from its JSON: site_name's date part, else starttime.
+
+    The mtgo.com month-listing href date is usually identical, but has been seen to disagree for
+    a freshly published event (12854940: listed as 2026-09-27, but site_name/starttime both say
+    2026-09-28) -- trusting the listing put a Monday event into the previous Sunday's window.
+    """
+    event_id = str(data.get("event_id", "") or "")
+    site_name = str(data.get("site_name", "") or "")
+    if event_id and site_name.endswith(event_id):
+        m = re.search(r"(\d{4}-\d{2}-\d{2})$", site_name[: -len(event_id)])
+        if m:
+            return m.group(1)
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", str(data.get("starttime", "") or ""))
+    return m.group(1) if m else None
+
+
+def _reconcile_event_date(
+    c: "MtgoRegistryEvent", data: dict, start_date: date, end_date: date, emit: Callable[[str], None]
+) -> bool:
+    """Correct c.date from the event JSON when the listing disagrees. False = outside the window."""
+    json_date = _event_date_from_json(data)
+    if not json_date or json_date == c.date:
+        return True
+    emit(
+        f"[mtgo-dataset] WARN event {c.event_id}: mtgo.com listing says {c.date}, event JSON says "
+        f"{json_date} -- using the event JSON date"
+    )
+    c.date = json_date
+    if not (start_date.isoformat() <= json_date <= end_date.isoformat()):
+        emit(f"[mtgo-dataset] event {c.event_id} ({json_date}) is outside {start_date}..{end_date} -- excluded")
+        return False
+    return True
 
 
 def fetch_mtgo_event_json(
@@ -747,6 +783,8 @@ def build_challenge_dataset(
     for c in registry_challenge_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                continue
             mtgo_decks_by_event[c.event_id] = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
@@ -845,6 +883,8 @@ def build_challenge_dataset(
     for c in registry_premier_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                continue
             decks = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
@@ -1091,6 +1131,7 @@ def verify_registry_against_history(
     end_date: date,
     history_csv: Path,
     log: Optional[Callable[[str], None]] = None,
+    cache_dir: Optional[Path] = None,
 ) -> CompletenessSummary:
     """Build the mtgo.com registry for the window and diff it against what EventIDs are already
     present in *history_csv* -- one cheap registry-index fetch (no per-event decklist fetch), so
@@ -1116,6 +1157,22 @@ def verify_registry_against_history(
                 fmt_norm = normalize_name(format_name)
                 hist = hist[hist["Format"].astype(str).apply(normalize_name) == fmt_norm]
             present_ids = set(hist["EventID"].unique())
+
+    # A listed event missing from history may just be mis-dated on the mtgo.com listing (see
+    # _event_date_from_json): check its own JSON -- only for these few, so the common path stays one
+    # registry fetch -- and drop it if it actually falls outside the window.
+    if cache_dir is not None:
+        kept = []
+        for r in registry_challenge:
+            if r.event_id not in present_ids:
+                try:
+                    data = fetch_mtgo_event_json(r.event_id, r.url, cache_dir, log=log)
+                    if not _reconcile_event_date(r, data, start_date, end_date, log or (lambda _m: None)):
+                        continue
+                except Exception:
+                    pass  # unverifiable -> stays listed as MISSING (fail closed)
+            kept.append(r)
+        registry_challenge = kept
 
     fetched = [r for r in registry_challenge if r.event_id in present_ids]
     missing = [

@@ -10,6 +10,7 @@ import csv
 import json
 import re
 import shutil
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -100,6 +101,17 @@ def _clean_history_df_before_write(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df["EventID"] = df["EventID"].astype(str).str.replace(r"\.0$", "", regex=True)
     return df
+
+
+class ChallengeReviewRequiredError(RuntimeError):
+    """Raised by run_challenge_statistics() when the selected window still has one or more
+    NEEDS_MANUAL_REVIEW decks. Deliberately fatal (not a WARN + Unknown bucket): a still-unresolved
+    deck must never be silently folded into an "Unknown" stats row, because that row then gets
+    treated as ordinary data (counted in Top32EntryCount, potentially in delta-ranking medians, etc.)
+    instead of being fixed at the source. Resolve via the Review Queue (GUI) or
+    apply_challenge_review.py against the *_needs_review_*.csv this same run already wrote, then
+    re-run statistics.
+    """
 
 
 @dataclass
@@ -718,8 +730,8 @@ def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) 
     that function's docstring), not on the raw Pilot column. BestDeck (a single field) could not
     represent a pilot who won with two different decks -- it just silently attributed both wins to
     whichever deck happened to come from the pilot's single best-placed row. DecksPlayed/
-    WinningDecks replace it: WinningDecks is a semicolon-separated list of every deck this identity
-    actually won with (empty if they have no wins), computed per result row, not per pilot.
+    WinningDecks replace it: WinningDecks is a "; "-separated list of every deck this identity
+    actually won with, each with its win count ("Prowess x2; Boros Energy x1"; empty if no wins).
 
     Pilot in the output is the display name from this identity's most recent result in the window
     (by EventDate) -- same "latest name wins" rule as the league's season table.
@@ -750,11 +762,20 @@ def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) 
     decks_played = grp["Deck"].nunique() if "Deck" in work.columns else pd.Series(dtype=int)
 
     if "Deck" in work.columns:
-        winning_decks = (
-            work[work["Place"] == 1]
-            .groupby("_Key")["Deck"]
-            .apply(lambda s: ";".join(sorted(set(str(d).strip() for d in s if str(d).strip()))))
-        )
+        # One winner row per event -- the same "first Place==1 row per EventID" the finalists
+        # export uses -- so WinningDecks can never disagree with finalists' FirstDeck/FirstPilot.
+        # Each deck carries its multiplicity ("Amulet Titan x2"; "Prowess x2; Boros Energy x1"):
+        # a bare set of names loses a pilot who won twice with the same deck.
+        winner_rows = work[work["Place"] == 1]
+        if "EventID" in winner_rows.columns:
+            winner_rows = winner_rows.drop_duplicates(subset=["EventID"], keep="first")
+
+        def _decks_with_counts(s: pd.Series) -> str:
+            counts = Counter(str(d).strip() for d in s if str(d).strip())
+            ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+            return "; ".join(f"{deck} x{n}" for deck, n in ordered)
+
+        winning_decks = winner_rows.groupby("_Key")["Deck"].apply(_decks_with_counts)
     else:
         winning_decks = pd.Series(dtype=str)
 
@@ -1914,21 +1935,57 @@ def run_challenge_statistics(
         return ChallengeStatisticsResult(output_dir, history_csv, output_dir / "challenge_statistics.xlsx", 0, 0, [])
 
     # Rows still stuck at NEEDS_MANUAL_REVIEW (classifier could not confidently place them, and no
-    # human resolution has been applied yet) are NOT dropped from the stats tables and NOT silently
-    # merged into whatever real deck/archetype the classifier guessed second-best -- they get their
-    # own explicit "Unknown" row, so sum(Top32EntryCount) always equals the tier's real total
-    # decklist count and the gap is visible in the data instead of absorbed. This relabel is local
-    # to the stats tables
-    # only -- the underlying history_csv keeps the literal NEEDS_MANUAL_REVIEW marker untouched, so
-    # the review/rescan workflow (challenge_mtgo_source.py) still finds these rows correctly.
+    # human resolution has been applied yet) must never be silently bucketed into a stats-table
+    # "Unknown" row and treated as ordinary data from there on (counted in Top32EntryCount, able to
+    # feed a delta-ranking median, etc.) -- that hides a data gap as if it were a real, if unnamed,
+    # deck. Fail closed instead: no xlsx, no chart, no relabel, until a human resolves every row via
+    # the Review Queue / apply_challenge_review.py against the *_needs_review_*.csv this run (or an
+    # earlier one covering these events) already wrote. The underlying history_csv keeps the literal
+    # NEEDS_MANUAL_REVIEW marker untouched either way, so that workflow can still find these rows.
     unresolved_mask = hist_window["Deck"] == "NEEDS_MANUAL_REVIEW"
     n_unresolved = int(unresolved_mask.sum())
     if n_unresolved:
-        hist_window.loc[unresolved_mask, "Deck"] = "Unknown"
-        hist_window.loc[unresolved_mask, "Archetype"] = "Unknown"
+        needs_review_summary = [
+            {
+                "EventID": str(r.EventID),
+                "EventDate": str(r.EventDate),
+                "Tier": str(r.Tier),
+                "Place": str(r.Place),
+                "Pilot": str(r.Pilot),
+                "DeckGuess": str(getattr(r, "DeckGuess", "") or ""),
+            }
+            for r in hist_window.loc[
+                unresolved_mask, ["EventID", "EventDate", "Tier", "Place", "Pilot", "DeckGuess"]
+            ].itertuples()
+        ]
         emit(
-            f"[challenge-stats] {n_unresolved} still-unresolved deck(s) (NEEDS_MANUAL_REVIEW) bucketed "
-            "under an explicit 'Unknown' row in the stats tables, not dropped."
+            f"[challenge-stats] ABORT: {n_unresolved} still-unresolved deck(s) (NEEDS_MANUAL_REVIEW) in "
+            "the selected window -- xlsx NOT written, nothing bucketed under 'Unknown'. Resolve via the "
+            "Review Queue / apply_challenge_review.py, then re-run statistics:"
+        )
+        for item in needs_review_summary:
+            emit(
+                f"  - EventID={item['EventID']} {item['EventDate']} Tier{item['Tier']} "
+                f"place={item['Place']} pilot={item['Pilot']} (guess: {item['DeckGuess'] or 'n/a'})"
+            )
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "challenge_statistics.status.json").write_text(
+            json.dumps(
+                {
+                    "complete": False,
+                    "needs_review_count": n_unresolved,
+                    "needs_review": needs_review_summary,
+                    "window_start": week_start.isoformat() if week_start else None,
+                    "window_end": week_end.isoformat() if week_end else None,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        raise ChallengeReviewRequiredError(
+            f"{n_unresolved} Challenge deck(s) still need manual review in "
+            f"{week_start.isoformat() if week_start else '?'}..{week_end.isoformat() if week_end else '?'}; "
+            f"refusing to write challenge_statistics.xlsx. Unresolved: {needs_review_summary}"
         )
 
     tiers = sorted(hist_window["Tier"].unique(), key=lambda s: int(s) if str(s).isdigit() else -1)
@@ -2173,6 +2230,25 @@ def run_challenge_statistics(
     finalists_path = output_dir / f"finalists_{window_label}.csv"
     _clean_history_df_before_write(finalists_df).to_csv(finalists_path, index=False, encoding="utf-8-sig")
     emit(f"[challenge-stats] Finalists: {len(finalists_df)} event(s) -> {finalists_path}")
+
+    # Defense in depth: the NEEDS_MANUAL_REVIEW check above already raises before this point, so this
+    # should be unreachable -- it exists to catch a future regression (a new code path that
+    # reintroduces an unresolved/placeholder row here) rather than the currently-known cause. Covers
+    # only the Challenge-tier tables this function owns; the equivalent gate for premier events lives
+    # in the caller (metagame_input_generator.run_generation), which holds both datasets.
+    _bad_tables = (
+        [(f"C{_tier}_Decks", _tbl) for _tier, _tbl in tier_deck_tables.items()]
+        + [(f"C{_tier}_Archetypes", _tbl) for _tier, _tbl in tier_arch_tables.items()]
+        + [("ALL_Decks", deck_all), ("ALL_Archetypes", arch_all)]
+    )
+    for _sheet_name, _tbl in _bad_tables:
+        for _col in ("Deck", "Archetype"):
+            if _col in _tbl.columns and _tbl[_col].astype(str).isin(["Unknown", "NEEDS_MANUAL_REVIEW"]).any():
+                raise AssertionError(
+                    f"invariant violated: sheet {_sheet_name!r} column {_col!r} still contains an "
+                    "Unknown/NEEDS_MANUAL_REVIEW row at xlsx-write time -- the earlier fail-closed "
+                    "check should have already aborted this run"
+                )
 
     with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
         pd.DataFrame([{
