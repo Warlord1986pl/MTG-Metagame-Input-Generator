@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854927,2026-09-27,C32,Challenge,QF,maimai13,1533619,Micro,756400,2,1,Boros Energy,Tron
+12854927,2026-09-27,C32,Challenge,QF,Sam_Lewin,2092528,gingeralegames,3394612,2,0,Esper Blink,Dimir Midrange
+12854927,2026-09-27,C32,Challenge,QF,nikroulah,2134926,Arcbound_Papi,2137107,2,0,WBG,Affinity
+12854927,2026-09-27,C32,Challenge,QF,NAP_DARKMAGE_MJM,2267386,TheReverb,3473786,2,0,Goryo's Vengeance,Prowess
+12854927,2026-09-27,C32,Challenge,SF,Sam_Lewin,2092528,NAP_DARKMAGE_MJM,2267386,2,1,Esper Blink,Goryo's Vengeance
+12854927,2026-09-27,C32,Challenge,SF,maimai13,1533619,nikroulah,2134926,2,1,Boros Energy,WBG
+12854927,2026-09-27,C32,Challenge,F,maimai13,1533619,Sam_Lewin,2092528,2,0,Boros Energy,Esper Blink
