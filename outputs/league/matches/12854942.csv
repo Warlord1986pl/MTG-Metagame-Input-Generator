@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854942,2026-09-28,C96,Challenge,QF,moon11,1471145,Savior0117,2464763,2,1,Rakdos Midrange,Belcher
+12854942,2026-09-28,C96,Challenge,QF,nedyahiske,2404093,xfile,2449332,2,1,WBG,Broodscale Combo
+12854942,2026-09-28,C96,Challenge,QF,Mapletreefrog,1557079,Rvng,649380,2,1,Esper Blink,Goryo's Vengeance
+12854942,2026-09-28,C96,Challenge,QF,McWinSauce,803141,Thunus,3076886,2,1,Indomitable Creativity,Broodscale Combo
+12854942,2026-09-28,C96,Challenge,SF,nedyahiske,2404093,McWinSauce,803141,2,0,WBG,Indomitable Creativity
+12854942,2026-09-28,C96,Challenge,SF,moon11,1471145,Mapletreefrog,1557079,2,0,Rakdos Midrange,Esper Blink
+12854942,2026-09-28,C96,Challenge,F,moon11,1471145,nedyahiske,2404093,2,0,Rakdos Midrange,WBG

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854940,2026-09-28,C32,Challenge,QF,derlumberzack,1126781,eswaff,3135877,2,1,WBG,Broodscale Combo
+12854940,2026-09-28,C32,Challenge,QF,ShadowTitan1,2130633,Kuhmero,1076951,2,1,Domain Zoo,Rakdos Midrange
+12854940,2026-09-28,C32,Challenge,QF,woopdeloop,3494571,gingeralegames,3394612,2,1,Boros Energy,Domain Zoo
+12854940,2026-09-28,C32,Challenge,QF,lazerbeam,968652,justFeather,2446403,2,1,Boros Energy,Mono-Green Eldrazi
+12854940,2026-09-28,C32,Challenge,SF,ShadowTitan1,2130633,lazerbeam,968652,2,0,Domain Zoo,Boros Energy
+12854940,2026-09-28,C32,Challenge,SF,woopdeloop,3494571,derlumberzack,1126781,2,0,Boros Energy,WBG
+12854940,2026-09-28,C32,Challenge,F,ShadowTitan1,2130633,woopdeloop,3494571,2,0,Domain Zoo,Boros Energy
