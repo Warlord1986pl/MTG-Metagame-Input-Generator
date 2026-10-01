@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854949,2026-09-29,C32,Challenge,QF,bananadisaster,3442638,xfile,2449332,2,0,Ruby Storm,Eldrazi Ramp
+12854949,2026-09-29,C32,Challenge,QF,YungDingo,2928451,HouseOfManaMTG,2669359,2,1,Goryo's Vengeance,Eldrazi Ramp
+12854949,2026-09-29,C32,Challenge,QF,ejk,1952341,nahuel10,1942357,2,0,Tron,Land Destruction
+12854949,2026-09-29,C32,Challenge,QF,Mistakenn,2129541,justFeather,2446403,2,0,Amulet Titan,Mono-Green Eldrazi
+12854949,2026-09-29,C32,Challenge,SF,bananadisaster,3442638,ejk,1952341,2,1,Ruby Storm,Tron
+12854949,2026-09-29,C32,Challenge,SF,YungDingo,2928451,Mistakenn,2129541,2,0,Goryo's Vengeance,Amulet Titan
+12854949,2026-09-29,C32,Challenge,F,YungDingo,2928451,bananadisaster,3442638,2,1,Goryo's Vengeance,Ruby Storm

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855448,2026-09-29,C64,Challenge,QF,YungDingo,2928451,ice_nine_BIGFAN,2851797,2,0,Goryo's Vengeance,Neobrand
+12855448,2026-09-29,C64,Challenge,QF,Marxelo,277034,Bambil,3574196,2,0,WBG,4c HollowOne
+12855448,2026-09-29,C64,Challenge,QF,rastaf,254536,Pafru,3069560,2,0,Esper Blink,Belcher
+12855448,2026-09-29,C64,Challenge,QF,4FunNoWin,3479773,MeninoNey,2903591,2,1,Ruby Storm,Living End
+12855448,2026-09-29,C64,Challenge,SF,YungDingo,2928451,Marxelo,277034,2,0,Goryo's Vengeance,WBG
+12855448,2026-09-29,C64,Challenge,SF,4FunNoWin,3479773,rastaf,254536,2,0,Ruby Storm,Esper Blink
+12855448,2026-09-29,C64,Challenge,F,4FunNoWin,3479773,YungDingo,2928451,2,1,Ruby Storm,Goryo's Vengeance

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854950,2026-09-29,C16,Challenge,QF,pepeteam,2272105,bobthedog,5694,2,1,Goryo's Vengeance,Azorius Control
+12854950,2026-09-29,C16,Challenge,QF,KapoUzumaki11,3428793,Xenowan,2614008,2,1,WBG,Belcher
+12854950,2026-09-29,C16,Challenge,QF,KinderAttack,2200478,Marmotte_Lambda,3123572,2,0,Affinity,Jeskai Energy
+12854950,2026-09-29,C16,Challenge,QF,Navigator_2505,2831449,meanfannypack,1703735,2,0,Affinity,Esper Blink
+12854950,2026-09-29,C16,Challenge,SF,KapoUzumaki11,3428793,KinderAttack,2200478,2,1,WBG,Affinity
+12854950,2026-09-29,C16,Challenge,SF,Navigator_2505,2831449,pepeteam,2272105,2,0,Affinity,Goryo's Vengeance
+12854950,2026-09-29,C16,Challenge,F,Navigator_2505,2831449,KapoUzumaki11,3428793,2,1,Affinity,WBG
