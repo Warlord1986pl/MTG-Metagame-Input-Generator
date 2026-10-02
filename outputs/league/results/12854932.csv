@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12854932,2026-09-27,C64,Challenge,ShowTime_,949859,1,Domain Zoo,,5,,,,,
-12854932,2026-09-27,C64,Challenge,optivial,3140486,2,Broodscale Combo,,4,,,,,
-12854932,2026-09-27,C64,Challenge,Kihara_Works,2278761,3,Affinity,,3,,,,,
-12854932,2026-09-27,C64,Challenge,Celethil,3072920,4,Tron,,3,,,,,
-12854932,2026-09-27,C64,Challenge,BressD1,1940271,5,Prowess,,2,,,,,
-12854932,2026-09-27,C64,Challenge,Sodeq,1754547,6,Broodscale Combo,,2,,,,,
-12854932,2026-09-27,C64,Challenge,bubblywubblytubbler,3298193,7,Prowess,,2,,,,,
-12854932,2026-09-27,C64,Challenge,Daniele123,991522,8,Ruby Storm,,2,,,,,
-12854932,2026-09-27,C64,Challenge,Rudokant,2685092,9,WBG,,1,,,,,
-12854932,2026-09-27,C64,Challenge,Diomed_Tidid,3415205,10,Broodscale Combo,,1,,,,,
-12854932,2026-09-27,C64,Challenge,JV_7777,2045296,11,Affinity,,1,,,,,
-12854932,2026-09-27,C64,Challenge,mikel88888888,2545557,12,Broodscale Combo,,1,,,,,
-12854932,2026-09-27,C64,Challenge,_Falcon_,2498069,13,Prowess,,1,,,,,
-12854932,2026-09-27,C64,Challenge,gyyby297,1526577,14,Broodscale Combo,,1,,,,,
-12854932,2026-09-27,C64,Challenge,KapoUzumaki11,3428793,15,WBG,,1,,,,,
-12854932,2026-09-27,C64,Challenge,xfile,2449332,16,Broodscale Combo,,1,,,,,
-12854932,2026-09-27,C64,Challenge,Xerk,1089456,17,Sam Combo,,0,,,,,
-12854932,2026-09-27,C64,Challenge,habieh,3112617,18,Goryo's Vengeance,,0,,,,,
-12854932,2026-09-27,C64,Challenge,Mikhathara1994,833551,19,Prowess,,0,,,,,
-12854932,2026-09-27,C64,Challenge,oskiyaa,1111702,20,Broodscale Combo,,0,,,,,
-12854932,2026-09-27,C64,Challenge,kenjinsakura,611082,21,Prowess,,0,,,,,
-12854932,2026-09-27,C64,Challenge,mommydom_manifesto,3227644,22,Song of Creation,,0,,,,,
-12854932,2026-09-27,C64,Challenge,_Tia93_,1216580,23,Esper Blink,,0,,,,,
-12854932,2026-09-27,C64,Challenge,Diub,2794922,24,Boros Energy,,0,,,,,
-12854932,2026-09-27,C64,Challenge,SpecterTurtle,2714690,25,Broodscale Combo,,0,,,,,
-12854932,2026-09-27,C64,Challenge,DannyTigrai,3283837,26,Prowess,,0,,,,,
-12854932,2026-09-27,C64,Challenge,DB_cinabiondo,3223350,27,Broodscale Combo,,0,,,,,
-12854932,2026-09-27,C64,Challenge,Latorretta,2708393,28,Prowess,,0,,,,,
-12854932,2026-09-27,C64,Challenge,SexPistols,1511275,29,Eldrazi Tron,,0,,,,,
-12854932,2026-09-27,C64,Challenge,Terminus0,2180371,30,Izzet Murktide,,0,,,,,
-12854932,2026-09-27,C64,Challenge,Fatcaster_Mage,2660106,31,Jeskai Energy,,0,,,,,
-12854932,2026-09-27,C64,Challenge,GWT,3544040,32,Belcher,,0,,,,,
+12854932,2026-09-27,C64,Challenge,ShowTime_,949859,1,Domain Zoo,,5,2,18,0.67347,0.72222,0.59943
+12854932,2026-09-27,C64,Challenge,optivial,3140486,2,Broodscale Combo,,4,8,15,0.60816,0.58824,0.59170
+12854932,2026-09-27,C64,Challenge,Kihara_Works,2278761,3,Affinity,,3,4,18,0.59864,0.76471,0.54365
+12854932,2026-09-27,C64,Challenge,Celethil,3072920,4,Tron,,3,6,18,0.54286,0.75000,0.51896
+12854932,2026-09-27,C64,Challenge,BressD1,1940271,5,Prowess,,2,1,18,0.71020,0.75000,0.62312
+12854932,2026-09-27,C64,Challenge,Sodeq,1754547,6,Broodscale Combo,,2,3,18,0.62585,0.70588,0.58194
+12854932,2026-09-27,C64,Challenge,bubblywubblytubbler,3298193,7,Prowess,,2,5,18,0.58435,0.76471,0.57016
+12854932,2026-09-27,C64,Challenge,Daniele123,991522,8,Ruby Storm,,2,7,15,0.65986,0.58824,0.60020
+12854932,2026-09-27,C64,Challenge,Rudokant,2685092,9,WBG,,1,9,15,0.60544,0.71429,0.53536
+12854932,2026-09-27,C64,Challenge,Diomed_Tidid,3415205,10,Broodscale Combo,,1,10,15,0.59388,0.57895,0.56022
+12854932,2026-09-27,C64,Challenge,JV_7777,2045296,11,Affinity,,1,11,15,0.58503,0.58824,0.56406
+12854932,2026-09-27,C64,Challenge,mikel88888888,2545557,12,Broodscale Combo,,1,12,15,0.57415,0.62500,0.54675
+12854932,2026-09-27,C64,Challenge,_Falcon_,2498069,13,Prowess,,1,13,15,0.56463,0.68750,0.52480
+12854932,2026-09-27,C64,Challenge,gyyby297,1526577,14,Broodscale Combo,,1,14,15,0.55374,0.66667,0.52064
+12854932,2026-09-27,C64,Challenge,KapoUzumaki11,3428793,15,WBG,,1,15,15,0.54014,0.68750,0.52247
+12854932,2026-09-27,C64,Challenge,xfile,2449332,16,Broodscale Combo,,1,16,15,0.51701,0.61111,0.52093
+12854932,2026-09-27,C64,Challenge,Xerk,1089456,17,Sam Combo,,0,17,15,0.50340,0.60000,0.48305
+12854932,2026-09-27,C64,Challenge,habieh,3112617,18,Goryo's Vengeance,,0,18,15,0.49864,0.61111,0.49032
+12854932,2026-09-27,C64,Challenge,Mikhathara1994,833551,19,Prowess,,0,19,15,0.49388,0.63158,0.47880
+12854932,2026-09-27,C64,Challenge,oskiyaa,1111702,20,Broodscale Combo,,0,20,12,0.68027,0.55556,0.61876
+12854932,2026-09-27,C64,Challenge,kenjinsakura,611082,21,Prowess,,0,21,12,0.60544,0.55556,0.56269
+12854932,2026-09-27,C64,Challenge,mommydom_manifesto,3227644,22,Song of Creation,,0,22,12,0.60204,0.64706,0.55011
+12854932,2026-09-27,C64,Challenge,_Tia93_,1216580,23,Esper Blink,,0,23,12,0.57551,0.56250,0.55814
+12854932,2026-09-27,C64,Challenge,Diub,2794922,24,Boros Energy,,0,24,12,0.55714,0.50000,0.53710
+12854932,2026-09-27,C64,Challenge,SpecterTurtle,2714690,25,Broodscale Combo,,0,25,12,0.55374,0.55556,0.55620
+12854932,2026-09-27,C64,Challenge,DannyTigrai,3283837,26,Prowess,,0,26,12,0.55374,0.50000,0.53299
+12854932,2026-09-27,C64,Challenge,DB_cinabiondo,3223350,27,Broodscale Combo,,0,27,12,0.53061,0.53333,0.51490
+12854932,2026-09-27,C64,Challenge,Latorretta,2708393,28,Prowess,,0,28,12,0.52653,0.50000,0.53437
+12854932,2026-09-27,C64,Challenge,SexPistols,1511275,29,Eldrazi Tron,,0,29,12,0.52381,0.50000,0.53208
+12854932,2026-09-27,C64,Challenge,Terminus0,2180371,30,Izzet Murktide,,0,30,12,0.50884,0.50000,0.50640
+12854932,2026-09-27,C64,Challenge,Fatcaster_Mage,2660106,31,Jeskai Energy,,0,31,12,0.50340,0.50000,0.48776
+12854932,2026-09-27,C64,Challenge,GWT,3544040,32,Belcher,,0,32,12,0.49932,0.56250,0.50137

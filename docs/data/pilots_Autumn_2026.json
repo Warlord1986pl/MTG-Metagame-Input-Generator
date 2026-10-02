@@ -836,9 +836,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 17,
-          "gwp": null,
+          "gwp": 0.6,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -999,9 +999,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 20,
-          "gwp": null,
+          "gwp": 0.55556,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -2996,9 +2996,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 23,
-          "gwp": null,
+          "gwp": 0.5625,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -4222,9 +4222,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 29,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -4269,9 +4269,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 14,
-          "gwp": null,
+          "gwp": 0.66667,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -6054,6 +6054,18 @@
     "id:1754547": {
       "bracketMatches": [
         {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Tron",
+          "opponentId": "id:3072920",
+          "opponentName": "Celethil",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-11",
           "event": "Modern Challenge 64",
           "eventId": "12854070",
@@ -6114,9 +6126,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 6,
-          "gwp": null,
+          "gwp": 0.70588,
           "points": 2,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         },
         {
@@ -7872,6 +7884,18 @@
     "id:1940271": {
       "bracketMatches": [
         {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3140486",
+          "opponentName": "optivial",
+          "pilotDeck": "Prowess",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-20",
           "event": "Modern Challenge 64",
           "eventId": "12854515",
@@ -7968,9 +7992,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 5,
-          "gwp": null,
+          "gwp": 0.75,
           "points": 2,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         },
         {
@@ -10435,9 +10459,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 11,
-          "gwp": null,
+          "gwp": 0.58824,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -13167,9 +13191,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 30,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -14977,7 +15001,32 @@
       "xHandle": null
     },
     "id:2278761": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Prowess",
+          "opponentId": "id:3298193",
+          "opponentName": "bubblywubblytubbler",
+          "pilotDeck": "Affinity",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3140486",
+          "opponentName": "optivial",
+          "pilotDeck": "Affinity",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
         "starts": 5,
@@ -15014,9 +15063,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 3,
-          "gwp": null,
+          "gwp": 0.76471,
           "points": 3,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         },
         {
@@ -17146,9 +17195,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 16,
-          "gwp": null,
+          "gwp": 0.61111,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -17802,9 +17851,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 13,
-          "gwp": null,
+          "gwp": 0.6875,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -18616,9 +18665,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 12,
-          "gwp": null,
+          "gwp": 0.625,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -20336,9 +20385,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 31,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -21696,9 +21745,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 9,
-          "gwp": null,
+          "gwp": 0.71429,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -22949,9 +22998,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 28,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -23517,9 +23566,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 25,
-          "gwp": null,
+          "gwp": 0.55556,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -25840,9 +25889,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 24,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -33000,7 +33049,32 @@
       "xHandle": null
     },
     "id:3072920": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:1754547",
+          "opponentName": "Sodeq",
+          "pilotDeck": "Tron",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:949859",
+          "opponentName": "ShowTime_",
+          "pilotDeck": "Tron",
+          "result": "L",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
         "starts": 1,
@@ -33025,9 +33099,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 4,
-          "gwp": null,
+          "gwp": 0.75,
           "points": 3,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         }
       ],
@@ -34572,9 +34646,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 18,
-          "gwp": null,
+          "gwp": 0.61111,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         },
         {
@@ -35255,7 +35329,44 @@
       "xHandle": null
     },
     "id:3140486": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:949859",
+          "opponentName": "ShowTime_",
+          "pilotDeck": "Broodscale Combo",
+          "result": "L",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Prowess",
+          "opponentId": "id:1940271",
+          "opponentName": "BressD1",
+          "pilotDeck": "Broodscale Combo",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Affinity",
+          "opponentId": "id:2278761",
+          "opponentName": "Kihara_Works",
+          "pilotDeck": "Broodscale Combo",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
         "starts": 1,
@@ -35280,9 +35391,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 2,
-          "gwp": null,
+          "gwp": 0.58824,
           "points": 4,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -37361,9 +37472,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 27,
-          "gwp": null,
+          "gwp": 0.53333,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -37490,9 +37601,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 22,
-          "gwp": null,
+          "gwp": 0.64706,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -38239,9 +38350,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 26,
-          "gwp": null,
+          "gwp": 0.5,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -38479,6 +38590,18 @@
     "id:3298193": {
       "bracketMatches": [
         {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Affinity",
+          "opponentId": "id:2278761",
+          "opponentName": "Kihara_Works",
+          "pilotDeck": "Prowess",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-19",
           "event": "Modern Challenge 16",
           "eventId": "12854500",
@@ -38563,9 +38686,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 7,
-          "gwp": null,
+          "gwp": 0.76471,
           "points": 2,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         },
         {
@@ -40672,9 +40795,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 10,
-          "gwp": null,
+          "gwp": 0.57895,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -40940,9 +41063,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 15,
-          "gwp": null,
+          "gwp": 0.6875,
           "points": 1,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -43969,9 +44092,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 32,
-          "gwp": null,
+          "gwp": 0.5625,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         },
         {
@@ -45862,9 +45985,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 21,
-          "gwp": null,
+          "gwp": 0.55556,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 12,
           "tier": "C64"
         }
       ],
@@ -48067,9 +48190,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 19,
-          "gwp": null,
+          "gwp": 0.63158,
           "points": 0,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],
@@ -49475,6 +49598,42 @@
     "id:949859": {
       "bracketMatches": [
         {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Broodscale Combo",
+          "opponentId": "id:3140486",
+          "opponentName": "optivial",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "F",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Ruby Storm",
+          "opponentId": "id:991522",
+          "opponentName": "Daniele123",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "QF",
+          "tier": "C64"
+        },
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Tron",
+          "opponentId": "id:3072920",
+          "opponentName": "Celethil",
+          "pilotDeck": "Domain Zoo",
+          "result": "W",
+          "round": "SF",
+          "tier": "C64"
+        },
+        {
           "date": "2026-09-21",
           "event": "Modern Challenge 96",
           "eventId": "12854525",
@@ -49535,9 +49694,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 1,
-          "gwp": null,
+          "gwp": 0.72222,
           "points": 5,
-          "swissPoints": null,
+          "swissPoints": 18,
           "tier": "C64"
         },
         {
@@ -49821,7 +49980,20 @@
       "xHandle": null
     },
     "id:991522": {
-      "bracketMatches": [],
+      "bracketMatches": [
+        {
+          "date": "2026-09-27",
+          "event": "Modern Challenge 64",
+          "eventId": "12854932",
+          "opponentDeck": "Domain Zoo",
+          "opponentId": "id:949859",
+          "opponentName": "ShowTime_",
+          "pilotDeck": "Ruby Storm",
+          "result": "L",
+          "round": "QF",
+          "tier": "C64"
+        }
+      ],
       "counts": {
         "distinctDecks": 1,
         "starts": 1,
@@ -49846,9 +50018,9 @@
           "eventClass": "Challenge",
           "eventId": "12854932",
           "finish": 8,
-          "gwp": null,
+          "gwp": 0.58824,
           "points": 2,
-          "swissPoints": null,
+          "swissPoints": 15,
           "tier": "C64"
         }
       ],

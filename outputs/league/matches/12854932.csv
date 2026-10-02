@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854932,2026-09-27,C64,Challenge,QF,Celethil,3072920,Sodeq,1754547,2,1,Tron,Broodscale Combo
+12854932,2026-09-27,C64,Challenge,QF,Kihara_Works,2278761,bubblywubblytubbler,3298193,2,1,Affinity,Prowess
+12854932,2026-09-27,C64,Challenge,QF,ShowTime_,949859,Daniele123,991522,2,1,Domain Zoo,Ruby Storm
+12854932,2026-09-27,C64,Challenge,QF,optivial,3140486,BressD1,1940271,2,1,Broodscale Combo,Prowess
+12854932,2026-09-27,C64,Challenge,SF,ShowTime_,949859,Celethil,3072920,2,1,Domain Zoo,Tron
+12854932,2026-09-27,C64,Challenge,SF,optivial,3140486,Kihara_Works,2278761,2,1,Broodscale Combo,Affinity
+12854932,2026-09-27,C64,Challenge,F,ShowTime_,949859,optivial,3140486,2,1,Domain Zoo,Broodscale Combo
