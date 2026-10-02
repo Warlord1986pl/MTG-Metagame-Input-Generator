@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855450,2026-09-30,C32,Challenge,QF,bomberboss,2013138,reidq7,3155916,2,0,Domain Zoo,Amulet Titan
+12855450,2026-09-30,C32,Challenge,QF,Mistakenn,2129541,MercurialChemister,2839061,2,1,Amulet Titan,WBG
+12855450,2026-09-30,C32,Challenge,QF,hugofreitas1,1997683,nikroulah,2134926,2,1,Ruby Storm,WBG
+12855450,2026-09-30,C32,Challenge,QF,nahuel10,1942357,oinkmage22,2858193,2,1,Jeskai Energy,Dimir Midrange
+12855450,2026-09-30,C32,Challenge,SF,bomberboss,2013138,Mistakenn,2129541,2,0,Domain Zoo,Amulet Titan
+12855450,2026-09-30,C32,Challenge,SF,nahuel10,1942357,hugofreitas1,1997683,2,0,Jeskai Energy,Ruby Storm
+12855450,2026-09-30,C32,Challenge,F,bomberboss,2013138,nahuel10,1942357,2,0,Domain Zoo,Jeskai Energy

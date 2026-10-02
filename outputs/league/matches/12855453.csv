@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855453,2026-09-30,C96,Challenge,QF,HouseOfManaMTG,2669359,Xsper,3056706,2,0,Eldrazi Ramp,Prowess
+12855453,2026-09-30,C96,Challenge,QF,xhpc007,1652812,doom580,1672563,2,1,Azorius Control,Tron
+12855453,2026-09-30,C96,Challenge,QF,makaaaa,3154401,ejk,1952341,2,0,Ruby Storm,Tron
+12855453,2026-09-30,C96,Challenge,QF,xfile,2449332,Kizdar,2897184,2,0,Eldrazi Ramp,Living End
+12855453,2026-09-30,C96,Challenge,SF,HouseOfManaMTG,2669359,xfile,2449332,1,0,Eldrazi Ramp,Eldrazi Ramp
+12855453,2026-09-30,C96,Challenge,SF,xhpc007,1652812,makaaaa,3154401,2,0,Azorius Control,Ruby Storm
+12855453,2026-09-30,C96,Challenge,F,HouseOfManaMTG,2669359,xhpc007,1652812,2,1,Eldrazi Ramp,Azorius Control
