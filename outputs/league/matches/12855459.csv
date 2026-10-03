@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855459,2026-10-01,C64,Challenge,QF,Mikebrav,726347,Ale_Mtg,2683189,2,1,Domain Zoo,Izzet Murktide
+12855459,2026-10-01,C64,Challenge,QF,Rashek,2702005,DelverOfBolts,2688845,2,1,Boros Energy,Prowess
+12855459,2026-10-01,C64,Challenge,QF,_Shikamaru_,3332226,manohito,2908947,2,0,Ruby Storm,Broodscale Combo
+12855459,2026-10-01,C64,Challenge,QF,stefansson30952,3405508,DJK3V1N,2717078,2,0,Eldrazi Ramp,Affinity
+12855459,2026-10-01,C64,Challenge,SF,Mikebrav,726347,Rashek,2702005,2,1,Domain Zoo,Boros Energy
+12855459,2026-10-01,C64,Challenge,SF,_Shikamaru_,3332226,stefansson30952,3405508,2,0,Ruby Storm,Eldrazi Ramp
+12855459,2026-10-01,C64,Challenge,F,Mikebrav,726347,_Shikamaru_,3332226,2,0,Domain Zoo,Ruby Storm
