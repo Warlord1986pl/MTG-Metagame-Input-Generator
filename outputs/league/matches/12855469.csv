@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855469,2026-10-02,C96,Challenge,QF,Suechtler,962368,Redman1034,3363119,2,0,Prowess,WBG
+12855469,2026-10-02,C96,Challenge,QF,elBB,3003904,surgetemelo,3473231,2,0,WBG,Esper Blink
+12855469,2026-10-02,C96,Challenge,QF,Pleyboy,2822464,OafMcNamara,1018764,2,1,Domain Zoo,Dimir Midrange
+12855469,2026-10-02,C96,Challenge,QF,simoneromarm,2676235,Laplasjan,1706283,2,0,Prowess,Eldrazi Ramp
+12855469,2026-10-02,C96,Challenge,SF,simoneromarm,2676235,elBB,3003904,2,0,Prowess,WBG
+12855469,2026-10-02,C96,Challenge,SF,Pleyboy,2822464,Suechtler,962368,2,1,Domain Zoo,Prowess
+12855469,2026-10-02,C96,Challenge,F,simoneromarm,2676235,Pleyboy,2822464,2,0,Prowess,Domain Zoo
