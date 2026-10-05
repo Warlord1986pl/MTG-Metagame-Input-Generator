@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855475,2026-10-03,C16,Challenge,QF,Arremangado,2850981,MissTrigger,1390771,2,0,Eldrazi Ramp,Domain Zoo
+12855475,2026-10-03,C16,Challenge,QF,choobes,2304638,Foxantes,2092644,2,1,Prowess,Eldrazi Ramp
+12855475,2026-10-03,C16,Challenge,QF,GWT,3544040,WhiteNinja,3555118,2,1,Dimir Control,Domain Zoo
+12855475,2026-10-03,C16,Challenge,QF,YungDingo,2928451,Bent,745439,2,0,Azorius Control,Eldrazi Ramp
+12855475,2026-10-03,C16,Challenge,SF,Arremangado,2850981,YungDingo,2928451,2,0,Eldrazi Ramp,Azorius Control
+12855475,2026-10-03,C16,Challenge,SF,choobes,2304638,GWT,3544040,2,0,Prowess,Dimir Control
+12855475,2026-10-03,C16,Challenge,F,Arremangado,2850981,choobes,2304638,2,0,Eldrazi Ramp,Prowess

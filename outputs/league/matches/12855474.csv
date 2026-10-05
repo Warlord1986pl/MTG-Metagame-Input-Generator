@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855474,2026-10-03,C64,Challenge,QF,SureThing,3082695,kthanakit26,2122697,2,0,WBG,Tron
+12855474,2026-10-03,C64,Challenge,QF,Slasher21,2522150,Magikal710,2939702,2,1,Affinity,Izzet Murktide
+12855474,2026-10-03,C64,Challenge,QF,416FrowningTable,2397690,Tree42o,875470,2,1,Broodscale Combo,Affinity
+12855474,2026-10-03,C64,Challenge,QF,NathanOfTheGiltLeaf,2968680,MisterTwin,3190187,2,0,WBG,Dimir Midrange
+12855474,2026-10-03,C64,Challenge,SF,Slasher21,2522150,NathanOfTheGiltLeaf,2968680,2,1,Affinity,WBG
+12855474,2026-10-03,C64,Challenge,SF,416FrowningTable,2397690,SureThing,3082695,2,1,Broodscale Combo,WBG
+12855474,2026-10-03,C64,Challenge,F,416FrowningTable,2397690,Slasher21,2522150,2,1,Broodscale Combo,Affinity
