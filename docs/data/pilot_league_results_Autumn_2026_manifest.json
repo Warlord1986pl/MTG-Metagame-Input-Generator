@@ -223,10 +223,45 @@
       "IngestedAt": "2026-10-01T00:16:11Z",
       "WindowClose": "2026-09-30",
       "WindowStart": "2026-09-23"
+    },
+    {
+      "EventDate": "2026-10-05",
+      "EventID": "12855498",
+      "IngestedAt": "2026-10-08T08:13:50Z",
+      "WindowClose": "2026-10-07",
+      "WindowStart": "2026-09-30"
+    },
+    {
+      "EventDate": "2026-10-05",
+      "EventID": "12855500",
+      "IngestedAt": "2026-10-08T08:13:50Z",
+      "WindowClose": "2026-10-07",
+      "WindowStart": "2026-09-30"
+    },
+    {
+      "EventDate": "2026-10-06",
+      "EventID": "12855507",
+      "IngestedAt": "2026-10-08T08:13:50Z",
+      "WindowClose": "2026-10-07",
+      "WindowStart": "2026-09-30"
+    },
+    {
+      "EventDate": "2026-10-06",
+      "EventID": "12855508",
+      "IngestedAt": "2026-10-08T08:13:50Z",
+      "WindowClose": "2026-10-07",
+      "WindowStart": "2026-09-30"
+    },
+    {
+      "EventDate": "2026-10-06",
+      "EventID": "12855513",
+      "IngestedAt": "2026-10-08T08:13:50Z",
+      "WindowClose": "2026-10-07",
+      "WindowStart": "2026-09-30"
     }
   ],
-  "RankChangeAnchor": "2026-10-05",
-  "as_of": "2026-10-06",
+  "RankChangeAnchor": "2026-10-07",
+  "as_of": "2026-10-08",
   "events": [
     {
       "date": "2026-09-01",
@@ -617,20 +652,50 @@
       "event_id": "12855490",
       "rows": 32,
       "type": "challenge"
+    },
+    {
+      "date": "2026-10-05",
+      "event_id": "12855498",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-10-05",
+      "event_id": "12855500",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-10-06",
+      "event_id": "12855507",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-10-06",
+      "event_id": "12855508",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-10-06",
+      "event_id": "12855513",
+      "rows": 32,
+      "type": "challenge"
     }
   ],
-  "events_challenge": 64,
+  "events_challenge": 69,
   "events_premier": 1,
-  "events_total": 65,
-  "generated_at": "2026-10-06T00:16:01Z",
-  "pilots_scoring": 505,
-  "pilots_total": 804,
-  "points_total": 2046,
-  "results_csv_sha256": "13d7c762b6ddf567beaaec08c77906d377da1d76b9e7c7e0120dc248c54dbacc",
+  "events_total": 70,
+  "generated_at": "2026-10-08T08:13:59Z",
+  "pilots_scoring": 527,
+  "pilots_total": 840,
+  "points_total": 2201,
+  "results_csv_sha256": "c99f83bc98d1e7b211a80cd11765e469a588d4f76cf72fa0aaa07c6b52807093",
   "season": "Autumn 2026",
   "season_end": "2026-11-30",
   "season_start": "2026-09-01",
-  "starts_total": 2075,
+  "starts_total": 2235,
   "validation": {
     "all_passed": true,
     "checks": [

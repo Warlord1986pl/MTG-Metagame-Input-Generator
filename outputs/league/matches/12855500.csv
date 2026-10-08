@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855500,2026-10-05,C96,Challenge,QF,Gerardo94,2077747,MayoDominaria,1112102,2,0,Azorius Control,Jeskai Energy
+12855500,2026-10-05,C96,Challenge,QF,JPA93,1181017,Ale_Mtg,2683189,2,1,Grixis Reanimator,Izzet Murktide
+12855500,2026-10-05,C96,Challenge,QF,Urthstrype,702030,Meltiin,723758,2,0,Broodscale Combo,Living End
+12855500,2026-10-05,C96,Challenge,QF,ZerglingMTG,2737951,Scappie,1129308,2,1,Broodscale Combo,Grixis Control
+12855500,2026-10-05,C96,Challenge,SF,Gerardo94,2077747,JPA93,1181017,2,1,Azorius Control,Grixis Reanimator
+12855500,2026-10-05,C96,Challenge,SF,ZerglingMTG,2737951,Urthstrype,702030,2,0,Broodscale Combo,Broodscale Combo
+12855500,2026-10-05,C96,Challenge,F,Gerardo94,2077747,ZerglingMTG,2737951,2,0,Azorius Control,Broodscale Combo

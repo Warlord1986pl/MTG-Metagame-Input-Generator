@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855507,2026-10-06,C32,Challenge,QF,KillerN,967205,MC_amp2267,2729232,2,1,Goryo's Vengeance,Mono-Green Eldrazi
+12855507,2026-10-06,C32,Challenge,QF,HanDamon,3194299,rameison,1687842,2,0,Living End,Tron
+12855507,2026-10-06,C32,Challenge,QF,Kollslaw,3311758,papaulamog,2715017,2,1,Eldrazi Ramp,Prowess
+12855507,2026-10-06,C32,Challenge,QF,Odin2015,3306092,yolad,3342362,2,1,Eldrazi Tron,Boros Energy
+12855507,2026-10-06,C32,Challenge,SF,Kollslaw,3311758,KillerN,967205,2,1,Eldrazi Ramp,Goryo's Vengeance
+12855507,2026-10-06,C32,Challenge,SF,Odin2015,3306092,HanDamon,3194299,2,0,Eldrazi Tron,Living End
+12855507,2026-10-06,C32,Challenge,F,Kollslaw,3311758,Odin2015,3306092,2,0,Eldrazi Ramp,Eldrazi Tron

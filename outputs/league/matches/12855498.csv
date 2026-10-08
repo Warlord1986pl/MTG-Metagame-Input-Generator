@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855498,2026-10-05,C64,Challenge,QF,_Atraxa_,3560970,ShadowTitan1,2130633,2,0,Grixis Control,Domain Zoo
+12855498,2026-10-05,C64,Challenge,QF,JustAnotherGuy83,2691811,AzureMoon,3158693,2,1,Azorius Control,Living End
+12855498,2026-10-05,C64,Challenge,QF,Fransadness,3143623,lazerbeam,968652,2,0,Broodscale Combo,Domain Zoo
+12855498,2026-10-05,C64,Challenge,QF,Iaashadow,2712707,HanDamon,3194299,2,1,Eldrazi Ramp,Living End
+12855498,2026-10-05,C64,Challenge,SF,JustAnotherGuy83,2691811,Fransadness,3143623,2,0,Azorius Control,Broodscale Combo
+12855498,2026-10-05,C64,Challenge,SF,_Atraxa_,3560970,Iaashadow,2712707,2,1,Grixis Control,Eldrazi Ramp
+12855498,2026-10-05,C64,Challenge,F,_Atraxa_,3560970,JustAnotherGuy83,2691811,1,0,Grixis Control,Azorius Control

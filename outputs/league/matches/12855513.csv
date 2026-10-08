@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855513,2026-10-06,C64,Challenge,QF,_Batutinha_,453404,Craig_Long123,3364560,2,0,Rakdos Midrange,The Rock
+12855513,2026-10-06,C64,Challenge,QF,Capitano_CL,535716,Bambil,3574196,2,1,WBG,4c HollowOne
+12855513,2026-10-06,C64,Challenge,QF,hugofreitas1,1997683,reidq7,3155916,2,1,Ruby Storm,Amulet Titan
+12855513,2026-10-06,C64,Challenge,QF,FynnOfBlood,2799885,EdSpoon,3522971,2,1,Eldrazi Tron,Goryo's Vengeance
+12855513,2026-10-06,C64,Challenge,SF,hugofreitas1,1997683,FynnOfBlood,2799885,2,1,Ruby Storm,Eldrazi Tron
+12855513,2026-10-06,C64,Challenge,SF,_Batutinha_,453404,Capitano_CL,535716,2,0,Rakdos Midrange,WBG
+12855513,2026-10-06,C64,Challenge,F,hugofreitas1,1997683,_Batutinha_,453404,2,0,Ruby Storm,Rakdos Midrange
