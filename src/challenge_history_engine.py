@@ -263,6 +263,23 @@ def sync_challenge_history_window(
                 f"are missing from the freshly fetched registry, left untouched: {missing_ids}"
             )
 
+    # An EventID is one event: if a fresh event is already persisted OUTSIDE this window (under
+    # another EventDate), writing it again would duplicate every row of it -- 12855474 (C64,
+    # 2026-10-03) was listed by mtgo.com as 2026-10-05 and got written twice, doubling its league
+    # points. Refuse before touching the file; challenge_mtgo_source._reconcile_event_date should
+    # already have dropped such an event, so reaching this is a bug worth a human look.
+    if not existing.empty:
+        kept = existing[~to_drop] if dropped else existing
+        kept_ids = kept["EventID"].astype(str).str.strip()
+        clashing = sorted((fresh_event_ids & set(kept_ids)) - {""})
+        if clashing:
+            dates = {eid: sorted(set(kept.loc[kept_ids == eid, "EventDate"].astype(str))) for eid in clashing}
+            raise ValueError(
+                f"[challenge-history] refusing to sync {format_name} {start_date.isoformat()}.."
+                f"{end_date.isoformat()} into {history_csv}: event(s) already persisted under another "
+                f"EventDate would be duplicated: {dates}"
+            )
+
     # Preserve any already-resolved (EventID, Pilot) -> (Deck, Archetype) from the rows about to be
     # purged, whether that resolution came from a human (Review Queue) or an earlier classifier
     # auto-resolve. This value is STICKY: once a row has a real Deck (anything other than

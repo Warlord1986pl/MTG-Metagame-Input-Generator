@@ -338,6 +338,77 @@ def normalize_card_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
 
 
+def _event_date_from_json(data: dict) -> Optional[str]:
+    """The event's own date (YYYY-MM-DD) from its JSON: site_name's date part, else starttime.
+
+    The mtgo.com month-listing href date is usually identical, but has been seen to disagree for
+    a freshly published event (12854940: listed as 2026-09-27, but site_name/starttime both say
+    2026-09-28) -- trusting the listing put a Monday event into the previous Sunday's window.
+    It also happened for an already-synced event: 12855474 (C64, 2026-10-03) was listed as
+    2026-10-05 on 2026-10-07, so the 2026-10-05 window wrote it into the history a second time and
+    league-rebuild failed its per-event points invariant (62 != 31) until the rows were removed.
+    """
+    event_id = str(data.get("event_id", "") or "")
+    site_name = str(data.get("site_name", "") or "")
+    if event_id and site_name.endswith(event_id):
+        m = re.search(r"(\d{4}-\d{2}-\d{2})$", site_name[: -len(event_id)])
+        if m:
+            return m.group(1)
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", str(data.get("starttime", "") or ""))
+    return m.group(1) if m else None
+
+
+def _reconcile_event_date(
+    c: "MtgoRegistryEvent", data: dict, start_date: date, end_date: date, emit: Callable[[str], None]
+) -> bool:
+    """Correct c.date from the event JSON when the listing disagrees. False = outside the window."""
+    json_date = _event_date_from_json(data)
+    if not json_date or json_date == c.date:
+        return True
+    emit(
+        f"[mtgo-dataset] WARN event {c.event_id}: mtgo.com listing says {c.date}, event JSON says "
+        f"{json_date} -- using the event JSON date"
+    )
+    c.date = json_date
+    if not (start_date.isoformat() <= json_date <= end_date.isoformat()):
+        emit(f"[mtgo-dataset] event {c.event_id} ({json_date}) is outside {start_date}..{end_date} -- excluded")
+        return False
+    return True
+
+
+def _load_persisted_event_ids(*history_csvs: Optional[Path]) -> set:
+    """Every non-blank EventID already written to any of *history_csvs* (missing files are skipped)."""
+    ids: set = set()
+    for path in history_csvs:
+        if path is None or not path.exists():
+            continue
+        try:
+            hist = pd.read_csv(path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+        except Exception:
+            continue
+        if "EventID" in hist.columns:
+            ids.update(e for e in hist["EventID"].astype(str).str.strip() if e)
+    return ids
+
+
+def _lost_to_earlier_window(c: "MtgoRegistryEvent", start_date: date, persisted_ids: set) -> Optional[str]:
+    """Reason to quarantine an event _reconcile_event_date just excluded, or None to drop it quietly.
+
+    An event that really belongs to a LATER date is picked up by that date's own window. One that
+    belongs to an EARLIER date is fine to drop only if it is already in the history; otherwise that
+    earlier window has already been synced without it and no future window will ever list it, so
+    dropping it would lose it for good -- report it as ERROR instead (defers this window, needs a
+    human).
+    """
+    if c.date >= start_date.isoformat() or c.event_id in persisted_ids:
+        return None
+    return (
+        f"event JSON date {c.date} is before this window ({start_date.isoformat()}..) and the event "
+        "is not in the persisted history -- the window for its real date has already been synced "
+        "without it; add it by hand rather than dropping it"
+    )
+
+
 def _is_cacheable_event_blob(data: dict) -> bool:
     """A blob is final (safe to cache durably) only once both decklists and final_rank are posted."""
     return bool(data.get("decklists")) and bool(data.get("final_rank"))
@@ -755,6 +826,7 @@ def build_challenge_dataset(
     registry_premier_events = [r for r in registry if r.kind == "premier"]
 
     skipped_events: List[SkippedEvent] = []
+    persisted_ids = _load_persisted_event_ids(challenge_history_csv, premier_history_csv)
 
     # Fetch+parse every challenge event individually. A single bad event (not-yet-published
     # decklists, or genuinely malformed data) must never abort the rest of the registry -- it is
@@ -764,6 +836,11 @@ def build_challenge_dataset(
     for c in registry_challenge_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                lost = _lost_to_earlier_window(c, start_date, persisted_ids)
+                if lost:
+                    raise ChallengeSourceError(lost)
+                continue
             mtgo_decks_by_event[c.event_id] = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
@@ -898,6 +975,11 @@ def build_challenge_dataset(
     for c in registry_premier_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                lost = _lost_to_earlier_window(c, start_date, persisted_ids)
+                if lost:
+                    raise ChallengeSourceError(lost)
+                continue
             decks = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
