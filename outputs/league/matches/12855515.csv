@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855515,2026-10-07,C32,Challenge,QF,NerdDadChad,2993160,rastaf,254536,2,1,Eldrazi Ramp,URG
+12855515,2026-10-07,C32,Challenge,QF,wigglegenie,2338634,hugofreitas1,1997683,2,0,Domain Zoo,Ruby Storm
+12855515,2026-10-07,C32,Challenge,QF,MeninooNey,3263693,komattaman,2690217,2,1,Living End,Rakdos Midrange
+12855515,2026-10-07,C32,Challenge,QF,nahuel10,1942357,MercurialChemister,2839061,2,0,Jeskai Energy,WBG
+12855515,2026-10-07,C32,Challenge,SF,nahuel10,1942357,MeninooNey,3263693,2,0,Jeskai Energy,Living End
+12855515,2026-10-07,C32,Challenge,SF,NerdDadChad,2993160,wigglegenie,2338634,2,1,Eldrazi Ramp,Domain Zoo
+12855515,2026-10-07,C32,Challenge,F,NerdDadChad,2993160,nahuel10,1942357,2,0,Eldrazi Ramp,Jeskai Energy

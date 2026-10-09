@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855518,2026-10-07,C96,Challenge,QF,levunga21,494936,DJK3V1N,2717078,2,1,Azorius Control,Izzet Murktide
+12855518,2026-10-07,C96,Challenge,QF,EnzoHumano,2322956,Cachorrowo,2720911,2,1,Broodscale Combo,Ruby Storm
+12855518,2026-10-07,C96,Challenge,QF,MeninooNey,3263693,Takayama,3293313,2,0,Living End,Jeskai Energy
+12855518,2026-10-07,C96,Challenge,QF,rastaf,254536,_Shikamaru_,3332226,2,0,Rakdos Midrange,Rakdos Midrange
+12855518,2026-10-07,C96,Challenge,SF,EnzoHumano,2322956,MeninooNey,3263693,2,0,Broodscale Combo,Living End
+12855518,2026-10-07,C96,Challenge,SF,rastaf,254536,levunga21,494936,2,1,Rakdos Midrange,Azorius Control
+12855518,2026-10-07,C96,Challenge,F,rastaf,254536,EnzoHumano,2322956,2,0,Rakdos Midrange,Broodscale Combo
