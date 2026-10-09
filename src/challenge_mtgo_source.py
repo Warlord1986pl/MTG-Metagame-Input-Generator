@@ -992,6 +992,55 @@ def write_premier_events_csv(
     return path
 
 
+def refresh_premier_events_csv(
+    path: Path, premier_history_csv: Path, log: Optional[Callable[[str], None]] = None
+) -> int:
+    """Rewrite winner_deck/top8_decks of an existing premier_events_*.csv from *premier_history_csv*.
+
+    write_premier_events_csv runs before the Review Queue, so a premier event with a place-1 or
+    borderline deck is written with NEEDS_MANUAL_REVIEW and stays that way after the human
+    correction lands in premier_history -- this brings the run-dir file in line with history.
+    Only event_ids present in history are touched; a row still NEEDS_MANUAL_REVIEW in history stays
+    NEEDS_MANUAL_REVIEW here. Returns the number of event rows whose content changed.
+    """
+    if not path.exists() or not premier_history_csv.exists():
+        return 0
+    events = pd.read_csv(path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    hist = pd.read_csv(premier_history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    if events.empty or hist.empty:
+        return 0
+    hist["EventID"] = hist["EventID"].str.strip().str.replace(r"\.0$", "", regex=True)
+    hist["_place"] = pd.to_numeric(hist["Place"], errors="coerce")
+
+    changed = 0
+    for i, ev in events.iterrows():
+        ev_hist = hist[hist["EventID"] == str(ev["event_id"]).strip()].dropna(subset=["_place"])
+        if ev_hist.empty:
+            continue
+        rows = [
+            ChallengeEventRow(
+                place=int(r["_place"]), deck=r["Deck"], archetype=r["Archetype"], pilot=r["Pilot"],
+                loginid=r.get("LoginID", ""),
+            )
+            for _, r in ev_hist.iterrows()
+        ]
+        winner = next((r for r in rows if r.place == 1), None)
+        new_winner_deck = winner.deck if winner else ""
+        new_winner_pilot = winner.pilot if winner else ""
+        new_top8 = _format_top8(rows)
+        if (ev["winner_deck"], ev["winner_pilot"], ev["top8_decks"]) != (new_winner_deck, new_winner_pilot, new_top8):
+            events.at[i, "winner_deck"] = new_winner_deck
+            events.at[i, "winner_pilot"] = new_winner_pilot
+            events.at[i, "top8_decks"] = new_top8
+            changed += 1
+
+    if changed:
+        events.to_csv(path, index=False, encoding="utf-8-sig")
+    if log:
+        log(f"[premier] refreshed {changed} event(s) from {premier_history_csv.name} -> {path}")
+    return changed
+
+
 @dataclass
 class CompletenessSummary:
     """Fail-closed completeness signal for one Challenge window.

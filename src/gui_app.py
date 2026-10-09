@@ -675,6 +675,8 @@ class ChallengeReviewDialog(QDialog):
             applied_keys |= {f"event_id={s['event_id']} pilot={s['pilot']!r}" for s in selections} - failed_keys
 
             msg_lines.append(f"{kind}: applied {result['applied']} correction(s) to {target_csv.name}.")
+            if kind == "premier" and result["applied"]:
+                msg_lines.extend(self._refresh_premier_events_files(target_csv, {s["event_id"] for s in selections}))
             if result["not_found"]:
                 msg_lines.append(f"  {len(result['not_found'])} {kind} row(s) had no matching history row.")
             if result["ambiguous"]:
@@ -692,6 +694,30 @@ class ChallengeReviewDialog(QDialog):
         if not remaining:
             QMessageBox.information(self, "Challenge Review", "All flagged decks resolved.")
             self.close()
+
+    @staticmethod
+    def _refresh_premier_events_files(premier_history_csv: Path, event_ids: set[str]) -> List[str]:
+        """premier_events_*.csv is written before the Review Queue runs; rewrite every such file
+        under the outputs base that lists one of *event_ids*, so it stops showing NEEDS_MANUAL_REVIEW."""
+        try:
+            from challenge_mtgo_source import refresh_premier_events_csv
+        except ModuleNotFoundError:
+            from .challenge_mtgo_source import refresh_premier_events_csv
+
+        lines: List[str] = []
+        for path in sorted(premier_history_csv.parent.glob("*/*/*/premier_events_*.csv")):
+            try:
+                text = path.read_text(encoding="utf-8-sig")
+            except OSError:
+                continue
+            if not any(eid and eid in text for eid in event_ids):
+                continue
+            try:
+                if refresh_premier_events_csv(path, premier_history_csv):
+                    lines.append(f"  refreshed {path.name}")
+            except Exception as exc:
+                lines.append(f"  FAILED to refresh {path.name}: {type(exc).__name__}: {exc}")
+        return lines
 
 
 class UnknownArchetypeDialog(QDialog):
