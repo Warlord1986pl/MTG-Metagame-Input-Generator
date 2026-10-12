@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855490,2026-10-04,C64,Challenge,QF,House565,2955436,Michelizzi,3561179,2,1,Broodscale Combo,Belcher
+12855490,2026-10-04,C64,Challenge,QF,Smallforest,2651001,alexeezayyy,1126161,2,1,Affinity,Amulet Titan
+12855490,2026-10-04,C64,Challenge,QF,LangeBastian,2928097,innaig88,2143659,2,0,Grixis Control,Boros Energy
+12855490,2026-10-04,C64,Challenge,QF,gingeralegames,3394612,Bawer,3413765,2,1,Domain Zoo,4c HollowOne
+12855490,2026-10-04,C64,Challenge,SF,LangeBastian,2928097,Smallforest,2651001,2,1,Grixis Control,Affinity
+12855490,2026-10-04,C64,Challenge,SF,gingeralegames,3394612,House565,2955436,2,0,Domain Zoo,Broodscale Combo
+12855490,2026-10-04,C64,Challenge,F,gingeralegames,3394612,LangeBastian,2928097,2,1,Domain Zoo,Grixis Control

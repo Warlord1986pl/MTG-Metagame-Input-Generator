@@ -1593,6 +1593,28 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
             "challenge_statistics_PARTIAL.xlsx zamiast pomijać zapis (domyślnie: nie zapisuj)."
         ),
     )
+    parser.add_argument(
+        "--trend-weeks",
+        type=int,
+        default=4,
+        metavar="N",
+        help="Ile tygodni pokazać na wykresach meta_trend_*_lastNw.png (default: 4).",
+    )
+    parser.add_argument(
+        "--skip-league",
+        action="store_true",
+        help="Nie aktualizuj ligi (outputs/league) ani danych strony (docs/data) w tym przebiegu.",
+    )
+    parser.add_argument(
+        "--skeleton",
+        choices=["monthly"],
+        default=None,
+        help=(
+            "Zamiast generacji tygodniowej: zapisz szkielet artykułu "
+            "outputs/articles/article_skeleton_<--period>.md (tylko Challenge, dane bez prozy)."
+        ),
+    )
+    parser.add_argument("--period", default=None, help="YYYY-MM, okres dla --skeleton monthly")
     return parser.parse_args(argv)
 
 
@@ -1821,6 +1843,8 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
         league_results_path: Optional[Path] = None
         metagame_stats_path: Optional[Path] = None
         challenge_events_fetched: int = 0
+        challenge_meta_xlsx: Optional[Path] = None
+        challenge_meta_error: Optional[str] = None
         challenge_review_items: List[dict] = []
         window_blocking_failures: List[str] = []
 
@@ -1836,9 +1860,26 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     build_challenge_dataset,
                     write_challenge_manifest,
                     write_event_status_manifest,
+                    refresh_premier_events_csv,
                     write_premier_events_csv,
                     write_review_items_csv,
                 )
+                try:
+                    from broodscale_rule import (
+                        apply_broodscale_rule_to_history,
+                        ledger_path_for,
+                        reverse_ledger_path_for,
+                        write_broodscale_override_log,
+                    )
+                    from challenge_meta import ChallengeMetaError, build_challenge_meta_input
+                except ModuleNotFoundError:
+                    from .broodscale_rule import (
+                        apply_broodscale_rule_to_history,
+                        ledger_path_for,
+                        reverse_ledger_path_for,
+                        write_broodscale_override_log,
+                    )
+                    from .challenge_meta import ChallengeMetaError, build_challenge_meta_input
 
                 _format_slug_hist = _format_slug_for_url(args.format_name)
                 cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_hist
@@ -1968,6 +2009,25 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     )
                     premier_history_path = premier_history_csv
 
+                # TEMPORARY Broodscale card rule (see broodscale_rule.py): the sync above keeps an
+                # already-resolved Deck sticky, so a re-synced row could get its old name-based
+                # label back -- re-assert the rule on the persisted history (offline, cached JSON
+                # only, Deck/Archetype only), before the review gate so a rule-resolved row never
+                # blocks statistics.
+                broodscale_ledger_csv = ledger_path_for(outputs_base, _format_slug_hist)
+                for _kind, _hist_csv, _events, _rows in (
+                    ("challenge", challenge_history_csv, challenge_dataset.challenge_events, challenge_dataset.event_rows),
+                    ("premier", premier_history_csv, challenge_dataset.premier_events, challenge_dataset.premier_rows),
+                ):
+                    _pre_rule = {
+                        (str(e.event_id), str(r.loginid)): r.pre_rule_deck
+                        for e in _events for r in _rows.get(e.event_id, []) if r.pre_rule_deck
+                    }
+                    apply_broodscale_rule_to_history(
+                        _hist_csv, cache_dir, broodscale_ledger_csv, _kind, pre_rule_labels=_pre_rule, log=log
+                    )
+                refresh_premier_events_csv(run_dir / f"premier_events_{window_label}.csv", premier_history_csv, log=log)
+
                 # Fail-closed gate: refuse to compute Challenge statistics for this window while
                 # ANY deck (Challenge or Premier) is still NEEDS_MANUAL_REVIEW. History has already
                 # been synced above (with the literal NEEDS_MANUAL_REVIEW marker intact) so the
@@ -2049,6 +2109,26 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     review_error.premier_history_csv = premier_history_csv
                     raise review_error
 
+                # Meta for deck_analysis*/encounter/trend AND for the Challenge charts' Meta Share /
+                # Universe A: share of Challenge Top 32 entries after the card rule (challenge_meta.py).
+                # Built here -- after the review gate, before challenge statistics -- so both read
+                # the same file. A failure is logged and metagame statistics are skipped below;
+                # there is deliberately no silent fallback to the Videre per-name Meta.
+                try:
+                    challenge_meta_xlsx = build_challenge_meta_input(
+                        run_dir=run_dir,
+                        history_csv=challenge_history_csv,
+                        ledger_csv=broodscale_ledger_csv,
+                        start=week_start,
+                        end=week_end,
+                        format_name=args.format_name,
+                        rogue_threshold=args.rogue_threshold,
+                        log=log,
+                    )
+                except ChallengeMetaError as meta_err:
+                    challenge_meta_error = str(meta_err)
+                    log(f"[ERROR] Challenge-based Meta NOT built: {meta_err}")
+
                 if (
                     run_challenge_statistics is not None
                     and challenge_history_path is not None
@@ -2071,6 +2151,17 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         allow_partial=bool(getattr(args, "allow_partial", False)),
                     )
                     challenge_stats_path = ch_stats_result.excel_path
+                    write_broodscale_override_log(
+                        challenge_stats_dir / f"broodscale_override_{window_label}.csv",
+                        challenge_history_csv,
+                        premier_history_csv,
+                        cache_dir,
+                        broodscale_ledger_csv,
+                        week_start,
+                        week_end,
+                        log=log,
+                        reverse_ledger_csv=reverse_ledger_path_for(outputs_base, _format_slug_hist),
+                    )
 
                 # Gate: any raw deck name currently folded into a different canonical name by
                 # docs/deck_aliases.csv (a true merge, not a self-mapping) gets its card lists
@@ -2093,7 +2184,9 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     except Exception as alias_check_err:
                         log(f"[WARN] alias-check gate skipped (non-blocking): {alias_check_err}")
 
-                if run_league_update is not None and challenge_history_path is not None:
+                if getattr(args, "skip_league", False):
+                    log("[league] --skip-league: league table and site data NOT updated in this run")
+                elif run_league_update is not None and challenge_history_path is not None:
                     league_dir = outputs_base / "league"
                     league_summary = run_league_update(
                         history_csv=challenge_history_path,
@@ -2161,23 +2254,49 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 log(traceback.format_exc())
                 _write_challenge_failure_status(run_dir, week_start, week_end, str(challenge_err), log)
 
-        # Generate metagame statistics
-        if run_statistics is not None and grouped_xlsx is not None:
+        # Generate metagame statistics. With Challenge data in the run, Meta comes from Challenge
+        # Top 32 entries after the card rule (challenge_meta.py) and has its own history file, so
+        # the trend never mixes the two sources; without it (no --include-challenge-decklist), the
+        # Videre per-name path is unchanged.
+        stats_input: Optional[Path] = grouped_xlsx
+        stats_history = outputs_base / f"metagame_history_{_format_slug_for_url(args.format_name)}.csv"
+        stats_week_index: Optional[int] = None
+        stats_caption: Optional[str] = None
+        if bool(getattr(args, "include_challenge_decklist", False)):
+            stats_input = challenge_meta_xlsx
+            if challenge_meta_xlsx is not None:
+                try:
+                    from challenge_meta import TREND_CAPTION, challenge_history_path_for, week_index_for
+                except ModuleNotFoundError:
+                    from .challenge_meta import TREND_CAPTION, challenge_history_path_for, week_index_for
+                videre_history = stats_history
+                stats_history = challenge_history_path_for(outputs_base, _format_slug_for_url(args.format_name))
+                stats_week_index = week_index_for(stats_history, videre_history, week_start, week_end)
+                stats_caption = TREND_CAPTION
+            else:
+                log(
+                    "[ERROR] Metagame statistics NOT computed: Challenge-based Meta unavailable"
+                    + (f" ({challenge_meta_error})" if challenge_meta_error else "")
+                    + " -- no fallback to Videre per-name Meta"
+                )
+        if run_statistics is not None and stats_input is not None:
             try:
                 metagame_stats_dir = run_dir / "statistics" / "metagame"
                 metagame_stats_result = run_statistics(
-                    input_excel=grouped_xlsx,
+                    input_excel=stats_input,
                     output_dir=metagame_stats_dir,
-                    history_csv=outputs_base / f"metagame_history_{_format_slug_for_url(args.format_name)}.csv",
+                    history_csv=stats_history,
                     total_players=1000,
                     rounds=5,
                     min_encounter_pct=5.0,
-                    weeks_back=4,
+                    weeks_back=int(getattr(args, "trend_weeks", 4)),
                     output_profile="full",
                     palette_name="classic",
                     deck_colors=None,
                     legend_colors=None,
                     log=log,
+                    week_index=stats_week_index,
+                    trend_caption=stats_caption,
                 )
                 xlsx_files = [f for f in metagame_stats_result.files if f.suffix == ".xlsx"]
                 metagame_stats_path = xlsx_files[0] if xlsx_files else metagame_stats_dir
@@ -2274,6 +2393,16 @@ def main() -> None:
     else:
         # Interaktywne menu
         args = interactive_menu()
+
+    if getattr(args, "skeleton", None) == "monthly":
+        if not args.period:
+            raise RuntimeError("--skeleton monthly wymaga --period YYYY-MM")
+        try:
+            from article_skeleton import run_monthly_skeleton
+        except ModuleNotFoundError:
+            from .article_skeleton import run_monthly_skeleton
+        run_monthly_skeleton(args.period, format_name=args.format_name)
+        return
 
     results = run_generation(args)
     if any(r.blocking_failures for r in results):

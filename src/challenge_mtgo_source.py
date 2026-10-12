@@ -51,6 +51,11 @@ except ModuleNotFoundError:
         UserDeckMapping,
     )
 
+try:
+    from broodscale_rule import rule_deck_for_counts
+except ModuleNotFoundError:
+    from .broodscale_rule import rule_deck_for_counts
+
 BASIC_LAND_NAMES = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 
 PREMIER_SUFFIXES = {
@@ -591,6 +596,10 @@ class ChallengeEventRow:
     # is NEEDS_MANUAL_REVIEW. Purely informational, never fed back into Deck/Archetype: the Review
     # Queue / manual-confirmation workflow is untouched by this. See classify_deck's nearest_label.
     deck_guess: str = ""
+    # Label the name-based pipeline (MTGGoldfish name -> mapping/alias, classifier, or an earlier
+    # resolution) would have given this entry, set only when broodscale_rule overrode it. Feeds the
+    # override ledger; never written to history itself.
+    pre_rule_deck: str = ""
 
 
 @dataclass
@@ -685,6 +694,20 @@ def _classify_event_decks(
     rows: List[ChallengeEventRow] = []
     for d in sorted(decks, key=lambda x: x.place):
         known = resolved.get((str(c.event_id).strip(), str(d.player).strip()))
+        forced = rule_deck_for_counts(d.signature)
+        if forced is not None:
+            # Card rule beats every name-based source, including an earlier resolution.
+            if known is not None:
+                pre = known[0]
+            elif len(library) >= 2:
+                pre = classify_deck(d, library).predicted_label or NEEDS_MANUAL_REVIEW
+            else:
+                pre = NEEDS_MANUAL_REVIEW
+            rows.append(ChallengeEventRow(
+                place=d.place, deck=forced[0], archetype=forced[1], pilot=d.player, loginid=d.loginid,
+                pre_rule_deck=pre,
+            ))
+            continue
         if known is not None:
             deck_label, archetype = known
             rows.append(ChallengeEventRow(place=d.place, deck=deck_label, archetype=archetype, pilot=d.player, loginid=d.loginid))
@@ -834,7 +857,16 @@ def build_challenge_dataset(
             archetype = archetype_for(deck_label, raw_deck)
             mtgo_deck = mtgo_by_pilot.get(normalize_name(pilot))
             loginid = mtgo_deck.loginid if mtgo_deck else ""
-            rows.append(ChallengeEventRow(place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=loginid))
+            pre_rule_deck = ""
+            forced = rule_deck_for_counts(mtgo_deck.signature) if mtgo_deck is not None else None
+            if forced is not None:
+                # canonical (post-mapping/alias) label = what the sheet would have shown
+                pre_rule_deck = deck_label
+                deck_label, archetype = forced
+            rows.append(ChallengeEventRow(
+                place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=loginid,
+                pre_rule_deck=pre_rule_deck,
+            ))
             if mtgo_deck is not None:
                 library.append((deck_label, mtgo_deck.signature))
         event_rows[c.event_id] = rows

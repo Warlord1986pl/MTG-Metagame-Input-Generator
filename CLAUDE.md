@@ -74,6 +74,9 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 | `preset_cli.py` | Interactive terminal CLI with saved state in `.preset_cli_state.json`. |
 | `alias_check.py` | Card-list gate for a deck-alias merge (`check_alias`, `check_window_against_baseline`, `run_alias_checks_for_window`) — see "Deck-alias merge gate" below. |
 | `check_alias_cli.py` | `python src/check_alias_cli.py check-alias --source X --target Y --window YYYY-MM-DD:YYYY-MM-DD` — the manual pre-merge gate, run before adding a row to `deck_aliases.csv`. |
+| `broodscale_rule.py` | TEMPORARY card rule: maindeck with >=1 Basking Broodscale -> Deck `Broodscale Combo` / Archetype `Combo`, over every name-based source. See "Broodscale card rule" below. |
+| `broodscale_rule_cli.py` | `apply [--apply]` (relabel history from cached JSON, dry-run default), `reverse-alias [--apply]` (undo a removed name alias) and `recompute --since YYYY-MM-DD` (rebuild run dirs' challenge + metagame outputs). |
+| `challenge_meta.py` | Meta = share of Challenge Top 32 entries after the card rule; builds the run's metagame-statistics input. See "Challenge-based Meta" below. |
 
 ### Data flow
 
@@ -161,6 +164,50 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   the normal alias/mapping/rules pipeline and is safe to run across the full history (not just the
   window under test), since it only touches rows matched by `(EventID, Pilot)` and never re-fetches
   anything over the network.
+
+### Broodscale card rule (TEMPORARY, until the card classifier exists)
+
+- Since 2026-10-12, any Challenge/Premier entry whose **maindeck** has >= 1 Basking Broodscale is
+  `Broodscale Combo` / `Combo`, whatever the submitted name (Eldrazi Ramp, Eldrazi, color codes...).
+  Sideboard copies never count. It beats mappings, aliases, the classifier, a Review Queue decision
+  and the sticky resolved value in history.
+- Applied in `build_challenge_dataset` (fresh rows + classifier library) and re-asserted on the
+  persisted history right after every sync in `run_generation` (`apply_broodscale_rule_to_history`,
+  cached JSON only, touches Deck/Archetype only, never Pilot/LoginID).
+- The pre-rule label is frozen in `outputs/broodscale_override_ledger_<format>.csv` on first sighting;
+  each run writes `statistics/challenges/broodscale_override_<window>.csv` (OVERRIDE rows, SUMMARY per
+  submitted name, and two report-only CONTROL lists: Blade of the Bloodchief without Broodscale, and
+  `Broodscale Combo` without Broodscale -- the latter are name-mapped, e.g. `Eldrazi`, and are NOT moved).
+- The `Eldrazi` -> `Broodscale Combo` name alias was removed from `docs/*.csv` (2026-10-12); the 14
+  history entries it had put there without a Broodscale were relabeled `Eldrazi` (12 by their
+  MTGGoldfish name, 2 collision-event rows by the classifier) via `broodscale_rule_cli.py reverse-alias`,
+  recorded in `outputs/broodscale_reverse_alias_ledger_<format>.csv` and the log's
+  `REVERSE_REMOVED_NAME_ALIAS` section.
+- Remove together with this section once a general card classifier replaces it.
+
+### Challenge-based Meta (`challenge_meta.py`, since 2026-10-12)
+
+- With `--include-challenge-decklist`, metagame statistics (`deck_analysis*`, encounter, record,
+  trend) no longer use the Videre per-name Meta: `Meta` = the deck's share of the window's Challenge
+  Top 32 entries after the card rule (`MetaSource = challenge_top32_cardrule`); the Videre value stays
+  in `Meta_Videre`, control only. For W41 the two agreed at r = 0.998 before the rule. Input file:
+  `<run_dir>/metagame_input_challenge_top32.xlsx` (+ `.csv`, which challenge statistics also read for
+  Meta Share % / Universe A). Weekly history: `outputs/metagame_history_challenge_top32_<format>.csv`,
+  separate from the Videre `metagame_history_<format>.csv` so trends never mix sources; it starts at
+  W30 (2026-07-13, first window with EventIDs/decklists).
+- Winrate still comes from Videre (per submitted name, can't be split by cards): for `Broodscale Combo`
+  and `Eldrazi Ramp` in any window where the rule moved >= 1 Challenge entry, Winrate/Game Count/record
+  probabilities are NaN with `WR_Flag = label_mixed_by_card_rule`; decks with no Videre row get
+  `no_videre_winrate`. A NaN winrate gives Importance from Meta alone (weight rescaled to 1,
+  `Importance_Flag = meta_only`; Quartile/Prep Priority computed normally from it), leaves Performance
+  Label blank, is excluded from the archetype's weighted winrate (named in its
+  `WR_Flag`), and is not drawn on the expected-wins chart (footnote instead).
+- No silent fallback: if the Challenge-based Meta can't be built (e.g. NEEDS_MANUAL_REVIEW rows),
+  metagame statistics are skipped with an ERROR. Without `--include-challenge-decklist` the old Videre
+  path is unchanged. `--skip-league` skips the league/site update; `--trend-weeks N` sets the trend
+  window (default 4; the published charts use 12).
+- `python src/broodscale_rule_cli.py recompute --since 2026-07-13 --trend-weeks 12` rebuilds all of this
+  offline for already-generated run dirs.
 
 ### Key design decisions
 

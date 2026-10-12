@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856335,2026-10-10,C32,Challenge,QF,Gerschi,1084298,AzureMoon,3158693,2,1,4C Cosmogoyf,Living End
+12856335,2026-10-10,C32,Challenge,QF,avishai-elma,3485476,tA326_,1823579,2,0,Goryo's Vengeance,Azorius Control
+12856335,2026-10-10,C32,Challenge,QF,_Logic_,2164854,howa,1855222,2,1,Yawgmoth,UR Loki
+12856335,2026-10-10,C32,Challenge,QF,DelverFofoqueiro,3095953,AChord4Five,3177282,2,0,Rakdos Midrange,Devoted Combo
+12856335,2026-10-10,C32,Challenge,SF,avishai-elma,3485476,DelverFofoqueiro,3095953,2,0,Goryo's Vengeance,Rakdos Midrange
+12856335,2026-10-10,C32,Challenge,SF,Gerschi,1084298,_Logic_,2164854,2,1,4C Cosmogoyf,Yawgmoth
+12856335,2026-10-10,C32,Challenge,F,Gerschi,1084298,avishai-elma,3485476,2,1,4C Cosmogoyf,Goryo's Vengeance

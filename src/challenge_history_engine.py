@@ -891,6 +891,13 @@ def _merge_meta_share(stats: pd.DataFrame, metagame_df: Optional[pd.DataFrame], 
         meta_group["Meta Share %"] = pd.to_numeric(meta_group["Meta Share %"], errors="coerce").fillna(0).round(2)
         return stats.merge(meta_group, on="Deck", how="left")
 
+    if "MetaSource" in meta.columns and "Archetype" in meta.columns:
+        # challenge_meta rows already carry the Challenge history's own Archetype per deck --
+        # re-deriving it from deck-name rules could disagree with the per-entry labels.
+        arch_group = meta.groupby("Archetype", as_index=False)["Meta"].sum().rename(columns={"Meta": "Meta Share %"})
+        arch_group["Meta Share %"] = pd.to_numeric(arch_group["Meta Share %"], errors="coerce").fillna(0).round(2)
+        return stats.merge(arch_group, on="Archetype", how="left")
+
     # Archetype meta from rules
     try:
         from metagame_input_generator import classify_archetype, load_rules
@@ -920,7 +927,12 @@ def _load_run_local_metagame_df(output_dir: Path) -> Optional[pd.DataFrame]:
     except Exception:
         return None
 
-    candidate = run_dir / "metagame_input.csv"
+    # Meta from Challenge Top 32 entries after the card rule (challenge_meta.py, 2026-10-12) wins
+    # over the Videre per-name export whenever the run built it -- Meta Share %, the deltas and
+    # Universe A then use the same Meta as deck_analysis*.
+    candidate = run_dir / "metagame_input_challenge_top32.csv"
+    if not candidate.exists():
+        candidate = run_dir / "metagame_input.csv"
     if not candidate.exists():
         return None
 

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856172,2026-10-11,C32,Challenge,QF,ionez,1296445,fingers1991,336006,2,1,Rakdos Midrange,Jeskai Energy
+12856172,2026-10-11,C32,Challenge,QF,Bugsy69,2537822,crazythursday,3116151,2,0,Rakdos Aggro,Amulet Titan
+12856172,2026-10-11,C32,Challenge,QF,musasabi,1210536,Moorehardcore,3032711,2,1,Affinity,Yawgmoth
+12856172,2026-10-11,C32,Challenge,QF,powered_by_VANYA,3169940,xfile,2449332,2,1,Neobrand,Eldrazi Ramp
+12856172,2026-10-11,C32,Challenge,SF,ionez,1296445,Bugsy69,2537822,2,0,Rakdos Midrange,Rakdos Aggro
+12856172,2026-10-11,C32,Challenge,SF,musasabi,1210536,powered_by_VANYA,3169940,2,1,Affinity,Neobrand
+12856172,2026-10-11,C32,Challenge,F,musasabi,1210536,ionez,1296445,2,0,Affinity,Rakdos Midrange

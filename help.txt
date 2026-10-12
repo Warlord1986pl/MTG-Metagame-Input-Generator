@@ -1,0 +1,87 @@
+usage: metagame_input_generator.py [-h] [--format FORMAT_NAME]
+                                   [--week-start WEEK_START]
+                                   [--week-end WEEK_END]
+                                   [--metagame-window-days METAGAME_WINDOW_DAYS]
+                                   [--history-points HISTORY_POINTS]
+                                   [--anchor-sunday ANCHOR_SUNDAY]
+                                   [--history-output-dir HISTORY_OUTPUT_DIR]
+                                   [--outputs-base OUTPUTS_BASE]
+                                   [--my-deck MY_DECK]
+                                   [--my-window-days MY_WINDOW_DAYS]
+                                   [--my-fallback-window-days MY_FALLBACK_WINDOW_DAYS]
+                                   [--rogue-threshold ROGUE_THRESHOLD]
+                                   [--metagame-limit METAGAME_LIMIT]
+                                   [--matchup-limit MATCHUP_LIMIT]
+                                   [--rules-file RULES_FILE]
+                                   [--aliases-file ALIASES_FILE]
+                                   [--user-mapping-file USER_MAPPING_FILE]
+                                   [--challenge-mapping-file CHALLENGE_MAPPING_FILE]
+                                   [--output-csv OUTPUT_CSV]
+                                   [--output-xlsx OUTPUT_XLSX]
+                                   [--output-csv-rogue-grouped OUTPUT_CSV_ROGUE_GROUPED]
+                                   [--output-xlsx-rogue-grouped OUTPUT_XLSX_ROGUE_GROUPED]
+                                   [--output-xml-grouped OUTPUT_XML_GROUPED]
+                                   [--unknown-output UNKNOWN_OUTPUT]
+                                   [--alias-suggestions-output ALIAS_SUGGESTIONS_OUTPUT]
+                                   [--output-profile {full,analysis}]
+                                   [--include-challenge-decklist]
+                                   [--challenge-history-events N]
+                                   [--backup-url BACKUP_URL]
+
+Buduje plik wejťciowy do MTG-Metagame-Analyzer: tygodniowy metagame + My Deck
+Winrate z d│u┐szego okna matchupˇw (np. Domain Zoo).
+
+options:
+  -h, --help            show this help message and exit
+  --format FORMAT_NAME
+  --week-start WEEK_START
+                        YYYY-MM-DD (tryb rŕczny)
+  --week-end WEEK_END   YYYY-MM-DD (tryb rŕczny)
+  --metagame-window-days METAGAME_WINDOW_DAYS
+                        okno metagame, domyťlnie 14 dni
+  --history-points HISTORY_POINTS
+                        ile kolejnych punktˇw tygodniowych wygenerowaŠ
+  --anchor-sunday ANCHOR_SUNDAY
+                        YYYY-MM-DD, domyťlnie ostatnia niedziela
+  --history-output-dir HISTORY_OUTPUT_DIR
+                        (deprecated ľ use --outputs-base)
+  --outputs-base OUTPUTS_BASE
+                        katalog bazowy; jeťli pominiŕty ľ wyprowadzany z
+                        --history-output-dir
+  --my-deck MY_DECK
+  --my-window-days MY_WINDOW_DAYS
+                        np. 30 lub 90
+  --my-fallback-window-days MY_FALLBACK_WINDOW_DAYS
+                        okno fallback dla brakow, np. 180
+  --rogue-threshold ROGUE_THRESHOLD
+                        prˇg Meta (%) poni┐ej ktˇrego deck wpada do Rogue
+  --metagame-limit METAGAME_LIMIT
+  --matchup-limit MATCHUP_LIMIT
+  --rules-file RULES_FILE
+                        CSV z regu│ami mapowania archetypˇw
+  --aliases-file ALIASES_FILE
+                        CSV z aliasami nazw deckˇw do nazw kanonicznych
+  --user-mapping-file USER_MAPPING_FILE
+                        Twoj plik mapowan: raw_name, canonical_name, archetype
+  --challenge-mapping-file CHALLENGE_MAPPING_FILE
+                        Osobny plik mapowan dla danych Challenge: raw_name,
+                        canonical_name, archetype
+  --output-csv OUTPUT_CSV
+  --output-xlsx OUTPUT_XLSX
+  --output-csv-rogue-grouped OUTPUT_CSV_ROGUE_GROUPED
+  --output-xlsx-rogue-grouped OUTPUT_XLSX_ROGUE_GROUPED
+  --output-xml-grouped OUTPUT_XML_GROUPED
+  --unknown-output UNKNOWN_OUTPUT
+  --alias-suggestions-output ALIAS_SUGGESTIONS_OUTPUT
+  --output-profile {full,analysis}
+                        full: all outputs, analysis: base CSV + grouped XLSX
+  --include-challenge-decklist
+                        Pobiera wszystkie Challenge (C32+C64) z MTGGoldfish w
+                        oknie metagame i zapisuje raporty + historiŕ +
+                        statystyki.
+  --challenge-history-events N
+                        Ile ostatnich eventˇw (per rozmiar) u┐yŠ do obliczania
+                        statystyk historii Challenge (default: 8).
+  --backup-url BACKUP_URL
+                        Sta│y URL backup API; mo┐e wskazywaŠ host root albo
+                        /api.

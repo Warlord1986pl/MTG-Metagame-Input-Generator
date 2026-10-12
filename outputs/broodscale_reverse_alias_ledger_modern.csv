@@ -1,0 +1,15 @@
+﻿Kind,EventID,EventDate,Tier,Pilot,LoginID,Place,PreviousDeck,NewDeck,Method,SubmittedName,Similarity,RecordedOn
+challenge,12847150,2026-07-13,64,ejk,1952341,18,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12847154,2026-07-13,96,ejk,1952341,12,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12847171,2026-07-15,32,ejk,1952341,8,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12847171,2026-07-15,32,Joey_Wheeler,1811013,9,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12847704,2026-07-19,64,nonco,2833832,21,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12847717,2026-07-20,64,MTGeeGee,2812852,8,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12848231,2026-07-27,96,Gnurant,3200561,26,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12848248,2026-07-29,32,Zarathustra,597665,10,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12853192,2026-08-29,64,Devoured,3230515,19,Broodscale Combo,Eldrazi,classifier,,0.932,2026-10-12
+challenge,12853780,2026-09-05,16,svessesvv,2198387,9,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12854081,2026-09-12,64,svessesvv,2198387,7,Broodscale Combo,Eldrazi,classifier,,1.000,2026-10-12
+challenge,12854070,2026-09-11,64,oeni,847498,15,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12853722,2026-09-08,64,Devoured,3230515,32,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
+challenge,12854500,2026-09-19,16,svessesvv,2198387,12,Broodscale Combo,Eldrazi,mtggoldfish_name,Eldrazi,,2026-10-12
