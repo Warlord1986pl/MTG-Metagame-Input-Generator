@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856487,2026-10-12,C16,Challenge,QF,Antarctica,1163110,SuperCow12653,2064081,2,0,Eldrazi Tron,Goryo's Vengeance
+12856487,2026-10-12,C16,Challenge,QF,Venom01,3535587,ShikiXYZ,1188705,2,0,Eldrazi Ramp,Broodscale Combo
+12856487,2026-10-12,C16,Challenge,QF,_Falcon_,2498069,4FunNoWin,3479773,2,1,Prowess,Ruby Storm
+12856487,2026-10-12,C16,Challenge,QF,Marxelo,277034,TomJubarte,3310069,2,0,WBG,Neobrand
+12856487,2026-10-12,C16,Challenge,SF,Antarctica,1163110,Venom01,3535587,2,1,Eldrazi Tron,Eldrazi Ramp
+12856487,2026-10-12,C16,Challenge,SF,_Falcon_,2498069,Marxelo,277034,2,1,Prowess,WBG
+12856487,2026-10-12,C16,Challenge,F,_Falcon_,2498069,Antarctica,1163110,2,0,Prowess,Eldrazi Tron
