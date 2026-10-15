@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856194,2026-10-13,C32,Challenge,QF,LuRu,3492953,makaaaa,3154401,2,1,Tron,Prowess
+12856194,2026-10-13,C32,Challenge,QF,Slasher21,2522150,Fransadness,3143623,2,1,Domain Zoo,Eldrazi Ramp
+12856194,2026-10-13,C32,Challenge,QF,Enida,3550948,oOMegaGenesis,1857598,2,1,R,Eldrazi Ramp
+12856194,2026-10-13,C32,Challenge,QF,rastaf,254536,HouseOfManaMTG,2669359,2,1,Rakdos Midrange,Amulet Titan
+12856194,2026-10-13,C32,Challenge,SF,rastaf,254536,LuRu,3492953,2,1,Rakdos Midrange,Tron
+12856194,2026-10-13,C32,Challenge,SF,Slasher21,2522150,Enida,3550948,2,0,Domain Zoo,R
+12856194,2026-10-13,C32,Challenge,F,Slasher21,2522150,rastaf,254536,2,0,Domain Zoo,Rakdos Midrange
