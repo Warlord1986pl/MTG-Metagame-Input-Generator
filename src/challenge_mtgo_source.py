@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 import pandas as pd
 
@@ -32,6 +32,7 @@ try:
         canonicalize_deck_name,
         classify_archetype,
         _parse_single_challenge,
+        _search_mtggoldfish_challenge_urls,
         mapping_lookup,
         DeckAliasRule,
         ArchetypeRule,
@@ -46,6 +47,7 @@ except ModuleNotFoundError:
         canonicalize_deck_name,
         classify_archetype,
         _parse_single_challenge,
+        _search_mtggoldfish_challenge_urls,
         mapping_lookup,
         DeckAliasRule,
         ArchetypeRule,
@@ -943,6 +945,42 @@ def build_challenge_dataset(
 
     unresolved_events: List[MtgoRegistryEvent] = []
 
+    def label_from_goldfish_search(size: int, dt: str, pending: List[MtgoRegistryEvent]) -> List[MtgoRegistryEvent]:
+        # Second same-tier same-day events (MTGGoldfish "... (1)") and events MTGGoldfish filed
+        # under the neighbouring day have no reachable dated slug, only a numeric
+        # /tournament/<id> page -- found via its tournament search for dt +-1 day. Each page is
+        # matched against the still-unlabeled events by roster overlap (resolve_ambiguous_event,
+        # same thresholds as collisions); pages that match none of them (other events,
+        # MTGGoldfish's own duplicates) are skipped, never guessed. Returns what's still unlabeled.
+        remaining = list(pending)
+        if not remaining:
+            return remaining
+        day = date.fromisoformat(dt)
+        try:
+            urls = _search_mtggoldfish_challenge_urls(format_name, size, day - timedelta(days=1), day + timedelta(days=1))
+        except (HTTPError, URLError, OSError) as exc:
+            emit(f"[mtgo-dataset] WARN MTGGoldfish tournament search failed for C{size} {dt}: {exc}")
+            return remaining
+        for url in urls:
+            if not remaining:
+                break
+            info = {"challenge_size": size, "event_date": dt, "mtgo_url": remaining[0].url, "mtggoldfish_url": url}
+            try:
+                mg_df = _parse_single_challenge(info, format_name)[1]
+            except (HTTPError, RuntimeError):
+                continue
+            try:
+                eid = resolve_ambiguous_event(
+                    mg_df["Pilot"].tolist(), [e.event_id for e in remaining], mtgo_decks_by_event
+                )
+            except ChallengeSourceError:
+                continue
+            ev = next(e for e in remaining if e.event_id == eid)
+            remaining.remove(ev)
+            if ingest_or_quarantine(ev, mg_df):
+                emit(f"[mtgo-dataset] C{size} {dt} ({eid}): labeled from MTGGoldfish {url}")
+        return remaining
+
     def goldfish_roster(evs: List[MtgoRegistryEvent]) -> Optional[pd.DataFrame]:
         # MTGGoldfish sometimes never publishes an event mtgo.com has: 12856761 (C32, 2026-10-16)
         # had no page at all, its two 10-17 C32 pages belonged to 12856762 and 12856594, and the
@@ -957,7 +995,7 @@ def build_challenge_dataset(
             if exc.code != 404:
                 raise
         age_days = (date.today() - date.fromisoformat(first.date)).days
-        for c in evs:
+        for c in label_from_goldfish_search(first.size, first.date, evs):
             if age_days < MTGGOLDFISH_GRACE_DAYS:
                 quarantined.add(c.event_id)
                 reason = f"no MTGGoldfish page yet (event is {age_days} day(s) old, waiting {MTGGOLDFISH_GRACE_DAYS})"
@@ -982,13 +1020,14 @@ def build_challenge_dataset(
         winner_eid = resolve_ambiguous_event(mg_pilots, event_ids, mtgo_decks_by_event)
         winner_event = next(e for e in evs if e.event_id == winner_eid)
         ingest_or_quarantine(winner_event, mg_df)
-        emit(
-            f"[mtgo-dataset] collision C{size} {dt}: MTGGoldfish roster resolved to event {winner_eid}; "
-            f"remaining {[eid for eid in event_ids if eid != winner_eid]} need classification"
-        )
-        for e in evs:
-            if e.event_id != winner_eid:
-                unresolved_events.append(e)
+        emit(f"[mtgo-dataset] collision C{size} {dt}: MTGGoldfish roster resolved to event {winner_eid}")
+        remaining = label_from_goldfish_search(size, dt, [e for e in evs if e.event_id != winner_eid])
+        if remaining:
+            emit(
+                f"[mtgo-dataset] collision C{size} {dt}: remaining {[e.event_id for e in remaining]} "
+                "need classification"
+            )
+        unresolved_events.extend(remaining)
 
     review_items: List[ReviewItem] = []
     for c in unresolved_events:
