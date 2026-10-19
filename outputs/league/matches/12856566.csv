@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856566,2026-10-17,modern-showcase-challenge,Premier,QF,MayoDominaria,1112102,Porks,2796105,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12856566,2026-10-17,modern-showcase-challenge,Premier,QF,BABOO25,3376666,_Elfkid_,2675769,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12856566,2026-10-17,modern-showcase-challenge,Premier,QF,O_danielakos,1017550,ls149950,1862893,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12856566,2026-10-17,modern-showcase-challenge,Premier,QF,RigelWeenie,1923667,yang2399,2642214,2,0,NEEDS_MANUAL_REVIEW,Affinity
+12856566,2026-10-17,modern-showcase-challenge,Premier,SF,MayoDominaria,1112102,O_danielakos,1017550,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12856566,2026-10-17,modern-showcase-challenge,Premier,SF,RigelWeenie,1923667,BABOO25,3376666,2,1,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
+12856566,2026-10-17,modern-showcase-challenge,Premier,F,MayoDominaria,1112102,RigelWeenie,1923667,2,0,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
