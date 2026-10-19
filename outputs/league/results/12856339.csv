@@ -1,6 +1,6 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
 12856339,2026-10-10,C32,Challenge,komattaman,2690217,1,Rakdos Midrange,,5,2,15,0.75000,0.68750,0.62871
-12856339,2026-10-10,C32,Challenge,SureThing,3082695,2,Rakdos Aggro,,4,1,18,0.58333,0.80000,0.53527
+12856339,2026-10-10,C32,Challenge,SureThing,3082695,2,Rakdos Midrange,,4,1,18,0.58333,0.80000,0.53527
 12856339,2026-10-10,C32,Challenge,storti,3073424,3,Dimir Midrange,,3,5,15,0.53889,0.62500,0.52042
 12856339,2026-10-10,C32,Challenge,Sam_Lewin,2092528,4,Jeskai Energy,,3,7,12,0.63889,0.58824,0.54943
 12856339,2026-10-10,C32,Challenge,Venom01,3535587,5,Broodscale Combo,,2,3,15,0.56667,0.76923,0.50833

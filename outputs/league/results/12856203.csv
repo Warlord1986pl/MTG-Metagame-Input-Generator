@@ -5,7 +5,7 @@ EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoint
 12856203,2026-10-14,C32,Challenge,Selfeisek,2042214,4,Mono-Black Midrange,,3,3,15,0.58333,0.76923,0.55377
 12856203,2026-10-14,C32,Challenge,Kollslaw,3311758,5,Broodscale Combo,,2,2,15,0.65000,0.71429,0.61539
 12856203,2026-10-14,C32,Challenge,masongrode,1307589,6,Broodscale Combo,,2,5,12,0.63889,0.60000,0.60161
-12856203,2026-10-14,C32,Challenge,manohito,2908947,7,Rakdos Aggro,,2,6,12,0.63889,0.56250,0.59090
+12856203,2026-10-14,C32,Challenge,manohito,2908947,7,Rakdos Midrange,,2,6,12,0.63889,0.56250,0.59090
 12856203,2026-10-14,C32,Challenge,AJV20,1591501,8,Prowess,,2,8,12,0.56667,0.56250,0.53008
 12856203,2026-10-14,C32,Challenge,Venom01,3535587,9,Broodscale Combo,,1,9,12,0.55556,0.60000,0.52072
 12856203,2026-10-14,C32,Challenge,nedyahiske,2404093,10,Devoted Combo,,1,10,12,0.52778,0.60000,0.52381
@@ -23,10 +23,10 @@ EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoint
 12856203,2026-10-14,C32,Challenge,nahuel10,1942357,22,Azorius Control,,0,22,9,0.51111,0.50000,0.49203
 12856203,2026-10-14,C32,Challenge,DemianDesposito10,2747375,23,Boros Burn,,0,23,9,0.45555,0.46667,0.47274
 12856203,2026-10-14,C32,Challenge,komattaman,2690217,24,Rakdos Midrange,,0,24,9,0.44444,0.50000,0.43809
-12856203,2026-10-14,C32,Challenge,DragonFodder,415299,25,Rakdos Aggro,,0,25,9,0.44444,0.42857,0.45057
+12856203,2026-10-14,C32,Challenge,DragonFodder,415299,25,Rakdos Midrange,,0,25,9,0.44444,0.42857,0.45057
 12856203,2026-10-14,C32,Challenge,cdiegor,249618,26,Broodscale Combo,,0,26,9,0.36111,0.46667,0.39420
 12856203,2026-10-14,C32,Challenge,musasabi,1210536,27,Domain Zoo,,0,27,6,0.61111,0.37500,0.57682
-12856203,2026-10-14,C32,Challenge,Slatorade,828185,28,Rakdos Aggro,,0,28,6,0.53333,0.38462,0.53771
+12856203,2026-10-14,C32,Challenge,Slatorade,828185,28,Rakdos Midrange,,0,28,6,0.53333,0.38462,0.53771
 12856203,2026-10-14,C32,Challenge,bless_von,2292083,29,Domain Zoo,,0,29,6,0.53333,0.33333,0.51943
 12856203,2026-10-14,C32,Challenge,Rashek,2702005,30,Grixis Reanimator,,0,30,6,0.50000,0.38462,0.50769
 12856203,2026-10-14,C32,Challenge,AstroZombie74,2237077,31,Broodscale Combo,,0,31,6,0.48333,0.41176,0.47093

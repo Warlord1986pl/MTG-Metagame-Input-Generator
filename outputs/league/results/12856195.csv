@@ -1,7 +1,7 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
 12856195,2026-10-13,C16,Challenge,nahuel10,1942357,1,Azorius Control,,5,8,9,0.58667,0.50000,0.59054
 12856195,2026-10-13,C16,Challenge,hyoooga,3097209,2,Hammer Time,,4,7,9,0.62667,0.50000,0.55874
-12856195,2026-10-13,C16,Challenge,DragonFodder,415299,3,Rakdos Aggro,,3,3,12,0.60667,0.66667,0.56310
+12856195,2026-10-13,C16,Challenge,DragonFodder,415299,3,Rakdos Midrange,,3,3,12,0.60667,0.66667,0.56310
 12856195,2026-10-13,C16,Challenge,virp13,3525848,4,Dimir Midrange,,3,5,12,0.53333,0.66667,0.51007
 12856195,2026-10-13,C16,Challenge,Attomium,1778538,5,Broodscale Combo,,2,1,15,0.64000,0.90909,0.55000
 12856195,2026-10-13,C16,Challenge,wild88plk,1393029,6,Affinity,,2,2,12,0.68000,0.66667,0.62277
@@ -12,7 +12,7 @@ EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoint
 12856195,2026-10-13,C16,Challenge,WhiteNinja,3555118,11,Mono-Black Midrange,,1,11,9,0.54667,0.57143,0.52656
 12856195,2026-10-13,C16,Challenge,swff,856754,12,Boros Energy,,1,12,9,0.49333,0.61538,0.45348
 12856195,2026-10-13,C16,Challenge,Deathmaxx,2995055,13,Jeskai Energy,,1,13,6,0.54667,0.41667,0.50513
-12856195,2026-10-13,C16,Challenge,komattaman,2690217,14,Rakdos Aggro,,1,14,6,0.53333,0.41667,0.52303
+12856195,2026-10-13,C16,Challenge,komattaman,2690217,14,Rakdos Midrange,,1,14,6,0.53333,0.41667,0.52303
 12856195,2026-10-13,C16,Challenge,harlouuk,1239343,15,Esper Blink,,1,15,6,0.52667,0.46667,0.48476
 12856195,2026-10-13,C16,Challenge,Kikis,1096192,16,Affinity,,1,16,6,0.49333,0.38462,0.50238
 12856195,2026-10-13,C16,Challenge,Chemist1234,1585449,17,Azorius Control,,0,17,6,0.45333,0.50000,0.44095

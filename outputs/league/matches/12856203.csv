@@ -1,6 +1,6 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
 12856203,2026-10-14,C32,Challenge,QF,Dasikk,3469379,AJV20,1591501,2,1,Esper Blink,Prowess
-12856203,2026-10-14,C32,Challenge,QF,Selfeisek,2042214,manohito,2908947,2,0,Mono-Black Midrange,Rakdos Aggro
+12856203,2026-10-14,C32,Challenge,QF,Selfeisek,2042214,manohito,2908947,2,0,Mono-Black Midrange,Rakdos Midrange
 12856203,2026-10-14,C32,Challenge,QF,kthanakit26,2122697,masongrode,1307589,2,1,Tron,Broodscale Combo
 12856203,2026-10-14,C32,Challenge,QF,LucasG1ggs,750888,Kollslaw,3311758,2,1,Rakdos Midrange,Broodscale Combo
 12856203,2026-10-14,C32,Challenge,SF,LucasG1ggs,750888,Selfeisek,2042214,2,0,Rakdos Midrange,Mono-Black Midrange

@@ -1329,7 +1329,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 4,
+        "distinctDecks": 3,
         "starts": 11,
         "top16": 3,
         "top2": 1,
@@ -1359,7 +1359,7 @@
         },
         {
           "date": "2026-10-02",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855469",
@@ -3310,7 +3310,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 5,
+        "distinctDecks": 4,
         "starts": 6,
         "top16": 3,
         "top2": 0,
@@ -3376,7 +3376,7 @@
         },
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855448",
@@ -3585,7 +3585,7 @@
       "results": [
         {
           "date": "2026-10-18",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856599",
@@ -3684,7 +3684,7 @@
     "id:1205480": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 0,
@@ -3702,7 +3702,7 @@
       "results": [
         {
           "date": "2026-10-04",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855490",
@@ -4884,7 +4884,7 @@
           "date": "2026-10-11",
           "event": "Modern Challenge 32",
           "eventId": "12856172",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2537822",
           "opponentName": "Bugsy69",
           "pilotDeck": "Rakdos Midrange",
@@ -4955,7 +4955,7 @@
           "date": "2026-10-17",
           "event": "Modern Challenge 16",
           "eventId": "12856590",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2908947",
           "opponentName": "manohito",
           "pilotDeck": "Rakdos Midrange",
@@ -5400,7 +5400,7 @@
       "results": [
         {
           "date": "2026-10-02",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855469",
@@ -5465,7 +5465,7 @@
           "date": "2026-10-03",
           "event": "Modern Challenge 16",
           "eventId": "12855475",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2850981",
           "opponentName": "Arremangado",
           "pilotDeck": "Domain Zoo",
@@ -6450,7 +6450,7 @@
     "id:1540808": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 5,
+        "distinctDecks": 4,
         "starts": 6,
         "top16": 2,
         "top2": 0,
@@ -6468,7 +6468,7 @@
       "results": [
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12854950",
@@ -7437,7 +7437,7 @@
           "date": "2026-09-30",
           "event": "Modern Challenge 96",
           "eventId": "12855453",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2669359",
           "opponentName": "HouseOfManaMTG",
           "pilotDeck": "Azorius Control",
@@ -8039,7 +8039,7 @@
           "opponentDeck": "Prowess",
           "opponentId": "id:2676235",
           "opponentName": "simoneromarm",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C96"
@@ -8088,7 +8088,7 @@
       "results": [
         {
           "date": "2026-10-02",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855469",
@@ -11538,7 +11538,7 @@
           "date": "2026-10-17",
           "event": "Modern Challenge 16",
           "eventId": "12856590",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2908947",
           "opponentName": "manohito",
           "pilotDeck": "Azorius Control",
@@ -14417,7 +14417,7 @@
           "date": "2026-10-14",
           "event": "Modern Challenge 32",
           "eventId": "12856203",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2908947",
           "opponentName": "manohito",
           "pilotDeck": "Mono-Black Midrange",
@@ -15814,7 +15814,7 @@
           "opponentDeck": "Prowess",
           "opponentId": "id:2304638",
           "opponentName": "choobes",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C16"
@@ -15833,7 +15833,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 4,
         "top16": 4,
         "top2": 0,
@@ -15851,7 +15851,7 @@
       "results": [
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12855475",
@@ -16023,7 +16023,7 @@
       "results": [
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12855475",
@@ -21027,7 +21027,7 @@
           "date": "2026-10-03",
           "event": "Modern Challenge 16",
           "eventId": "12855475",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2850981",
           "opponentName": "Arremangado",
           "pilotDeck": "Prowess",
@@ -21039,7 +21039,7 @@
           "date": "2026-10-03",
           "event": "Modern Challenge 16",
           "eventId": "12855475",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2092644",
           "opponentName": "Foxantes",
           "pilotDeck": "Prowess",
@@ -22081,7 +22081,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 1,
         "top2": 0,
@@ -22099,7 +22099,7 @@
       "results": [
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern RC Super Qualifier",
           "eventClass": "Premier",
           "eventId": "12855444",
@@ -23342,7 +23342,7 @@
           "opponentDeck": "Living End",
           "opponentId": "id:2897184",
           "opponentName": "Kizdar",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "QF",
           "tier": "C96"
@@ -23351,10 +23351,10 @@
           "date": "2026-09-30",
           "event": "Modern Challenge 96",
           "eventId": "12855453",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2669359",
           "opponentName": "HouseOfManaMTG",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "SF",
           "tier": "C96"
@@ -23366,7 +23366,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:3442638",
           "opponentName": "bananadisaster",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C32"
@@ -23457,7 +23457,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 5,
+        "distinctDecks": 4,
         "starts": 23,
         "top16": 12,
         "top2": 2,
@@ -23547,7 +23547,7 @@
         },
         {
           "date": "2026-09-30",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855453",
@@ -23559,7 +23559,7 @@
         },
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12854949",
@@ -23571,7 +23571,7 @@
         },
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855448",
@@ -23792,7 +23792,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 4,
+        "distinctDecks": 3,
         "starts": 5,
         "top16": 3,
         "top2": 1,
@@ -23810,7 +23810,7 @@
       "results": [
         {
           "date": "2026-09-28",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12854940",
@@ -24912,7 +24912,7 @@
           "opponentDeck": "Amulet Titan",
           "opponentId": "id:3116151",
           "opponentName": "crazythursday",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "W",
           "round": "QF",
           "tier": "C32"
@@ -24924,7 +24924,7 @@
           "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:1296445",
           "opponentName": "ionez",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "SF",
           "tier": "C32"
@@ -24985,7 +24985,7 @@
       "results": [
         {
           "date": "2026-10-11",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856172",
@@ -25102,7 +25102,7 @@
       "results": [
         {
           "date": "2026-10-02",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855469",
@@ -28626,7 +28626,7 @@
           "opponentDeck": "Azorius Control",
           "opponentId": "id:1652812",
           "opponentName": "xhpc007",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "F",
           "tier": "C96"
@@ -28638,7 +28638,7 @@
           "opponentDeck": "Prowess",
           "opponentId": "id:3056706",
           "opponentName": "Xsper",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "QF",
           "tier": "C96"
@@ -28647,10 +28647,10 @@
           "date": "2026-09-30",
           "event": "Modern Challenge 96",
           "eventId": "12855453",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2449332",
           "opponentName": "xfile",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "SF",
           "tier": "C96"
@@ -28662,7 +28662,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:2928451",
           "opponentName": "YungDingo",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C32"
@@ -28747,7 +28747,7 @@
         },
         {
           "date": "2026-09-30",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855453",
@@ -28759,7 +28759,7 @@
         },
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12854949",
@@ -28971,7 +28971,7 @@
           "opponentDeck": "Prowess",
           "opponentId": "id:3376666",
           "opponentName": "BABOO25",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -28998,7 +28998,7 @@
       "results": [
         {
           "date": "2026-10-17",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12856566",
@@ -29075,7 +29075,7 @@
           "date": "2026-10-02",
           "event": "Modern Challenge 96",
           "eventId": "12855469",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:1706283",
           "opponentName": "Laplasjan",
           "pilotDeck": "Prowess",
@@ -30516,7 +30516,7 @@
           "date": "2026-10-10",
           "event": "Modern Challenge 32",
           "eventId": "12856339",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:3082695",
           "opponentName": "SureThing",
           "pilotDeck": "Rakdos Midrange",
@@ -30574,7 +30574,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 4,
+        "distinctDecks": 3,
         "starts": 13,
         "top16": 10,
         "top2": 2,
@@ -30664,7 +30664,7 @@
         },
         {
           "date": "2026-10-13",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12856195",
@@ -31427,7 +31427,7 @@
       "results": [
         {
           "date": "2026-10-04",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855490",
@@ -32817,7 +32817,7 @@
           "date": "2026-10-01",
           "event": "Modern Challenge 64",
           "eventId": "12855459",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:3405508",
           "opponentName": "stefansson30952",
           "pilotDeck": "Affinity",
@@ -33397,7 +33397,7 @@
           "date": "2026-10-10",
           "event": "Modern Challenge 32",
           "eventId": "12856339",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:3082695",
           "opponentName": "SureThing",
           "pilotDeck": "Devoted Combo",
@@ -36542,7 +36542,7 @@
     "id:2816910": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 3,
+        "distinctDecks": 2,
         "starts": 4,
         "top16": 1,
         "top2": 0,
@@ -36560,7 +36560,7 @@
       "results": [
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12854949",
@@ -37346,7 +37346,7 @@
           "opponentDeck": "Prowess",
           "opponentId": "id:2304638",
           "opponentName": "choobes",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "F",
           "tier": "C16"
@@ -37358,7 +37358,7 @@
           "opponentDeck": "Domain Zoo",
           "opponentId": "id:1390771",
           "opponentName": "MissTrigger",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "QF",
           "tier": "C16"
@@ -37370,7 +37370,7 @@
           "opponentDeck": "Azorius Control",
           "opponentId": "id:2928451",
           "opponentName": "YungDingo",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "SF",
           "tier": "C16"
@@ -37395,7 +37395,7 @@
       "results": [
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12855475",
@@ -38675,7 +38675,7 @@
       "results": [
         {
           "date": "2026-10-01",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855459",
@@ -38881,7 +38881,7 @@
           "date": "2026-09-30",
           "event": "Modern Challenge 96",
           "eventId": "12855453",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2449332",
           "opponentName": "xfile",
           "pilotDeck": "Living End",
@@ -39611,7 +39611,7 @@
           "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:1304755",
           "opponentName": "Imaeda",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "W",
           "round": "QF",
           "tier": "C16"
@@ -39623,7 +39623,7 @@
           "opponentDeck": "Azorius Control",
           "opponentId": "id:1942357",
           "opponentName": "nahuel10",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "SF",
           "tier": "C16"
@@ -39635,7 +39635,7 @@
           "opponentDeck": "Mono-Black Midrange",
           "opponentId": "id:2042214",
           "opponentName": "Selfeisek",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "QF",
           "tier": "C32"
@@ -39708,7 +39708,7 @@
       "results": [
         {
           "date": "2026-10-17",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12856590",
@@ -39720,7 +39720,7 @@
         },
         {
           "date": "2026-10-14",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856203",
@@ -40444,7 +40444,7 @@
           "date": "2026-10-13",
           "event": "Modern Challenge 16",
           "eventId": "12856195",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:415299",
           "opponentName": "DragonFodder",
           "pilotDeck": "Domain Zoo",
@@ -41007,7 +41007,7 @@
           "date": "2026-10-03",
           "event": "Modern Challenge 16",
           "eventId": "12855475",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:745439",
           "opponentName": "Bent",
           "pilotDeck": "Azorius Control",
@@ -41019,7 +41019,7 @@
           "date": "2026-10-03",
           "event": "Modern Challenge 16",
           "eventId": "12855475",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2850981",
           "opponentName": "Arremangado",
           "pilotDeck": "Azorius Control",
@@ -41043,7 +41043,7 @@
           "date": "2026-09-29",
           "event": "Modern Challenge 32",
           "eventId": "12854949",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2669359",
           "opponentName": "HouseOfManaMTG",
           "pilotDeck": "Goryo's Vengeance",
@@ -43845,7 +43845,7 @@
     "id:3013293": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 4,
+        "distinctDecks": 3,
         "starts": 5,
         "top16": 4,
         "top2": 0,
@@ -43863,7 +43863,7 @@
       "results": [
         {
           "date": "2026-10-18",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856599",
@@ -45135,7 +45135,7 @@
           "date": "2026-09-30",
           "event": "Modern Challenge 96",
           "eventId": "12855453",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2669359",
           "opponentName": "HouseOfManaMTG",
           "pilotDeck": "Prowess",
@@ -45716,7 +45716,7 @@
           "date": "2026-10-10",
           "event": "Modern Challenge 32",
           "eventId": "12856339",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:3082695",
           "opponentName": "SureThing",
           "pilotDeck": "Dimir Midrange",
@@ -46071,7 +46071,7 @@
           "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2690217",
           "opponentName": "komattaman",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "F",
           "tier": "C32"
@@ -46083,7 +46083,7 @@
           "opponentDeck": "Devoted Combo",
           "opponentId": "id:2729232",
           "opponentName": "MC_amp2267",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "W",
           "round": "QF",
           "tier": "C32"
@@ -46095,7 +46095,7 @@
           "opponentDeck": "Dimir Midrange",
           "opponentId": "id:3073424",
           "opponentName": "storti",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "W",
           "round": "SF",
           "tier": "C32"
@@ -46144,7 +46144,7 @@
       "results": [
         {
           "date": "2026-10-10",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856339",
@@ -47004,7 +47004,7 @@
           "date": "2026-10-13",
           "event": "Modern Challenge 16",
           "eventId": "12856195",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:415299",
           "opponentName": "DragonFodder",
           "pilotDeck": "Hammer Time",
@@ -47842,7 +47842,7 @@
           "date": "2026-10-11",
           "event": "Modern Challenge 32",
           "eventId": "12856172",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2537822",
           "opponentName": "Bugsy69",
           "pilotDeck": "Amulet Titan",
@@ -49953,7 +49953,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 3,
+        "distinctDecks": 2,
         "starts": 10,
         "top16": 5,
         "top2": 0,
@@ -50043,7 +50043,7 @@
         },
         {
           "date": "2026-09-28",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12854940",
@@ -55403,7 +55403,7 @@
           "date": "2026-10-01",
           "event": "Modern Challenge 64",
           "eventId": "12855459",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:3405508",
           "opponentName": "stefansson30952",
           "pilotDeck": "Ruby Storm",
@@ -56579,7 +56579,7 @@
           "date": "2026-10-17",
           "event": "Modern Showcase Challenge",
           "eventId": "12856566",
-          "opponentDeck": "Rakdos Aggro",
+          "opponentDeck": "Rakdos Midrange",
           "opponentId": "id:2675769",
           "opponentName": "_Elfkid_",
           "pilotDeck": "Prowess",
@@ -57185,7 +57185,7 @@
           "opponentDeck": "Affinity",
           "opponentId": "id:2717078",
           "opponentName": "DJK3V1N",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -57197,7 +57197,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:3332226",
           "opponentName": "_Shikamaru_",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -57240,7 +57240,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 2,
         "top2": 1,
@@ -57258,7 +57258,7 @@
       "results": [
         {
           "date": "2026-10-01",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855459",
@@ -58050,7 +58050,7 @@
           "date": "2026-09-29",
           "event": "Modern Challenge 32",
           "eventId": "12854949",
-          "opponentDeck": "Eldrazi Ramp",
+          "opponentDeck": "Broodscale Combo",
           "opponentId": "id:2449332",
           "opponentName": "xfile",
           "pilotDeck": "Ruby Storm",
@@ -64082,7 +64082,7 @@
           "opponentDeck": "Domain Zoo",
           "opponentId": "id:2917293",
           "opponentName": "Osiris85",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "W",
           "round": "QF",
           "tier": "C16"
@@ -64094,7 +64094,7 @@
           "opponentDeck": "Hammer Time",
           "opponentId": "id:3097209",
           "opponentName": "hyoooga",
-          "pilotDeck": "Rakdos Aggro",
+          "pilotDeck": "Rakdos Midrange",
           "result": "L",
           "round": "SF",
           "tier": "C16"
@@ -64125,7 +64125,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 1,
+        "distinctDecks": 2,
         "starts": 14,
         "top16": 5,
         "top2": 0,
@@ -64143,7 +64143,7 @@
       "results": [
         {
           "date": "2026-10-17",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12856590",
@@ -64155,7 +64155,7 @@
         },
         {
           "date": "2026-10-17",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856762",
@@ -64167,7 +64167,7 @@
         },
         {
           "date": "2026-10-14",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856203",
@@ -64191,7 +64191,7 @@
         },
         {
           "date": "2026-10-13",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12856195",
@@ -66543,7 +66543,7 @@
     "id:697148": {
       "bracketMatches": [],
       "counts": {
-        "distinctDecks": 2,
+        "distinctDecks": 1,
         "starts": 2,
         "top16": 0,
         "top2": 0,
@@ -66573,7 +66573,7 @@
         },
         {
           "date": "2026-10-02",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 96",
           "eventClass": "Challenge",
           "eventId": "12855469",
@@ -67294,7 +67294,7 @@
           "opponentDeck": "Azorius Control",
           "opponentId": "id:2928451",
           "opponentName": "YungDingo",
-          "pilotDeck": "Eldrazi Ramp",
+          "pilotDeck": "Broodscale Combo",
           "result": "L",
           "round": "QF",
           "tier": "C16"
@@ -67319,7 +67319,7 @@
       "results": [
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 16",
           "eventClass": "Challenge",
           "eventId": "12855475",
@@ -67583,7 +67583,7 @@
         }
       ],
       "counts": {
-        "distinctDecks": 4,
+        "distinctDecks": 3,
         "starts": 22,
         "top16": 11,
         "top2": 1,
@@ -67709,7 +67709,7 @@
         },
         {
           "date": "2026-10-03",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855474",
@@ -67721,7 +67721,7 @@
         },
         {
           "date": "2026-09-30",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12855450",
@@ -67733,7 +67733,7 @@
         },
         {
           "date": "2026-09-29",
-          "deck": "Eldrazi Ramp",
+          "deck": "Broodscale Combo",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12855448",
@@ -68824,7 +68824,7 @@
       "results": [
         {
           "date": "2026-10-14",
-          "deck": "Rakdos Aggro",
+          "deck": "Rakdos Midrange",
           "event": "Modern Challenge 32",
           "eventClass": "Challenge",
           "eventId": "12856203",

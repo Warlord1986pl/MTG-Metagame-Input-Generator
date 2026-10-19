@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
 12856195,2026-10-13,C16,Challenge,QF,hyoooga,3097209,wild88plk,1393029,2,0,Hammer Time,Affinity
-12856195,2026-10-13,C16,Challenge,QF,DragonFodder,415299,Osiris85,2917293,2,0,Rakdos Aggro,Domain Zoo
+12856195,2026-10-13,C16,Challenge,QF,DragonFodder,415299,Osiris85,2917293,2,0,Rakdos Midrange,Domain Zoo
 12856195,2026-10-13,C16,Challenge,QF,nahuel10,1942357,Attomium,1778538,2,0,Azorius Control,Broodscale Combo
 12856195,2026-10-13,C16,Challenge,QF,virp13,3525848,maytwer,2543175,2,0,Dimir Midrange,Rakdos Midrange
 12856195,2026-10-13,C16,Challenge,SF,nahuel10,1942357,virp13,3525848,2,0,Azorius Control,Dimir Midrange
-12856195,2026-10-13,C16,Challenge,SF,hyoooga,3097209,DragonFodder,415299,2,0,Hammer Time,Rakdos Aggro
+12856195,2026-10-13,C16,Challenge,SF,hyoooga,3097209,DragonFodder,415299,2,0,Hammer Time,Rakdos Midrange
 12856195,2026-10-13,C16,Challenge,F,nahuel10,1942357,hyoooga,3097209,2,0,Azorius Control,Hammer Time

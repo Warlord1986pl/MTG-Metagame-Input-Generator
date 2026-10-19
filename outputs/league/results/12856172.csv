@@ -1,7 +1,7 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
 12856172,2026-10-11,C32,Challenge,musasabi,1210536,1,Affinity,,5,5,15,0.51111,0.68750,0.48819
 12856172,2026-10-11,C32,Challenge,ionez,1296445,2,Rakdos Midrange,,4,7,12,0.66667,0.57143,0.59693
-12856172,2026-10-11,C32,Challenge,Bugsy69,2537822,3,Rakdos Aggro,,3,6,15,0.48333,0.78571,0.45934
+12856172,2026-10-11,C32,Challenge,Bugsy69,2537822,3,Rakdos Midrange,,3,6,15,0.48333,0.78571,0.45934
 12856172,2026-10-11,C32,Challenge,powered_by_VANYA,3169940,4,Neobrand,,3,8,12,0.60000,0.56250,0.55437
 12856172,2026-10-11,C32,Challenge,xfile,2449332,5,Broodscale Combo,,2,1,18,0.59444,0.80000,0.55203
 12856172,2026-10-11,C32,Challenge,fingers1991,336006,6,Jeskai Energy,,2,2,15,0.66667,0.66667,0.60714
