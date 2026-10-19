@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
+from urllib.error import HTTPError
 
 import pandas as pd
 
@@ -65,6 +66,8 @@ PREMIER_SUFFIXES = {
 IGNORED_SUFFIXES = {"league", "last-chance", "preliminary"}
 
 NEEDS_MANUAL_REVIEW = "NEEDS_MANUAL_REVIEW"
+# Days to wait for a missing MTGGoldfish page before labeling the event with the classifier.
+MTGGOLDFISH_GRACE_DAYS = 2
 
 
 class ChallengeSourceError(RuntimeError):
@@ -602,6 +605,13 @@ def classify_deck(
         ((multiset_similarity(target.signature, sig), label) for label, sig in library),
         key=lambda x: -x[0],
     )
+    if len(scored) < 2:
+        # e.g. a window whose only event has no MTGGoldfish page: nothing to compare against.
+        return ClassificationResult(
+            deck=target, predicted_label=None, nearest_label=None, nearest_sim=0.0,
+            second_label=None, second_sim=0.0, needs_review=True,
+            reason=f"only {len(scored)} labeled reference deck(s) in the window",
+        )
     nearest_sim, nearest_label = scored[0]
     second_sim, second_label = scored[1]
 
@@ -931,17 +941,43 @@ def build_challenge_dataset(
             emit(f"[mtgo-dataset] ERROR C{c.size} {c.date} ({c.event_id}): {exc}")
             return False
 
+    unresolved_events: List[MtgoRegistryEvent] = []
+
+    def goldfish_roster(evs: List[MtgoRegistryEvent]) -> Optional[pd.DataFrame]:
+        # MTGGoldfish sometimes never publishes an event mtgo.com has: 12856761 (C32, 2026-10-16)
+        # had no page at all, its two 10-17 C32 pages belonged to 12856762 and 12856594, and the
+        # 404 crashed every hourly run for days. A young event is deferred (Goldfish is often just
+        # late); past the grace period the event is labeled by the classifier like the unmatched
+        # side of a collision. Pilot, LoginID and Place still come from mtgo.com either way.
+        first = evs[0]
+        challenge_info = {"slug": first.slug, "challenge_size": first.size, "event_date": first.date, "mtgo_url": first.url}
+        try:
+            return _parse_single_challenge(challenge_info, format_name)[1]
+        except HTTPError as exc:
+            if exc.code != 404:
+                raise
+        age_days = (date.today() - date.fromisoformat(first.date)).days
+        for c in evs:
+            if age_days < MTGGOLDFISH_GRACE_DAYS:
+                quarantined.add(c.event_id)
+                reason = f"no MTGGoldfish page yet (event is {age_days} day(s) old, waiting {MTGGOLDFISH_GRACE_DAYS})"
+                skipped_events.append(SkippedEvent(c.event_id, c.date, c.size, "challenge", c.url, "PENDING", reason))
+                emit(f"[mtgo-dataset] PENDING C{c.size} {c.date} ({c.event_id}): {reason}")
+            else:
+                unresolved_events.append(c)
+                emit(f"[mtgo-dataset] WARN C{c.size} {c.date} ({c.event_id}): no MTGGoldfish page after {age_days} day(s), classifying decks")
+        return None
+
     for c in clean:
-        challenge_info = {"slug": c.slug, "challenge_size": c.size, "event_date": c.date, "mtgo_url": c.url}
-        _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
-        if ingest_or_quarantine(c, mg_df):
+        mg_df = goldfish_roster([c])
+        if mg_df is not None and ingest_or_quarantine(c, mg_df):
             emit(f"[mtgo-dataset] clean C{c.size} {c.date} ({c.event_id}): labeled from MTGGoldfish")
 
-    unresolved_events: List[MtgoRegistryEvent] = []
     for (size, dt), evs in ambiguous.items():
         event_ids = [e.event_id for e in evs]
-        challenge_info = {"slug": evs[0].slug, "challenge_size": size, "event_date": dt, "mtgo_url": evs[0].url}
-        _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
+        mg_df = goldfish_roster(evs)
+        if mg_df is None:
+            continue
         mg_pilots = mg_df["Pilot"].tolist()
         winner_eid = resolve_ambiguous_event(mg_pilots, event_ids, mtgo_decks_by_event)
         winner_event = next(e for e in evs if e.event_id == winner_eid)
