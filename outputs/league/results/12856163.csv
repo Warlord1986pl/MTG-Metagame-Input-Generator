@@ -1,5 +1,5 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12856163,2026-10-10,C16,Challenge,Venom01,3535587,1,Eldrazi Ramp,,5,5,12,0.50667,0.64286,0.46888
+12856163,2026-10-10,C16,Challenge,Venom01,3535587,1,Broodscale Combo,,5,5,12,0.50667,0.64286,0.46888
 12856163,2026-10-10,C16,Challenge,GammelJoghurt,2484386,2,Affinity,,4,2,12,0.66667,0.72727,0.57692
 12856163,2026-10-10,C16,Challenge,ejk,1952341,3,Broodscale Combo,,3,3,12,0.63333,0.66667,0.56303
 12856163,2026-10-10,C16,Challenge,DragonFodder,415299,4,Rakdos Aggro,,3,8,9,0.61333,0.53846,0.54359

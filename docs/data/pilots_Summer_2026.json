@@ -18574,7 +18574,7 @@
           "eventId": "12848201",
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:2675769",
-          "opponentName": "MegaSwampert",
+          "opponentName": "_Elfkid_",
           "pilotDeck": "Ruby Storm",
           "result": "W",
           "round": "QF",
@@ -27959,7 +27959,9 @@
       "name": "MegaSwampert",
       "points": 2,
       "premierPoints": 0,
-      "priorNames": [],
+      "priorNames": [
+        "_Elfkid_"
+      ],
       "rank": 366,
       "results": [
         {

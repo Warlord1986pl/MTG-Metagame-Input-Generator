@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
 12856163,2026-10-10,C16,Challenge,QF,DragonFodder,415299,crazythursday,3116151,2,0,Rakdos Aggro,Amulet Titan
 12856163,2026-10-10,C16,Challenge,QF,GammelJoghurt,2484386,Savior0117,2464763,2,1,Affinity,Belcher
-12856163,2026-10-10,C16,Challenge,QF,Venom01,3535587,JV_7777,2045296,2,0,Eldrazi Ramp,Affinity
+12856163,2026-10-10,C16,Challenge,QF,Venom01,3535587,JV_7777,2045296,2,0,Broodscale Combo,Affinity
 12856163,2026-10-10,C16,Challenge,QF,ejk,1952341,yolad,3342362,2,0,Broodscale Combo,Boros Energy
-12856163,2026-10-10,C16,Challenge,SF,Venom01,3535587,DragonFodder,415299,2,0,Eldrazi Ramp,Rakdos Aggro
+12856163,2026-10-10,C16,Challenge,SF,Venom01,3535587,DragonFodder,415299,2,0,Broodscale Combo,Rakdos Aggro
 12856163,2026-10-10,C16,Challenge,SF,GammelJoghurt,2484386,ejk,1952341,2,0,Affinity,Broodscale Combo
-12856163,2026-10-10,C16,Challenge,F,Venom01,3535587,GammelJoghurt,2484386,2,0,Eldrazi Ramp,Affinity
+12856163,2026-10-10,C16,Challenge,F,Venom01,3535587,GammelJoghurt,2484386,2,0,Broodscale Combo,Affinity
