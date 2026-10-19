@@ -3570,6 +3570,24 @@ class StudioWindow(QMainWindow):
             self.stats_run_button.setEnabled(True)
             return
 
+        # A run dir with metagame_input_challenge_top32.xlsx has its metagame statistics from the
+        # Challenge Top 32 Meta; this mode (Videre input + metagame_history_<format>.csv) would
+        # silently replace them with the Videre per-name Meta.
+        if (
+            input_path.name != "metagame_input_challenge_top32.xlsx"
+            and (input_path.parent / "metagame_input_challenge_top32.xlsx").exists()
+        ):
+            QMessageBox.warning(
+                self,
+                APP_NAME,
+                "Ten tydzień ma Meta z Challenge Top 32 i statystyki metagame policzone przez generację.\n"
+                "Tryb Liga (Videre) by je nadpisał, więc nie zostanie uruchomiony.\n\n"
+                "Aby je przeliczyć: python src/broodscale_rule_cli.py recompute "
+                "--since <początek tygodnia> --trend-weeks 12",
+            )
+            self.stats_run_button.setEnabled(True)
+            return
+
         # --- Pre-stats unknown archetype check ---
         unknown_rows = self._find_unknown_archetypes_in_input(input_path)
         if unknown_rows:
@@ -3858,7 +3876,16 @@ class StudioWindow(QMainWindow):
         self._append_log("[OK] GUI run finished.")
         self.load_latest_output_for_editor()
         self._set_statistics_input_from_latest()
-        if self.auto_stats_after_generate_check.isChecked() and self.stats_thread is None:
+        if self.auto_stats_after_generate_check.isChecked() and self.include_challenge_check.isChecked():
+            # With Challenge data the generation itself computes metagame statistics from the
+            # Challenge Top 32 Meta (challenge_meta.py) -- or deliberately skips them. The Statistics
+            # tab's metagame mode reads the Videre grouped XLSX/history and would overwrite them
+            # in the same run dir (W42, 2026-10-19: Eldrazi Ramp 7.5% Videre, no Broodscale Combo).
+            self._append_log(
+                "[INFO] Auto-run Statistics skipped: with Challenge data the generation already "
+                "computed the metagame statistics (Challenge Top 32 Meta)."
+            )
+        elif self.auto_stats_after_generate_check.isChecked() and self.stats_thread is None:
             self._append_log("[INFO] Auto-run Statistics is enabled. Starting statistics analysis...")
             self.start_statistics()
 
