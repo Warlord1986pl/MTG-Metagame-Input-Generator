@@ -554,6 +554,31 @@ def _build_mtggoldfish_challenge_url(format_name: str, challenge_size: int, even
     return f"{MTG_GOLDFISH_BASE}/tournament/{format_slug}-challenge-{challenge_size}-{event_date}#online"
 
 
+def _search_mtggoldfish_challenge_urls(
+    format_name: str, challenge_size: int, start_date: date, end_date: date
+) -> List[str]:
+    """MTGGoldfish tournament-search results for one Challenge tier in [start_date, end_date],
+    as numeric /tournament/<id> URLs. Needed because a second same-tier same-day Challenge is
+    published as "... (1)" with no dated slug of its own (its "<slug>-1" has been seen pointing at
+    a duplicate of the first one instead), and events are sometimes filed under the next day.
+    """
+    format_slug = _format_slug_for_url(format_name)
+    query = urlencode({
+        "tournament_search[name]": f"{format_name} Challenge",
+        "tournament_search[format]": format_slug,
+        "tournament_search[date_range]": f"{start_date:%m/%d/%Y} - {end_date:%m/%d/%Y}",
+    })
+    html = _fetch_text(f"{MTG_GOLDFISH_BASE}/tournament_searches/create?{query}")
+    urls: List[str] = []
+    for tid, name in re.findall(r'href="/tournament/(\d+)"[^>]*>([^<]*)', html):
+        m = re.search(r"challenge\s+(\d+)\s+\d{4}-\d{2}-\d{2}", name, flags=re.IGNORECASE)
+        if m and int(m.group(1)) == int(challenge_size):
+            url = f"{MTG_GOLDFISH_BASE}/tournament/{tid}#online"
+            if url not in urls:
+                urls.append(url)
+    return urls
+
+
 def _parse_mtggoldfish_challenge_rows(html: str) -> List[dict]:
     rows: List[dict] = []
     row_pattern = re.compile(r"<tr[^>]*>(.*?)</tr>", flags=re.IGNORECASE | re.DOTALL)
@@ -610,6 +635,8 @@ def _parse_single_challenge(
         challenge_size=int(challenge_info["challenge_size"]),
         event_date=str(challenge_info["event_date"]),
     )
+    # explicit page (e.g. a numeric /tournament/<id> from _search_mtggoldfish_challenge_urls)
+    goldfish_url = str(challenge_info.get("mtggoldfish_url") or goldfish_url)
     html = _fetch_text(goldfish_url)
     parsed_rows = _parse_mtggoldfish_challenge_rows(html)
 
