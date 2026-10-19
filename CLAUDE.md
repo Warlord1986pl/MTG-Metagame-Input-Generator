@@ -76,6 +76,7 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 | `check_alias_cli.py` | `python src/check_alias_cli.py check-alias --source X --target Y --window YYYY-MM-DD:YYYY-MM-DD` — the manual pre-merge gate, run before adding a row to `deck_aliases.csv`. |
 | `broodscale_rule.py` | TEMPORARY card rule: maindeck with >=1 Basking Broodscale -> Deck `Broodscale Combo` / Archetype `Combo`, over every name-based source. See "Broodscale card rule" below. |
 | `broodscale_rule_cli.py` | `apply [--apply]` (relabel history from cached JSON, dry-run default), `reverse-alias [--apply]` (undo a removed name alias) and `recompute --since YYYY-MM-DD` (rebuild run dirs' challenge + metagame outputs). |
+| `moonshadow_rule.py` | TEMPORARY second card rule: maindeck >=1 Moonshadow + >=1 Dark Matter Manipulator, no Death's Shadow, no blue card -> `Rakdos Midrange` / `Midrange`, applied after Broodscale. See "Moonshadow card rule" below. |
 | `challenge_meta.py` | Meta = share of Challenge Top 32 entries after the card rule; builds the run's metagame-statistics input. See "Challenge-based Meta" below. |
 
 ### Data flow
@@ -184,6 +185,26 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   recorded in `outputs/broodscale_reverse_alias_ledger_<format>.csv` and the log's
   `REVERSE_REMOVED_NAME_ALIAS` section.
 - Remove together with this section once a general card classifier replaces it.
+
+### Moonshadow card rule (TEMPORARY, since 2026-10-19)
+
+- `moonshadow_rule.py`: a Challenge/Premier entry whose **maindeck** has >= 1 Moonshadow AND >= 1
+  Dark Matter Manipulator, **no** Death's Shadow and **no** blue card is `Rakdos Midrange` /
+  `Midrange`, whatever the submitted name (Rakdos Aggro, BR, ...). Death's Shadow lists and blue
+  lists keep their name (`EXCLUDED` section of the log); a list with only one of the two cards is
+  untouched (`CONTROL_DMM_WITHOUT_MOONSHADOW`). "Blue" = a maindeck card with `COLOR_BLUE` in its
+  mtgo.com `colors`; mtgo.com reports every land as COLORLESS, so a blue dual land alone is not seen.
+- Always after the Broodscale rule (`card_rule_deck()` for fresh rows; in `run_generation` the
+  history pass runs right after `apply_broodscale_rule_to_history`). Own ledger
+  `outputs/rakdos_override_ledger_<format>.csv` (tracked), own per-window log
+  `statistics/challenges/rakdos_override_<window>.csv`.
+- `challenge_meta.py` blanks Videre winrate for `Rakdos Midrange` and `Rakdos Aggro`
+  (`label_mixed_by_card_rule`, Importance `meta_only`) in any window where the rule moved >= 1 entry.
+- Offline: `python src/broodscale_rule_cli.py apply-moonshadow [--apply]`, then
+  `recompute --since 2026-10-05 --trend-only-since 2026-09-21 --trend-weeks 12` (W40/W41 only get
+  their trend-history row rebuilt in a temp dir -- the earliest rule list is 2026-10-02 -- their
+  published files stay as they were).
+- Remove together with the Broodscale section once the card classifier exists.
 
 ### Challenge-based Meta (`challenge_meta.py`, since 2026-10-12)
 

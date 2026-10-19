@@ -11,8 +11,10 @@ Challenge history, which is card-based after the rule:
   Meta_Videre  = the old Videre value, control only, never used in a computation
 
 Winrate still comes from Videre match data, which is per submitted name and cannot be split by
-cards: for Broodscale Combo and Eldrazi Ramp in any window where the rule moved >= 1 Challenge
-entry, Winrate / Winrate Game Count are NaN with WR_Flag = "label_mixed_by_card_rule". A deck with
+cards: for Broodscale Combo and Eldrazi Ramp in any window where the Broodscale rule moved >= 1
+Challenge entry -- and likewise Rakdos Midrange and Rakdos Aggro for the Moonshadow rule
+(moonshadow_rule.py) -- Winrate / Winrate Game Count are NaN with WR_Flag =
+"label_mixed_by_card_rule". A deck with
 Challenge entries but no Videre row gets NaN with WR_Flag = "no_videre_winrate".
 """
 
@@ -26,13 +28,17 @@ import pandas as pd
 
 try:
     from broodscale_rule import BROODSCALE_DECK, _load_ledger, _norm_id
+    from moonshadow_rule import RAKDOS_MIXED_LABEL_DECKS
+    from moonshadow_rule import rule_moved_entries as rakdos_rule_moved_entries
 except ModuleNotFoundError:
     from .broodscale_rule import BROODSCALE_DECK, _load_ledger, _norm_id
+    from .moonshadow_rule import RAKDOS_MIXED_LABEL_DECKS
+    from .moonshadow_rule import rule_moved_entries as rakdos_rule_moved_entries
 
 META_SOURCE_CHALLENGE = "challenge_top32_cardrule"
 WR_FLAG_MIXED = "label_mixed_by_card_rule"
 WR_FLAG_NO_VIDERE = "no_videre_winrate"
-TREND_CAPTION = "share of Challenge Top 32 entries, card-based Broodscale rule"
+TREND_CAPTION = "share of Challenge Top 32 entries, card-based Broodscale and Moonshadow rules"
 MIXED_LABEL_DECKS = (BROODSCALE_DECK, "Eldrazi Ramp")
 CHALLENGE_META_XLSX = "metagame_input_challenge_top32.xlsx"
 CHALLENGE_META_CSV = "metagame_input_challenge_top32.csv"
@@ -132,6 +138,7 @@ def build_challenge_meta_input(
     format_name: str,
     rogue_threshold: float,
     log: Optional[Callable[[str], None]] = None,
+    rakdos_ledger_csv: Optional[Path] = None,
 ) -> Path:
     """Write <run_dir>/metagame_input_challenge_top32.xlsx (+ .csv twin, which challenge statistics
     read for Meta Share / Universe A) and return the xlsx path -- the drop-in replacement for
@@ -151,6 +158,11 @@ def build_challenge_meta_input(
 
     moved = rule_moved_entries(ledger_csv, start, end)
     mixed = set(MIXED_LABEL_DECKS) if moved >= 1 else set()
+    if rakdos_ledger_csv is None:  # sits next to the Broodscale ledger, same format slug
+        rakdos_ledger_csv = ledger_csv.with_name(ledger_csv.name.replace("broodscale_override_ledger_", "rakdos_override_ledger_"))
+    moved_rakdos = rakdos_rule_moved_entries(rakdos_ledger_csv, start, end)
+    if moved_rakdos >= 1:
+        mixed |= set(RAKDOS_MIXED_LABEL_DECKS)
 
     rows = []
     for r in share.itertuples(index=False):
@@ -181,7 +193,8 @@ def build_challenge_meta_input(
     videre_only = sorted(set(vid) - set(share["Deck"]))
     emit(
         f"[challenge-meta] {start}..{end}: {len(out)} deck(s) from {int(share['Top32Entries'].sum())} Challenge "
-        f"Top {TOP_N_PLACES} entries -> {xlsx}; rule moved {moved} entry(ies)"
+        f"Top {TOP_N_PLACES} entries -> {xlsx}; Broodscale rule moved {moved}, Moonshadow rule moved "
+        f"{moved_rakdos} entry(ies)"
         + (f", winrate blanked for {sorted(mixed)}" if mixed else "")
     )
     no_wr = out.loc[out["WR_Flag"] == WR_FLAG_NO_VIDERE, "Deck"].tolist()

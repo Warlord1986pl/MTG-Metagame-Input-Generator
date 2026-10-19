@@ -17,6 +17,14 @@ the Challenge-based Meta (see challenge_meta.py).
     #    record_probabilities, encounter + trend PNGs) from the Challenge-based Meta.
     python src/broodscale_rule_cli.py recompute --since 2026-07-13 --trend-weeks 12
 
+    # 4. Moonshadow rule (moonshadow_rule.py), same as step 1 -- run after it; dry-run by default
+    python src/broodscale_rule_cli.py apply-moonshadow [--apply]
+
+    # step 3 with --trend-only-since: run dirs starting in [--trend-only-since, --since) only get
+    # their row in metagame_history_challenge_top32_<fmt>.csv rebuilt (in a temp dir), so a newer
+    # week's trend chart reads card-rule-consistent earlier weeks without overwriting their files
+    python src/broodscale_rule_cli.py recompute --since 2026-10-05 --trend-only-since 2026-09-21 --trend-weeks 12
+
 Steps 1 and 3 never re-fetch a decklist (cached JSON only); step 3 touches the network only for
 verify_registry_against_history's registry-index fetch.
 """
@@ -25,7 +33,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -44,6 +54,12 @@ from broodscale_rule import (  # noqa: E402
     reverse_ledger_path_for,
     write_broodscale_override_log,
 )
+from moonshadow_rule import (  # noqa: E402
+    RAKDOS_DECK,
+    apply_moonshadow_rule_to_history,
+    write_rakdos_override_log,
+)
+from moonshadow_rule import ledger_path_for as rakdos_ledger_path_for  # noqa: E402
 from challenge_history_engine import backup_history_file, run_challenge_statistics  # noqa: E402
 from challenge_meta import (  # noqa: E402
     TREND_CAPTION,
@@ -102,6 +118,23 @@ def cmd_apply(args: argparse.Namespace) -> int:
         if not added.empty:
             moved = added[added["SubmittedDeck"] != BROODSCALE_DECK]
             print(f"  {kind}: {len(added)} entry(ies) with Basking Broodscale, {len(moved)} from another name:")
+            print(moved.groupby("SubmittedDeck").size().to_string() if not moved.empty else "    (none)")
+    if not args.apply:
+        print("DRY-RUN: nothing written. Re-run with --apply.")
+    return 0
+
+
+def cmd_apply_moonshadow(args: argparse.Namespace) -> int:
+    outputs_base = Path(args.outputs_base)
+    challenge_csv, premier_csv, cache_dir, _ledger = _paths(outputs_base, args.format_name)
+    rakdos_ledger = rakdos_ledger_path_for(outputs_base, _format_slug_for_url(args.format_name))
+    for kind, path in (("challenge", challenge_csv), ("premier", premier_csv)):
+        added = apply_moonshadow_rule_to_history(
+            path, cache_dir, rakdos_ledger, kind, dry_run=not args.apply, log=print
+        )
+        if not added.empty:
+            moved = added[added["SubmittedDeck"] != RAKDOS_DECK]
+            print(f"  {kind}: {len(added)} rule entry(ies), {len(moved)} from another name:")
             print(moved.groupby("SubmittedDeck").size().to_string() if not moved.empty else "    (none)")
     if not args.apply:
         print("DRY-RUN: nothing written. Re-run with --apply.")
@@ -273,20 +306,44 @@ def cmd_recompute(args: argparse.Namespace) -> int:
     meta_history = challenge_history_path_for(outputs_base, slug)
     videre_history = outputs_base / f"metagame_history_{slug}.csv"
     since = date.fromisoformat(args.since)
+    trend_only_since = date.fromisoformat(args.trend_only_since) if args.trend_only_since else since
+    rakdos_ledger = rakdos_ledger_path_for(outputs_base, slug)
     aliases = load_aliases(Path(args.aliases_file))
     rules = load_rules(Path(args.rules_file))
     hist = _read_hist(challenge_csv)
 
     failures = []
-    for start, end, run_dir in scan_run_dirs(outputs_base):
-        if start < since:
+    for start, end, run_dir in sorted(scan_run_dirs(outputs_base), key=lambda t: t[0]):
+        if start < trend_only_since:
             continue
         label = f"{start.isoformat()}_to_{end.isoformat()}"
+        if start < since:
+            # trend history row only; the run dir itself is left exactly as published
+            print(f"\n=== {run_dir.name} ({label}) -- trend history row only ===")
+            with tempfile.TemporaryDirectory() as tmp:
+                tmp_dir = Path(tmp)
+                if (run_dir / "metagame_input.csv").exists():
+                    shutil.copy2(run_dir / "metagame_input.csv", tmp_dir / "metagame_input.csv")
+                tmp_xlsx = build_challenge_meta_input(
+                    tmp_dir, challenge_csv, ledger_csv, start, end, args.format_name, args.rogue_threshold,
+                    log=print, rakdos_ledger_csv=rakdos_ledger,
+                )
+                # "light": the history row is written exactly as in "full" (before any chart); the
+                # full profile's PNG-vs-table trend guard would compare this past week's table
+                # against a chart drawn over the later weeks already in history and abort.
+                run_statistics(
+                    input_excel=tmp_xlsx, output_dir=tmp_dir / "metagame", history_csv=meta_history,
+                    weeks_back=args.trend_weeks, log=print, output_profile="light",
+                    week_index=week_index_for(meta_history, videre_history, start, end),
+                    trend_caption=TREND_CAPTION,
+                )
+            continue
         print(f"\n=== {run_dir.name} ({label}) ===")
         stats_dir = run_dir / "statistics" / "challenges"
 
         meta_xlsx = build_challenge_meta_input(
-            run_dir, challenge_csv, ledger_csv, start, end, args.format_name, args.rogue_threshold, log=print
+            run_dir, challenge_csv, ledger_csv, start, end, args.format_name, args.rogue_threshold, log=print,
+            rakdos_ledger_csv=rakdos_ledger,
         )
         completeness = verify_registry_against_history(
             format_name=args.format_name, start_date=start, end_date=end,
@@ -303,6 +360,10 @@ def cmd_recompute(args: argparse.Namespace) -> int:
         write_broodscale_override_log(
             stats_dir / f"broodscale_override_{label}.csv", challenge_csv, premier_csv, cache_dir,
             ledger_csv, start, end, log=print, reverse_ledger_csv=reverse_ledger,
+        )
+        write_rakdos_override_log(
+            stats_dir / f"rakdos_override_{label}.csv", challenge_csv, premier_csv, cache_dir,
+            rakdos_ledger, start, end, log=print,
         )
         refresh_premier_events_csv(run_dir / f"premier_events_{label}.csv", premier_csv, log=print)
         metagame_csv = run_dir / "metagame_input.csv"
@@ -339,15 +400,20 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("apply")
     a.add_argument("--apply", action="store_true", help="write history + ledger (default: dry-run)")
+    am = sub.add_parser("apply-moonshadow")
+    am.add_argument("--apply", action="store_true", help="write history + rakdos ledger (default: dry-run)")
     rv = sub.add_parser("reverse-alias")
     rv.add_argument("--alias-name", default="Eldrazi", help="the removed raw name (default: Eldrazi)")
     rv.add_argument("--apply", action="store_true", help="write history + reverse ledger (default: dry-run)")
     r = sub.add_parser("recompute")
     r.add_argument("--since", required=True, help="YYYY-MM-DD: rebuild run dirs whose window starts on/after this")
     r.add_argument("--trend-weeks", type=int, default=12)
+    r.add_argument("--trend-only-since", default=None,
+                   help="YYYY-MM-DD: run dirs starting on/after this but before --since only get their "
+                        "trend-history row rebuilt (temp dir), their files are not touched")
     r.add_argument("--rogue-threshold", type=float, default=0.5)
     args = p.parse_args(argv)
-    return {"apply": cmd_apply, "reverse-alias": cmd_reverse_alias, "recompute": cmd_recompute}[args.cmd](args)
+    return {"apply": cmd_apply, "apply-moonshadow": cmd_apply_moonshadow, "reverse-alias": cmd_reverse_alias, "recompute": cmd_recompute}[args.cmd](args)
 
 
 if __name__ == "__main__":

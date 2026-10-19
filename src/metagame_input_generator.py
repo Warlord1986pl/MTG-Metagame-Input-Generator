@@ -1899,6 +1899,11 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         write_broodscale_override_log,
                     )
                     from challenge_meta import ChallengeMetaError, build_challenge_meta_input
+                    from moonshadow_rule import (
+                        apply_moonshadow_rule_to_history,
+                        ledger_path_for as rakdos_ledger_path_for,
+                        write_rakdos_override_log,
+                    )
                 except ModuleNotFoundError:
                     from .broodscale_rule import (
                         apply_broodscale_rule_to_history,
@@ -1907,6 +1912,11 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         write_broodscale_override_log,
                     )
                     from .challenge_meta import ChallengeMetaError, build_challenge_meta_input
+                    from .moonshadow_rule import (
+                        apply_moonshadow_rule_to_history,
+                        ledger_path_for as rakdos_ledger_path_for,
+                        write_rakdos_override_log,
+                    )
 
                 _format_slug_hist = _format_slug_for_url(args.format_name)
                 cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_hist
@@ -2042,6 +2052,7 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                 # only, Deck/Archetype only), before the review gate so a rule-resolved row never
                 # blocks statistics.
                 broodscale_ledger_csv = ledger_path_for(outputs_base, _format_slug_hist)
+                rakdos_ledger_csv = rakdos_ledger_path_for(outputs_base, _format_slug_hist)
                 for _kind, _hist_csv, _events, _rows in (
                     ("challenge", challenge_history_csv, challenge_dataset.challenge_events, challenge_dataset.event_rows),
                     ("premier", premier_history_csv, challenge_dataset.premier_events, challenge_dataset.premier_rows),
@@ -2052,6 +2063,10 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                     }
                     apply_broodscale_rule_to_history(
                         _hist_csv, cache_dir, broodscale_ledger_csv, _kind, pre_rule_labels=_pre_rule, log=log
+                    )
+                    # second card rule (moonshadow_rule.py), always after Broodscale
+                    apply_moonshadow_rule_to_history(
+                        _hist_csv, cache_dir, rakdos_ledger_csv, _kind, pre_rule_labels=_pre_rule, log=log
                     )
                 refresh_premier_events_csv(run_dir / f"premier_events_{window_label}.csv", premier_history_csv, log=log)
 
@@ -2188,6 +2203,16 @@ def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunRes
                         week_end,
                         log=log,
                         reverse_ledger_csv=reverse_ledger_path_for(outputs_base, _format_slug_hist),
+                    )
+                    write_rakdos_override_log(
+                        challenge_stats_dir / f"rakdos_override_{window_label}.csv",
+                        challenge_history_csv,
+                        premier_history_csv,
+                        cache_dir,
+                        rakdos_ledger_csv,
+                        week_start,
+                        week_end,
+                        log=log,
                     )
 
                 # Gate: any raw deck name currently folded into a different canonical name by

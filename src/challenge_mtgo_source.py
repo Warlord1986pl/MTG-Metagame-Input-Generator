@@ -55,9 +55,9 @@ except ModuleNotFoundError:
     )
 
 try:
-    from broodscale_rule import rule_deck_for_counts
+    from moonshadow_rule import blue_main_from_decklist, card_rule_deck
 except ModuleNotFoundError:
-    from .broodscale_rule import rule_deck_for_counts
+    from .moonshadow_rule import blue_main_from_decklist, card_rule_deck
 
 BASIC_LAND_NAMES = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 
@@ -421,6 +421,9 @@ class MtgoEventDeck:
     player: str
     place: int
     signature: Dict[str, int]
+    # any maindeck card with blue in its mtgo.com `colors` (lands are always COLORLESS there);
+    # read only by the Moonshadow card rule
+    blue_main: bool = False
 
 
 def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
@@ -457,7 +460,10 @@ def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
                 continue
             qty = int(c.get("qty", 1))
             sig[name] = sig.get(name, 0) + qty
-        decks.append(MtgoEventDeck(loginid=loginid, player=d.get("player", ""), place=place, signature=sig))
+        decks.append(MtgoEventDeck(
+            loginid=loginid, player=d.get("player", ""), place=place, signature=sig,
+            blue_main=blue_main_from_decklist(d),
+        ))
 
     expected_ranks = set(range(1, len(decks) + 1))
     ranks_set = set(rank_by_login.values())
@@ -697,7 +703,7 @@ def _classify_event_decks(
     rows: List[ChallengeEventRow] = []
     for d in sorted(decks, key=lambda x: x.place):
         known = resolved.get((str(c.event_id).strip(), str(d.player).strip()))
-        forced = rule_deck_for_counts(d.signature)
+        forced = card_rule_deck(d.signature, d.blue_main)
         if forced is not None:
             # Card rule beats every name-based source, including an earlier resolution.
             if known is not None:
@@ -861,7 +867,7 @@ def build_challenge_dataset(
             mtgo_deck = mtgo_by_pilot.get(normalize_name(pilot))
             loginid = mtgo_deck.loginid if mtgo_deck else ""
             pre_rule_deck = ""
-            forced = rule_deck_for_counts(mtgo_deck.signature) if mtgo_deck is not None else None
+            forced = card_rule_deck(mtgo_deck.signature, mtgo_deck.blue_main) if mtgo_deck is not None else None
             if forced is not None:
                 # canonical (post-mapping/alias) label = what the sheet would have shown
                 pre_rule_deck = deck_label
@@ -1303,6 +1309,7 @@ def verify_registry_against_history(
     registry_premier = [r for r in registry if r.kind == "premier"]
 
     present_ids: set = set()
+    hist_window = pd.DataFrame()
     if history_csv.exists():
         hist = pd.read_csv(history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
         if not hist.empty and "EventID" in hist.columns:
@@ -1311,6 +1318,9 @@ def verify_registry_against_history(
                 fmt_norm = normalize_name(format_name)
                 hist = hist[hist["Format"].astype(str).apply(normalize_name) == fmt_norm]
             present_ids = set(hist["EventID"].unique())
+            if "EventDate" in hist.columns:
+                hist_dates = pd.to_datetime(hist["EventDate"], errors="coerce").dt.date
+                hist_window = hist[((hist_dates >= start_date) & (hist_dates <= end_date)).fillna(False)]
 
     # A listed event missing from history may just be mis-dated on the mtgo.com listing (see
     # _event_date_from_json): check its own JSON -- only for these few, so the common path stays one
@@ -1327,6 +1337,44 @@ def verify_registry_against_history(
                     pass  # unverifiable -> stays listed as MISSING (fail closed)
             kept.append(r)
         registry_challenge = kept
+
+        # The listing's dates also drift between two fetches minutes apart (W42 recompute,
+        # 2026-10-19: Showcase 12856566 listed 2026-10-16, its JSON says 10-17): every event whose
+        # JSON is already cached gets its date from it (local file only, no network).
+        def _json_dated(events: List[MtgoRegistryEvent]) -> List[MtgoRegistryEvent]:
+            out = []
+            for r in events:
+                cached = cache_dir / f"{r.event_id}.json"
+                if cached.exists():
+                    data = json.loads(cached.read_text(encoding="utf-8"))
+                    if not _reconcile_event_date(r, data, start_date, end_date, log or (lambda _m: None)):
+                        continue
+                out.append(r)
+            return out
+
+        registry_challenge = _json_dated(registry_challenge)
+        registry_premier = _json_dated(registry_premier)
+
+    # STATUS must count the same EventIDs as the per-tier sheets, which are built from
+    # history_csv: an in-window history event the listing doesn't show this time (W42 recompute,
+    # 2026-10-19: 12856761, C32 2026-10-16, absent -> RegistryCount 23 / C32 12 next to 24 / 13 in
+    # the sheets) is added from history instead of silently vanishing from the counts.
+    if not hist_window.empty:
+        listed = {r.event_id for r in registry_challenge}
+        format_slug_hist = _format_slug_for_url(format_name)
+        for eid, g in hist_window.groupby("EventID"):
+            if not eid or eid in listed:
+                continue
+            tier = pd.to_numeric(g["Tier"], errors="coerce").dropna()
+            size = int(tier.iloc[0]) if not tier.empty else None
+            ev_date = str(g["EventDate"].iloc[0])
+            registry_challenge.append(MtgoRegistryEvent(
+                event_id=eid, date=ev_date, slug=f"{format_slug_hist}-challenge-{size}", kind="challenge",
+                size=size, url="",
+            ))
+            if log:
+                log(f"[verify] WARN event {eid} (C{size} {ev_date}) is in history but not on the mtgo.com "
+                    "listing this time -- counted from history")
 
     fetched = [r for r in registry_challenge if r.event_id in present_ids]
     missing = [
