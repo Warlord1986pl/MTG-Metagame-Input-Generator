@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856599,2026-10-18,C32,Challenge,QF,TFTIjhub,1240850,nbdf,1540673,2,1,Prowess,Domain Zoo
+12856599,2026-10-18,C32,Challenge,QF,Selfeisek,2042214,Enida,3550948,2,0,Mono-Black Midrange,Land Destruction
+12856599,2026-10-18,C32,Challenge,QF,KizmaHusky,2568669,reidq7,3155916,2,1,Affinity,Amulet Titan
+12856599,2026-10-18,C32,Challenge,QF,komattaman,2690217,jessy_samek,922706,2,1,Rakdos Midrange,Rakdos Midrange
+12856599,2026-10-18,C32,Challenge,SF,Selfeisek,2042214,TFTIjhub,1240850,2,1,Mono-Black Midrange,Prowess
+12856599,2026-10-18,C32,Challenge,SF,KizmaHusky,2568669,komattaman,2690217,2,0,Affinity,Rakdos Midrange
+12856599,2026-10-18,C32,Challenge,F,KizmaHusky,2568669,Selfeisek,2042214,2,0,Affinity,Mono-Black Midrange
