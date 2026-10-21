@@ -323,4 +323,5 @@ nie jest generowany.
 5. Tydzień ISO przecinający granicę miesiąca należy do obu poziomów niezależnie; miesiąc i
    okres formatu liczą się z dat eventów, nie z tygodni. Do potwierdzenia, że to zamierzone.
 6. Okres formatu zaczyna się od `effective_mtgo` (2026-05-19), nie od `announced`
-   (2026-05-18); w danych nie ma eventu 2026-05-18, więc dziś to bez znaczenia.
+   (2026-05-18). Eksport ma 64 listy z 2026-05-18, rozegrane jeszcze przed zmianą na MTGO, więc
+   start od `effective_mtgo` wydaje się właściwy; do potwierdzenia.
