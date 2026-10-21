@@ -78,6 +78,7 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 | `broodscale_rule_cli.py` | `apply [--apply]` (relabel history from cached JSON, dry-run default), `reverse-alias [--apply]` (undo a removed name alias) and `recompute --since YYYY-MM-DD` (rebuild run dirs' challenge + metagame outputs). |
 | `moonshadow_rule.py` | TEMPORARY second card rule: maindeck >=1 Moonshadow + >=1 Dark Matter Manipulator, no Death's Shadow, no blue card -> `Rakdos Midrange` / `Midrange`, applied after Broodscale. See "Moonshadow card rule" below. |
 | `challenge_meta.py` | Meta = share of Challenge Top 32 entries after the card rule; builds the run's metagame-statistics input. See "Challenge-based Meta" below. |
+| `deckdb_input.py` / `deckdb_materials.py` | Input mode `deckdb`: DeckDB export as the only source (K33), working materials. See "Input mode deckdb" below. |
 
 ### Data flow
 
@@ -229,6 +230,23 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   window (default 4; the published charts use 12).
 - `python src/broodscale_rule_cli.py recompute --since 2026-07-13 --trend-weeks 12` rebuilds all of this
   offline for already-generated run dirs.
+
+### Input mode "deckdb" (`deckdb_input.py`, `deckdb_materials.py`, since 2026-10-21, WORKING)
+
+- DeckDB decision K33: the metagame analysis is to rest on the DeckDB assignment export only.
+  `python src/metagame_input_generator.py --input-mode deckdb --week-start 2026-10-01 --week-end 2026-10-18 --trend-weeks 12`
+  reads the export whose path is in `docs/deckdb_config.csv` (`export_path`, no default) and writes
+  only `outputs/deckdb_robocze/ROBOCZE_<window>/` -- no Videre/MTGGoldfish/mtgo.com fetch, no
+  mapping/alias/archetype rule, no card rule, no history/league/site write. Default
+  `--input-mode legacy` is the unchanged pipeline (verified: W42 rerun identical except the XML
+  `generated_at` stamp).
+- Refuses (`DeckdbInputError`, exit 2) a file with > 1 `rules_version` and any window (incl. trend
+  windows) ending after the file's last / starting before its first `event_date`.
+- Format and metric definitions: DeckDB `docs/export.md` ("Format eksportu dla Analizy metagame")
+  and the module docstring of `deckdb_input.py`. Rogue + unassigned = one "bez talii" row in
+  materials, separate only in the workbook's `Bez_talii_rozbicie`. No loginid/player in any
+  material; every material carries `rules_version` + export sha256. Legacy materials without an
+  export counterpart are listed in `deckdb_materials.OMITTED_MATERIALS`.
 
 ### Key design decisions
 
