@@ -76,6 +76,9 @@ GLOSSARY: List[tuple[str, str]] = [
                  "tylko miesiące z ≥ 20 listami talii; wariant nie zmienia metryk talii."),
 ]
 
+VARIANT_SPLIT_NOTE = ("Podział na zmiany list i zmiany składu talii zależy od bieżących definicji wariantów w regułach "
+                      "DeckDB; w taliach bez wariantów cała zmiana jest liczona jako zmiana list.")
+
 CARD_GLOSSARY: List[tuple[str, str]] = [
     ("karta", "oracle_id z eksportu kart DeckDB (deckdb export-cards); kopie zsumowane po drukach; lądy z nadtypem "
               "Basic (is_basic = 1) wyłączone ze wszystkich miar."),
@@ -109,6 +112,7 @@ CARD_GLOSSARY: List[tuple[str, str]] = [
     ("zmiany list pilota", "kolejne opublikowane listy tego samego pilota w tej samej talii (okres formatu): suma "
                            "|różnic kopii| w maindecku i sideboardzie, karty dodane/usunięte, przeniesienia main ↔ "
                            "sideboard; następna lista innej talii = zmiana talii. Tylko rozkłady dla talii."),
+    ("warianty a podział zmian", VARIANT_SPLIT_NOTE),
 ]
 
 # (legacy material, why it has no deckdb counterpart)
@@ -542,7 +546,8 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         ("Zniknięcia (0% w miesiącu 2)", _n(gone)),
         ("Nowe karty (0% w miesiącu 1)", _n(new)),
         ("Pierwsze pojawienia w miesiącu 2", _n(first)),
-        ("Bootstrap", f"{di.BOOT_DRAWS} losowań, ziarno {di.BOOT_SEED}, piloci niezależnie w każdym miesiącu; "
+        ("Zastrzeżenie: warianty", VARIANT_SPLIT_NOTE),
+        ("Bootstrap",f"{di.BOOT_DRAWS} losowań, ziarno {di.BOOT_SEED}, piloci niezależnie w każdym miesiącu; "
                       "składowa wewnątrz wariantów liczona na tych samych losowaniach"),
     ])
     sheets = {
@@ -580,6 +585,8 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         pth = out / f"{name}_ROBOCZE_{label}.csv"
         st = _stamp_cols(df, export)
         st["cards_sha256"] = cards.sha256
+        if name in ("zmiany_list", "zmiany_skladu_talii"):
+            st["uwaga_warianty"] = VARIANT_SPLIT_NOTE
         st.to_csv(pth, index=False, encoding="utf-8-sig")
         written.append(pth)
     gl = out / "SLOWNIK.md"
@@ -598,14 +605,16 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         tested, out / "zmiany_list.png",
         f"Zmiany list {m1s:%Y-%m} → {m2s:%Y-%m}: {len(list_changes)} istotnych wewnątrz wariantów "
         f"z {n_tested} testowanych (top 30 wg |składowej|)\npiloci z kartą w miesiącu 1 → 2",
-        stamp + "\n".join(f"{k}: {g[k]}" for k in ("zmiana obecności", dc.KIND_LIST, "rozkład zmiany")))
+        stamp + "\n".join([*(f"{k}: {g[k]}" for k in ("zmiana obecności", dc.KIND_LIST, "rozkład zmiany")),
+                           VARIANT_SPLIT_NOTE]))
     if ch is not None:
         written.append(ch)
     ch = chart_composition_changes(
         tested, out / "zmiany_skladu_talii.png",
         f"Zmiany składu talii {m1s:%Y-%m} → {m2s:%Y-%m}: {len(composition)} zgłoszonych zmian obecności bez "
         "istotnej zmiany list\n(top 30 wg |zmiany|)",
-        stamp + "\n".join(f"{k}: {g[k]}" for k in ("raportowanie zmiany", dc.KIND_COMPOSITION, "rozkład zmiany")))
+        stamp + "\n".join([*(f"{k}: {g[k]}" for k in ("raportowanie zmiany", dc.KIND_COMPOSITION, "rozkład zmiany")),
+                           VARIANT_SPLIT_NOTE]))
     if ch is not None:
         written.append(ch)
     return written
