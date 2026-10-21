@@ -150,3 +150,27 @@ def test_match_mtgo_cache_counts_both_ways(tmp_path):
 
 def test_wilson_empty():
     assert all(math.isnan(v) for v in di.wilson_interval(0, 0))
+
+
+def test_working_breakdown_and_cli_mode(tmp_path):
+    import deckdb_materials as dm
+    import metagame_input_generator as mig
+
+    export_csv = _sample(tmp_path)
+    cfg = tmp_path / "cfg.csv"
+    cfg.write_text(f"key,value\nexport_path,{export_csv.as_posix()}\n", encoding="utf-8")
+    args = mig.parse_args([
+        "--input-mode", "deckdb", "--deckdb-config", str(cfg), "--week-start", "2026-10-01",
+        "--week-end", "2026-10-02", "--trend-weeks", "1", "--outputs-base", str(tmp_path / "out"),
+    ])
+    with pytest.raises(di.DeckdbInputError):  # 14-day trend window starts before the file
+        mig.run_deckdb_generation(args, log=lambda _m: None)
+    exp = di.load_export(export_csv)
+    out = dm.working_dir(tmp_path / "out", date(2026, 10, 1), date(2026, 10, 1))
+    files = dm.build_working_breakdown(exp, date(2026, 10, 1), date(2026, 10, 1), out, None, trend_weeks=0,
+                                       log=lambda _m: None)
+    assert "ROBOCZE" in out.name and len(files) == 9  # no trend charts with trend_weeks=0
+    status = pd.read_excel(files[0], sheet_name="STATUS")
+    assert exp.sha256 in status["Wartość"].astype(str).tolist()
+    fin = pd.read_csv(files[1], encoding="utf-8-sig", dtype=str)
+    assert set(fin["rules_version"]) == {"rv1"} and set(fin["export_sha256"]) == {exp.sha256}
