@@ -256,9 +256,11 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   one month is never tested: gone reported if (1 - share of month-1 pilots playing it)^(month-2
   pilots) < 0.05 and >= 3 pilots in month 1; new card / first appearance reported with >= 2 pilots;
   the rest are observations. Pilot list-change distributions. The card file must match the
-  assignment lists 1:1, its name-match version and its `data_version` (an assignment export without
-  `data_version`, i.e. from before DeckDB c4958cb, is refused), checked before anything is written.
-- Refuses (`DeckdbInputError`, exit 2) a file with > 1 `rules_version` and any period ending after
+  assignment lists 1:1, its name-match version and its `data_version`, checked before anything is
+  written.
+- Refuses (`DeckdbInputError`, exit 2) an assignment export without a single non-empty
+  `data_version` (always, card layer or not; exports from DeckDB c4958cb on), a file with > 1
+  `rules_version` and any period ending after
   the file's last / starting before its first `event_date`; all periods are checked before writing.
 - Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the
   glossary (`Slownik` sheet, `SLOWNIK.md`, chart footer). No loginid/player in any material.

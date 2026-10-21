@@ -9,8 +9,8 @@ The legacy mode is untouched. Specification: ``docs/deckdb_metodologia.md`` (acc
 Paths are never guessed: ``docs/deckdb_config.csv`` (``key,value``) holds ``export_path`` (the
 assignment export, DeckDB ``docs/export.md``), ``format_events_path`` (DeckDB
 ``rules/format_events.yaml``, read only) and optionally ``cards_path`` (``deckdb export-cards``).
-The loader refuses to work (``DeckdbInputError``) when the file has more than one
-``rules_version``, or when a requested period ends after the last event date in the file (or
+The loader refuses to work (``DeckdbInputError``) when the file has no ``data_version`` column or
+more than one (or an empty) ``data_version``, more than one ``rules_version``, or when a requested period ends after the last event date in the file (or
 starts before the first one).
 
 Three time levels (every period closed on both sides by ``event_date``):
@@ -90,6 +90,7 @@ REQUIRED_COLUMNS = (
     "player",
     "final_rank",
     "player_count",
+    "data_version",  # required always (DeckDB c4958cb, 2026-10-21 d): one DB state per file
 )
 _INT_COLUMNS = ("final_rank", "player_count")
 
@@ -111,7 +112,7 @@ class DeckdbExport:
     sha256: str
     rules_version: str
     name_match_version: str
-    data_version: Optional[str]  # None for exports from before DeckDB's 2026-10-21 d (no such column)
+    data_version: str
     first_event_date: str
     last_event_date: str
     rows: pd.DataFrame
@@ -154,9 +155,9 @@ def load_export(path: Path) -> DeckdbExport:
     versions = sorted(set(df["rules_version"].str.strip()))
     if len(versions) != 1:
         raise DeckdbInputError(f"{path}: więcej niż jedna wartość rules_version: {versions}")
-    data_versions = sorted(set(df["data_version"])) if "data_version" in df.columns else []
-    if len(data_versions) > 1:
-        raise DeckdbInputError(f"{path}: więcej niż jedna wartość data_version: {data_versions}")
+    data_versions = sorted(set(df["data_version"].str.strip()))
+    if len(data_versions) != 1 or not data_versions[0]:
+        raise DeckdbInputError(f"{path}: data_version musi mieć jedną niepustą wartość, jest {data_versions}")
 
     df["event_id"] = df["event_id"].map(_norm_id)
     df["decktournamentid"] = df["decktournamentid"].map(_norm_id)
@@ -182,7 +183,7 @@ def load_export(path: Path) -> DeckdbExport:
         sha256=sha256_of(path),
         rules_version=versions[0],
         name_match_version=",".join(sorted(set(df["name_match_version"]))),
-        data_version=data_versions[0] if data_versions else None,
+        data_version=data_versions[0],
         first_event_date=str(df["event_date"].min()),
         last_event_date=str(df["event_date"].max()),
         rows=df,

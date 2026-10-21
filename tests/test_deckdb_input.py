@@ -12,7 +12,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import deckdb_input as di  # noqa: E402
 
-COLS = list(di.REQUIRED_COLUMNS) + ["data_version"]
+COLS = list(di.REQUIRED_COLUMNS)
 
 
 def _row(eid, dtid, day, status, deck, arch, player, rank, variant="", rv="rv1", pc=40):
@@ -52,6 +52,21 @@ def test_refuses_more_than_one_rules_version(tmp_path):
     ])
     with pytest.raises(di.DeckdbInputError, match="rules_version"):
         di.load_export(p)
+
+
+def test_refuses_missing_or_mixed_data_version(tmp_path):
+    rows = [_row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1),
+            _row(1, 12, "2026-10-01", "assigned", "Zoo", "Aggro", "b", 2)]
+    no_col = tmp_path / "no_col.csv"
+    pd.DataFrame(rows).drop(columns="data_version").to_csv(no_col, index=False)
+    with pytest.raises(di.DeckdbInputError, match="data_version"):
+        di.load_export(no_col)
+    rows[1]["data_version"] = "dv2"
+    with pytest.raises(di.DeckdbInputError, match="data_version"):
+        di.load_export(_write(tmp_path, rows))
+    rows[0]["data_version"] = rows[1]["data_version"] = ""
+    with pytest.raises(di.DeckdbInputError, match="data_version"):
+        di.load_export(_write(tmp_path, rows))
 
 
 def test_refuses_period_ending_after_last_event_date(tmp_path):

@@ -303,7 +303,7 @@ def _status_rows(export: di.DeckdbExport, level: str, start: date, end: date, ro
         ("Pokrycie uczestników (listy / suma player_count), %", round(cov["coverage_pct"], 2)),
         ("rules_version", export.rules_version),
         ("name_match_version", export.name_match_version),
-        ("data_version", export.data_version or "brak w eksporcie przypisań"),
+        ("data_version", export.data_version),
         ("Plik eksportu", str(export.path)),
         ("sha256 eksportu", export.sha256),
         ("Daty eventów w eksporcie", f"{export.first_event_date} … {export.last_event_date}"),
