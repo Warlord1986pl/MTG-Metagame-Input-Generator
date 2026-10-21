@@ -271,3 +271,56 @@ Tabela (B = 2000, ziarno 20261021; konwersja i granice w %, szerokości w pp):
 | Izzet Murktide | 37 | 18 | 27.03 | 7.69 | 43.48 | 15.40 | 42.98 | 35.79 | 27.58 | 1.30 |
 | Mill | 33 | 16 | 12.12 | 0.00 | 23.68 | 4.82 | 27.33 | 23.68 | 22.51 | 1.05 |
 | Hammer Time | 32 | 17 | 12.50 | 0.00 | 29.17 | 4.97 | 28.07 | 29.17 | 23.10 | 1.26 |
+
+## (f) Obecne materiały: ocena
+
+Stan na commit `7f933c2` (katalog `outputs/deckdb_robocze/ROBOCZE_<okno>/`). „Zostaje” = bez
+zmian w treści, najwyżej z poprawionym okresem; „zmienia się” = opis zmiany; „odpada” = materiał
+nie jest generowany.
+
+### Wykresy
+
+| Materiał | Ocena | Jak |
+|---|---|---|
+| `udzial_top32_talie.png`, `udzial_top32_archetypy.png` | zmienia się | jeden wykres na tydzień ISO i jeden na miesiąc zamiast dowolnego okna; udział + obecność bez zmian w definicji; dochodzi Top 8 (liczba list, % eventów) |
+| `konwersja_talie.png`, `konwersja_archetypy.png` | zmienia się | tylko poziom okresu formatu, narastająco; kolumny: listy, listy Top 8, konwersja [przedział bootstrap po pilotach], oczekiwana konwersja, konwersja − oczekiwana (skala rozbieżna wokół 0), trofea, trofea / listy, zwycięstwa % eventów, piloci w Top 32 / Top 8, udział najczęstszego pilota; udział i obecność przechodzą do wykresów tygodnia i miesiąca; adnotacja o zaniżonym przedziale Wilsona znika razem z Wilsonem (o ile bootstrap zostanie przyjęty) |
+| `winrate_szwajcarski_talie.png`, `winrate_szwajcarski_archetypy.png` | odpada | decyzja: winrate nie jest podawany |
+| `trend_udzial_talie_last12w.png`, `trend_udzial_archetypy_last12w.png` | zmienia się | 12 rozłącznych tygodni ISO zamiast nakładających się okien 14-dniowych; oś X = tydzień ISO (np. 2026-W42) |
+| — (nowy) | dochodzi | wykres pilotów okresu formatu: dla talii z co najmniej 30 listami konwersja najczęstszego pilota obok konwersji reszty (punkt d) — do decyzji, czy wykres, czy tylko arkusz |
+
+### Arkusze skoroszytu `deckdb_statistics_ROBOCZE_*.xlsx`
+
+| Arkusz | Ocena | Jak |
+|---|---|---|
+| STATUS | zmienia się | okres i poziom czasu, eventy, listy, pokrycie, rules_version, sha256 bez zmian; bazę wspólną i datę początku okresu formatu (z `format_events.yaml`, z kluczem wpisu) podaje się na poziomie okresu; wpisy o winrate i bye odpadają; dochodzi opis bootstrapu (B, ziarno) |
+| Talie, Archetypy | zmienia się | rozdzielone na trzy poziomy: `Talie_tydzien` / `Archetypy_tydzien`, `Talie_miesiac` / `Archetypy_miesiac` (udział, obecność, Top 8) i `Talie_okres` / `Archetypy_okres` (konwersja, oczekiwana konwersja, przedziały, trofea, miary pilotów); kolumny `Wygrane_szw`, `Przegrane_szw`, `Mecze_szw`, `Winrate_szw_pct`, `Wilson95_*`, `Listy_z_bye` odpadają; `Konwersja_Wilson95_*` zastępuje bootstrap |
+| Warianty | zostaje | już liczony per miesiąc według D2; przechodzi do poziomu miesiąca, z oznaczeniem miesiąca niepełnego |
+| Bez_talii_rozbicie | zmienia się | jak Talie: wiersze Rogue i nieprzypisane osobno na każdym poziomie czasu; bez winrate |
+| Eventy | zostaje | dochodzi kolumna tygodnia ISO i miesiąca |
+| Trend_talie, Trend_archetypy | zmienia się | tygodnie ISO rozłączne (jak wykres trendu) |
+| Pominiete | zmienia się | dochodzą: winrate szwajcarski (decyzja 2026-10-21) i rekord szwajcarski / bye; pozostałe pozycje bez zmian |
+| — (nowy) `Piloci_okres` | dochodzi | miary z punktu d dla wszystkich talii okresu (próg 30 list tylko dla tabeli w tym dokumencie, w materiale do ustalenia), bez identyfikatorów pilotów |
+
+### Pliki CSV
+
+| Plik | Ocena | Jak |
+|---|---|---|
+| `talie_ROBOCZE_*.csv`, `archetypy_ROBOCZE_*.csv` | zmienia się | jeden plik na poziom czasu, kolumny jak odpowiednie arkusze; bez kolumn winrate i bye |
+| `finalisci_ROBOCZE_*.csv` | zostaje | talie miejsca 1 i 2 na event, bez pilotów |
+| `udzial_top32_historia_ROBOCZE_*.csv` | zmienia się | tygodnie ISO rozłączne |
+
+## Nierozstrzygnięte (do decyzji przy akceptacji)
+
+1. Przedział konwersji przy małej liczbie pilotów: od jakiej liczby pilotów bootstrap jest
+   podawany (np. co najmniej 10), i co pokazać poniżej progu — sam Wilson z adnotacją, brak
+   przedziału czy tylko informację o koncentracji pilotów.
+2. Który „udział najczęstszego pilota w wejściach do Top 8” jest miarą materiału: tego samego
+   pilota co w Top 32, czy pilota z największą liczbą list Top 8 (w tym dokumencie oba).
+3. Trofea i zwycięstwa jako % eventów: polecenie przypisuje do poziomów udział, obecność, Top 8,
+   konwersję i miary pilotów; trofea są tu umieszczone w okresie formatu obok konwersji —
+   do potwierdzenia, czy mają być też tygodniowo i miesięcznie.
+4. Miary pilotów dla archetypów (agregat list talii) — czy podawać.
+5. Tydzień ISO przecinający granicę miesiąca należy do obu poziomów niezależnie; miesiąc i
+   okres formatu liczą się z dat eventów, nie z tygodni. Do potwierdzenia, że to zamierzone.
+6. Okres formatu zaczyna się od `effective_mtgo` (2026-05-19), nie od `announced`
+   (2026-05-18); w danych nie ma eventu 2026-05-18, więc dziś to bez znaczenia.
