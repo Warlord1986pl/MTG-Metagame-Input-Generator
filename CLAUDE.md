@@ -238,15 +238,15 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   `python src/metagame_input_generator.py --input-mode deckdb --as-of 2026-10-18 --trend-weeks 12`
   reads the paths in `docs/deckdb_config.csv` (`export_path` required; `format_events_path` = DeckDB
   `rules/format_events.yaml`, read only; `cards_path` = `deckdb export-cards` output, enables the card
-  layer) and writes only `outputs/deckdb_robocze/ROBOCZE_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
+  layer) and writes only `outputs/deckdb_working/WORKING_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
   fetch, no mapping/alias/archetype rule, no card rule, no history/league/site write. Default
   `--input-mode legacy` is the unchanged pipeline (W42 rerun identical except the XML `generated_at`).
-- Three time levels, one subdirectory each: `tydzien_<YYYY-Www>` (last complete ISO week + trend of
-  N disjoint ISO weeks), `miesiac_<YYYY-MM>[_niepelny]` (+ trophies, D2 variants),
-  `okres_formatu_<start>_to_<as-of>` (conversion vs. the common baseline with a pilot-bootstrap
+- Three time levels, one subdirectory each: `week_<YYYY-Www>` (last complete ISO week + trend of
+  N disjoint ISO weeks), `month_<YYYY-MM>[_incomplete]` (+ trophies, D2 variants),
+  `format_period_<start>_to_<as-of>` (conversion vs. the common baseline with a pilot-bootstrap
   interval only at >= 10 pilots, trophies, pilot measures for decks only). Winrate is gone (K36);
   the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
-- Card layer (`deckdb_cards.py`, only when `cards_path` is set): `karty_<M1>_vs_<M2>[_niepelny]` --
+- Card layer (`deckdb_cards.py`, only when `cards_path` is set): `cards_<M1>_vs_<M2>[_incomplete]` --
   presence per (deck, zone, oracle_id) per month, basics (`is_basic`) excluded; change between the two
   last months for decks with >= 30 lists and >= 10 pilots in both, pilot bootstrap (no pairing), BH
   q = 0.10 over one family (all decks), reported at |change| >= 10 pp; the within-variant component
@@ -263,8 +263,8 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   `rules_version` and any period ending after
   the file's last / starting before its first `event_date`; all periods are checked before writing.
 - Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the
-  glossary (`Slownik` sheet, `SLOWNIK.md`, chart footer). No loginid/player in any material.
-  Legacy materials without a counterpart: `deckdb_materials.OMITTED_MATERIALS` (`Pominiete` sheet).
+  glossary (`Glossary` sheet, `GLOSSARY.md`, chart footer); all materials in English, charts drawn by the legacy chart functions (optional parameters, legacy defaults unchanged). No loginid/player in any material.
+  Legacy materials without a counterpart: `deckdb_materials.OMITTED_MATERIALS` (`Omitted` sheet).
 
 ### Key design decisions
 

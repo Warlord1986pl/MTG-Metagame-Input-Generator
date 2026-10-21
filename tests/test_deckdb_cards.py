@@ -65,32 +65,32 @@ def test_load_cards_checks_keys_versions_and_drops_basics(tmp_path):
 def test_change_test_family_and_first_appearance_path(tmp_path):
     exp, cards = _two_months(tmp_path)
     t = dc.change_tables(exp, cards, (date(2026, 9, 10), date(2026, 9, 30)), (date(2026, 10, 1), date(2026, 10, 10)))
-    tested = t["tested"].set_index("Karta")
+    tested = t["tested"].set_index("Card")
     assert set(tested.index) == {"X", "Y"}  # Gone / New (0% in one month) are not tested
     x = tested.loc["X"]
-    assert x["Zmiana_pp"] == pytest.approx(50.0) and x["Raportowana"] == 1
-    assert x["Przedzial_dol_pp"] < 50 < x["Przedzial_gora_pp"]
-    assert x["Wewnatrz_wariantow_pp"] + x["Proporcje_wariantow_pp"] == pytest.approx(50.0)
-    assert x["Wewnatrz_wariantow_pp"] == pytest.approx(50.0)  # one variant: no mix change
-    assert x["Kategoria"] == dc.KIND_LIST and x["BH_wewnatrz_odrzuca"] == 1
+    assert x["Change_pp"] == pytest.approx(50.0) and x["Reported_change"] == 1
+    assert x["CI_low_pp"] < 50 < x["CI_high_pp"]
+    assert x["Within_variants_pp"] + x["Variant_mix_pp"] == pytest.approx(50.0)
+    assert x["Within_variants_pp"] == pytest.approx(50.0)  # one variant: no mix change
+    assert x["Category"] == dc.KIND_LIST and x["BH_within_rejects"] == 1
     # Y: 100% in both months -> change 0 with bootstrap SE 0 must be p = 1, never a BH rejection
     y = tested.loc["Y"]
-    assert y["Zmiana_pp"] == 0 and y["p"] == 1 and y["BH_odrzuca"] == 0 and y["Kategoria"] == ""
-    out = t["outside"].set_index("Karta")
-    assert out.loc["New", "Sciezka"].startswith("nowa karta") and out.loc["New", "Zgloszona"] == 1  # 3 pilots
+    assert y["Change_pp"] == 0 and y["p"] == 1 and y["BH_rejects"] == 0 and y["Category"] == ""
+    out = t["outside"].set_index("Card")
+    assert out.loc["New", "Path"].startswith("new card") and out.loc["New", "Reported"] == 1  # 3 pilots
     # Gone: played by 5 of the 20 September pilots; P(none of the 20 October pilots) = 0.75^20 < 0.05
-    assert out.loc["Gone", "Sciezka"].startswith("zniknięcie") and out.loc["Gone", "Zgloszona"] == 1
-    assert out.loc["Gone", "P_zero_list"] == pytest.approx(0.75 ** 20)
-    p2 = t["presence_2"].set_index("Karta")
-    assert p2.loc["X", "Obecnosc_pct"] == pytest.approx(60.0) and p2.loc["X", "Sr_kopii"] == 2
+    assert out.loc["Gone", "Path"].startswith("gone") and out.loc["Gone", "Reported"] == 1
+    assert out.loc["Gone", "P_zero_pilots"] == pytest.approx(0.75 ** 20)
+    p2 = t["presence_2"].set_index("Card")
+    assert p2.loc["X", "Presence_pct"] == pytest.approx(60.0) and p2.loc["X", "Mean_copies"] == 2
     first = dc.first_appearances(exp, cards, date(2026, 10, 1), date(2026, 10, 10))
-    assert set(first["Karta"]) == {"New"} and first.iloc[0]["Listy_z_karta_30d"] == 3
-    assert first.iloc[0]["Zgloszona"] == 1
+    assert set(first["Card"]) == {"New"} and first.iloc[0]["Lists_with_card_30d"] == 3
+    assert first.iloc[0]["Reported"] == 1
 
 
 def test_composition_change_and_report_thresholds(tmp_path, monkeypatch):
     """Card K is in every list of variant A and in none of B; A grows from 10/40 to 30/40 lists:
-    the change (+50 pp) is all variant proportions -> "zmiana składu talii", not "zmiana list"."""
+    the change (+50 pp) is all variant proportions -> "deck composition change", not "list change"."""
     rows, cards = [], []
     n = 0
     for day, a_lists in (("2026-09-10", 10), ("2026-10-10", 30)):
@@ -109,13 +109,13 @@ def test_composition_change_and_report_thresholds(tmp_path, monkeypatch):
     exp = di.load_export(_write(tmp_path, rows))
     lay = dc.load_cards(_cards_csv(tmp_path, cards), exp)
     t = dc.change_tables(exp, lay, (date(2026, 9, 10), date(2026, 9, 30)), (date(2026, 10, 1), date(2026, 10, 10)))
-    k = t["tested"].set_index("Karta").loc["K"]
-    assert k["Zmiana_pp"] == pytest.approx(50.0) and k["Raportowana"] == 1
-    assert k["Wewnatrz_wariantow_pp"] == pytest.approx(0.0) and k["Proporcje_wariantow_pp"] == pytest.approx(50.0)
-    assert k["Kategoria"] == dc.KIND_COMPOSITION
-    out = t["outside"].set_index("Karta")
-    assert out.loc["Solo", "Zgloszona"] == 0  # 1 pilot in September (< 3) -> observation
-    assert out.loc["One", "Zgloszona"] == 0  # 1 pilot in October (< 2) -> observation
+    k = t["tested"].set_index("Card").loc["K"]
+    assert k["Change_pp"] == pytest.approx(50.0) and k["Reported_change"] == 1
+    assert k["Within_variants_pp"] == pytest.approx(0.0) and k["Variant_mix_pp"] == pytest.approx(50.0)
+    assert k["Category"] == dc.KIND_COMPOSITION
+    out = t["outside"].set_index("Card")
+    assert out.loc["Solo", "Reported"] == 0  # 1 pilot in September (< 3) -> observation
+    assert out.loc["One", "Reported"] == 0  # 1 pilot in October (< 2) -> observation
 
 
 def test_bh_and_eligibility_thresholds(tmp_path, monkeypatch):
@@ -124,7 +124,7 @@ def test_bh_and_eligibility_thresholds(tmp_path, monkeypatch):
     exp, cards = _two_months(tmp_path)
     monkeypatch.setattr(dc, "MIN_PILOTS", 21)  # 20 pilots per month -> the deck does not qualify
     t = dc.change_tables(exp, cards, (date(2026, 9, 10), date(2026, 9, 30)), (date(2026, 10, 1), date(2026, 10, 10)))
-    assert t["tested"].empty and t["eligible"]["Testowana"].tolist() == [0]
+    assert t["tested"].empty and t["eligible"]["Tested"].tolist() == [0]
 
 
 def test_pilot_list_changes(tmp_path):
@@ -139,8 +139,8 @@ def test_pilot_list_changes(tmp_path):
         _card(2, 2, "main", "x", "X", 3), _card(2, 2, "sideboard", "x", "X", 1), _card(2, 2, "main", "z", "Z", 1),
         _card(3, 3, "main", "b", "B", 4),
     ]), exp)
-    t = dc.pilot_list_changes(exp, cards, date(2026, 10, 1), date(2026, 10, 5)).set_index("Talia")
+    t = dc.pilot_list_changes(exp, cards, date(2026, 10, 1), date(2026, 10, 5)).set_index("Deck")
     zoo = t.loc["Zoo"]
-    assert zoo["Pary_list"] == 1 and zoo["Zmiany_talii"] == 1
-    assert zoo["Main_mediana"] == 2 and zoo["Side_mediana"] == 3  # main: X -1, Z +1; side: S -2, X +1
-    assert zoo["Przeniesienia_main_side_srednio"] == 1 and zoo["Odstep_dni_mediana"] == 2
+    assert zoo["List_pairs"] == 1 and zoo["Deck_changes"] == 1
+    assert zoo["Main_median"] == 2 and zoo["Side_median"] == 3  # main: X -1, Z +1; side: S -2, X +1
+    assert zoo["Main_side_moves_mean"] == 1 and zoo["Gap_days_median"] == 2

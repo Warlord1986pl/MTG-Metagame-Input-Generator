@@ -32,7 +32,7 @@ Three time levels (every period closed on both sides by ``event_date``):
                            lists and of Top 8 entries, own conversion and conversion without them
   coverage               = lists / sum(player_count) over the period's events
 
-Rogue and unassigned lists are one "bez talii" row in materials (``NO_DECK_LABEL``), apart only in
+Rogue and unassigned lists are one "no deck" row in materials (``NO_DECK_LABEL``), apart only in
 the working split. Winrate is not a measure (K36); the Swiss columns are not read. Pilots are the
 export's ``player`` only; ``loginid`` is read only for the MTGO-cache join check and never reaches
 a material.
@@ -52,16 +52,16 @@ import numpy as np
 import pandas as pd
 
 DEFAULT_CONFIG_CSV = Path("docs") / "deckdb_config.csv"
-NO_DECK_LABEL = "bez talii"
+NO_DECK_LABEL = "no deck"
 STATUS_ASSIGNED = "assigned"
 STATUS_ROGUE = "rogue"
 STATUS_UNASSIGNED = "unassigned"
 
 BOOT_MIN_PILOTS = 10
-# pilot labels (order of 2026-10-21 e): "mało pilotów" = < BOOT_MIN_PILOTS pilots, no interval;
-# "koncentracja" = the most frequent pilot has >= 1/3 of the deck's lists or >= 1/2 of its Top 8 entries
-LABEL_FEW_PILOTS = "mało pilotów"
-LABEL_CONCENTRATION = "koncentracja"
+# pilot labels (order of 2026-10-21 e): "low pilot count" = < BOOT_MIN_PILOTS pilots, no interval;
+# "concentration" = the most frequent pilot has >= 1/3 of the deck's lists or >= 1/2 of its Top 8 entries
+LABEL_FEW_PILOTS = "low pilot count"
+LABEL_CONCENTRATION = "concentration"
 CONCENTRATION_LISTS = 1 / 3
 CONCENTRATION_TOP8 = 1 / 2
 BOOT_DRAWS = 2000
@@ -278,20 +278,20 @@ def share_table(rows: pd.DataFrame, key: str, key_name: str, trophies: bool) -> 
         top8_events = int(grp.loc[grp["top8"] == 1, "event_id"].nunique())
         rec = {
             key_name: label,
-            "Listy": len(grp),
-            "Udzial_Top32_pct": len(grp) / n_lists * 100.0,
-            "Eventy_z_lista": events,
-            "Obecnosc_pct_eventow": events / n_events * 100.0,
-            "Top8": int(grp["top8"].sum()),
-            "Eventy_z_Top8": top8_events,
-            "Top8_pct_eventow": top8_events / n_events * 100.0,
+            "Lists": len(grp),
+            "Share_Top32_pct": len(grp) / n_lists * 100.0,
+            "Events_with_list": events,
+            "Event_presence_pct": events / n_events * 100.0,
+            "Top8_lists": int(grp["top8"].sum()),
+            "Events_with_Top8": top8_events,
+            "Top8_event_pct": top8_events / n_events * 100.0,
         }
         if trophies:
-            rec["Trofea"] = int(grp["trophy"].sum())
+            rec["Trophies"] = int(grp["trophy"].sum())
         out.append(rec)
     if not out:
         return pd.DataFrame()
-    return pd.DataFrame(out).sort_values(["Listy", key_name], ascending=[False, True]).reset_index(drop=True)
+    return pd.DataFrame(out).sort_values(["Lists", key_name], ascending=[False, True]).reset_index(drop=True)
 
 
 def pilot_bootstrap(per_pilot: pd.DataFrame, draws: int, rng: np.random.Generator) -> tuple[float, float]:
@@ -307,7 +307,7 @@ def pilot_bootstrap(per_pilot: pd.DataFrame, draws: int, rng: np.random.Generato
 def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
                      draws: int = BOOT_DRAWS, seed: int = BOOT_SEED) -> pd.DataFrame:
     """Format-period level. *pilots*: add pilot measures (decks only, never for archetypes or the
-    'bez talii' row). The bootstrap interval is given only with >= BOOT_MIN_PILOTS pilots."""
+    'no deck' row). The bootstrap interval is given only with >= BOOT_MIN_PILOTS pilots."""
     rng = np.random.default_rng(seed)
     out: List[dict] = []
     for label, grp in sorted(rows.groupby(key), key=lambda kv: (-len(kv[1]), str(kv[0]))):
@@ -318,38 +318,38 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
         lists, top8 = len(grp), int(grp["top8"].sum())
         rec = {
             key_name: label,
-            "Listy": lists,
-            "Top8": top8,
-            "Konwersja_pct": top8 / lists * 100.0,
-            "Przedzial_dol_pct": math.nan,
-            "Przedzial_gora_pct": math.nan,
-            "Przedzial_info": "",
-            "Trofea": int(grp["trophy"].sum()),
-            "Piloci_Top32": n_pilots,
+            "Lists": lists,
+            "Top8_lists": top8,
+            "Top8_conversion_pct": top8 / lists * 100.0,
+            "CI_low_pct": math.nan,
+            "CI_high_pct": math.nan,
+            "CI_info": "",
+            "Trophies": int(grp["trophy"].sum()),
+            "Pilots_Top32": n_pilots,
         }
         labels = []
         if n_pilots >= BOOT_MIN_PILOTS:
-            rec["Przedzial_dol_pct"], rec["Przedzial_gora_pct"] = pilot_bootstrap(per, draws, rng)
-            rec["Przedzial_info"] = f"bootstrap po pilotach, {n_pilots} pilotów"
+            rec["CI_low_pct"], rec["CI_high_pct"] = pilot_bootstrap(per, draws, rng)
+            rec["CI_info"] = f"pilot bootstrap, {n_pilots} pilots"
         else:
-            rec["Przedzial_info"] = f"bez przedziału: {n_pilots} pilotów (< {BOOT_MIN_PILOTS})"
+            rec["CI_info"] = f"no interval: {n_pilots} pilots (< {BOOT_MIN_PILOTS})"
             labels.append(LABEL_FEW_PILOTS)
         if pilots and label != NO_DECK_LABEL and (
                 lead["lists"] / lists >= CONCENTRATION_LISTS or (top8 and lead["top8"] / top8 >= CONCENTRATION_TOP8)):
             labels.append(LABEL_CONCENTRATION)
-        rec["Etykieta_pilotow"] = ", ".join(labels)
+        rec["Pilot_labels"] = ", ".join(labels)
         if pilots and label != NO_DECK_LABEL:
             rest = grp[grp["player"] != lead["player"]]
             rec.update({
-                "Piloci_Top8": int(grp.loc[grp["top8"] == 1, "player"].nunique()),
-                "Najcz_pilot_listy": int(lead["lists"]),
-                "Najcz_pilot_udzial_Top32_pct": lead["lists"] / lists * 100.0,
-                "Najcz_pilot_Top8": int(lead["top8"]),
-                "Najcz_pilot_udzial_Top8_pct": (lead["top8"] / top8 * 100.0) if top8 else math.nan,
-                "Najcz_pilot_konwersja_pct": lead["top8"] / lead["lists"] * 100.0,
-                "Bez_najcz_pilota_listy": len(rest),
-                "Bez_najcz_pilota_konwersja_pct": rest["top8"].mean() * 100.0 if len(rest) else math.nan,
-                "Remis_najcz_pilota": int((per["lists"] == lead["lists"]).sum() > 1),
+                "Pilots_Top8": int(grp.loc[grp["top8"] == 1, "player"].nunique()),
+                "Top_pilot_lists": int(lead["lists"]),
+                "Top_pilot_share_Top32_pct": lead["lists"] / lists * 100.0,
+                "Top_pilot_Top8_lists": int(lead["top8"]),
+                "Top_pilot_share_Top8_pct": (lead["top8"] / top8 * 100.0) if top8 else math.nan,
+                "Top_pilot_conversion_pct": lead["top8"] / lead["lists"] * 100.0,
+                "Without_top_pilot_lists": len(rest),
+                "Without_top_pilot_conversion_pct": rest["top8"].mean() * 100.0 if len(rest) else math.nan,
+                "Top_pilot_tie": int((per["lists"] == lead["lists"]).sum() > 1),
             })
         out.append(rec)
     return pd.DataFrame(out)
@@ -390,18 +390,18 @@ def variant_table(rows: pd.DataFrame) -> pd.DataFrame:
             players = int(vgrp["player"].nunique())
             if n / deck_lists >= VARIANT_MIN_SHARE and n >= VARIANT_MIN_LISTS and players >= VARIANT_MIN_PLAYERS:
                 out.append({
-                    "Miesiac": month,
-                    "Talia": deck,
-                    "Wariant": variant,
-                    "Listy_wariantu": n,
-                    "Listy_talii_w_miesiacu": deck_lists,
-                    "Udzial_w_talii_pct": n / deck_lists * 100.0,
-                    "Gracze_wariantu": players,
+                    "Month": month,
+                    "Deck": deck,
+                    "Variant": variant,
+                    "Variant_lists": n,
+                    "Deck_lists_in_month": deck_lists,
+                    "Share_of_deck_pct": n / deck_lists * 100.0,
+                    "Variant_pilots": players,
                 })
     if not out:
         return pd.DataFrame()
     return pd.DataFrame(out).sort_values(
-        ["Miesiac", "Listy_talii_w_miesiacu", "Talia", "Listy_wariantu"], ascending=[True, False, True, False]
+        ["Month", "Deck_lists_in_month", "Deck", "Variant_lists"], ascending=[True, False, True, False]
     ).reset_index(drop=True)
 
 
@@ -409,15 +409,15 @@ def event_table(rows: pd.DataFrame) -> pd.DataFrame:
     grp = rows.groupby("event_id")
     tbl = pd.DataFrame({
         "EventID": grp["event_id"].first(),
-        "Data": grp["event_date"].first(),
-        "Gracze_eventu": grp["player_count"].first(),
-        "Listy": grp.size(),
-        "Bez_talii": grp["status"].apply(lambda s: int((s != STATUS_ASSIGNED).sum())),
+        "Date": grp["event_date"].first(),
+        "Event_players": grp["player_count"].first(),
+        "Lists": grp.size(),
+        "No_deck_lists": grp["status"].apply(lambda s: int((s != STATUS_ASSIGNED).sum())),
     }).reset_index(drop=True)
-    tbl["Tydzien_ISO"] = tbl["Data"].map(lambda d: iso_week_label(date.fromisoformat(d)))
-    tbl["Miesiac"] = tbl["Data"].str[:7]
-    tbl["Pokrycie_pct"] = tbl["Listy"] / tbl["Gracze_eventu"] * 100.0
-    return tbl.sort_values(["Data", "EventID"]).reset_index(drop=True)
+    tbl["ISO_week"] = tbl["Date"].map(lambda d: iso_week_label(date.fromisoformat(d)))
+    tbl["Month"] = tbl["Date"].str[:7]
+    tbl["Coverage_pct"] = tbl["Lists"] / tbl["Event_players"] * 100.0
+    return tbl.sort_values(["Date", "EventID"]).reset_index(drop=True)
 
 
 def finalists_table(rows: pd.DataFrame) -> pd.DataFrame:
@@ -430,12 +430,12 @@ def finalists_table(rows: pd.DataFrame) -> pd.DataFrame:
             continue
         out.append({
             "EventID": eid,
-            "Data": first.iloc[0]["event_date"],
-            "Talia_1": first.iloc[0]["material_deck"],
-            "Talia_2": second.iloc[0]["material_deck"],
+            "Date": first.iloc[0]["event_date"],
+            "Deck_1st": first.iloc[0]["material_deck"],
+            "Deck_2nd": second.iloc[0]["material_deck"],
         })
-    return pd.DataFrame(out, columns=["EventID", "Data", "Talia_1", "Talia_2"]).sort_values(
-        ["Data", "EventID"]).reset_index(drop=True)
+    return pd.DataFrame(out, columns=["EventID", "Date", "Deck_1st", "Deck_2nd"]).sort_values(
+        ["Date", "EventID"]).reset_index(drop=True)
 
 
 def weekly_trend(export: DeckdbExport, weeks: List[tuple[date, date]], key: str, key_name: str) -> pd.DataFrame:
@@ -445,14 +445,14 @@ def weekly_trend(export: DeckdbExport, weeks: List[tuple[date, date]], key: str,
         rows = window_rows(export, ws, we)
         for label, n in rows[key].value_counts().items():
             out.append({
-                "Tydzien_ISO": iso_week_label(ws),
-                "Od": ws.isoformat(),
-                "Do": we.isoformat(),
+                "ISO_week": iso_week_label(ws),
+                "From": ws.isoformat(),
+                "To": we.isoformat(),
                 key_name: label,
-                "Listy": int(n),
-                "Listy_tygodnia": int(len(rows)),
-                "Eventy_tygodnia": int(rows["event_id"].nunique()),
-                "Udzial_Top32_pct": n / len(rows) * 100.0,
+                "Lists": int(n),
+                "Week_lists": int(len(rows)),
+                "Week_events": int(rows["event_id"].nunique()),
+                "Share_Top32_pct": n / len(rows) * 100.0,
             })
     return pd.DataFrame(out)
 

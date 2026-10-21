@@ -112,17 +112,17 @@ def test_format_period_start_is_last_confirmed_major(tmp_path):
 
 def test_share_table_week_month_measures(tmp_path):
     _, rows = _period(tmp_path)
-    tbl = di.share_table(rows, "material_deck", "Talia", trophies=True).set_index("Talia")
+    tbl = di.share_table(rows, "material_deck", "Deck", trophies=True).set_index("Deck")
     zoo = tbl.loc["Zoo"]
-    assert zoo["Listy"] == 3 and zoo["Udzial_Top32_pct"] == pytest.approx(50.0)
-    assert zoo["Eventy_z_lista"] == 2 and zoo["Obecnosc_pct_eventow"] == pytest.approx(100.0)
-    assert zoo["Top8"] == 2 and zoo["Eventy_z_Top8"] == 2 and zoo["Top8_pct_eventow"] == pytest.approx(100.0)
-    assert zoo["Trofea"] == 1
-    assert tbl.loc[di.NO_DECK_LABEL, "Listy"] == 2 and tbl["Listy"].sum() == len(rows)
-    assert "Trofea" not in di.share_table(rows, "material_deck", "Talia", trophies=False).columns
+    assert zoo["Lists"] == 3 and zoo["Share_Top32_pct"] == pytest.approx(50.0)
+    assert zoo["Events_with_list"] == 2 and zoo["Event_presence_pct"] == pytest.approx(100.0)
+    assert zoo["Top8_lists"] == 2 and zoo["Events_with_Top8"] == 2 and zoo["Top8_event_pct"] == pytest.approx(100.0)
+    assert zoo["Trophies"] == 1
+    assert tbl.loc[di.NO_DECK_LABEL, "Lists"] == 2 and tbl["Lists"].sum() == len(rows)
+    assert "Trophies" not in di.share_table(rows, "material_deck", "Deck", trophies=False).columns
     split = di.no_deck_split(rows, trophies=False).set_index("Status")
-    assert split.loc["rogue", "Listy"] == 1 and split.loc["unassigned", "Listy"] == 1
-    assert split.loc["rogue", "Udzial_Top32_pct"] == pytest.approx(100 / 6)
+    assert split.loc["rogue", "Lists"] == 1 and split.loc["unassigned", "Lists"] == 1
+    assert split.loc["rogue", "Share_Top32_pct"] == pytest.approx(100 / 6)
 
 
 def test_conversion_baseline_pilots_and_bootstrap_threshold(tmp_path):
@@ -138,24 +138,24 @@ def test_conversion_baseline_pilots_and_bootstrap_threshold(tmp_path):
     exp = di.load_export(_write(tmp_path, rows))
     r = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 1))
     assert di.top8_baseline(r) == pytest.approx(6 / 19 * 100)
-    t = di.conversion_table(r, "material_deck", "Talia", pilots=True).set_index("Talia")
+    t = di.conversion_table(r, "material_deck", "Deck", pilots=True).set_index("Deck")
     a, b = t.loc["A"], t.loc["B"]
-    assert a["Listy"] == 16 and a["Top8"] == 5 and a["Konwersja_pct"] == pytest.approx(500 / 16)
-    assert a["Piloci_Top32"] == 12 and not math.isnan(a["Przedzial_dol_pct"])
-    assert a["Przedzial_dol_pct"] <= a["Konwersja_pct"] <= a["Przedzial_gora_pct"]
-    assert a["Najcz_pilot_listy"] == 5 and a["Najcz_pilot_udzial_Top32_pct"] == pytest.approx(500 / 16)
-    assert a["Najcz_pilot_udzial_Top8_pct"] == pytest.approx(60.0)
-    assert a["Najcz_pilot_konwersja_pct"] == pytest.approx(60.0)
-    assert a["Bez_najcz_pilota_konwersja_pct"] == pytest.approx(200 / 11)
-    assert a["Piloci_Top8"] == 3
+    assert a["Lists"] == 16 and a["Top8_lists"] == 5 and a["Top8_conversion_pct"] == pytest.approx(500 / 16)
+    assert a["Pilots_Top32"] == 12 and not math.isnan(a["CI_low_pct"])
+    assert a["CI_low_pct"] <= a["Top8_conversion_pct"] <= a["CI_high_pct"]
+    assert a["Top_pilot_lists"] == 5 and a["Top_pilot_share_Top32_pct"] == pytest.approx(500 / 16)
+    assert a["Top_pilot_share_Top8_pct"] == pytest.approx(60.0)
+    assert a["Top_pilot_conversion_pct"] == pytest.approx(60.0)
+    assert a["Without_top_pilot_conversion_pct"] == pytest.approx(200 / 11)
+    assert a["Pilots_Top8"] == 3
     # B: 3 pilots (< 10) and q0 holds 1/3 of the lists and the only Top 8 entry -> both labels
-    assert math.isnan(b["Przedzial_dol_pct"]) and b["Etykieta_pilotow"] == "mało pilotów, koncentracja"
+    assert math.isnan(b["CI_low_pct"]) and b["Pilot_labels"] == "low pilot count, concentration"
     # A: p0 has 5/16 lists (< 1/3) but 3/5 of the Top 8 entries (>= 1/2) -> concentration only
-    assert a["Etykieta_pilotow"] == "koncentracja"
-    arch_b = di.conversion_table(r[r["deck"] == "B"], "material_archetype", "Archetyp", pilots=False)
-    assert arch_b.loc[0, "Etykieta_pilotow"] == "mało pilotów"  # no concentration label for archetypes
-    arch = di.conversion_table(r, "material_archetype", "Archetyp", pilots=False)
-    assert "Najcz_pilot_listy" not in arch.columns and arch.loc[0, "Listy"] == 19
+    assert a["Pilot_labels"] == "concentration"
+    arch_b = di.conversion_table(r[r["deck"] == "B"], "material_archetype", "Archetype", pilots=False)
+    assert arch_b.loc[0, "Pilot_labels"] == "low pilot count"  # no concentration label for archetypes
+    arch = di.conversion_table(r, "material_archetype", "Archetype", pilots=False)
+    assert "Top_pilot_lists" not in arch.columns and arch.loc[0, "Lists"] == 19
 
 
 def test_variant_threshold_d2_per_month(tmp_path):
@@ -169,21 +169,21 @@ def test_variant_threshold_d2_per_month(tmp_path):
                          i + 1, variant="W Zoo" if i < 3 else ""))
     exp = di.load_export(_write(tmp_path, rows))
     var = di.variant_table(di.window_rows(exp, date(2026, 10, 30), date(2026, 11, 2)))
-    assert list(var["Wariant"]) == ["V1 Zoo"] and list(var["Miesiac"]) == ["2026-10"]
+    assert list(var["Variant"]) == ["V1 Zoo"] and list(var["Month"]) == ["2026-10"]
 
 
 def test_finalists_have_no_player_identifiers(tmp_path):
     _, rows = _period(tmp_path)
     fin = di.finalists_table(rows)
-    assert list(fin.columns) == ["EventID", "Data", "Talia_1", "Talia_2"]
-    assert list(fin["Talia_1"]) == ["Zoo"]  # event 2 has no rank 2 in this sample
+    assert list(fin.columns) == ["EventID", "Date", "Deck_1st", "Deck_2nd"]
+    assert list(fin["Deck_1st"]) == ["Zoo"]  # event 2 has no rank 2 in this sample
 
 
 def test_coverage_and_events(tmp_path):
     _, rows = _period(tmp_path)
     assert di.coverage(rows) == {"events": 2, "lists": 6, "participants": 100, "coverage_pct": 6.0}
     ev = di.event_table(rows)
-    assert list(ev["Tydzien_ISO"]) == ["2026-W40", "2026-W40"] and list(ev["Miesiac"]) == ["2026-10"] * 2
+    assert list(ev["ISO_week"]) == ["2026-W40", "2026-W40"] and list(ev["Month"]) == ["2026-10"] * 2
 
 
 def test_match_mtgo_cache_counts_both_ways(tmp_path):
@@ -226,20 +226,23 @@ def test_materials_three_levels_and_cli_mode(tmp_path):
                            "--trend-weeks", "3", "--outputs-base", str(out)])
     files = mig.run_deckdb_generation(args, log=lambda _m: None)
     root = dm.root_dir(out, date(2026, 10, 18))
-    assert {p.name for p in root.iterdir()} == {"tydzien_2026-W42", "miesiac_2026-10_niepelny",
-                                               "okres_formatu_2026-09-07_to_2026-10-18"}
+    assert {p.name for p in root.iterdir()} == {"week_2026-W42", "month_2026-10_incomplete",
+                                               "format_period_2026-09-07_to_2026-10-18"}
     exp = di.load_export(export_csv)
     for x in [f for f in files if f.suffix == ".xlsx"]:
         book = pd.read_excel(x, sheet_name=None)
-        assert {"STATUS", "Slownik", "Pominiete"} <= set(book)
-        assert exp.sha256 in book["STATUS"]["Wartość"].astype(str).tolist()
+        assert {"STATUS", "Glossary", "Omitted"} <= set(book)
+        assert exp.sha256 in book["STATUS"]["Value"].astype(str).tolist()
         assert not any("Winrate" in c or "swiss" in c.lower() for s in book.values() for c in map(str, s.columns))
+    assert all((d / "GLOSSARY.md").exists() for d in root.iterdir())
+    assert all(f.suffix == ".png" for f in files if "share_top32" in f.name or "trend_share" in f.name
+               or "conversion_matrix" in f.name)
     for x in [f for f in files if f.suffix == ".csv"]:
         c = pd.read_csv(x, encoding="utf-8-sig", dtype=str)
         assert set(c["export_sha256"]) == {exp.sha256} and not ({"player", "loginid"} & set(c.columns))
-    period = pd.read_excel(root / "okres_formatu_2026-09-07_to_2026-10-18" /
-                           "deckdb_ROBOCZE_2026-09-07_to_2026-10-18.xlsx", sheet_name=None)
-    assert "Piloci" in period and "Najcz_pilot_listy" not in period["Archetypy"].columns
+    period = pd.read_excel(root / "format_period_2026-09-07_to_2026-10-18" /
+                           "deckdb_WORKING_2026-09-07_to_2026-10-18.xlsx", sheet_name=None)
+    assert "Pilots" in period and "Top_pilot_lists" not in period["Archetypes"].columns
     # a period the export does not cover is refused before anything is written
     args2 = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-19",
                             "--outputs-base", str(tmp_path / "out2")])
