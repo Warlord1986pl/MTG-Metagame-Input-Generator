@@ -60,6 +60,12 @@ outputs/league/pilot_league_Summer_2026.csv
 # ignored via the blanket outputs/** rule above.
 !outputs/challenge_history_modern.csv
 !outputs/premier_history_modern.csv
+# Pre-rule labels of entries moved by the interim Broodscale card rule / the removed "Eldrazi" alias
+# (broodscale_rule.py): frozen at first sighting, nothing else remembers them -- same as history.
+!outputs/broodscale_override_ledger_modern.csv
+!outputs/broodscale_reverse_alias_ledger_modern.csv
+# Same for the Moonshadow card rule (moonshadow_rule.py).
+!outputs/rakdos_override_ledger_modern.csv
 
 # Logs
 *.log

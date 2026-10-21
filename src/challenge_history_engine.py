@@ -10,6 +10,7 @@ import csv
 import json
 import re
 import shutil
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -45,6 +46,12 @@ HISTORY_COLS: List[str] = [
     "EventID",
     "Place",
     "Deck",
+    # The classifier's own nearest-neighbor guess (see challenge_mtgo_source.classify_deck),
+    # populated only when Deck == NEEDS_MANUAL_REVIEW. Purely informational -- the Review Queue /
+    # manual-confirmation workflow that governs Deck itself is completely unaffected by this
+    # column; empty ("") for every already-resolved row and for any row synced before this column
+    # existed (load_challenge_history backfills it, same as PlayerCount/LoginID below).
+    "DeckGuess",
     "Archetype",
     "Pilot",
     # The stable per-account id from the mtgo.com JSON (decklists[]/standings[]/final_rank[]
@@ -94,6 +101,17 @@ def _clean_history_df_before_write(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df["EventID"] = df["EventID"].astype(str).str.replace(r"\.0$", "", regex=True)
     return df
+
+
+class ChallengeReviewRequiredError(RuntimeError):
+    """Raised by run_challenge_statistics() when the selected window still has one or more
+    NEEDS_MANUAL_REVIEW decks. Deliberately fatal (not a WARN + Unknown bucket): a still-unresolved
+    deck must never be silently folded into an "Unknown" stats row, because that row then gets
+    treated as ordinary data (counted in Top32EntryCount, potentially in delta-ranking medians, etc.)
+    instead of being fixed at the source. Resolve via the Review Queue (GUI) or
+    apply_challenge_review.py against the *_needs_review_*.csv this same run already wrote, then
+    re-run statistics.
+    """
 
 
 @dataclass
@@ -182,6 +200,9 @@ def append_to_challenge_history(
                 "EventID": str(event_info.get("event_id") or ""),
                 "Place": str(row.get("Place") or ""),
                 "Deck": str(row.get("Deck") or "").strip(),
+                # No classifier guess available from this legacy local-recon path either -- same
+                # reasoning as PlayerCount above.
+                "DeckGuess": "",
                 "Archetype": str(row.get("Archetype") or "").strip(),
                 "Pilot": str(row.get("Pilot") or "").strip(),
                 # No loginid available from this legacy local-recon path either -- same reasoning
@@ -300,6 +321,7 @@ def sync_challenge_history_window(
                     "EventID": event.event_id,
                     "Place": str(row.place),
                     "Deck": deck,
+                    "DeckGuess": getattr(row, "deck_guess", "") or "",
                     "Archetype": archetype,
                     # PILOT NAMES ARE FROZEN AT FIRST CAPTURE. mtgo.com (and MTGGoldfish, which
                     # most Challenge rows' Pilot actually comes from via _parse_single_challenge --
@@ -708,8 +730,8 @@ def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) 
     that function's docstring), not on the raw Pilot column. BestDeck (a single field) could not
     represent a pilot who won with two different decks -- it just silently attributed both wins to
     whichever deck happened to come from the pilot's single best-placed row. DecksPlayed/
-    WinningDecks replace it: WinningDecks is a semicolon-separated list of every deck this identity
-    actually won with (empty if they have no wins), computed per result row, not per pilot.
+    WinningDecks replace it: WinningDecks is a "; "-separated list of every deck this identity
+    actually won with, each with its win count ("Prowess x2; Boros Energy x1"; empty if no wins).
 
     Pilot in the output is the display name from this identity's most recent result in the window
     (by EventDate) -- same "latest name wins" rule as the league's season table.
@@ -740,11 +762,20 @@ def _pilot_table(df: pd.DataFrame, log: Optional[Callable[[str], None]] = None) 
     decks_played = grp["Deck"].nunique() if "Deck" in work.columns else pd.Series(dtype=int)
 
     if "Deck" in work.columns:
-        winning_decks = (
-            work[work["Place"] == 1]
-            .groupby("_Key")["Deck"]
-            .apply(lambda s: ";".join(sorted(set(str(d).strip() for d in s if str(d).strip()))))
-        )
+        # One winner row per event -- the same "first Place==1 row per EventID" the finalists
+        # export uses -- so WinningDecks can never disagree with finalists' FirstDeck/FirstPilot.
+        # Each deck carries its multiplicity ("Amulet Titan x2"; "Prowess x2; Boros Energy x1"):
+        # a bare set of names loses a pilot who won twice with the same deck.
+        winner_rows = work[work["Place"] == 1]
+        if "EventID" in winner_rows.columns:
+            winner_rows = winner_rows.drop_duplicates(subset=["EventID"], keep="first")
+
+        def _decks_with_counts(s: pd.Series) -> str:
+            counts = Counter(str(d).strip() for d in s if str(d).strip())
+            ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+            return "; ".join(f"{deck} x{n}" for deck, n in ordered)
+
+        winning_decks = winner_rows.groupby("_Key")["Deck"].apply(_decks_with_counts)
     else:
         winning_decks = pd.Series(dtype=str)
 
@@ -860,6 +891,13 @@ def _merge_meta_share(stats: pd.DataFrame, metagame_df: Optional[pd.DataFrame], 
         meta_group["Meta Share %"] = pd.to_numeric(meta_group["Meta Share %"], errors="coerce").fillna(0).round(2)
         return stats.merge(meta_group, on="Deck", how="left")
 
+    if "MetaSource" in meta.columns and "Archetype" in meta.columns:
+        # challenge_meta rows already carry the Challenge history's own Archetype per deck --
+        # re-deriving it from deck-name rules could disagree with the per-entry labels.
+        arch_group = meta.groupby("Archetype", as_index=False)["Meta"].sum().rename(columns={"Meta": "Meta Share %"})
+        arch_group["Meta Share %"] = pd.to_numeric(arch_group["Meta Share %"], errors="coerce").fillna(0).round(2)
+        return stats.merge(arch_group, on="Archetype", how="left")
+
     # Archetype meta from rules
     try:
         from metagame_input_generator import classify_archetype, load_rules
@@ -889,7 +927,12 @@ def _load_run_local_metagame_df(output_dir: Path) -> Optional[pd.DataFrame]:
     except Exception:
         return None
 
-    candidate = run_dir / "metagame_input.csv"
+    # Meta from Challenge Top 32 entries after the card rule (challenge_meta.py, 2026-10-12) wins
+    # over the Videre per-name export whenever the run built it -- Meta Share %, the deltas and
+    # Universe A then use the same Meta as deck_analysis*.
+    candidate = run_dir / "metagame_input_challenge_top32.csv"
+    if not candidate.exists():
+        candidate = run_dir / "metagame_input.csv"
     if not candidate.exists():
         return None
 
@@ -922,11 +965,18 @@ def _parse_run_dir_window(run_dir: Path) -> Optional["tuple[date, date]"]:
         return None
 
 
-def _safe_chart(fig: plt.Figure, out_path: Path) -> Optional[Path]:
+def _safe_chart(fig: plt.Figure, out_path: Path, footer: Optional[str] = None, dpi: int = 150) -> Optional[Path]:
+    """Saves and closes *fig*. *footer* (optional, used by input mode "deckdb") is printed under the
+    plot; without it the layout is exactly the legacy one."""
     try:
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        fig.tight_layout()
-        fig.savefig(out_path, dpi=150)
+        if footer:
+            lines = footer.count("\n") + 1
+            fig.text(0.01, 0.005, footer, fontsize=7, ha="left", va="bottom", color="#444444")
+            fig.tight_layout(rect=(0, min(0.45, 0.022 * lines + 0.01), 1, 1))
+        else:
+            fig.tight_layout()
+        fig.savefig(out_path, dpi=dpi)
         return out_path
     except Exception:
         return None
@@ -943,59 +993,79 @@ def _chart_compare_presence(
     total_encounter_players: int = 1000,
     sample_size: int = 5,
     min_encounter_pct: float = 5.0,
+    bars: Optional[List[tuple]] = None,
+    ylabel: str = "Share %",
+    top_n: Optional[int] = None,
+    footer: Optional[str] = None,
+    figsize: tuple = (13, 6),
+    dpi: int = 150,
 ) -> Optional[Path]:
+    """Grouped bars per deck. Legacy (bars=None): Top32 / Top8 event frequency vs Metagame Share,
+    filtered by the encounter-probability cutoff. With *bars* = [(column, legend label), ...] the
+    same chart is drawn from those columns, sorted by them in order, without the encounter cutoff
+    (top_n rows), e.g. input mode "deckdb"."""
     if deck_stats.empty:
         return None
 
-    cols = [key_col, "Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"]
-    missing = [c for c in cols if c not in deck_stats.columns]
-    if missing:
-        return None
+    if bars is None:
+        cols = [key_col, "Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"]
+        missing = [c for c in cols if c not in deck_stats.columns]
+        if missing:
+            return None
 
-    plot_df = deck_stats[cols].copy().fillna(0)
-    if str(sort_by).strip().lower() == "meta":
-        plot_df = plot_df.sort_values(["Meta Share %", "Top32EventFreqPct", "Top8EventFreqPct"], ascending=False)
+        plot_df = deck_stats[cols].copy().fillna(0)
+        if str(sort_by).strip().lower() == "meta":
+            plot_df = plot_df.sort_values(["Meta Share %", "Top32EventFreqPct", "Top8EventFreqPct"], ascending=False)
+        else:
+            plot_df = plot_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"], ascending=False)
+        if plot_df.empty:
+            return None
+
+        # Use the same encounter-probability cutoff as Encounter Probability charts.
+        threshold = min_encounter_pct / 100.0
+        N = max(1, int(total_encounter_players))
+        ss = max(1, int(sample_size))
+
+        def _enc_prob(meta_share_pct: float) -> float:
+            K = round(N * float(meta_share_pct) / 100.0)
+            K = max(0, min(K, N))
+            ss_capped = min(ss, N)
+            max_succ = min(K, ss_capped)
+            if max_succ < 1:
+                return 0.0
+            total = comb(N, ss_capped)
+            if total == 0:
+                return 0.0
+            prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
+            return prob / total
+
+        plot_df = plot_df[plot_df["Meta Share %"].apply(_enc_prob) >= threshold]
+        bars = [("Top32EventFreqPct", "Top32 Event Frequency %"), ("Top8EventFreqPct", "Top8 Event Frequency %"),
+                ("Meta Share %", "Metagame Share %")]
     else:
-        plot_df = plot_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"], ascending=False)
-    if plot_df.empty:
-        return None
-
-    # Use the same encounter-probability cutoff as Encounter Probability charts.
-    threshold = min_encounter_pct / 100.0
-    N = max(1, int(total_encounter_players))
-    ss = max(1, int(sample_size))
-
-    def _enc_prob(meta_share_pct: float) -> float:
-        K = round(N * float(meta_share_pct) / 100.0)
-        K = max(0, min(K, N))
-        ss_capped = min(ss, N)
-        max_succ = min(K, ss_capped)
-        if max_succ < 1:
-            return 0.0
-        total = comb(N, ss_capped)
-        if total == 0:
-            return 0.0
-        prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
-        return prob / total
-
-    plot_df = plot_df[plot_df["Meta Share %"].apply(_enc_prob) >= threshold]
+        cols = [key_col] + [c for c, _ in bars]
+        if any(c not in deck_stats.columns for c in cols):
+            return None
+        plot_df = deck_stats[cols].copy().fillna(0).sort_values([c for c, _ in bars], ascending=False)
+        if top_n is not None:
+            plot_df = plot_df.head(top_n)
     if plot_df.empty:
         return None
 
     x = list(range(len(plot_df)))
-    w = 0.26
-    fig, ax = plt.subplots(figsize=(13, 6))
-    ax.bar([i - w for i in x], plot_df["Top32EventFreqPct"], width=w, label="Top32 Event Frequency %")
-    ax.bar(x, plot_df["Top8EventFreqPct"], width=w, label="Top8 Event Frequency %")
-    ax.bar([i + w for i in x], plot_df["Meta Share %"], width=w, label="Metagame Share %")
+    w = 0.26 if len(bars) == 3 else 0.78 / len(bars)
+    offsets = [(k - (len(bars) - 1) / 2) * w for k in range(len(bars))]
+    fig, ax = plt.subplots(figsize=figsize)
+    for (col, label), off in zip(bars, offsets):
+        ax.bar([i + off for i in x], plot_df[col], width=w, label=label)
 
     ax.set_title(title)
-    ax.set_ylabel("Share %")
+    ax.set_ylabel(ylabel)
     ax.set_xticks(x)
     ax.set_xticklabels(plot_df[key_col], rotation=35, ha="right")
     ax.legend(loc="upper right")
     ax.grid(axis="y", linestyle="--", alpha=0.35)
-    return _safe_chart(fig, out_path)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_delta_ranking(
@@ -1009,57 +1079,81 @@ def _chart_delta_ranking(
     show_median_line: bool = False,
     median_restrict_to_universe_a: bool = True,
     log: Optional[Callable[[str], None]] = None,
+    delta_col: Optional[str] = None,
+    err_cols: Optional[tuple] = None,
+    ylabel: Optional[str] = None,
+    top_n: Optional[int] = None,
+    footer: Optional[str] = None,
+    figsize: tuple = (13, 7),
+    dpi: int = 150,
 ) -> Optional[Path]:
     """Vertical ranking of delta between Top32 event frequency and metagame share.
-    
+
     Uses the same encounter-probability cutoff as Challenge vs Meta chart
     to ensure consistent deck selection across all presentations.
+
+    With *delta_col* the ranking is drawn from that precomputed column instead (no encounter cutoff,
+    the top_n largest |values|), optionally with error bars from *err_cols* = (low, high) columns --
+    input mode "deckdb" (card presence changes).
     """
     if stats_df.empty:
         return None
-    required = {key_col, "Top32EventFreqPct", "Meta Share %"}
-    if not required.issubset(set(stats_df.columns)):
-        return None
+    if delta_col is not None:
+        if not {key_col, delta_col}.issubset(stats_df.columns):
+            return None
+        plot_df = stats_df.copy()
+        plot_df["Delta pp"] = pd.to_numeric(plot_df[delta_col], errors="coerce").fillna(0)
+        if top_n is not None:
+            plot_df = plot_df.reindex(plot_df["Delta pp"].abs().sort_values(ascending=False).index).head(top_n)
+        df = plot_df
+    else:
+        required = {key_col, "Top32EventFreqPct", "Meta Share %"}
+        if not required.issubset(set(stats_df.columns)):
+            return None
 
-    df = stats_df[[key_col, "Top32EventFreqPct", "Meta Share %"]].copy()
-    df["Top32EventFreqPct"] = pd.to_numeric(df["Top32EventFreqPct"], errors="coerce").fillna(0)
-    df["Meta Share %"] = pd.to_numeric(df["Meta Share %"], errors="coerce").fillna(0)
-    df["Delta pp"] = (df["Top32EventFreqPct"] - df["Meta Share %"]).round(2)
+        df = stats_df[[key_col, "Top32EventFreqPct", "Meta Share %"]].copy()
+        df["Top32EventFreqPct"] = pd.to_numeric(df["Top32EventFreqPct"], errors="coerce").fillna(0)
+        df["Meta Share %"] = pd.to_numeric(df["Meta Share %"], errors="coerce").fillna(0)
+        df["Delta pp"] = (df["Top32EventFreqPct"] - df["Meta Share %"]).round(2)
 
-    # Apply same encounter-probability cutoff as Challenge vs Meta to keep decks consistent
-    threshold = min_encounter_pct / 100.0
-    N = max(1, int(total_encounter_players))
-    ss = max(1, int(sample_size))
+        # Apply same encounter-probability cutoff as Challenge vs Meta to keep decks consistent
+        threshold = min_encounter_pct / 100.0
+        N = max(1, int(total_encounter_players))
+        ss = max(1, int(sample_size))
 
-    def _enc_prob(meta_share_pct: float) -> float:
-        K = round(N * float(meta_share_pct) / 100.0)
-        K = max(0, min(K, N))
-        ss_capped = min(ss, N)
-        max_succ = min(K, ss_capped)
-        if max_succ < 1:
-            return 0.0
-        total = comb(N, ss_capped)
-        if total == 0:
-            return 0.0
-        prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
-        return prob / total
+        def _enc_prob(meta_share_pct: float) -> float:
+            K = round(N * float(meta_share_pct) / 100.0)
+            K = max(0, min(K, N))
+            ss_capped = min(ss, N)
+            max_succ = min(K, ss_capped)
+            if max_succ < 1:
+                return 0.0
+            total = comb(N, ss_capped)
+            if total == 0:
+                return 0.0
+            prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
+            return prob / total
 
-    plot_df = df[df["Meta Share %"].apply(_enc_prob) >= threshold].copy()
+        plot_df = df[df["Meta Share %"].apply(_enc_prob) >= threshold].copy()
     if plot_df.empty:
         return None
     plot_df = plot_df.sort_values("Delta pp", ascending=False)
 
-    fig, ax = plt.subplots(figsize=(13, 7))
+    fig, ax = plt.subplots(figsize=figsize)
     # Match metagame encounter chart style: bar colors come from a visual palette,
     # independent from delta sign.
     cmap = plt.cm.rainbow
     colors = cmap(np.linspace(1, 0, len(plot_df))) if len(plot_df) > 0 else []
     x = np.arange(len(plot_df))
     ax.bar(x, plot_df["Delta pp"], color=colors)
+    if err_cols is not None:
+        lo = plot_df["Delta pp"] - pd.to_numeric(plot_df[err_cols[0]], errors="coerce")
+        hi = pd.to_numeric(plot_df[err_cols[1]], errors="coerce") - plot_df["Delta pp"]
+        ax.errorbar(x, plot_df["Delta pp"], yerr=[lo, hi], fmt="none", ecolor="#333333", capsize=3, linewidth=1)
     ax.axhline(0, color="#333333", linewidth=1.2)
     ax.set_xticks(x)
     ax.set_xticklabels(plot_df[key_col], rotation=35, ha="right")
-    ax.set_ylabel("Delta pp (Top32 Event Frequency % - Metagame Share %)")
+    ax.set_ylabel(ylabel or "Delta pp (Top32 Event Frequency % - Metagame Share %)")
     ax.set_title(title)
     ax.grid(axis="y", linestyle="--", alpha=0.25)
 
@@ -1095,7 +1189,7 @@ def _chart_delta_ranking(
             ax.legend(loc="upper right", fontsize=8, framealpha=0.85)
             emit(f"[delta-median] {title}: median={median_val:+.1f} pp over n={n_median}")
 
-    return _safe_chart(fig, out_path)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_conversion_matrix(
@@ -1103,53 +1197,79 @@ def _chart_conversion_matrix(
     key_col: str,
     out_path: Path,
     title: str,
+    columns: Optional[List[tuple]] = None,
+    scales: Optional[Dict[str, tuple]] = None,
+    cell_text: Optional[Callable[[pd.Series, str], str]] = None,
+    top_n: int = 20,
+    colorbar_label: str = "%",
+    footer: Optional[str] = None,
+    figsize: tuple = (12, 7),
+    dpi: int = 150,
 ) -> Optional[Path]:
-    """Matrix chart with percentages for Top32/Top8/Win frequency and conversions."""
+    """Matrix chart with percentages for Top32/Top8/Win frequency and conversions.
+
+    Legacy (columns=None): five % columns on one 0..100 YlGnBu scale. With *columns* = [(column,
+    tick label), ...] the same matrix is drawn from those columns (rows sorted by them in order,
+    top_n rows); *scales* maps a column to ("seq", vmax) -- YlGnBu 0..vmax -- or ("div", centre,
+    span) -- RdBu around centre; *cell_text(row, column)* formats a cell (input mode "deckdb")."""
     if stats_df.empty:
         return None
 
-    cols = [
-        key_col,
-        "Top32EventFreqPct",
-        "Top8EventFreqPct",
-        "WinnerEventFreqPct",
-        "Top8ShareOfTop32EntriesPct",
-        "WinnerShareOfTop32EntriesPct",
-    ]
+    if columns is None:
+        columns = [
+            ("Top32EventFreqPct", "Top32\nEvent %"),
+            ("Top8EventFreqPct", "Top8\nEvent %"),
+            ("WinnerEventFreqPct", "Winner\nEvent %"),
+            ("Top8ShareOfTop32EntriesPct", "Top8/Top32\nEntries %"),
+            ("WinnerShareOfTop32EntriesPct", "Win/Top32\nEntries %"),
+        ]
+        sort_cols = ["Top32EventFreqPct", "Top8EventFreqPct"]
+    else:
+        sort_cols = [c for c, _ in columns]
+    cols = [key_col] + [c for c, _ in columns]
     if not set(cols).issubset(set(stats_df.columns)):
         return None
 
-    matrix_df = stats_df[cols].copy()
+    matrix_df = stats_df.copy()
     for c in cols[1:]:
         matrix_df[c] = pd.to_numeric(matrix_df[c], errors="coerce").fillna(0)
     # A strict top-14 cut can drop decks that only spike in a few Top8s within
     # the selected window (for example, Domain Zoo in shorter challenge ranges).
     # Keep a slightly wider panel so the matrix stays readable while preserving
     # those meaningful appearances.
-    matrix_df = matrix_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct"], ascending=False).head(20)
+    matrix_df = matrix_df.sort_values(sort_cols, ascending=False).head(top_n).reset_index(drop=True)
     if matrix_df.empty:
         return None
 
     value_cols = cols[1:]
     data = matrix_df[value_cols].to_numpy(dtype=float)
 
-    fig, ax = plt.subplots(figsize=(12, 7))
-    im = ax.imshow(data, aspect="auto", cmap="YlGnBu", vmin=0, vmax=100)
+    fig, ax = plt.subplots(figsize=figsize)
+    if scales is None:
+        im = ax.imshow(data, aspect="auto", cmap="YlGnBu", vmin=0, vmax=100)
+        level = data / 100.0
+    else:
+        seq, div = plt.get_cmap("YlGnBu"), plt.get_cmap("RdBu")
+        rgba = np.zeros((*data.shape, 4))
+        level = np.zeros(data.shape)
+        for j, col in enumerate(value_cols):
+            kind = scales.get(col, ("seq", max(float(np.nanmax(data[:, j])), 1e-9)))
+            if kind[0] == "div":
+                pos = np.clip(0.5 + 0.5 * (data[:, j] - kind[1]) / (kind[2] or 1.0), 0.0, 1.0)
+                rgba[:, j] = div(pos)
+                level[:, j] = np.abs(pos - 0.5) * 2
+            else:
+                pos = np.clip(data[:, j] / (kind[1] or 1.0), 0.0, 1.0)
+                rgba[:, j] = seq(pos)
+                level[:, j] = pos
+        ax.imshow(rgba, aspect="auto")
+        im = plt.cm.ScalarMappable(cmap="YlGnBu", norm=plt.Normalize(0, 1))
     ax.set_title(title)
     ax.set_yticks(range(len(matrix_df)))
     ax.set_yticklabels(matrix_df[key_col])
     ax.set_xticks(range(len(value_cols)))
-    ax.set_xticklabels(
-        [
-            "Top32\nEvent %",
-            "Top8\nEvent %",
-            "Winner\nEvent %",
-            "Top8/Top32\nEntries %",
-            "Win/Top32\nEntries %",
-        ],
-        rotation=0,
-    )
-    
+    ax.set_xticklabels([label for _, label in columns], rotation=0)
+
     # Two-layer separators keep boundaries visible on both dark and bright cells.
     x_bounds = np.arange(-0.5, len(value_cols), 1)
     y_bounds = np.arange(-0.5, len(matrix_df), 1)
@@ -1163,12 +1283,14 @@ def _chart_conversion_matrix(
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             val = data[i, j]
-            txt_color = "#111111" if val < 65 else "#ffffff"
-            ax.text(j, i, f"{val:.1f}%", ha="center", va="center", fontsize=8, color=txt_color)
+            txt_color = "#111111" if level[i, j] < 0.65 else "#ffffff"
+            text = cell_text(matrix_df.iloc[i], value_cols[j]) if cell_text is not None else f"{val:.1f}%"
+            ax.text(j, i, text, ha="center", va="center", fontsize=8, color=txt_color)
 
-    cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
-    cbar.set_label("%")
-    return _safe_chart(fig, out_path)
+    if scales is None or colorbar_label:
+        cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+        cbar.set_label(colorbar_label)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_trend_lines(df: pd.DataFrame, key_col: str, out_path: Path, title: str) -> Optional[Path]:
@@ -1904,21 +2026,57 @@ def run_challenge_statistics(
         return ChallengeStatisticsResult(output_dir, history_csv, output_dir / "challenge_statistics.xlsx", 0, 0, [])
 
     # Rows still stuck at NEEDS_MANUAL_REVIEW (classifier could not confidently place them, and no
-    # human resolution has been applied yet) are NOT dropped from the stats tables and NOT silently
-    # merged into whatever real deck/archetype the classifier guessed second-best -- they get their
-    # own explicit "Unknown" row, so sum(Top32EntryCount) always equals the tier's real total
-    # decklist count and the gap is visible in the data instead of absorbed. This relabel is local
-    # to the stats tables
-    # only -- the underlying history_csv keeps the literal NEEDS_MANUAL_REVIEW marker untouched, so
-    # the review/rescan workflow (challenge_mtgo_source.py) still finds these rows correctly.
+    # human resolution has been applied yet) must never be silently bucketed into a stats-table
+    # "Unknown" row and treated as ordinary data from there on (counted in Top32EntryCount, able to
+    # feed a delta-ranking median, etc.) -- that hides a data gap as if it were a real, if unnamed,
+    # deck. Fail closed instead: no xlsx, no chart, no relabel, until a human resolves every row via
+    # the Review Queue / apply_challenge_review.py against the *_needs_review_*.csv this run (or an
+    # earlier one covering these events) already wrote. The underlying history_csv keeps the literal
+    # NEEDS_MANUAL_REVIEW marker untouched either way, so that workflow can still find these rows.
     unresolved_mask = hist_window["Deck"] == "NEEDS_MANUAL_REVIEW"
     n_unresolved = int(unresolved_mask.sum())
     if n_unresolved:
-        hist_window.loc[unresolved_mask, "Deck"] = "Unknown"
-        hist_window.loc[unresolved_mask, "Archetype"] = "Unknown"
+        needs_review_summary = [
+            {
+                "EventID": str(r.EventID),
+                "EventDate": str(r.EventDate),
+                "Tier": str(r.Tier),
+                "Place": str(r.Place),
+                "Pilot": str(r.Pilot),
+                "DeckGuess": str(getattr(r, "DeckGuess", "") or ""),
+            }
+            for r in hist_window.loc[
+                unresolved_mask, ["EventID", "EventDate", "Tier", "Place", "Pilot", "DeckGuess"]
+            ].itertuples()
+        ]
         emit(
-            f"[challenge-stats] {n_unresolved} still-unresolved deck(s) (NEEDS_MANUAL_REVIEW) bucketed "
-            "under an explicit 'Unknown' row in the stats tables, not dropped."
+            f"[challenge-stats] ABORT: {n_unresolved} still-unresolved deck(s) (NEEDS_MANUAL_REVIEW) in "
+            "the selected window -- xlsx NOT written, nothing bucketed under 'Unknown'. Resolve via the "
+            "Review Queue / apply_challenge_review.py, then re-run statistics:"
+        )
+        for item in needs_review_summary:
+            emit(
+                f"  - EventID={item['EventID']} {item['EventDate']} Tier{item['Tier']} "
+                f"place={item['Place']} pilot={item['Pilot']} (guess: {item['DeckGuess'] or 'n/a'})"
+            )
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "challenge_statistics.status.json").write_text(
+            json.dumps(
+                {
+                    "complete": False,
+                    "needs_review_count": n_unresolved,
+                    "needs_review": needs_review_summary,
+                    "window_start": week_start.isoformat() if week_start else None,
+                    "window_end": week_end.isoformat() if week_end else None,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        raise ChallengeReviewRequiredError(
+            f"{n_unresolved} Challenge deck(s) still need manual review in "
+            f"{week_start.isoformat() if week_start else '?'}..{week_end.isoformat() if week_end else '?'}; "
+            f"refusing to write challenge_statistics.xlsx. Unresolved: {needs_review_summary}"
         )
 
     tiers = sorted(hist_window["Tier"].unique(), key=lambda s: int(s) if str(s).isdigit() else -1)
@@ -2163,6 +2321,25 @@ def run_challenge_statistics(
     finalists_path = output_dir / f"finalists_{window_label}.csv"
     _clean_history_df_before_write(finalists_df).to_csv(finalists_path, index=False, encoding="utf-8-sig")
     emit(f"[challenge-stats] Finalists: {len(finalists_df)} event(s) -> {finalists_path}")
+
+    # Defense in depth: the NEEDS_MANUAL_REVIEW check above already raises before this point, so this
+    # should be unreachable -- it exists to catch a future regression (a new code path that
+    # reintroduces an unresolved/placeholder row here) rather than the currently-known cause. Covers
+    # only the Challenge-tier tables this function owns; the equivalent gate for premier events lives
+    # in the caller (metagame_input_generator.run_generation), which holds both datasets.
+    _bad_tables = (
+        [(f"C{_tier}_Decks", _tbl) for _tier, _tbl in tier_deck_tables.items()]
+        + [(f"C{_tier}_Archetypes", _tbl) for _tier, _tbl in tier_arch_tables.items()]
+        + [("ALL_Decks", deck_all), ("ALL_Archetypes", arch_all)]
+    )
+    for _sheet_name, _tbl in _bad_tables:
+        for _col in ("Deck", "Archetype"):
+            if _col in _tbl.columns and _tbl[_col].astype(str).isin(["Unknown", "NEEDS_MANUAL_REVIEW"]).any():
+                raise AssertionError(
+                    f"invariant violated: sheet {_sheet_name!r} column {_col!r} still contains an "
+                    "Unknown/NEEDS_MANUAL_REVIEW row at xlsx-write time -- the earlier fail-closed "
+                    "check should have already aborted this run"
+                )
 
     with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
         pd.DataFrame([{

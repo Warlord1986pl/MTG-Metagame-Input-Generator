@@ -39,7 +39,7 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -155,7 +155,25 @@ def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
 
 def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
     """One row per event this identity appeared in, most recent first (ties broken by EventID
-    ascending, for determinism when two events share a date)."""
+    ascending, for determinism when two events share a date).
+
+    A still-unclassified event's raw Deck value (the literal internal marker
+    NEEDS_MANUAL_REVIEW, see challenge_mtgo_source.py) is never shown as-is on this
+    general-audience page. Two-tier fallback instead, in priority order:
+      1. DeckGuess -- the classifier's own nearest-neighbor label for this exact event
+         (challenge_mtgo_source.classify_deck's nearest_label, carried through regardless of
+         whether it cleared the auto-accept confidence threshold; see HISTORY_COLS/
+         LEAGUE_RESULTS_COLS). This is available for the large majority of NEEDS_MANUAL_REVIEW
+         rows -- a real signal computed from this exact decklist, just one the Review Queue
+         workflow (Deck itself) deliberately never auto-accepts.
+      2. This SAME identity's own most recent PRIOR resolved deck -- pilots overwhelmingly keep
+         playing one deck across consecutive events, so their last confirmed choice is the next
+         best guess, reused for every consecutive unresolved event until the next real
+         resolution. Only used when DeckGuess is itself blank (e.g. too few known decks in the
+         library yet to compute a nearest neighbor at all).
+    An event with neither available (this identity's first-ever appearance, still unclassified,
+    with no classifier signal yet) stays blank.
+    """
     g = grp.copy()
     g["_Date"] = pd.to_datetime(g["EventDate"], errors="coerce")
     g = g.sort_values(["_Date", "EventID"], ascending=[False, True], kind="mergesort")
@@ -172,10 +190,21 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
             "eventClass": event_class,
             "finish": _to_int_or_none(r.get("Place")),
             "deck": str(r.get("Deck", "")).strip(),
+            "_deckGuess": str(r.get("DeckGuess", "")).strip(),
             "points": _to_int_or_none(r.get("LeaguePoints")) or 0,
             "swissPoints": _to_int_or_none(r.get("SwissPoints")),
             "gwp": _to_float_or_none(r.get("GWP")),
         })
+
+    # rows is newest-first; walk it oldest-first to carry each resolved deck forward onto any
+    # later NEEDS_MANUAL_REVIEW event, until the next real resolution.
+    last_resolved = ""
+    for row in reversed(rows):
+        if row["deck"] == "NEEDS_MANUAL_REVIEW":
+            row["deck"] = row["_deckGuess"] or last_resolved
+        elif row["deck"]:
+            last_resolved = row["deck"]
+        del row["_deckGuess"]
     return rows
 
 
@@ -233,6 +262,11 @@ def build_season_site_data(
 
     season_pilots: List[dict] = []
     pilots_doc_entries: Dict[str, dict] = {}
+    # (pilot key, eventId) -> the SAME already-resolved deck _pilot_results_rows computed for that
+    # exact appearance (real Deck, else DeckGuess, else last-played-deck) -- reused below for
+    # bracketMatches instead of re-deriving the fallback a second time from the matches CSV's own
+    # raw WinnerDeck/LoserDeck (which, like the raw results Deck, can be NEEDS_MANUAL_REVIEW).
+    resolved_deck_by_key_event: Dict[Tuple[str, str], str] = {}
 
     profile_map = pilot_identity.load_profiles()
 
@@ -293,6 +327,8 @@ def build_season_site_data(
 
         grp = results_by_key.get(key)
         results_rows = _pilot_results_rows(grp) if grp is not None else []
+        for rr in results_rows:
+            resolved_deck_by_key_event[(key, rr["eventId"])] = rr["deck"]
         if grp is not None:
             decks = grp["Deck"].astype(str).str.strip()
             distinct_decks = int(decks[decks != ""].nunique())
@@ -354,6 +390,13 @@ def build_season_site_data(
             event_id = str(r.get("EventID", "")).strip()
             winner_deck = str(r.get("WinnerDeck", "")).strip()
             loser_deck = str(r.get("LoserDeck", "")).strip()
+            # Same already-resolved deck as this pilot's own "Results" table row for this exact
+            # event (real Deck, else DeckGuess, else last-played-deck) -- never the matches CSV's
+            # own raw, possibly-NEEDS_MANUAL_REVIEW value. Falls back to the raw value only if this
+            # (pilot, event) pair is missing from the lookup for some reason (defensive; shouldn't
+            # happen for anyone already in pilots_doc_entries).
+            winner_deck_resolved = resolved_deck_by_key_event.get((w_key, event_id), winner_deck)
+            loser_deck_resolved = resolved_deck_by_key_event.get((l_key, event_id), loser_deck)
 
             w_name = names.get(w_key, {}).get("current") or str(r.get("WinnerPilot", "")).strip()
             l_name = names.get(l_key, {}).get("current") or str(r.get("LoserPilot", "")).strip()
@@ -363,14 +406,14 @@ def build_season_site_data(
                     "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
                     "round": round_label, "result": "W",
                     "opponentId": l_key, "opponentName": l_name,
-                    "pilotDeck": winner_deck, "opponentDeck": loser_deck,
+                    "pilotDeck": winner_deck_resolved, "opponentDeck": loser_deck_resolved,
                 })
             if l_key in pilots_doc_entries:
                 pilots_doc_entries[l_key]["bracketMatches"].append({
                     "date": date_str, "eventId": event_id, "event": event_label, "tier": tier,
                     "round": round_label, "result": "L",
                     "opponentId": w_key, "opponentName": w_name,
-                    "pilotDeck": loser_deck, "opponentDeck": winner_deck,
+                    "pilotDeck": loser_deck_resolved, "opponentDeck": winner_deck_resolved,
                 })
 
     season_doc = {

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,QF,caquaa,221272,LucasG1ggs,750888,2,1,Broodscale Combo,Broodscale Combo
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,QF,BressD1,1940271,Redman1034,3363119,2,1,Prowess,Devoted Combo
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,QF,rossjsg,1951138,HuUeBR,2981401,2,1,Azorius Control,Broodscale Combo
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,QF,Jack-Z,3155889,duke12,6062,2,1,Broodscale Combo,Izzet Murktide
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,SF,caquaa,221272,BressD1,1940271,2,1,Broodscale Combo,Prowess
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,SF,rossjsg,1951138,Jack-Z,3155889,2,0,Azorius Control,Broodscale Combo
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,F,rossjsg,1951138,caquaa,221272,2,1,Azorius Control,Broodscale Combo

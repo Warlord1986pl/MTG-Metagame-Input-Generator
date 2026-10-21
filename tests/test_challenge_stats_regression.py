@@ -16,6 +16,7 @@ Or via pytest: pytest tests/test_challenge_stats_regression.py
 """
 from __future__ import annotations
 
+import json
 import shutil
 import sys
 import tempfile
@@ -27,7 +28,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import pandas as pd  # noqa: E402
 
-from challenge_history_engine import run_challenge_statistics  # noqa: E402
+from challenge_history_engine import run_challenge_statistics, ChallengeReviewRequiredError  # noqa: E402
 from challenge_mtgo_source import CompletenessSummary  # noqa: E402
 
 FIXTURE = REPO_ROOT / "tests" / "fixtures" / "challenge_history_ground_truth_2026-07-13_to_2026-07-26.csv"
@@ -38,6 +39,77 @@ EXPECTED_TIER_TROPHIES = {"32": 5, "64": 15, "96": 4}
 EXPECTED_TOTAL_TROPHIES = 24
 EXPECTED_TOTAL_TOP32_ENTRIES = 768
 EXPECTED_TOTAL_TOP8_ENTRIES = 192
+# As of this writing FIXTURE (a real slice of history, not synthetic) still has this many rows
+# genuinely stuck at NEEDS_MANUAL_REVIEW -- see test_challenge_review_required_blocks_stats below,
+# which exercises the fail-closed gate directly against them.
+EXPECTED_UNRESOLVED_IN_FIXTURE = 41
+
+
+def _copy_fixture_with_reviews_resolved(dest: Path) -> None:
+    """Copy FIXTURE to *dest* with its NEEDS_MANUAL_REVIEW rows replaced by a placeholder deck.
+
+    The aggregation-layer invariants this test checks (Top32EntryCount/Top8Count/WinnerCount sums)
+    depend only on row *counts* and Place values, never on the specific Deck string, so swapping in
+    a placeholder name preserves every assertion below while letting the run past the (correct,
+    intentional) fail-closed NEEDS_MANUAL_REVIEW gate in run_challenge_statistics(), which this test
+    is not exercising -- test_challenge_review_required_blocks_stats is.
+    """
+    df = pd.read_csv(FIXTURE)
+    mask = df["Deck"] == "NEEDS_MANUAL_REVIEW"
+    assert int(mask.sum()) == EXPECTED_UNRESOLVED_IN_FIXTURE, (
+        f"fixture's unresolved-row count drifted: expected {EXPECTED_UNRESOLVED_IN_FIXTURE}, "
+        f"found {int(mask.sum())} -- update EXPECTED_UNRESOLVED_IN_FIXTURE if the fixture changed "
+        "on purpose"
+    )
+    df.loc[mask, "Deck"] = "Test Placeholder Deck"
+    df.loc[mask, "Archetype"] = "Test Placeholder Archetype"
+    df.to_csv(dest, index=False, encoding="utf-8-sig")
+
+
+def test_challenge_review_required_blocks_stats() -> None:
+    """The fail-closed counterpart to test_challenge_stats_matches_frozen_ground_truth: run the
+    SAME fixture unmodified (i.e. with its real NEEDS_MANUAL_REVIEW rows intact) and confirm
+    run_challenge_statistics() refuses to write an xlsx or bucket them under "Unknown" -- it raises
+    ChallengeReviewRequiredError and writes a status.json with complete=False and the exact
+    needs_review_count, instead."""
+    assert FIXTURE.exists(), f"missing fixture: {FIXTURE}"
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="challenge_review_required_"))
+    try:
+        history_csv = tmp_dir / "challenge_history_modern.csv"
+        shutil.copyfile(FIXTURE, history_csv)
+
+        completeness = CompletenessSummary(
+            registry_count=EXPECTED_TOTAL_TROPHIES, fetched_count=EXPECTED_TOTAL_TROPHIES,
+            complete=True, missing=[],
+            tier_counts_registry={int(k): v for k, v in EXPECTED_TIER_TROPHIES.items()},
+            tier_counts_fetched={int(k): v for k, v in EXPECTED_TIER_TROPHIES.items()},
+            premier_checked=True, premier_count=0, premier_events=[], premier_note="n/a",
+        )
+
+        raised = False
+        try:
+            run_challenge_statistics(
+                history_csv=history_csv, output_dir=tmp_dir / "stats_out", format_name="Modern",
+                week_start=WEEK_START, week_end=WEEK_END, completeness=completeness,
+            )
+        except ChallengeReviewRequiredError as exc:
+            raised = True
+            assert str(EXPECTED_UNRESOLVED_IN_FIXTURE) in str(exc)
+        assert raised, "expected ChallengeReviewRequiredError when the window has unresolved decks"
+
+        assert not (tmp_dir / "stats_out" / "challenge_statistics.xlsx").exists(), (
+            "xlsx must not be written while any deck is still NEEDS_MANUAL_REVIEW"
+        )
+        status_path = tmp_dir / "stats_out" / "challenge_statistics.status.json"
+        assert status_path.exists(), "status.json must still be written so the block is visible on disk"
+        payload = json.loads(status_path.read_text(encoding="utf-8"))
+        assert payload["complete"] is False
+        assert payload["needs_review_count"] == EXPECTED_UNRESOLVED_IN_FIXTURE
+        assert len(payload["needs_review"]) == EXPECTED_UNRESOLVED_IN_FIXTURE
+        assert {"EventID", "EventDate", "Tier", "Place", "Pilot"}.issubset(payload["needs_review"][0].keys())
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 def test_challenge_stats_matches_frozen_ground_truth() -> None:
@@ -46,7 +118,7 @@ def test_challenge_stats_matches_frozen_ground_truth() -> None:
     tmp_dir = Path(tempfile.mkdtemp(prefix="challenge_stats_regression_"))
     try:
         history_csv = tmp_dir / "challenge_history_modern.csv"
-        shutil.copyfile(FIXTURE, history_csv)
+        _copy_fixture_with_reviews_resolved(history_csv)
 
         # This fixture is a frozen, manually-reconciled ground truth (see module docstring) --
         # completeness is asserted directly rather than computed live, since this test is meant to
@@ -211,6 +283,8 @@ def test_challenge_stats_accepts_a_real_sub_32_challenge_16_event() -> None:
 
 
 if __name__ == "__main__":
+    test_challenge_review_required_blocks_stats()
+    print("OK: unresolved decks block statistics (fail-closed, no Unknown bucket).")
     test_challenge_stats_matches_frozen_ground_truth()
     print("OK: challenge stats regression test passed.")
     test_saturated_archetype_event_freq_is_not_degenerate()

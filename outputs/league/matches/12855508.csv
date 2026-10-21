@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12855508,2026-10-06,C16,Challenge,QF,Latorretta,2708393,Ze_Manel,695121,2,0,Prowess,Esper Blink
+12855508,2026-10-06,C16,Challenge,QF,Sebastian0722,3002475,Alakai,676549,2,1,Affinity,Ruby Storm
+12855508,2026-10-06,C16,Challenge,QF,LordEgg,964394,kePs,1984508,2,0,Affinity,Affinity
+12855508,2026-10-06,C16,Challenge,QF,Varo,923582,NickBolas90,2921975,2,0,Affinity,Yawgmoth
+12855508,2026-10-06,C16,Challenge,SF,Sebastian0722,3002475,Latorretta,2708393,2,1,Affinity,Prowess
+12855508,2026-10-06,C16,Challenge,SF,LordEgg,964394,Varo,923582,2,1,Affinity,Affinity
+12855508,2026-10-06,C16,Challenge,F,Sebastian0722,3002475,LordEgg,964394,2,1,Affinity,Affinity

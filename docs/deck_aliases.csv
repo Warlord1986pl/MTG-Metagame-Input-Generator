@@ -1,4 +1,4 @@
-pattern,canonical_name,match_type,priority
+pattern,canonical_name,match_type,priority,archetype,comment
 4/5c Omnath,4/5c Omnath,exact,1
 4c Control,4c Control,exact,1
 4c Energy,4C Energy,exact,1
@@ -36,7 +36,6 @@ Dimir Murktide,Dimir Murktide,exact,1
 Dimir Reanimator,Dimir Reanimator,exact,1
 Dimir Tezzerator,Dimir Tezzerator,exact,1
 Domain Zoo,Domain Zoo,exact,1
-Eldrazi,Broodscale Combo,exact,1
 Eldrazi Ramp,Eldrazi Ramp,exact,1
 Eldrazi Tron,Eldrazi Tron,exact,1
 Esper Blink,Esper Blink,exact,1
@@ -138,7 +137,7 @@ UG,UG,exact,1
 UR,Prowess,exact,1
 URG,URG,exact,1
 W,W,exact,1
-WBG,WBG,exact,1
+WBG,Devoted Combo,exact,1,Combo,"MTGO color-code placeholder (no name submitted at decklist upload) -- confirmed Devoted Combo (green toolbox: Green Sun's Zenith/Delighted Halfling/Badgermole Cub) on lists from the 2026-09 window; check-alias verdict SAFE (median similarity 0.871, min 0.769 over 17 source vs 13 target lists)"
 WBR,WBR,exact,1
 WBRG,WBRG,exact,1
 WG,WG,exact,1

@@ -888,7 +888,7 @@
           "date": "2026-08-23",
           "event": "Modern Challenge 64",
           "eventId": "12852752",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2119308",
           "opponentName": "thodoris17",
           "pilotDeck": "4c HollowOne",
@@ -1101,7 +1101,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -2324,7 +2324,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -2861,7 +2861,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:659635",
           "opponentName": "elvin7",
           "pilotDeck": "Goryo's Vengeance",
@@ -2873,7 +2873,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2920490",
           "opponentName": "IrIWANG",
           "pilotDeck": "Goryo's Vengeance",
@@ -2885,7 +2885,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:603790",
           "opponentName": "AzNsOuL",
           "pilotDeck": "Goryo's Vengeance",
@@ -4481,7 +4481,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:254536",
           "opponentName": "rastaf",
           "pilotDeck": "Devoted Combo",
@@ -5944,7 +5944,7 @@
           "eventId": "12850822",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Jeskai Energy",
           "result": "W",
           "round": "QF",
@@ -6118,7 +6118,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:2720911",
           "opponentName": "Cachorrowo",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -6127,10 +6127,10 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "SF",
           "tier": "modern-showcase-challenge"
@@ -6155,7 +6155,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -6915,7 +6915,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -8528,7 +8528,7 @@
           "eventId": "12851665",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Mono-Green Eldrazi",
           "result": "L",
           "round": "QF",
@@ -10706,7 +10706,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -11527,7 +11527,7 @@
           "eventId": "12851716",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Prowess",
           "result": "L",
           "round": "QF",
@@ -12639,7 +12639,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -13223,7 +13223,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2143659",
           "opponentName": "innaig88",
           "pilotDeck": "Ruby Storm",
@@ -13235,7 +13235,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
           "pilotDeck": "Ruby Storm",
@@ -13261,7 +13261,7 @@
           "eventId": "12853186",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Ruby Storm",
           "result": "W",
           "round": "QF",
@@ -13740,7 +13740,7 @@
           "eventId": "12851623",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Devoted Combo",
           "result": "W",
           "round": "F",
@@ -13845,7 +13845,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:659635",
           "opponentName": "elvin7",
           "pilotDeck": "Mono-Green Eldrazi",
@@ -16309,7 +16309,7 @@
           "opponentDeck": "Devoted Combo",
           "opponentId": "id:774962",
           "opponentName": "wallofspikes",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "F",
           "tier": "C64"
@@ -16321,7 +16321,7 @@
           "opponentDeck": "4c HollowOne",
           "opponentId": "id:1061642",
           "opponentName": "JRomero",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -16333,7 +16333,7 @@
           "opponentDeck": "Esper Blink",
           "opponentId": "id:2878060",
           "opponentName": "jev_",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -16418,7 +16418,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -16499,7 +16499,7 @@
           "eventId": "12851623",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Land Destruction",
           "result": "L",
           "round": "QF",
@@ -17403,7 +17403,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:1997683",
           "opponentName": "hugofreitas1",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -17428,7 +17428,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -17871,7 +17871,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -18574,7 +18574,7 @@
           "eventId": "12848201",
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:2675769",
-          "opponentName": "MegaSwampert",
+          "opponentName": "_Elfkid_",
           "pilotDeck": "Ruby Storm",
           "result": "W",
           "round": "QF",
@@ -19345,10 +19345,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:759973",
           "opponentName": "Bayesta_93",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -19373,7 +19373,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -20212,7 +20212,7 @@
           "eventId": "12852747",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Prowess",
           "result": "L",
           "round": "SF",
@@ -20883,7 +20883,7 @@
           "eventId": "12853212",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Goryo's Vengeance",
           "result": "W",
           "round": "QF",
@@ -21624,10 +21624,10 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:254536",
           "opponentName": "rastaf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "F",
           "tier": "modern-showcase-challenge"
@@ -21639,7 +21639,7 @@
           "opponentDeck": "Belcher",
           "opponentId": "id:3122660",
           "opponentName": "E90_DeliveryBoy",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -21648,10 +21648,10 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:1428769",
           "opponentName": "Xwhale",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "modern-showcase-challenge"
@@ -21676,7 +21676,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -23887,10 +23887,10 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:980850",
           "opponentName": "MikeEgan",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -23939,7 +23939,7 @@
         },
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -24171,10 +24171,10 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "F",
           "tier": "modern-showcase-challenge"
@@ -24186,7 +24186,7 @@
           "opponentDeck": "Devoted Combo",
           "opponentId": "id:1210536",
           "opponentName": "musasabi",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -24198,7 +24198,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:3220713",
           "opponentName": "DskBayWolf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "modern-showcase-challenge"
@@ -24233,7 +24233,7 @@
           "eventId": "12852769",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Esper Blink",
           "result": "L",
           "round": "SF",
@@ -24307,7 +24307,7 @@
         },
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -24459,7 +24459,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -25081,7 +25081,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -25718,10 +25718,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "F",
           "tier": "C64"
@@ -25730,10 +25730,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2901097",
           "opponentName": "SizzleSkeleton",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -25742,10 +25742,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:759973",
           "opponentName": "Bayesta_93",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -25806,7 +25806,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -26492,7 +26492,7 @@
           "eventId": "12851623",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Prowess",
           "result": "L",
           "round": "SF",
@@ -27115,7 +27115,7 @@
           "eventId": "12852769",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Prowess",
           "result": "L",
           "round": "QF",
@@ -27593,7 +27593,7 @@
           "eventId": "12851716",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Mono-Green Eldrazi",
           "result": "L",
           "round": "F",
@@ -27665,7 +27665,7 @@
           "eventId": "12851612",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Devoted Combo",
           "result": "L",
           "round": "QF",
@@ -27959,7 +27959,9 @@
       "name": "MegaSwampert",
       "points": 2,
       "premierPoints": 0,
-      "priorNames": [],
+      "priorNames": [
+        "_Elfkid_"
+      ],
       "rank": 366,
       "results": [
         {
@@ -28706,7 +28708,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -28763,7 +28765,7 @@
           "eventId": "12847691",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Yawgmoth",
           "result": "W",
           "round": "QF",
@@ -29528,7 +29530,7 @@
           "eventId": "12847683",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Naya Scapeshift",
           "result": "W",
           "round": "F",
@@ -29659,7 +29661,7 @@
           "eventId": "12847683",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Affinity",
           "result": "L",
           "round": "QF",
@@ -30027,7 +30029,7 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:301933",
           "opponentName": "Phryziel",
           "pilotDeck": "Tron",
@@ -30051,7 +30053,7 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:980850",
           "opponentName": "MikeEgan",
           "pilotDeck": "Tron",
@@ -30252,7 +30254,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -32170,7 +32172,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:1428769",
           "opponentName": "Xwhale",
           "pilotDeck": "Ruby Storm",
@@ -32506,7 +32508,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -33349,7 +33351,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -35435,7 +35437,7 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:301933",
           "opponentName": "Phryziel",
           "pilotDeck": "The Rock",
@@ -35862,7 +35864,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:603790",
           "opponentName": "AzNsOuL",
           "pilotDeck": "Domain Zoo",
@@ -35888,7 +35890,7 @@
           "eventId": "12847683",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Domain Zoo",
           "result": "L",
           "round": "SF",
@@ -37279,7 +37281,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -37969,7 +37971,7 @@
           "date": "2026-08-23",
           "event": "Modern Challenge 64",
           "eventId": "12852752",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2119308",
           "opponentName": "thodoris17",
           "pilotDeck": "Esper Blink",
@@ -38232,7 +38234,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -38942,10 +38944,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2621451",
           "opponentName": "SanPop",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -38970,7 +38972,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -39144,7 +39146,7 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:301933",
           "opponentName": "Phryziel",
           "pilotDeck": "Living End",
@@ -40208,7 +40210,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -40501,10 +40503,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2621451",
           "opponentName": "SanPop",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "F",
           "tier": "C64"
@@ -40516,7 +40518,7 @@
           "opponentDeck": "Broodscale Combo",
           "opponentId": "id:815932",
           "opponentName": "unagieel",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -40528,7 +40530,7 @@
           "opponentDeck": "Ruby Storm",
           "opponentId": "id:1997683",
           "opponentName": "hugofreitas1",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -40553,7 +40555,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -40998,7 +41000,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -41317,7 +41319,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1155358",
           "opponentName": "oosunq",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "C64"
@@ -41342,7 +41344,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -41376,7 +41378,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -41562,7 +41564,7 @@
           "eventId": "12849434",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Devoted Combo",
           "result": "L",
           "round": "F",
@@ -42026,7 +42028,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -42691,7 +42693,7 @@
           "eventId": "12851665",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Ruby Storm",
           "result": "L",
           "round": "SF",
@@ -43460,7 +43462,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -43690,7 +43692,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -45039,7 +45041,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -45447,7 +45449,7 @@
           "opponentDeck": "Tron",
           "opponentId": "id:2702142",
           "opponentName": "Nuserdog",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "F",
           "tier": "C64"
@@ -45458,8 +45460,8 @@
           "eventId": "12852742",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentName": "MeninooNey",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -45471,7 +45473,7 @@
           "opponentDeck": "The Rock",
           "opponentId": "id:280778",
           "opponentName": "pokerswizard",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -45496,7 +45498,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -46211,6 +46213,7 @@
       "points": 3,
       "premierPoints": 0,
       "priorNames": [
+        "onlybrews",
         "Moe12"
       ],
       "rank": 343,
@@ -46382,7 +46385,7 @@
           "eventId": "12852747",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Dimir Midrange",
           "result": "W",
           "round": "F",
@@ -47556,7 +47559,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -47963,7 +47966,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -50246,7 +50249,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2391802",
           "opponentName": "TonyScapone",
           "pilotDeck": "Belcher",
@@ -52212,7 +52215,7 @@
           "eventId": "12851612",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Amulet Titan",
           "result": "W",
           "round": "SF",
@@ -52474,7 +52477,7 @@
           "eventId": "12852769",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Living End",
           "result": "L",
           "round": "F",
@@ -53657,7 +53660,7 @@
           "eventId": "12851716",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Prowess",
           "result": "L",
           "round": "SF",
@@ -54174,7 +54177,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:449733",
           "opponentName": "levelerlover",
           "pilotDeck": "Goryo's Vengeance",
@@ -54186,7 +54189,7 @@
           "date": "2026-08-29",
           "event": "Modern Showcase Challenge",
           "eventId": "12853163",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:254536",
           "opponentName": "rastaf",
           "pilotDeck": "Goryo's Vengeance",
@@ -54224,7 +54227,7 @@
           "eventId": "12851665",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Goryo's Vengeance",
           "result": "W",
           "round": "F",
@@ -55106,7 +55109,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -55764,7 +55767,7 @@
           "eventId": "12852747",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Dimir Control",
           "result": "L",
           "round": "QF",
@@ -56104,7 +56107,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -56623,7 +56626,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -59541,7 +59544,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -59645,7 +59648,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -60984,7 +60987,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -61432,7 +61435,7 @@
           "eventId": "12849434",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Ruby Storm",
           "result": "L",
           "round": "QF",
@@ -63249,7 +63252,7 @@
           "eventId": "12847674",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Boros Burn",
           "result": "L",
           "round": "QF",
@@ -64522,7 +64525,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -64652,7 +64655,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -65238,7 +65241,7 @@
         },
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -66408,7 +66411,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:3220713",
           "opponentName": "DskBayWolf",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "QF",
           "tier": "modern-showcase-challenge"
@@ -66433,7 +66436,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Showcase Challenge",
           "eventClass": "Premier",
           "eventId": "12853163",
@@ -66848,7 +66851,7 @@
         },
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -66881,7 +66884,7 @@
           "eventId": "12848199",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Devoted Combo",
           "result": "W",
           "round": "QF",
@@ -67188,7 +67191,7 @@
           "date": "2026-08-29",
           "event": "Modern Challenge 64",
           "eventId": "12853192",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:659635",
           "opponentName": "elvin7",
           "pilotDeck": "Affinity",
@@ -68077,7 +68080,7 @@
         },
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",
@@ -68170,7 +68173,7 @@
           "eventId": "12849434",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Mono-Green Eldrazi",
           "result": "L",
           "round": "SF",
@@ -68418,7 +68421,7 @@
           "opponentDeck": "Domain Zoo",
           "opponentId": "id:2822464",
           "opponentName": "Pleyboy",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -68430,7 +68433,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1155358",
           "opponentName": "oosunq",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -68455,7 +68458,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -69303,7 +69306,7 @@
           "eventId": "12847674",
           "opponentDeck": "Living End",
           "opponentId": "id:2903591",
-          "opponentName": "MeninoNey",
+          "opponentName": "MeninooNey",
           "pilotDeck": "Goryo's Vengeance",
           "result": "W",
           "round": "SF",
@@ -69495,7 +69498,7 @@
           "opponentDeck": "Goryo's Vengeance",
           "opponentId": "id:1155358",
           "opponentName": "oosunq",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "F",
           "tier": "C64"
@@ -69507,7 +69510,7 @@
           "opponentDeck": "Mono-Green Eldrazi",
           "opponentId": "id:2001916",
           "opponentName": "Darthkid",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -69519,7 +69522,7 @@
           "opponentDeck": "Affinity",
           "opponentId": "id:494270",
           "opponentName": "therock988",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "SF",
           "tier": "C64"
@@ -69544,7 +69547,7 @@
       "results": [
         {
           "date": "2026-08-29",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853192",
@@ -70599,10 +70602,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2265267",
           "opponentName": "caronte1991",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -70611,10 +70614,10 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2621451",
           "opponentName": "SanPop",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -70639,7 +70642,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -70670,7 +70673,7 @@
           "date": "2026-08-23",
           "event": "Modern Challenge 64",
           "eventId": "12852752",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2119308",
           "opponentName": "thodoris17",
           "pilotDeck": "Devoted Combo",
@@ -71023,7 +71026,7 @@
           "date": "2026-08-30",
           "event": "Modern Challenge 64",
           "eventId": "12853202",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2911801",
           "opponentName": "wraaith",
           "pilotDeck": "Broodscale Combo",
@@ -71177,7 +71180,7 @@
       "results": [
         {
           "date": "2026-08-30",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12853202",
@@ -72587,7 +72590,7 @@
       "results": [
         {
           "date": "2026-08-23",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852752",
@@ -72947,10 +72950,10 @@
           "date": "2026-08-22",
           "event": "Modern Challenge 64",
           "eventId": "12852742",
-          "opponentDeck": "NEEDS_MANUAL_REVIEW",
+          "opponentDeck": "nan",
           "opponentId": "id:2537822",
           "opponentName": "Bugsy69",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "W",
           "round": "QF",
           "tier": "C64"
@@ -72962,7 +72965,7 @@
           "opponentDeck": "Tron",
           "opponentId": "id:2702142",
           "opponentName": "Nuserdog",
-          "pilotDeck": "NEEDS_MANUAL_REVIEW",
+          "pilotDeck": "nan",
           "result": "L",
           "round": "SF",
           "tier": "C64"
@@ -72987,7 +72990,7 @@
       "results": [
         {
           "date": "2026-08-22",
-          "deck": "NEEDS_MANUAL_REVIEW",
+          "deck": "nan",
           "event": "Modern Challenge 64",
           "eventClass": "Challenge",
           "eventId": "12852742",

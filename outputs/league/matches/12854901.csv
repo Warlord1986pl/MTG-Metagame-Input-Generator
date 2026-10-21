@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12854901,2026-09-24,C64,Challenge,QF,xfile,2449332,_pba_,2905380,2,1,Broodscale Combo,Goryo's Vengeance
+12854901,2026-09-24,C64,Challenge,QF,MayoDominaria,1112102,Riftbound,3502250,2,1,Jeskai Energy,Tron
+12854901,2026-09-24,C64,Challenge,QF,GigaChadSigmaMale,3085636,simoneromarm,2676235,2,0,Azorius Control,Prowess
+12854901,2026-09-24,C64,Challenge,QF,Mattatoio,3349386,ilGianB1,2358671,2,0,Broodscale Combo,Broodscale Combo
+12854901,2026-09-24,C64,Challenge,SF,GigaChadSigmaMale,3085636,MayoDominaria,1112102,2,0,Azorius Control,Jeskai Energy
+12854901,2026-09-24,C64,Challenge,SF,xfile,2449332,Mattatoio,3349386,2,0,Broodscale Combo,Broodscale Combo
+12854901,2026-09-24,C64,Challenge,F,GigaChadSigmaMale,3085636,xfile,2449332,2,0,Azorius Control,Broodscale Combo

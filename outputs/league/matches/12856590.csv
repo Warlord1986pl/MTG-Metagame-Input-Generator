@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856590,2026-10-17,C16,Challenge,QF,Sam_Lewin,2092528,musasabi,1210536,2,1,Jeskai Energy,Affinity
+12856590,2026-10-17,C16,Challenge,QF,nahuel10,1942357,albert62,1574579,2,1,Azorius Control,Esper Blink
+12856590,2026-10-17,C16,Challenge,QF,manohito,2908947,Imaeda,1304755,2,1,Rakdos Midrange,Rakdos Midrange
+12856590,2026-10-17,C16,Challenge,QF,wild88plk,1393029,Barneygumbal,789613,2,1,Affinity,Esper Blink
+12856590,2026-10-17,C16,Challenge,SF,Sam_Lewin,2092528,wild88plk,1393029,2,0,Jeskai Energy,Affinity
+12856590,2026-10-17,C16,Challenge,SF,nahuel10,1942357,manohito,2908947,2,0,Azorius Control,Rakdos Midrange
+12856590,2026-10-17,C16,Challenge,F,Sam_Lewin,2092528,nahuel10,1942357,2,1,Jeskai Energy,Azorius Control

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856574,2026-10-15,C64,Challenge,QF,rastaf,254536,pedronavaja,3540949,2,1,Rakdos Midrange,Broodscale Combo
+12856574,2026-10-15,C64,Challenge,QF,_ruda_,943535,wizard-adept,2616190,2,1,Rakdos Midrange,Domain Zoo
+12856574,2026-10-15,C64,Challenge,QF,Takayama,3293313,hugofreitas1,1997683,2,1,Boros Energy,Ruby Storm
+12856574,2026-10-15,C64,Challenge,QF,wzanotti,3143515,Redman1034,3363119,2,0,Boros Energy,Esper Blink
+12856574,2026-10-15,C64,Challenge,SF,wzanotti,3143515,Takayama,3293313,2,0,Boros Energy,Boros Energy
+12856574,2026-10-15,C64,Challenge,SF,_ruda_,943535,rastaf,254536,2,0,Rakdos Midrange,Rakdos Midrange
+12856574,2026-10-15,C64,Challenge,F,wzanotti,3143515,_ruda_,943535,2,0,Boros Energy,Rakdos Midrange

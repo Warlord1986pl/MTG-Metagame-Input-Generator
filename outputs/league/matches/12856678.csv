@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856678,2026-10-14,C32,Challenge,QF,Sorathrix,2705240,Tegutten,3294906,2,0,Boros Energy,Yawgmoth
+12856678,2026-10-14,C32,Challenge,QF,Matts,2631782,John1111,2676588,2,0,Affinity,Rakdos Midrange
+12856678,2026-10-14,C32,Challenge,QF,komattaman,2690217,SFDK,3509735,2,0,Rakdos Midrange,Grixis Reanimator
+12856678,2026-10-14,C32,Challenge,QF,AmadeusPro,3148678,SantiMagicOnline,3542947,2,1,Domain Zoo,Goryo's Vengeance
+12856678,2026-10-14,C32,Challenge,SF,komattaman,2690217,Sorathrix,2705240,2,0,Rakdos Midrange,Boros Energy
+12856678,2026-10-14,C32,Challenge,SF,Matts,2631782,AmadeusPro,3148678,2,0,Affinity,Domain Zoo
+12856678,2026-10-14,C32,Challenge,F,komattaman,2690217,Matts,2631782,2,1,Rakdos Midrange,Affinity

@@ -17,13 +17,13 @@ pip install -r requirements.txt
 
 ### Run weekly generation (CLI)
 ```sh
-python src/metagame_input_generator.py --format Modern --history-points 1 --metagame-window-days 14 --my-deck "Domain Zoo" --my-window-days 90 --my-fallback-window-days 180 --rogue-threshold 0.5 --include-challenge-decklist
+python src/metagame_input_generator.py --format Modern --history-points 1 --metagame-window-days 14 --rogue-threshold 0.5 --include-challenge-decklist
 ```
 
 ### PowerShell launchers
 ```powershell
 # Single weekly snapshot
-./run_weekly.ps1 -Format Modern -MyDeck "Domain Zoo"
+./run_weekly.ps1 -Format Modern
 
 # 4 history points anchored to a specific Sunday
 ./run_history_4.ps1 -AnchorSunday 2026-03-15
@@ -72,6 +72,13 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
 | `gui_app.py` | PySide6 desktop GUI wrapping all of the above. QSettings persists backup URL between sessions. |
 | `change_model.py` | Reads/writes the `docs/` CSV config files (aliases, archetype rules, mappings, catalog). |
 | `preset_cli.py` | Interactive terminal CLI with saved state in `.preset_cli_state.json`. |
+| `alias_check.py` | Card-list gate for a deck-alias merge (`check_alias`, `check_window_against_baseline`, `run_alias_checks_for_window`) — see "Deck-alias merge gate" below. |
+| `check_alias_cli.py` | `python src/check_alias_cli.py check-alias --source X --target Y --window YYYY-MM-DD:YYYY-MM-DD` — the manual pre-merge gate, run before adding a row to `deck_aliases.csv`. |
+| `broodscale_rule.py` | TEMPORARY card rule: maindeck with >=1 Basking Broodscale -> Deck `Broodscale Combo` / Archetype `Combo`, over every name-based source. See "Broodscale card rule" below. |
+| `broodscale_rule_cli.py` | `apply [--apply]` (relabel history from cached JSON, dry-run default), `reverse-alias [--apply]` (undo a removed name alias) and `recompute --since YYYY-MM-DD` (rebuild run dirs' challenge + metagame outputs). |
+| `moonshadow_rule.py` | TEMPORARY second card rule: maindeck >=1 Moonshadow + >=1 Dark Matter Manipulator, no Death's Shadow, no blue card -> `Rakdos Midrange` / `Midrange`, applied after Broodscale. See "Moonshadow card rule" below. |
+| `challenge_meta.py` | Meta = share of Challenge Top 32 entries after the card rule; builds the run's metagame-statistics input. See "Challenge-based Meta" below. |
+| `deckdb_input.py` / `deckdb_materials.py` | Input mode `deckdb`: DeckDB export as the only source (K33), working materials. See "Input mode deckdb" below. |
 
 ### Data flow
 
@@ -112,15 +119,157 @@ Resolves one or more MTGO loginids to a single canonical `pilot_id`, so a real p
 | File | Columns | Purpose |
 |---|---|---|
 | `archetype_rules.csv` | `pattern, archetype, match_type, priority` | Maps deck name patterns → archetype labels. `match_type` is `exact`, `contains`, or `regex`. Lower `priority` value = applied first. |
-| `deck_aliases.csv` | `pattern, canonical_name, match_type, priority` | Canonicalizes raw deck names. Same matching semantics as archetype rules. |
+| `deck_aliases.csv` | `pattern, canonical_name, match_type, priority, archetype, comment` | Canonicalizes raw deck names. Same matching semantics as archetype rules. `archetype`/`comment` are optional trailing columns (added 2026-09 for the WBG→Devoted Combo merge) — blank on every pre-existing row, documentation/audit only (not read as an override; actual archetype resolution still runs through `user_deck_mapping.csv`/`challenge_deck_mapping.csv`/`archetype_rules.csv`, which must independently agree — see below). `change_model.py`'s `ALIASES_COLUMNS` includes both so a GUI-driven rewrite of this file never silently truncates them. |
 | `user_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Exact overrides for Meta deck names (applied before alias rules). |
-| `challenge_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Additive overrides for Challenge-only deck names (merged with user mapping at runtime). |
+| `challenge_deck_mapping.csv` | `raw_name, canonical_name, archetype` | Additive overrides for Challenge-only deck names (merged with user mapping at runtime). **Takes precedence over `deck_aliases.csv` for Challenge data** — a raw name present here resolves via `mapped_deck or canonicalize_deck_name(...)`, so editing `deck_aliases.csv` alone does not merge a Challenge deck name; both files must agree (see "Deck-alias merge gate" below). |
+| `alias_check_config.csv` | `key, value` | `min_similarity` (default `0.55`): the maindeck-multiset-similarity cutoff `alias_check.py` uses to verdict a merge safe/partial/dangerous. Config, not code, so a verdict stays inspectable after the fact. |
 | `archetype_catalog.csv` | `archetype` | Known archetype list shown in the GUI's Review Queue dropdown. |
+
+### Deck-alias merge gate
+
+A deck-name alias that collapses one raw name into another canonical deck (e.g. an MTGO color-code
+placeholder like `WBG` folded into `Devoted Combo`) must never be applied on the strength of the
+name alone — the name gives no guarantee every list filed under it is actually the same deck, and a
+bad merge inflates that deck's share and skews the whole field's rogue/median cuts.
+
+- `python src/check_alias_cli.py check-alias --source WBG --target "Devoted Combo" --window 2026-08-31:2026-09-13`
+  is the **manual pre-merge gate** — run it against current (not-yet-merged) history before adding
+  a row to `deck_aliases.csv`. It compares every source-name list's maindeck card multiset (basic
+  lands excluded — the same scope `challenge_mtgo_source.multiset_similarity()` uses for its own
+  nearest-neighbor classifier, reused here rather than a second mechanism) against every
+  target-name list and prints median/min/max similarity, the cards common to every list compared,
+  and an explicit verdict (`safe` / `partial` / `dangerous`) against `docs/alias_check_config.csv`'s
+  `min_similarity`. Exit code is non-zero unless the verdict is `safe`.
+- Once an alias is live, ingestion resolves the raw name away immediately, so no row ever has
+  `Deck == "WBG"` again — the *auto* gate (`run_alias_checks_for_window`, wired into
+  `run_generation()` right after the Challenge history sync) therefore checks differently: for
+  every alias in `deck_aliases.csv` whose `pattern != canonical_name` (a true merge, not a
+  self-mapping), it compares **this window's** lists under the canonical name against a reference
+  library of that canonical name's lists from **before** the window (`check_window_against_baseline`
+  in `alias_check.py`) — catching drift going forward without needing the vanished raw label. This
+  always writes `alias_report_<window>.csv` into the run dir, even when empty (empty = every
+  checked list matched; a non-empty file is never "nothing to see", and a list below threshold must
+  never be silently absorbed).
+- Applying a merge touches **three** files that must agree, not one: `docs/deck_aliases.csv` (the
+  canonicalization rule + `archetype`/`comment` documentation), and — because
+  `user_deck_mapping.csv`/`challenge_deck_mapping.csv` are applied *before* `deck_aliases.csv` and
+  set canonical name + archetype directly — `docs/user_deck_mapping.csv` and
+  `docs/challenge_deck_mapping.csv`, if the raw name already has a row there (as `WBG` did, mapping
+  to itself with archetype `Midrange`). Editing `deck_aliases.csv` alone silently does nothing for a
+  raw name that already has a higher-precedence mapping row.
+- Retroactively relabeling an **already-synced** history window (so a trend line doesn't have a raw
+  name still sitting mid-history) cannot go through a normal resync: `sync_challenge_history_window`
+  treats any already-resolved `Deck` value as sticky and will not overwrite it with a fresh
+  classification, on purpose (see the Pilot-freezing note below for why). The sanctioned path is the
+  same one used for a human Review Queue correction, `apply_challenge_review_selections()` (one
+  `{event_id, pilot, resolved_deck}` selection per affected row) — it re-derives `Archetype` through
+  the normal alias/mapping/rules pipeline and is safe to run across the full history (not just the
+  window under test), since it only touches rows matched by `(EventID, Pilot)` and never re-fetches
+  anything over the network.
+
+### Broodscale card rule (TEMPORARY, until the card classifier exists)
+
+- Since 2026-10-12, any Challenge/Premier entry whose **maindeck** has >= 1 Basking Broodscale is
+  `Broodscale Combo` / `Combo`, whatever the submitted name (Eldrazi Ramp, Eldrazi, color codes...).
+  Sideboard copies never count. It beats mappings, aliases, the classifier, a Review Queue decision
+  and the sticky resolved value in history.
+- Applied in `build_challenge_dataset` (fresh rows + classifier library) and re-asserted on the
+  persisted history right after every sync in `run_generation` (`apply_broodscale_rule_to_history`,
+  cached JSON only, touches Deck/Archetype only, never Pilot/LoginID).
+- The pre-rule label is frozen in `outputs/broodscale_override_ledger_<format>.csv` on first sighting;
+  each run writes `statistics/challenges/broodscale_override_<window>.csv` (OVERRIDE rows, SUMMARY per
+  submitted name, and two report-only CONTROL lists: Blade of the Bloodchief without Broodscale, and
+  `Broodscale Combo` without Broodscale -- the latter are name-mapped, e.g. `Eldrazi`, and are NOT moved).
+- The `Eldrazi` -> `Broodscale Combo` name alias was removed from `docs/*.csv` (2026-10-12); the 14
+  history entries it had put there without a Broodscale were relabeled `Eldrazi` (12 by their
+  MTGGoldfish name, 2 collision-event rows by the classifier) via `broodscale_rule_cli.py reverse-alias`,
+  recorded in `outputs/broodscale_reverse_alias_ledger_<format>.csv` and the log's
+  `REVERSE_REMOVED_NAME_ALIAS` section.
+- Remove together with this section once a general card classifier replaces it.
+
+### Moonshadow card rule (TEMPORARY, since 2026-10-19)
+
+- `moonshadow_rule.py`: a Challenge/Premier entry whose **maindeck** has >= 1 Moonshadow AND >= 1
+  Dark Matter Manipulator, **no** Death's Shadow and **no** blue card is `Rakdos Midrange` /
+  `Midrange`, whatever the submitted name (Rakdos Aggro, BR, ...). Death's Shadow lists and blue
+  lists keep their name (`EXCLUDED` section of the log); a list with only one of the two cards is
+  untouched (`CONTROL_DMM_WITHOUT_MOONSHADOW`). "Blue" = a maindeck card with `COLOR_BLUE` in its
+  mtgo.com `colors`; mtgo.com reports every land as COLORLESS, so a blue dual land alone is not seen.
+- Always after the Broodscale rule (`card_rule_deck()` for fresh rows; in `run_generation` the
+  history pass runs right after `apply_broodscale_rule_to_history`). Own ledger
+  `outputs/rakdos_override_ledger_<format>.csv` (tracked), own per-window log
+  `statistics/challenges/rakdos_override_<window>.csv`.
+- `challenge_meta.py` blanks Videre winrate for `Rakdos Midrange` and `Rakdos Aggro`
+  (`label_mixed_by_card_rule`, Importance `meta_only`) in any window where the rule moved >= 1 entry.
+- Offline: `python src/broodscale_rule_cli.py apply-moonshadow [--apply]`, then
+  `recompute --since 2026-10-05 --trend-only-since 2026-09-21 --trend-weeks 12` (W40/W41 only get
+  their trend-history row rebuilt in a temp dir -- the earliest rule list is 2026-10-02 -- their
+  published files stay as they were).
+- Remove together with the Broodscale section once the card classifier exists.
+
+### Challenge-based Meta (`challenge_meta.py`, since 2026-10-12)
+
+- With `--include-challenge-decklist`, metagame statistics (`deck_analysis*`, encounter, record,
+  trend) no longer use the Videre per-name Meta: `Meta` = the deck's share of the window's Challenge
+  Top 32 entries after the card rule (`MetaSource = challenge_top32_cardrule`); the Videre value stays
+  in `Meta_Videre`, control only. For W41 the two agreed at r = 0.998 before the rule. Input file:
+  `<run_dir>/metagame_input_challenge_top32.xlsx` (+ `.csv`, which challenge statistics also read for
+  Meta Share % / Universe A). Weekly history: `outputs/metagame_history_challenge_top32_<format>.csv`,
+  separate from the Videre `metagame_history_<format>.csv` so trends never mix sources; it starts at
+  W30 (2026-07-13, first window with EventIDs/decklists).
+- Winrate still comes from Videre (per submitted name, can't be split by cards): for `Broodscale Combo`
+  and `Eldrazi Ramp` in any window where the rule moved >= 1 Challenge entry, Winrate/Game Count/record
+  probabilities are NaN with `WR_Flag = label_mixed_by_card_rule`; decks with no Videre row get
+  `no_videre_winrate`. A NaN winrate gives Importance from Meta alone (weight rescaled to 1,
+  `Importance_Flag = meta_only`; Quartile/Prep Priority computed normally from it), leaves Performance
+  Label blank, is excluded from the archetype's weighted winrate (named in its
+  `WR_Flag`), and is not drawn on the expected-wins chart (footnote instead).
+- No silent fallback: if the Challenge-based Meta can't be built (e.g. NEEDS_MANUAL_REVIEW rows),
+  metagame statistics are skipped with an ERROR. Without `--include-challenge-decklist` the old Videre
+  path is unchanged. `--skip-league` skips the league/site update; `--trend-weeks N` sets the trend
+  window (default 4; the published charts use 12).
+- `python src/broodscale_rule_cli.py recompute --since 2026-07-13 --trend-weeks 12` rebuilds all of this
+  offline for already-generated run dirs.
+
+### Input mode "deckdb" (`deckdb_input.py`, `deckdb_materials.py`, since 2026-10-21, WORKING)
+
+- DeckDB decisions K33 (DeckDB is the only source) and K36 (conversion, not winrate; pilot measures;
+  format period). Spec: `docs/deckdb_metodologia.md` (accepted 2026-10-21 with decisions, see there).
+  `python src/metagame_input_generator.py --input-mode deckdb --as-of 2026-10-18 --trend-weeks 12`
+  reads the paths in `docs/deckdb_config.csv` (`export_path` required; `format_events_path` = DeckDB
+  `rules/format_events.yaml`, read only; `cards_path` = `deckdb export-cards` output, enables the card
+  layer) and writes only `outputs/deckdb_working/WORKING_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
+  fetch, no mapping/alias/archetype rule, no card rule, no history/league/site write. Default
+  `--input-mode legacy` is the unchanged pipeline (W42 rerun identical except the XML `generated_at`).
+- Three time levels, one subdirectory each: `week_<YYYY-Www>` (last complete ISO week + trend of
+  N disjoint ISO weeks), `month_<YYYY-MM>[_incomplete]` (+ trophies, D2 variants),
+  `format_period_<start>_to_<as-of>` (conversion vs. the common baseline with a pilot-bootstrap
+  interval only at >= 10 pilots, trophies, pilot measures for decks only). Winrate is gone (K36);
+  the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
+- Card layer (`deckdb_cards.py`, only when `cards_path` is set): `cards_<M1>_vs_<M2>[_incomplete]` --
+  presence per (deck, zone, oracle_id) per month, basics (`is_basic`) excluded; change between the two
+  last months for decks with >= 30 lists and >= 10 pilots in both, pilot bootstrap (no pairing), BH
+  q = 0.10 over one family (all decks), reported at |change| >= 10 pp; the within-variant component
+  has its own bootstrap and its own BH family (q = 0.10; FDR controlled separately per category):
+  "zmiana list" = |within| >= 10 pp and significant there, any other reported change = "zmiana
+  składu talii". 0% in
+  one month is never tested: gone reported if (1 - share of month-1 pilots playing it)^(month-2
+  pilots) < 0.05 and >= 3 pilots in month 1; new card / first appearance reported with >= 2 pilots;
+  the rest are observations. Pilot list-change distributions. The card file must match the
+  assignment lists 1:1, its name-match version and its `data_version`, checked before anything is
+  written.
+- Refuses (`DeckdbInputError`, exit 2) an assignment export without a single non-empty
+  `data_version` (always, card layer or not; exports from DeckDB c4958cb on), a file with > 1
+  `rules_version` and any period ending after
+  the file's last / starting before its first `event_date`; all periods are checked before writing.
+- Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the
+  glossary (`Glossary` sheet, `GLOSSARY.md`, chart footer); all materials in English, charts drawn by the legacy chart functions (optional parameters, legacy defaults unchanged). No loginid/player in any material.
+  Legacy materials without a counterpart: `deckdb_materials.OMITTED_MATERIALS` (`Omitted` sheet).
 
 ### Key design decisions
 
 - `normalize_name()` lowercases and collapses whitespace — all rule comparisons go through it.
-- The `My Deck Winrate` column is imputed to `0.5` when no matchup data exists; imputed rows get a yellow fill in XLSX. 180-day fallback rows get green fill.
+- No "my deck" matchup-winrate column exists anywhere in the pipeline (removed 2026-09; the old `My Deck Winrate` column silently imputed `0.5` for zero-game rows, indistinguishable from a real 50% result). Missing data is `None`/blank, never a value that could also be read as a real result.
 - Rogue grouping: decks with `Meta < rogue_threshold` (default 0.5%) are collapsed into a single "Rogue" row in the `_rogue_grouped` outputs.
 - `change_model.py` creates `.bak` backups of CSV files before writing to prevent data loss from GUI edits.
 - The GUI saves/restores settings (backup URL, form fields) via `QSettings` with org `GitHubCopilot` / app `MTG Metagame Studio`.

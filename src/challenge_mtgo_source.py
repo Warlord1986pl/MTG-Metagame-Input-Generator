@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
+from urllib.error import HTTPError, URLError
 
 import pandas as pd
 
@@ -31,6 +32,7 @@ try:
         canonicalize_deck_name,
         classify_archetype,
         _parse_single_challenge,
+        _search_mtggoldfish_challenge_urls,
         mapping_lookup,
         DeckAliasRule,
         ArchetypeRule,
@@ -45,11 +47,17 @@ except ModuleNotFoundError:
         canonicalize_deck_name,
         classify_archetype,
         _parse_single_challenge,
+        _search_mtggoldfish_challenge_urls,
         mapping_lookup,
         DeckAliasRule,
         ArchetypeRule,
         UserDeckMapping,
     )
+
+try:
+    from moonshadow_rule import blue_main_from_decklist, card_rule_deck
+except ModuleNotFoundError:
+    from .moonshadow_rule import blue_main_from_decklist, card_rule_deck
 
 BASIC_LAND_NAMES = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 
@@ -57,6 +65,7 @@ PREMIER_SUFFIXES = {
     "showcase-challenge",
     "showcase-qualifier",
     "rc-super-qualifier",
+    "rc-qualifier",
     "super-qualifier",
     "qualifier",
     "champions-showcase",
@@ -337,6 +346,41 @@ def normalize_card_name(name: str) -> str:
     return re.sub(r"\s+", " ", str(name).strip()).lower()
 
 
+def _event_date_from_json(data: dict) -> Optional[str]:
+    """The event's own date (YYYY-MM-DD) from its JSON: site_name's date part, else starttime.
+
+    The mtgo.com month-listing href date is usually identical, but has been seen to disagree for
+    a freshly published event (12854940: listed as 2026-09-27, but site_name/starttime both say
+    2026-09-28) -- trusting the listing put a Monday event into the previous Sunday's window.
+    """
+    event_id = str(data.get("event_id", "") or "")
+    site_name = str(data.get("site_name", "") or "")
+    if event_id and site_name.endswith(event_id):
+        m = re.search(r"(\d{4}-\d{2}-\d{2})$", site_name[: -len(event_id)])
+        if m:
+            return m.group(1)
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", str(data.get("starttime", "") or ""))
+    return m.group(1) if m else None
+
+
+def _reconcile_event_date(
+    c: "MtgoRegistryEvent", data: dict, start_date: date, end_date: date, emit: Callable[[str], None]
+) -> bool:
+    """Correct c.date from the event JSON when the listing disagrees. False = outside the window."""
+    json_date = _event_date_from_json(data)
+    if not json_date or json_date == c.date:
+        return True
+    emit(
+        f"[mtgo-dataset] WARN event {c.event_id}: mtgo.com listing says {c.date}, event JSON says "
+        f"{json_date} -- using the event JSON date"
+    )
+    c.date = json_date
+    if not (start_date.isoformat() <= json_date <= end_date.isoformat()):
+        emit(f"[mtgo-dataset] event {c.event_id} ({json_date}) is outside {start_date}..{end_date} -- excluded")
+        return False
+    return True
+
+
 def fetch_mtgo_event_json(
     event_id: str, url: str, cache_dir: Path, log: Optional[Callable[[str], None]] = None
 ) -> dict:
@@ -377,6 +421,9 @@ class MtgoEventDeck:
     player: str
     place: int
     signature: Dict[str, int]
+    # any maindeck card with blue in its mtgo.com `colors` (lands are always COLORLESS there);
+    # read only by the Moonshadow card rule
+    blue_main: bool = False
 
 
 def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
@@ -413,7 +460,10 @@ def parse_mtgo_event(data: dict) -> List[MtgoEventDeck]:
                 continue
             qty = int(c.get("qty", 1))
             sig[name] = sig.get(name, 0) + qty
-        decks.append(MtgoEventDeck(loginid=loginid, player=d.get("player", ""), place=place, signature=sig))
+        decks.append(MtgoEventDeck(
+            loginid=loginid, player=d.get("player", ""), place=place, signature=sig,
+            blue_main=blue_main_from_decklist(d),
+        ))
 
     expected_ranks = set(range(1, len(decks) + 1))
     ranks_set = set(rank_by_login.values())
@@ -551,6 +601,14 @@ class ChallengeEventRow:
     archetype: str
     pilot: str
     loginid: str
+    # The classifier's own nearest-neighbor guess, populated only when needs_review -- i.e. Deck
+    # is NEEDS_MANUAL_REVIEW. Purely informational, never fed back into Deck/Archetype: the Review
+    # Queue / manual-confirmation workflow is untouched by this. See classify_deck's nearest_label.
+    deck_guess: str = ""
+    # Label the name-based pipeline (MTGGoldfish name -> mapping/alias, classifier, or an earlier
+    # resolution) would have given this entry, set only when broodscale_rule overrode it. Feeds the
+    # override ledger; never written to history itself.
+    pre_rule_deck: str = ""
 
 
 @dataclass
@@ -645,6 +703,20 @@ def _classify_event_decks(
     rows: List[ChallengeEventRow] = []
     for d in sorted(decks, key=lambda x: x.place):
         known = resolved.get((str(c.event_id).strip(), str(d.player).strip()))
+        forced = card_rule_deck(d.signature, d.blue_main)
+        if forced is not None:
+            # Card rule beats every name-based source, including an earlier resolution.
+            if known is not None:
+                pre = known[0]
+            elif len(library) >= 2:
+                pre = classify_deck(d, library).predicted_label or NEEDS_MANUAL_REVIEW
+            else:
+                pre = NEEDS_MANUAL_REVIEW
+            rows.append(ChallengeEventRow(
+                place=d.place, deck=forced[0], archetype=forced[1], pilot=d.player, loginid=d.loginid,
+                pre_rule_deck=pre,
+            ))
+            continue
         if known is not None:
             deck_label, archetype = known
             rows.append(ChallengeEventRow(place=d.place, deck=deck_label, archetype=archetype, pilot=d.player, loginid=d.loginid))
@@ -662,7 +734,7 @@ def _classify_event_decks(
             )
             rows.append(ChallengeEventRow(
                 place=d.place, deck=NEEDS_MANUAL_REVIEW, archetype=NEEDS_MANUAL_REVIEW,
-                pilot=d.player, loginid=d.loginid,
+                pilot=d.player, loginid=d.loginid, deck_guess=result.nearest_label or "",
             ))
         else:
             deck_label = result.predicted_label or NEEDS_MANUAL_REVIEW
@@ -743,6 +815,8 @@ def build_challenge_dataset(
     for c in registry_challenge_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                continue
             mtgo_decks_by_event[c.event_id] = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
@@ -792,33 +866,112 @@ def build_challenge_dataset(
             archetype = archetype_for(deck_label, raw_deck)
             mtgo_deck = mtgo_by_pilot.get(normalize_name(pilot))
             loginid = mtgo_deck.loginid if mtgo_deck else ""
-            rows.append(ChallengeEventRow(place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=loginid))
+            pre_rule_deck = ""
+            forced = card_rule_deck(mtgo_deck.signature, mtgo_deck.blue_main) if mtgo_deck is not None else None
+            if forced is not None:
+                # canonical (post-mapping/alias) label = what the sheet would have shown
+                pre_rule_deck = deck_label
+                deck_label, archetype = forced
+            rows.append(ChallengeEventRow(
+                place=place, deck=deck_label, archetype=archetype, pilot=pilot, loginid=loginid,
+                pre_rule_deck=pre_rule_deck,
+            ))
             if mtgo_deck is not None:
                 library.append((deck_label, mtgo_deck.signature))
         event_rows[c.event_id] = rows
 
+    def fetch_goldfish_roster(challenge_info: dict) -> Optional[pd.DataFrame]:
+        # MTGGoldfish doesn't mirror mtgo.com 1:1: seen 2026-10-19, the C32 2026-10-16
+        # (12856761) was never published there at all (its dated slug 404s) while the C32
+        # 2026-10-17 (12856594) was published twice as "... (1)". A 404 therefore means "no
+        # MTGGoldfish roster for this tier/date", not a transient error -- the caller sends those
+        # events down the classifier path (mtgo.com JSON + nearest neighbor + Review Queue), the
+        # same one collision-losing events already take. Any other HTTP error still raises.
+        try:
+            _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
+        except HTTPError as exc:
+            if exc.code != 404:
+                raise
+            return None
+        return mg_df
+
+    def label_from_goldfish_search(size: int, dt: str, pending: List[MtgoRegistryEvent]) -> List[MtgoRegistryEvent]:
+        # Second same-tier same-day events (MTGGoldfish "... (1)") and events MTGGoldfish filed
+        # under the neighbouring day have no reachable dated slug, only a numeric
+        # /tournament/<id> page -- found via its tournament search for dt +-1 day. Each page is
+        # matched against the still-unlabeled events by roster overlap (resolve_ambiguous_event,
+        # same thresholds as collisions); pages that match none of them (other events,
+        # MTGGoldfish's own duplicates) are skipped, never guessed. Returns what's still unlabeled.
+        remaining = list(pending)
+        if not remaining:
+            return remaining
+        day = date.fromisoformat(dt)
+        try:
+            urls = _search_mtggoldfish_challenge_urls(format_name, size, day - timedelta(days=1), day + timedelta(days=1))
+        except (HTTPError, URLError, OSError) as exc:
+            emit(f"[mtgo-dataset] WARN MTGGoldfish tournament search failed for C{size} {dt}: {exc}")
+            return remaining
+        for url in urls:
+            if not remaining:
+                break
+            info = {"challenge_size": size, "event_date": dt, "mtgo_url": remaining[0].url, "mtggoldfish_url": url}
+            try:
+                mg_df = fetch_goldfish_roster(info)
+            except RuntimeError:
+                continue
+            if mg_df is None:
+                continue
+            try:
+                eid = resolve_ambiguous_event(
+                    mg_df["Pilot"].tolist(), [e.event_id for e in remaining], mtgo_decks_by_event
+                )
+            except ChallengeSourceError:
+                continue
+            ev = next(e for e in remaining if e.event_id == eid)
+            ingest_labeled_event(ev, mg_df, mtgo_decks_by_event[eid])
+            remaining.remove(ev)
+            emit(f"[mtgo-dataset] C{size} {dt} ({eid}): labeled from MTGGoldfish {url}")
+        return remaining
+
+    unresolved_events: List[MtgoRegistryEvent] = []
     for c in clean:
         challenge_info = {"slug": c.slug, "challenge_size": c.size, "event_date": c.date, "mtgo_url": c.url}
-        _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
+        mg_df = fetch_goldfish_roster(challenge_info)
+        if mg_df is None:
+            emit(f"[mtgo-dataset] WARN clean C{c.size} {c.date} ({c.event_id}): no MTGGoldfish dated page (404)")
+            if label_from_goldfish_search(c.size, c.date, [c]):
+                unresolved_events.append(c)
+                emit(f"[mtgo-dataset] clean C{c.size} {c.date} ({c.event_id}): needs classification from mtgo.com decklists")
+            continue
         ingest_labeled_event(c, mg_df, mtgo_decks_by_event[c.event_id])
         emit(f"[mtgo-dataset] clean C{c.size} {c.date} ({c.event_id}): labeled from MTGGoldfish")
 
-    unresolved_events: List[MtgoRegistryEvent] = []
     for (size, dt), evs in ambiguous.items():
         event_ids = [e.event_id for e in evs]
         challenge_info = {"slug": evs[0].slug, "challenge_size": size, "event_date": dt, "mtgo_url": evs[0].url}
-        _event_info, mg_df = _parse_single_challenge(challenge_info, format_name)
+        mg_df = fetch_goldfish_roster(challenge_info)
+        if mg_df is None:
+            emit(f"[mtgo-dataset] WARN collision C{size} {dt}: no MTGGoldfish dated page (404) for {event_ids}")
+            remaining = label_from_goldfish_search(size, dt, list(evs))
+            if remaining:
+                emit(
+                    f"[mtgo-dataset] collision C{size} {dt}: remaining {[e.event_id for e in remaining]} "
+                    "need classification"
+                )
+            unresolved_events.extend(remaining)
+            continue
         mg_pilots = mg_df["Pilot"].tolist()
         winner_eid = resolve_ambiguous_event(mg_pilots, event_ids, mtgo_decks_by_event)
         winner_event = next(e for e in evs if e.event_id == winner_eid)
         ingest_labeled_event(winner_event, mg_df, mtgo_decks_by_event[winner_eid])
-        emit(
-            f"[mtgo-dataset] collision C{size} {dt}: MTGGoldfish roster resolved to event {winner_eid}; "
-            f"remaining {[eid for eid in event_ids if eid != winner_eid]} need classification"
-        )
-        for e in evs:
-            if e.event_id != winner_eid:
-                unresolved_events.append(e)
+        emit(f"[mtgo-dataset] collision C{size} {dt}: MTGGoldfish roster resolved to event {winner_eid}")
+        remaining = label_from_goldfish_search(size, dt, [e for e in evs if e.event_id != winner_eid])
+        if remaining:
+            emit(
+                f"[mtgo-dataset] collision C{size} {dt}: remaining {[e.event_id for e in remaining]} "
+                "need classification"
+            )
+        unresolved_events.extend(remaining)
 
     review_items: List[ReviewItem] = []
     for c in unresolved_events:
@@ -841,6 +994,8 @@ def build_challenge_dataset(
     for c in registry_premier_events:
         try:
             data = fetch_mtgo_event_json(c.event_id, c.url, cache_dir, log=log)
+            if not _reconcile_event_date(c, data, start_date, end_date, emit):
+                continue
             decks = parse_mtgo_event(data)
             c.player_count = _extract_player_count(data)
         except ChallengePendingError as exc:
@@ -946,6 +1101,55 @@ def write_premier_events_csv(
     if log:
         log(f"[premier] {len(rows)} event(s) -> {path}")
     return path
+
+
+def refresh_premier_events_csv(
+    path: Path, premier_history_csv: Path, log: Optional[Callable[[str], None]] = None
+) -> int:
+    """Rewrite winner_deck/top8_decks of an existing premier_events_*.csv from *premier_history_csv*.
+
+    write_premier_events_csv runs before the Review Queue, so a premier event with a place-1 or
+    borderline deck is written with NEEDS_MANUAL_REVIEW and stays that way after the human
+    correction lands in premier_history -- this brings the run-dir file in line with history.
+    Only event_ids present in history are touched; a row still NEEDS_MANUAL_REVIEW in history stays
+    NEEDS_MANUAL_REVIEW here. Returns the number of event rows whose content changed.
+    """
+    if not path.exists() or not premier_history_csv.exists():
+        return 0
+    events = pd.read_csv(path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    hist = pd.read_csv(premier_history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    if events.empty or hist.empty:
+        return 0
+    hist["EventID"] = hist["EventID"].str.strip().str.replace(r"\.0$", "", regex=True)
+    hist["_place"] = pd.to_numeric(hist["Place"], errors="coerce")
+
+    changed = 0
+    for i, ev in events.iterrows():
+        ev_hist = hist[hist["EventID"] == str(ev["event_id"]).strip()].dropna(subset=["_place"])
+        if ev_hist.empty:
+            continue
+        rows = [
+            ChallengeEventRow(
+                place=int(r["_place"]), deck=r["Deck"], archetype=r["Archetype"], pilot=r["Pilot"],
+                loginid=r.get("LoginID", ""),
+            )
+            for _, r in ev_hist.iterrows()
+        ]
+        winner = next((r for r in rows if r.place == 1), None)
+        new_winner_deck = winner.deck if winner else ""
+        new_winner_pilot = winner.pilot if winner else ""
+        new_top8 = _format_top8(rows)
+        if (ev["winner_deck"], ev["winner_pilot"], ev["top8_decks"]) != (new_winner_deck, new_winner_pilot, new_top8):
+            events.at[i, "winner_deck"] = new_winner_deck
+            events.at[i, "winner_pilot"] = new_winner_pilot
+            events.at[i, "top8_decks"] = new_top8
+            changed += 1
+
+    if changed:
+        events.to_csv(path, index=False, encoding="utf-8-sig")
+    if log:
+        log(f"[premier] refreshed {changed} event(s) from {premier_history_csv.name} -> {path}")
+    return changed
 
 
 @dataclass
@@ -1087,6 +1291,7 @@ def verify_registry_against_history(
     end_date: date,
     history_csv: Path,
     log: Optional[Callable[[str], None]] = None,
+    cache_dir: Optional[Path] = None,
 ) -> CompletenessSummary:
     """Build the mtgo.com registry for the window and diff it against what EventIDs are already
     present in *history_csv* -- one cheap registry-index fetch (no per-event decklist fetch), so
@@ -1104,6 +1309,7 @@ def verify_registry_against_history(
     registry_premier = [r for r in registry if r.kind == "premier"]
 
     present_ids: set = set()
+    hist_window = pd.DataFrame()
     if history_csv.exists():
         hist = pd.read_csv(history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
         if not hist.empty and "EventID" in hist.columns:
@@ -1112,6 +1318,63 @@ def verify_registry_against_history(
                 fmt_norm = normalize_name(format_name)
                 hist = hist[hist["Format"].astype(str).apply(normalize_name) == fmt_norm]
             present_ids = set(hist["EventID"].unique())
+            if "EventDate" in hist.columns:
+                hist_dates = pd.to_datetime(hist["EventDate"], errors="coerce").dt.date
+                hist_window = hist[((hist_dates >= start_date) & (hist_dates <= end_date)).fillna(False)]
+
+    # A listed event missing from history may just be mis-dated on the mtgo.com listing (see
+    # _event_date_from_json): check its own JSON -- only for these few, so the common path stays one
+    # registry fetch -- and drop it if it actually falls outside the window.
+    if cache_dir is not None:
+        kept = []
+        for r in registry_challenge:
+            if r.event_id not in present_ids:
+                try:
+                    data = fetch_mtgo_event_json(r.event_id, r.url, cache_dir, log=log)
+                    if not _reconcile_event_date(r, data, start_date, end_date, log or (lambda _m: None)):
+                        continue
+                except Exception:
+                    pass  # unverifiable -> stays listed as MISSING (fail closed)
+            kept.append(r)
+        registry_challenge = kept
+
+        # The listing's dates also drift between two fetches minutes apart (W42 recompute,
+        # 2026-10-19: Showcase 12856566 listed 2026-10-16, its JSON says 10-17): every event whose
+        # JSON is already cached gets its date from it (local file only, no network).
+        def _json_dated(events: List[MtgoRegistryEvent]) -> List[MtgoRegistryEvent]:
+            out = []
+            for r in events:
+                cached = cache_dir / f"{r.event_id}.json"
+                if cached.exists():
+                    data = json.loads(cached.read_text(encoding="utf-8"))
+                    if not _reconcile_event_date(r, data, start_date, end_date, log or (lambda _m: None)):
+                        continue
+                out.append(r)
+            return out
+
+        registry_challenge = _json_dated(registry_challenge)
+        registry_premier = _json_dated(registry_premier)
+
+    # STATUS must count the same EventIDs as the per-tier sheets, which are built from
+    # history_csv: an in-window history event the listing doesn't show this time (W42 recompute,
+    # 2026-10-19: 12856761, C32 2026-10-16, absent -> RegistryCount 23 / C32 12 next to 24 / 13 in
+    # the sheets) is added from history instead of silently vanishing from the counts.
+    if not hist_window.empty:
+        listed = {r.event_id for r in registry_challenge}
+        format_slug_hist = _format_slug_for_url(format_name)
+        for eid, g in hist_window.groupby("EventID"):
+            if not eid or eid in listed:
+                continue
+            tier = pd.to_numeric(g["Tier"], errors="coerce").dropna()
+            size = int(tier.iloc[0]) if not tier.empty else None
+            ev_date = str(g["EventDate"].iloc[0])
+            registry_challenge.append(MtgoRegistryEvent(
+                event_id=eid, date=ev_date, slug=f"{format_slug_hist}-challenge-{size}", kind="challenge",
+                size=size, url="",
+            ))
+            if log:
+                log(f"[verify] WARN event {eid} (C{size} {ev_date}) is in history but not on the mtgo.com "
+                    "listing this time -- counted from history")
 
     fetched = [r for r in registry_challenge if r.event_id in present_ids]
     missing = [
@@ -1265,6 +1528,8 @@ def rescan_history_for_unresolved(
         return []
     hist = pd.read_csv(history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
     hist["EventID"] = hist["EventID"].astype(str).str.strip().str.replace(r"\.0$", "", regex=True)
+    if "DeckGuess" not in hist.columns:
+        hist["DeckGuess"] = ""
     unresolved = hist[hist["Deck"] == NEEDS_MANUAL_REVIEW]
     if unresolved.empty:
         return []
@@ -1282,6 +1547,7 @@ def rescan_history_for_unresolved(
 
     review_items: List[ReviewItem] = []
     auto_resolved = 0
+    guesses_updated = 0
 
     for event_id, group in unresolved.groupby("EventID"):
         if not event_id:
@@ -1323,6 +1589,12 @@ def rescan_history_for_unresolved(
                         url=url, format_name=format_name, kind=kind,
                     )
                 )
+                # Purely informational (see ChallengeEventRow.deck_guess) -- never touches Deck/
+                # Archetype, so this can never bypass the Review Queue's manual-confirmation gate.
+                new_guess = result.nearest_label or ""
+                if str(hist.loc[idx, "DeckGuess"]) != new_guess:
+                    hist.loc[idx, "DeckGuess"] = new_guess
+                    guesses_updated += 1
             else:
                 deck_label = result.predicted_label or NEEDS_MANUAL_REVIEW
                 hist.loc[idx, "Deck"] = deck_label
@@ -1330,10 +1602,10 @@ def rescan_history_for_unresolved(
                 auto_resolved += 1
                 emit(f"[rescan] event {event_id} pilot={pilot!r}: auto-resolved -> {deck_label!r}")
 
-    if auto_resolved:
+    if auto_resolved or guesses_updated:
         hist["EventID"] = hist["EventID"].astype(str).str.replace(r"\.0$", "", regex=True)
         hist.to_csv(history_csv, index=False, encoding="utf-8-sig")
-        emit(f"[rescan] {auto_resolved} deck(s) auto-resolved and written to {history_csv}")
+        emit(f"[rescan] {auto_resolved} deck(s) auto-resolved, {guesses_updated} DeckGuess value(s) updated, written to {history_csv}")
 
     return review_items
 

@@ -52,7 +52,6 @@ from PySide6.QtWidgets import (
 try:
     from metagame_input_generator import (
         GenerationRunResult,
-        fetch_available_decks,
         normalize_name,
         parse_args,
         run_generation,
@@ -60,7 +59,6 @@ try:
 except ModuleNotFoundError:
     from .metagame_input_generator import (
         GenerationRunResult,
-        fetch_available_decks,
         normalize_name,
         parse_args,
         run_generation,
@@ -76,12 +74,14 @@ try:
         load_challenge_history,
         rebuild_challenge_history_from_dirs,
         run_challenge_statistics,
+        ChallengeReviewRequiredError,
     )
 except ModuleNotFoundError:
     from .challenge_history_engine import (
         load_challenge_history,
         rebuild_challenge_history_from_dirs,
         run_challenge_statistics,
+        ChallengeReviewRequiredError,
     )
 
 try:
@@ -92,7 +92,6 @@ except ModuleNotFoundError:
 
 APP_NAME = "MTG Metagame Studio"
 ORG_NAME = "GitHubCopilot"
-SPECIAL_MY_DECK = "My Deck (force 50%)"
 STATS_PALETTE_OPTIONS = ["classic", "warm", "neon", "colorblind"]
 STATS_OUTPUT_PROFILES = ["full", "light"]
 STATS_LEGEND_KEYS = [
@@ -133,14 +132,15 @@ FORMAT_OPTIONS = [
     "Brawl",
     "Alchemy",
 ]
-RESULT_TABLE_HEADERS = ["Raw Name", "Deck", "Archetype", "Meta", "My WR"]
-REVIEW_QUEUE_HEADERS = ["Reason", "Raw Name", "Deck", "Archetype", "Meta", "My WR"]
+RESULT_TABLE_HEADERS = ["Raw Name", "Deck", "Archetype", "Meta"]
+REVIEW_QUEUE_HEADERS = ["Reason", "Raw Name", "Deck", "Archetype", "Meta"]
 
 
 class GeneratorWorker(QObject):
     progress = Signal(str)
     finished = Signal(list)
     failed = Signal(str)
+    review_required = Signal(object)
 
     def __init__(self, args: Namespace) -> None:
         super().__init__()
@@ -149,6 +149,14 @@ class GeneratorWorker(QObject):
     def run(self) -> None:
         try:
             results = run_generation(self._args, log=self.progress.emit)
+        except ChallengeReviewRequiredError as err:
+            # Carries .review_items/.history_csv/.premier_history_csv (see
+            # metagame_input_generator.run_generation) so the GUI can open the same rich Review
+            # Queue dialog it used to show on the success path, instead of dumping the raw
+            # exception text -- this run is stopped, not merely warned about, so the dialog is the
+            # actionable next step, not an optional "want to see it?" popup.
+            self.review_required.emit(err)
+            return
         except Exception as err:
             details = "\n".join(
                 [str(err).strip(), "", traceback.format_exc().strip()]
@@ -156,37 +164,6 @@ class GeneratorWorker(QObject):
             self.failed.emit(details)
             return
         self.finished.emit(results)
-
-
-class DeckListWorker(QObject):
-    finished = Signal(list)
-    failed = Signal(str)
-
-    def __init__(self, format_name: str, week_start: str, week_end: str, limit: int, backup_url: str = "") -> None:
-        super().__init__()
-        self._format_name = format_name
-        self._week_start = week_start
-        self._week_end = week_end
-        self._limit = limit
-        self._backup_url = backup_url
-
-    def run(self) -> None:
-        try:
-            from metagame_input_generator import configure_backup_server_url
-        except ImportError:
-            from .metagame_input_generator import configure_backup_server_url
-        configure_backup_server_url(self._backup_url)
-        try:
-            decks = fetch_available_decks(
-                format_name=self._format_name,
-                start_date=date.fromisoformat(self._week_start),
-                end_date=date.fromisoformat(self._week_end),
-                limit=self._limit,
-            )
-        except Exception as err:
-            self.failed.emit(str(err).strip() or "Failed to load deck list.")
-            return
-        self.finished.emit(decks)
 
 
 class StatisticsWorker(QObject):
@@ -202,8 +179,6 @@ class StatisticsWorker(QObject):
         total_players: int,
         rounds: int,
         min_encounter_pct: float,
-        player_deck_name: str,
-        player_winrate: float,
         weeks_back: int,
         output_profile: str,
         palette_name: str,
@@ -217,8 +192,6 @@ class StatisticsWorker(QObject):
         self._total_players = total_players
         self._rounds = rounds
         self._min_encounter_pct = min_encounter_pct
-        self._player_deck_name = player_deck_name
-        self._player_winrate = player_winrate
         self._weeks_back = weeks_back
         self._output_profile = output_profile
         self._palette_name = palette_name
@@ -234,8 +207,6 @@ class StatisticsWorker(QObject):
                 total_players=self._total_players,
                 rounds=self._rounds,
                 min_encounter_pct=self._min_encounter_pct,
-                player_deck_name=self._player_deck_name,
-                player_winrate=self._player_winrate,
                 weeks_back=self._weeks_back,
                 output_profile=self._output_profile,
                 palette_name=self._palette_name,
@@ -299,6 +270,8 @@ class ChallengeStatisticsWorker(QObject):
                     end_date=self._week_end,
                     history_csv=self._history_csv,
                     log=self.progress.emit,
+                    cache_dir=Path(self._history_csv).parent / "cache" / "mtgo_json"
+                    / "-".join(self._format_name.lower().split()),
                 )
             result = run_challenge_statistics(
                 history_csv=self._history_csv,
@@ -423,7 +396,6 @@ class ReviewQueueDialog(QDialog):
         header.setSectionResizeMode(2, QHeaderView.Stretch)
         header.setSectionResizeMode(3, QHeaderView.Stretch)
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)
         self.table.cellDoubleClicked.connect(self._emit_current_row)
         layout.addWidget(self.table, 1)
 
@@ -452,16 +424,13 @@ class ReviewQueueDialog(QDialog):
             reason_item = QTableWidgetItem(str(row.get("reason") or ""))
             raw_item = QTableWidgetItem(str(row.get("raw_deck") or ""))
             meta_item = QTableWidgetItem(str(row.get("meta") or ""))
-            wr_item = QTableWidgetItem(str(row.get("my_wr") or ""))
             meta_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            wr_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             if "Unknown" in str(row.get("reason") or ""):
-                for item in [reason_item, raw_item, meta_item, wr_item]:
+                for item in [reason_item, raw_item, meta_item]:
                     item.setBackground(QColor("#fff6bf"))
             self.table.setItem(row_index, 0, reason_item)
             self.table.setItem(row_index, 1, raw_item)
             self.table.setItem(row_index, 4, meta_item)
-            self.table.setItem(row_index, 5, wr_item)
 
             deck_combo = QComboBox()
             deck_combo.setEditable(True)
@@ -706,6 +675,8 @@ class ChallengeReviewDialog(QDialog):
             applied_keys |= {f"event_id={s['event_id']} pilot={s['pilot']!r}" for s in selections} - failed_keys
 
             msg_lines.append(f"{kind}: applied {result['applied']} correction(s) to {target_csv.name}.")
+            if kind == "premier" and result["applied"]:
+                msg_lines.extend(self._refresh_premier_events_files(target_csv, {s["event_id"] for s in selections}))
             if result["not_found"]:
                 msg_lines.append(f"  {len(result['not_found'])} {kind} row(s) had no matching history row.")
             if result["ambiguous"]:
@@ -723,6 +694,30 @@ class ChallengeReviewDialog(QDialog):
         if not remaining:
             QMessageBox.information(self, "Challenge Review", "All flagged decks resolved.")
             self.close()
+
+    @staticmethod
+    def _refresh_premier_events_files(premier_history_csv: Path, event_ids: set[str]) -> List[str]:
+        """premier_events_*.csv is written before the Review Queue runs; rewrite every such file
+        under the outputs base that lists one of *event_ids*, so it stops showing NEEDS_MANUAL_REVIEW."""
+        try:
+            from challenge_mtgo_source import refresh_premier_events_csv
+        except ModuleNotFoundError:
+            from .challenge_mtgo_source import refresh_premier_events_csv
+
+        lines: List[str] = []
+        for path in sorted(premier_history_csv.parent.glob("*/*/*/premier_events_*.csv")):
+            try:
+                text = path.read_text(encoding="utf-8-sig")
+            except OSError:
+                continue
+            if not any(eid and eid in text for eid in event_ids):
+                continue
+            try:
+                if refresh_premier_events_csv(path, premier_history_csv):
+                    lines.append(f"  refreshed {path.name}")
+            except Exception as exc:
+                lines.append(f"  FAILED to refresh {path.name}: {type(exc).__name__}: {exc}")
+        return lines
 
 
 class UnknownArchetypeDialog(QDialog):
@@ -1299,8 +1294,6 @@ class StudioWindow(QMainWindow):
         self.settings = QSettings(ORG_NAME, APP_NAME)
         self.worker_thread: Optional[QThread] = None
         self.worker: Optional[GeneratorWorker] = None
-        self.deck_thread: Optional[QThread] = None
-        self.deck_worker: Optional[DeckListWorker] = None
         self.stats_thread: Optional[QThread] = None
         self.stats_worker: Optional[StatisticsWorker] = None
         self.challenge_stats_thread: Optional[QThread] = None
@@ -1309,7 +1302,6 @@ class StudioWindow(QMainWindow):
         self.rescan_worker: Optional[ChallengeRescanWorker] = None
         self.last_results: List[GenerationRunResult] = []
         self.last_stats_result: Optional[StatisticsRunResult] = None
-        self.deck_refresh_pending = False
         self.repo_root = Path(__file__).resolve().parents[1]
         self.config_dir = self.repo_root / "docs"
         self.editor_rows: List[dict[str, str]] = []
@@ -1335,7 +1327,6 @@ class StudioWindow(QMainWindow):
     def _on_anchor_date_changed(self, anchor: "QDate") -> None:
         self.week_end_edit.setDate(anchor)
         self.week_start_edit.setDate(anchor.addDays(-13))
-        self.refresh_deck_list()
 
     def _on_history_points_changed(self, value: int) -> None:
         single = value == 1
@@ -1350,8 +1341,6 @@ class StudioWindow(QMainWindow):
     def _build_generator_args(self) -> Namespace:
         args = parse_args([])
         args.format_name = self.format_combo.currentText()
-        selected_deck = self.my_deck_combo.currentData(Qt.UserRole)
-        args.my_deck = str(selected_deck or self.my_deck_combo.currentText() or "Domain Zoo").strip()
         history_points = self.history_points_spin.value()
         args.history_points = history_points
         if history_points > 1:
@@ -1360,11 +1349,8 @@ class StudioWindow(QMainWindow):
         else:
             args.week_start = self.week_start_edit.date().toString("yyyy-MM-dd")
             args.week_end = self.week_end_edit.date().toString("yyyy-MM-dd")
-        args.my_window_days = self.my_window_spin.value()
-        args.my_fallback_window_days = self.my_fallback_spin.value()
         args.rogue_threshold = self.rogue_spin.value()
         args.metagame_limit = self.metagame_limit_spin.value()
-        args.matchup_limit = self.matchup_limit_spin.value()
         outputs_dir = self.repo_root / "outputs"
         args.rules_file = str(self.config_dir / "archetype_rules.csv")
         args.aliases_file = str(self.config_dir / "deck_aliases.csv")
@@ -1533,26 +1519,6 @@ class StudioWindow(QMainWindow):
 
         self.format_combo = QComboBox()
         self.format_combo.addItems(FORMAT_OPTIONS)
-        self.format_combo.currentTextChanged.connect(self.refresh_deck_list)
-
-        self.my_deck_combo = QComboBox()
-        self.my_deck_combo.setMinimumWidth(260)
-        self.my_deck_combo.setEnabled(False)
-        self.my_deck_combo.currentIndexChanged.connect(self._update_deck_mode_status)
-
-        self.refresh_decks_button = QPushButton("Refresh Decks")
-        self.refresh_decks_button.clicked.connect(self.refresh_deck_list)
-
-        deck_row = QWidget()
-        deck_row_layout = QHBoxLayout(deck_row)
-        deck_row_layout.setContentsMargins(0, 0, 0, 0)
-        deck_row_layout.setSpacing(8)
-        deck_row_layout.addWidget(self.my_deck_combo, 1)
-        deck_row_layout.addWidget(self.refresh_decks_button)
-
-        self.deck_mode_label = QLabel("Deck mode: loading API list...")
-        self.deck_mode_label.setObjectName("muted")
-        self.deck_mode_label.setWordWrap(True)
 
         self.week_start_edit = QDateEdit()
         self.week_start_edit.setCalendarPopup(True)
@@ -1571,12 +1537,6 @@ class StudioWindow(QMainWindow):
         )
         self.anchor_date_edit.dateChanged.connect(self._on_anchor_date_changed)
 
-        self.my_window_spin = QSpinBox()
-        self.my_window_spin.setRange(1, 365)
-
-        self.my_fallback_spin = QSpinBox()
-        self.my_fallback_spin.setRange(1, 730)
-
         self.rogue_spin = QDoubleSpinBox()
         self.rogue_spin.setRange(0.0, 100.0)
         self.rogue_spin.setDecimals(2)
@@ -1585,10 +1545,6 @@ class StudioWindow(QMainWindow):
 
         self.metagame_limit_spin = QSpinBox()
         self.metagame_limit_spin.setRange(1, 1000)
-        self.metagame_limit_spin.valueChanged.connect(self.refresh_deck_list)
-
-        self.matchup_limit_spin = QSpinBox()
-        self.matchup_limit_spin.setRange(1, 2000)
 
         self.history_points_spin = QSpinBox()
         self.history_points_spin.setRange(1, 52)
@@ -1621,16 +1577,11 @@ class StudioWindow(QMainWindow):
         reset_row.addWidget(self.reset_defaults_button)
 
         form.addRow("Format", self.format_combo)
-        form.addRow("My Deck", deck_row)
-        form.addRow("Deck Mode", self.deck_mode_label)
         form.addRow("History Points", self.history_points_spin)
         form.addRow("Anchor Date", self.anchor_date_edit)
-        form.addRow("My WR Window", self.my_window_spin)
-        form.addRow("Fallback Window", self.my_fallback_spin)
 
         form.addRow("Rogue Threshold", self.rogue_spin)
         form.addRow("Metagame Limit", self.metagame_limit_spin)
-        form.addRow("Matchup Limit", self.matchup_limit_spin)
         form.addRow("Challenge Window", self.include_challenge_check)
         form.addRow("Challenge Stats Events", self.challenge_history_events_spin)
         form.addRow("", reset_row)
@@ -1717,22 +1668,11 @@ class StudioWindow(QMainWindow):
         anchor_date = self._suggest_anchor_date()
         self.format_combo.setCurrentIndex(self.format_combo.findText(defaults.format_name) if self.format_combo.findText(defaults.format_name) >= 0 else 0)
         self.anchor_date_edit.setDate(anchor_date)
-        self.my_window_spin.setValue(getattr(defaults, "my_window_days", 90))
-        self.my_fallback_spin.setValue(getattr(defaults, "my_fallback_window_days", 180))
         self.rogue_spin.setValue(getattr(defaults, "rogue_threshold", 0.5))
         self.metagame_limit_spin.setValue(getattr(defaults, "metagame_limit", 64))
-        self.matchup_limit_spin.setValue(getattr(defaults, "matchup_limit", 300))
         self.history_points_spin.setValue(getattr(defaults, "history_points", 1))
         self.include_challenge_check.setChecked(bool(getattr(defaults, "include_challenge_decklist", True)))
         self.challenge_history_events_spin.setValue(int(getattr(defaults, "challenge_history_events", 8)))
-        # My Deck domyślny
-        idx = self.my_deck_combo.findText(getattr(defaults, "my_deck", "Domain Zoo"))
-        if idx >= 0:
-            self.my_deck_combo.setCurrentIndex(idx)
-        else:
-            self.my_deck_combo.setCurrentIndex(0)
-        # Odśwież listę decków i inne zależne rzeczy
-        self.refresh_deck_list()
 
     def _build_editor_tab(self) -> QWidget:
         page = QWidget()
@@ -1806,7 +1746,6 @@ class StudioWindow(QMainWindow):
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         header.setSectionResizeMode(2, QHeaderView.Stretch)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         self.editor_table.itemSelectionChanged.connect(self._handle_editor_row_selected)
         left_layout.addWidget(self.editor_table, 1)
 
@@ -2005,14 +1944,6 @@ class StudioWindow(QMainWindow):
         self.stats_min_encounter_spin.setSingleStep(0.5)
         self.stats_min_encounter_spin.setSuffix(" %")
 
-        self.stats_player_deck_edit = QLineEdit()
-
-        self.stats_player_wr_spin = QDoubleSpinBox()
-        self.stats_player_wr_spin.setRange(0.0, 100.0)
-        self.stats_player_wr_spin.setDecimals(2)
-        self.stats_player_wr_spin.setSingleStep(0.5)
-        self.stats_player_wr_spin.setSuffix(" %")
-
         self.stats_weeks_back_spin = QSpinBox()
         self.stats_weeks_back_spin.setRange(2, 52)
 
@@ -2167,8 +2098,6 @@ class StudioWindow(QMainWindow):
         form.addRow("Players (N)", self.stats_total_players_spin)
         form.addRow("Rounds", self.stats_rounds_spin)
         form.addRow("Min Encounter", self.stats_min_encounter_spin)
-        form.addRow("Deck Label", self.stats_player_deck_edit)
-        form.addRow("Overall Winrate", self.stats_player_wr_spin)
         form.addRow("Trend Weeks", self.stats_weeks_back_spin)
         form.addRow("Output Profile", self.stats_output_profile_combo)
         form.addRow("Palette", self.stats_palette_combo)
@@ -2421,8 +2350,6 @@ class StudioWindow(QMainWindow):
         self.stats_total_players_spin.setValue(int(self.settings.value("stats_total_players", 1000)))
         self.stats_rounds_spin.setValue(int(self.settings.value("stats_rounds", 5)))
         self.stats_min_encounter_spin.setValue(float(self.settings.value("stats_min_encounter", 5.0)))
-        self.stats_player_deck_edit.setText(str(self.settings.value("stats_player_deck", "My Deck") or "My Deck"))
-        self.stats_player_wr_spin.setValue(float(self.settings.value("stats_player_wr", 50.0)))
         self.stats_weeks_back_spin.setValue(int(self.settings.value("stats_weeks_back", 4)))
         saved_profile = str(self.settings.value("stats_output_profile", "full") or "full").lower()
         if self._backup_url():
@@ -2443,7 +2370,6 @@ class StudioWindow(QMainWindow):
         self._update_legend_color_preview()
 
         self._refresh_archetype_combo()
-        self.refresh_deck_list()
         self.load_latest_output_for_editor()
         if not self.stats_input_edit.text().strip():
             self._set_statistics_input_from_latest()
@@ -2458,14 +2384,10 @@ class StudioWindow(QMainWindow):
     def _save_state(self) -> None:
         self._sync_text_from_color_tables()
         self.settings.setValue("format_name", self.format_combo.currentText())
-        self.settings.setValue("my_deck", self.my_deck_combo.currentText().strip())
         self.settings.setValue("week_start", self.week_start_edit.date().toString("yyyy-MM-dd"))
         self.settings.setValue("week_end", self.week_end_edit.date().toString("yyyy-MM-dd"))
-        self.settings.setValue("my_window_days", self.my_window_spin.value())
-        self.settings.setValue("my_fallback_window_days", self.my_fallback_spin.value())
         self.settings.setValue("rogue_threshold", self.rogue_spin.value())
         self.settings.setValue("metagame_limit", self.metagame_limit_spin.value())
-        self.settings.setValue("matchup_limit", self.matchup_limit_spin.value())
         self.settings.setValue("include_challenge_decklist", self.include_challenge_check.isChecked())
         self.settings.setValue("challenge_history_events", self.challenge_history_events_spin.value())
         self.settings.setValue("backup_url", self._backup_url())
@@ -2475,8 +2397,6 @@ class StudioWindow(QMainWindow):
         self.settings.setValue("stats_total_players", self.stats_total_players_spin.value())
         self.settings.setValue("stats_rounds", self.stats_rounds_spin.value())
         self.settings.setValue("stats_min_encounter", self.stats_min_encounter_spin.value())
-        self.settings.setValue("stats_player_deck", self.stats_player_deck_edit.text().strip())
-        self.settings.setValue("stats_player_wr", self.stats_player_wr_spin.value())
         self.settings.setValue("stats_weeks_back", self.stats_weeks_back_spin.value())
         self.settings.setValue("stats_output_profile", self.stats_output_profile_combo.currentText().strip().lower())
         self.settings.setValue("stats_palette", self.stats_palette_combo.currentText().strip().lower())
@@ -2666,10 +2586,6 @@ class StudioWindow(QMainWindow):
                 total_players=self.stats_total_players_spin.value(),
                 rounds=self.stats_rounds_spin.value(),
                 min_encounter_pct=self.stats_min_encounter_spin.value(),
-                player_deck_name=self.stats_player_deck_edit.text().strip() or "My Deck",
-                player_winrate=self.stats_player_wr_spin.value() / 100.0
-                if self.stats_player_wr_spin.value() > 1
-                else self.stats_player_wr_spin.value(),
                 weeks_back=self.stats_weeks_back_spin.value(),
                 output_profile=self.stats_output_profile_combo.currentText(),
                 palette_name=self.stats_palette_combo.currentText(),
@@ -3345,7 +3261,6 @@ class StudioWindow(QMainWindow):
             "deck": canonical_name,
             "archetype": archetype,
             "meta": "",
-            "my_wr": "",
         })
         self._populate_editor_table()
         self.editor_table.selectRow(0)
@@ -3655,6 +3570,24 @@ class StudioWindow(QMainWindow):
             self.stats_run_button.setEnabled(True)
             return
 
+        # A run dir with metagame_input_challenge_top32.xlsx has its metagame statistics from the
+        # Challenge Top 32 Meta; this mode (Videre input + metagame_history_<format>.csv) would
+        # silently replace them with the Videre per-name Meta.
+        if (
+            input_path.name != "metagame_input_challenge_top32.xlsx"
+            and (input_path.parent / "metagame_input_challenge_top32.xlsx").exists()
+        ):
+            QMessageBox.warning(
+                self,
+                APP_NAME,
+                "Ten tydzień ma Meta z Challenge Top 32 i statystyki metagame policzone przez generację.\n"
+                "Tryb Liga (Videre) by je nadpisał, więc nie zostanie uruchomiony.\n\n"
+                "Aby je przeliczyć: python src/broodscale_rule_cli.py recompute "
+                "--since <początek tygodnia> --trend-weeks 12",
+            )
+            self.stats_run_button.setEnabled(True)
+            return
+
         # --- Pre-stats unknown archetype check ---
         unknown_rows = self._find_unknown_archetypes_in_input(input_path)
         if unknown_rows:
@@ -3696,8 +3629,6 @@ class StudioWindow(QMainWindow):
             total_players=self.stats_total_players_spin.value(),
             rounds=self.stats_rounds_spin.value(),
             min_encounter_pct=self.stats_min_encounter_spin.value(),
-            player_deck_name=self.stats_player_deck_edit.text().strip() or "My Deck",
-            player_winrate=self.stats_player_wr_spin.value() / 100.0,
             weeks_back=self.stats_weeks_back_spin.value(),
             output_profile=output_profile,
             palette_name=palette_name,
@@ -3895,7 +3826,7 @@ class StudioWindow(QMainWindow):
         self.files_list.clear()
         self.summary_label.setText("Running...")
         self._append_log(
-            f"Starting generation for {args.format_name} | {args.week_start} -> {args.week_end} | deck={args.my_deck}"
+            f"Starting generation for {args.format_name} | {args.week_start} -> {args.week_end}"
         )
 
         self.generate_button.setEnabled(False)
@@ -3910,101 +3841,12 @@ class StudioWindow(QMainWindow):
         self.worker.progress.connect(self._append_log)
         self.worker.finished.connect(self._handle_success)
         self.worker.failed.connect(self._handle_failure)
+        self.worker.review_required.connect(self._handle_generation_review_required)
         self.worker.finished.connect(self.worker_thread.quit)
         self.worker.failed.connect(self.worker_thread.quit)
+        self.worker.review_required.connect(self.worker_thread.quit)
         self.worker_thread.finished.connect(self._cleanup_worker)
         self.worker_thread.start()
-
-    def refresh_deck_list(self) -> None:
-        if self.week_end_edit.date() < self.week_start_edit.date():
-            return
-        if self.deck_thread is not None:
-            self.deck_refresh_pending = True
-            return
-
-        self.deck_refresh_pending = False
-        format_name = self.format_combo.currentText()
-        week_start = self.week_start_edit.date().toString("yyyy-MM-dd")
-        week_end = self.week_end_edit.date().toString("yyyy-MM-dd")
-        limit = self.metagame_limit_spin.value()
-
-        self.my_deck_combo.clear()
-        self.my_deck_combo.addItem("Loading deck list...")
-        self.my_deck_combo.setEnabled(False)
-        self.deck_mode_label.setText("Deck mode: loading API deck list for the selected format and date range...")
-        self.refresh_decks_button.setEnabled(False)
-
-        self.deck_thread = QThread(self)
-        self.deck_worker = DeckListWorker(format_name, week_start, week_end, limit, backup_url=self._backup_url())
-        self.deck_worker.moveToThread(self.deck_thread)
-        self.deck_thread.started.connect(self.deck_worker.run)
-        self.deck_worker.finished.connect(self._handle_deck_list_success)
-        self.deck_worker.failed.connect(self._handle_deck_list_failure)
-        self.deck_worker.finished.connect(self.deck_thread.quit)
-        self.deck_worker.failed.connect(self.deck_thread.quit)
-        self.deck_thread.finished.connect(self._cleanup_deck_worker)
-        self.deck_thread.start()
-
-    def _handle_deck_list_success(self, decks: List[str]) -> None:
-        saved_deck = str(self.settings.value("my_deck", "Domain Zoo") or "Domain Zoo")
-        current_data = self.my_deck_combo.currentData(Qt.UserRole)
-        current_text = self.my_deck_combo.currentText()
-        preferred = str(current_data or current_text or saved_deck)
-
-        options = [SPECIAL_MY_DECK] + decks
-        if not decks:
-            options = [SPECIAL_MY_DECK]
-
-        self.my_deck_combo.clear()
-        for name in options:
-            value = "My Deck" if name == SPECIAL_MY_DECK else name
-            self.my_deck_combo.addItem(name, userData=value)
-
-        selected_index = 0
-        for idx in range(self.my_deck_combo.count()):
-            candidate = str(self.my_deck_combo.itemData(idx, Qt.UserRole) or "")
-            if candidate == preferred or self.my_deck_combo.itemText(idx) == saved_deck:
-                selected_index = idx
-                break
-        self.my_deck_combo.setCurrentIndex(selected_index)
-        self.my_deck_combo.setEnabled(True)
-        self.refresh_decks_button.setEnabled(True)
-        self._update_deck_mode_status()
-
-    def _handle_deck_list_failure(self, message: str) -> None:
-        saved_deck = str(self.settings.value("my_deck", "Domain Zoo") or "Domain Zoo")
-        self.my_deck_combo.clear()
-        self.my_deck_combo.addItem(SPECIAL_MY_DECK, userData="My Deck")
-        self.my_deck_combo.addItem(saved_deck, userData=saved_deck)
-        self.my_deck_combo.setCurrentIndex(1)
-        self.my_deck_combo.setEnabled(True)
-        self.refresh_decks_button.setEnabled(True)
-        self._update_deck_mode_status()
-        self._append_log(f"[WARN] Could not load deck list from API: {message}")
-
-    def _update_deck_mode_status(self) -> None:
-        selected_value = str(self.my_deck_combo.currentData(Qt.UserRole) or "").strip()
-        selected_text = self.my_deck_combo.currentText().strip()
-
-        if not selected_text or selected_text == "Loading deck list...":
-            self.deck_mode_label.setText("Deck mode: loading API deck list for the selected format and date range...")
-            return
-
-        if selected_value == "My Deck":
-            self.deck_mode_label.setText("Deck mode: force 50% fallback. My Deck Winrate will be imputed to 50% for all rows.")
-            return
-
-        self.deck_mode_label.setText(f"Deck mode: API deck selection. Matchups will be looked up for '{selected_value}'.")
-
-    def _cleanup_deck_worker(self) -> None:
-        if self.deck_worker is not None:
-            self.deck_worker.deleteLater()
-        if self.deck_thread is not None:
-            self.deck_thread.deleteLater()
-        self.deck_worker = None
-        self.deck_thread = None
-        if self.deck_refresh_pending:
-            self.refresh_deck_list()
 
     def _append_log(self, line: str) -> None:
         self.log_output.append(line)
@@ -4022,7 +3864,6 @@ class StudioWindow(QMainWindow):
                     f"Range: {latest.week_start.isoformat()} to {latest.week_end.isoformat()}",
                     f"Rows: {latest.row_count}",
                     f"User mappings: {latest.mapped_from_user}",
-                    f"My WR coverage: primary {latest.primary_count}, fallback {latest.fallback_count}, imputed {latest.imputed_count}",
                     f"Challenge events fetched: {latest.challenge_events_fetched}",
                     f"Output: {latest.run_dir}",
                 ]
@@ -4035,7 +3876,16 @@ class StudioWindow(QMainWindow):
         self._append_log("[OK] GUI run finished.")
         self.load_latest_output_for_editor()
         self._set_statistics_input_from_latest()
-        if self.auto_stats_after_generate_check.isChecked() and self.stats_thread is None:
+        if self.auto_stats_after_generate_check.isChecked() and self.include_challenge_check.isChecked():
+            # With Challenge data the generation itself computes metagame statistics from the
+            # Challenge Top 32 Meta (challenge_meta.py) -- or deliberately skips them. The Statistics
+            # tab's metagame mode reads the Videre grouped XLSX/history and would overwrite them
+            # in the same run dir (W42, 2026-10-19: Eldrazi Ramp 7.5% Videre, no Broodscale Combo).
+            self._append_log(
+                "[INFO] Auto-run Statistics skipped: with Challenge data the generation already "
+                "computed the metagame statistics (Challenge Top 32 Meta)."
+            )
+        elif self.auto_stats_after_generate_check.isChecked() and self.stats_thread is None:
             self._append_log("[INFO] Auto-run Statistics is enabled. Starting statistics analysis...")
             self.start_statistics()
 
@@ -4153,6 +4003,34 @@ class StudioWindow(QMainWindow):
         self._append_log(details)
         QMessageBox.critical(self, APP_NAME, details.splitlines()[0] if details else "Generation failed.")
 
+    def _handle_generation_review_required(self, err: "ChallengeReviewRequiredError") -> None:
+        """This run was stopped (no stats/history-relabel written) because one or more decks are
+        still NEEDS_MANUAL_REVIEW -- see ChallengeReviewRequiredError. Opens the same Review Queue
+        dialog the old success-path popup used to offer, since fixing these rows is the actionable
+        next step, not optional.
+        """
+        review_items = list(getattr(err, "review_items", None) or [])
+        history_csv = getattr(err, "history_csv", None)
+        premier_history_csv = getattr(err, "premier_history_csv", None)
+
+        self.summary_label.setText(
+            f"Generation stopped: {len(review_items)} deck(s) need manual review before "
+            "statistics can be computed."
+        )
+        self.generate_button.setEnabled(True)
+        self.open_output_button.setEnabled(bool(self.last_results))
+        self.open_main_file_button.setEnabled(False)
+        self._append_log(f"[ERROR] [BLOCKING] {err}")
+
+        if review_items and history_csv is not None:
+            self._open_challenge_review_queue(review_items, history_csv, premier_history_csv)
+        else:
+            QMessageBox.critical(
+                self, APP_NAME,
+                "Generation stopped: decks need manual review, but the Review Queue could not be "
+                "opened automatically (no history file resolved). See the log for details.",
+            )
+
     def _cleanup_worker(self) -> None:
         if self.worker is not None:
             self.worker.deleteLater()
@@ -4261,7 +4139,6 @@ class StudioWindow(QMainWindow):
                         "deck": str(row.get("Deck") or "").strip(),
                         "archetype": str(row.get("Archetype") or "").strip(),
                         "meta": str(row.get("Meta") or "").strip(),
-                        "my_wr": str(row.get("My Deck Winrate") or "").strip(),
                     }
                 )
         return rows
@@ -4401,10 +4278,6 @@ class StudioWindow(QMainWindow):
             meta_item = QTableWidgetItem(self._format_2dp(row.get("meta", "")))
             meta_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             self.editor_table.setItem(row_index, 3, meta_item)
-
-            wr_item = QTableWidgetItem(self._format_2dp(row.get("my_wr", "")))
-            wr_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            self.editor_table.setItem(row_index, 4, wr_item)
 
         if self.editor_rows:
             self.editor_table.selectRow(0)
@@ -4592,7 +4465,6 @@ class StudioWindow(QMainWindow):
                         "deck": str(row.get("deck") or "").strip(),
                         "archetype": str(row.get("archetype") or "").strip(),
                         "meta": str(row.get("meta") or "").strip(),
-                        "my_wr": str(row.get("my_wr") or "").strip(),
                     }
                 )
             return out
@@ -4633,7 +4505,6 @@ class StudioWindow(QMainWindow):
                             "deck": deck_name,
                             "archetype": archetype,
                             "meta": str(row.get("meta") or "").strip(),
-                            "my_wr": str(row.get("my_wr") or "").strip(),
                         }
                     )
         return out
@@ -4716,7 +4587,6 @@ class StudioWindow(QMainWindow):
                     "deck": deck_name,
                     "archetype": archetype,
                     "meta": self._format_2dp(row.get("meta", "")),
-                    "my_wr": self._format_2dp(row.get("my_wr", "")),
                 }
             )
 
@@ -5684,9 +5554,6 @@ class StudioWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self._save_state()
-        if self.deck_thread is not None:
-            self.deck_thread.quit()
-            self.deck_thread.wait(3000)
         if self.worker_thread is not None:
             self.worker_thread.quit()
             self.worker_thread.wait(3000)

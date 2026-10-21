@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856334,2026-10-09,C32,Challenge,QF,Fransadness,3143623,Capitano_CL,535716,2,0,Broodscale Combo,Devoted Combo
+12856334,2026-10-09,C32,Challenge,QF,itstime,3086606,Misplacedginger,736792,2,1,Prowess,Jeskai Energy
+12856334,2026-10-09,C32,Challenge,QF,rastaf,254536,Lightspirit,3222070,2,1,Rakdos Midrange,Eldrazi Ramp
+12856334,2026-10-09,C32,Challenge,QF,pokerswizard,280778,hugofreitas1,1997683,2,1,URG,Ruby Storm
+12856334,2026-10-09,C32,Challenge,SF,itstime,3086606,Fransadness,3143623,2,1,Prowess,Broodscale Combo
+12856334,2026-10-09,C32,Challenge,SF,rastaf,254536,pokerswizard,280778,2,1,Rakdos Midrange,URG
+12856334,2026-10-09,C32,Challenge,F,rastaf,254536,itstime,3086606,2,0,Rakdos Midrange,Prowess

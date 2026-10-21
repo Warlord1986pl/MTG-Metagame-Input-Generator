@@ -7,6 +7,7 @@ Amulet Titan,Amulet Titan,Combo
 Azorius Blink,Azorius Blink,Blink
 Azorius Control,Azorius Control,Control
 Azorius Energy,UW Control,Control
+Bant Collected Company,Bant Collected Company,Aggro
 Belcher,Belcher,Combo
 BG,Yawgmoth,Midrange
 Boros Burn,Boros Burn,Aggro
@@ -23,7 +24,6 @@ Dimir Death's Shadow,Dimir Death's Shadow,Aggro
 Dimir Midrange,Dimir Midrange,Midrange
 Dimir Mill,Dimir Mill,Combo
 Domain Zoo,Domain Zoo,Midrange
-Eldrazi,Broodscale Combo,Combo
 Eldrazi Ramp,Eldrazi Ramp,Ramp
 Eldrazi Tron,Eldrazi Tron,Ramp
 Esper Blink,Esper Blink,Blink
@@ -63,7 +63,9 @@ Mono-Blue Tron,Mono-Blue Tron,Ramp
 Mono-Green Eldrazi,Mono-Green Eldrazi,Ramp
 Mono-Green Hardened Scales,Mono-Green Hardened Scales,Combo
 Mono-Green Midrange,Mono-Green Midrange,Midrange
+Mono-Red Cutter,Prowess,Aggro
 Naya Energy,Naya Energy,Aggro
+NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW,NEEDS_MANUAL_REVIEW
 Neobrand,Neobrand,Combo
 Orzhov Blink,Orzhov Blink,Blink
 Orzhov Stoneblade,Orzhov Stoneblade,Combo
@@ -78,9 +80,11 @@ RG,RG,Ramp
 Ruby Storm,Ruby Storm,Combo
 Sam Combo,Sam Combo,Combo
 Selesnya Energy,Selesnya Energy,Aggro
+Slivers,Slivers,Aggro
 Song of Creation,Song of Creation,Combo
 Sultai Ritual,Sultai Ritual,Midrange
 Temur Breach,Temur Breach,Combo
+Temur Cutter,Prowess,Aggro
 The Rock,The Rock,Midrange
 Through the Breach,Through the Breach,Combo
 U,U,Control
@@ -90,7 +94,7 @@ UG,UG,Combo
 URG,URG,Midrange
 W,W,Aggro
 WB,WB,Blink
-WBG,WBG,Midrange
+WBG,Devoted Combo,Combo
 WBR,WBR,Midrange
 WBRG,WBRG,Control
 WG,WG,Aggro
@@ -102,5 +106,3 @@ WUG,WUG,Midrange
 WUR,Jeskai Blink,Midrange
 WURG,4c Control,Control
 Yawgmoth,Yawgmoth,Midrange
-Temur Cutter,Prowess,Aggro
-Mono-Red Cutter,Prowess,Aggro

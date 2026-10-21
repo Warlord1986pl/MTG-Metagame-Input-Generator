@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856762,2026-10-17,C32,Challenge,QF,xfile,2449332,storti,3073424,2,0,Broodscale Combo,The Rock
+12856762,2026-10-17,C32,Challenge,QF,Mighty_Ravendark,2987360,marito9911,1758332,2,1,Living End,Rakdos Midrange
+12856762,2026-10-17,C32,Challenge,QF,kasiso,2257869,hugofreitas1,1997683,2,1,Boros Energy,Ruby Storm
+12856762,2026-10-17,C32,Challenge,QF,YoungElf,3293517,komattaman,2690217,2,0,Neobrand,Rakdos Midrange
+12856762,2026-10-17,C32,Challenge,SF,xfile,2449332,Mighty_Ravendark,2987360,2,1,Broodscale Combo,Living End
+12856762,2026-10-17,C32,Challenge,SF,YoungElf,3293517,kasiso,2257869,2,1,Neobrand,Boros Energy
+12856762,2026-10-17,C32,Challenge,F,xfile,2449332,YoungElf,3293517,2,0,Broodscale Combo,Neobrand

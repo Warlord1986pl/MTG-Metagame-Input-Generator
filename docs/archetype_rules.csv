@@ -1,10 +1,12 @@
 pattern,archetype,match_type,priority
 4/5c Omnath,Midrange,exact,1
 4c Control,Control,exact,1
+4C Cosmogoyf,Combo,exact,1
 4C Energy,Aggro,exact,1
 4c HollowOne,Graveyard,exact,1
 4c Midrange,Midrange,exact,1
 4c Omnath,Midrange,exact,1
+5c HollowOne,Graveyard,exact,1
 5c Midrange,Midrange,exact,1
 Affinity,Aggro,exact,1
 Amulet Titan,Combo,exact,1
@@ -38,7 +40,6 @@ Dimir Murktide,Midrange,exact,1
 Dimir Reanimator,Graveyard,exact,1
 Dimir Tezzerator,Midrange,exact,1
 Domain Zoo,Midrange,exact,1
-Eldrazi,Combo,exact,1
 Eldrazi Ramp,Ramp,exact,1
 Eldrazi Tron,Ramp,exact,1
 Esper Blink,Blink,exact,1
@@ -127,6 +128,7 @@ Selesnya Energy,Aggro,exact,1
 Selesnya GenericBlink,Blink,exact,1
 Simic Basking Broodscale Combo,Combo,exact,1
 Simic Midrange,Midrange,exact,1
+Slivers,Aggro,exact,1
 Song of Creation,Combo,exact,1
 Sultai Midrange,Midrange,exact,1
 Sultai Murktide,Midrange,exact,1
