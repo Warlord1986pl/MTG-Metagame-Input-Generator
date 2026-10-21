@@ -15,14 +15,16 @@ Measures, for deck D, month T, zone z and card c (oracle_id), on D's lists in T:
                     >= 10 pilots in BOTH months; interval = bootstrap over pilots drawn
                     independently in each month (no pairing), 2000 draws, percentiles 2.5 / 97.5;
                     p-value two-sided from the normal approximation z = change / bootstrap SE;
-                    Benjamini-Hochberg q = 0.10 over ONE family: every tested (deck, zone, card)
-                    of the comparison, all decks together; reported when |change| >= 10 pp and BH
-                    rejects. A card with 0% presence in one of the months is not tested (below).
+                    Benjamini-Hochberg q = 0.10 over ONE family (below); reported when |change| >=
+                    10 pp and BH rejects. A card with 0% presence in one of the months is not tested.
   decomposition   = change within variants + change of variant proportions (symmetric, sums to
                     the change exactly; all export variant labels, empty -> "(bez wariantu)"). The
-                    within-variant component has its own bootstrap (same draws) and its OWN BH family
-                    (q = 0.10, same tested set): "zmiana list" = |within| >= 10 pp and significant there;
-                    a reported change that is not one is "zmiana składu talii" (variant proportions).
+                    within-variant component has its own bootstrap (same draws). ONE BH family
+                    (q = 0.10, order of 2026-10-21 f): the total-change test AND the within-variant test
+                    of every tested (deck, zone, card), all decks together (2 x tested hypotheses).
+                    "zmiana list" = |within| >= 10 pp and its test rejected; a reported total change
+                    that is not one is "zmiana składu talii" (variant proportions). The split depends on
+                    the current variant definitions; a deck without variants has within = total.
   gone card       = 0% in month 2: reported when (1 - p_T1)^(lists of D in month 2) < 0.05 and >= 3
                     pilots played it in month 1; otherwise an observation.
   new card        = 0% in month 1: reported with >= 2 pilots in month 2; otherwise an observation.
@@ -58,8 +60,9 @@ MIN_CHANGE_PP = 10.0
 BH_Q = 0.10
 FIRST_SEEN_DAYS = 30
 NO_VARIANT = "(bez wariantu)"
-# order of 2026-10-21 e: a "list change" is a within-variant change significant in its own BH family;
-# a reported total change that is not one is a "change of the deck's composition" (variant proportions)
+# order of 2026-10-21 e/f: a "list change" is a within-variant change significant in the single BH family
+# (total-change and within-variant tests together); a reported total change that is not one is a
+# "change of the deck's composition" (variant proportions)
 KIND_LIST = "zmiana list"
 KIND_COMPOSITION = "zmiana składu talii"
 GONE_P = 0.05            # a gone card is reported when P(0 lists in month 2 | presence in month 1) < GONE_P
@@ -279,8 +282,11 @@ def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, dat
             out_rows.append(rec)
     tested = pd.DataFrame(out_rows)
     if not tested.empty:
-        reject, qv = _bh(tested["p"].to_numpy(), BH_Q)
-        reject_w, qv_w = _bh(tested["p_wewnatrz"].to_numpy(), BH_Q)
+        # one family: both tests of every tested pair (order of 2026-10-21 f)
+        n = len(tested)
+        reject_all, q_all = _bh(np.concatenate([tested["p"].to_numpy(), tested["p_wewnatrz"].to_numpy()]), BH_Q)
+        reject, qv = reject_all[:n], q_all[:n]
+        reject_w, qv_w = reject_all[n:], q_all[n:]
         tested["q_BH"] = qv
         tested["BH_odrzuca"] = reject.astype(int)
         tested["q_BH_wewnatrz"] = qv_w
