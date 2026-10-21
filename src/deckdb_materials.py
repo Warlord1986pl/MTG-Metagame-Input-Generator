@@ -30,8 +30,10 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 try:
+    import deckdb_cards as dc
     import deckdb_input as di
 except ModuleNotFoundError:
+    from . import deckdb_cards as dc
     from . import deckdb_input as di
 
 SHARE_LABEL = "udział w Top 32 Challenge'ów"
@@ -69,6 +71,31 @@ GLOSSARY: List[tuple[str, str]] = [
                 "i służy tylko do pracy roboczej."),
     ("warianty", "według D2 (DeckDB decisions.md, wpis 35): w miesiącu ≥ 5% list talii, ≥ 3 listy, ≥ 2 graczy; "
                  "tylko miesiące z ≥ 20 listami talii; wariant nie zmienia metryk talii."),
+]
+
+CARD_GLOSSARY: List[tuple[str, str]] = [
+    ("karta", "oracle_id z eksportu kart DeckDB (deckdb export-cards); kopie zsumowane po drukach; lądy z nadtypem "
+              "Basic (is_basic = 1) wyłączone ze wszystkich miar."),
+    ("obecność karty", "listy talii z co najmniej jedną kopią karty w strefie / listy talii w miesiącu; maindeck i "
+                       "sideboard osobno."),
+    ("średnia liczba kopii", "kopie karty w strefie / listy talii z kartą (tylko listy z kartą)."),
+    ("zmiana obecności", f"obecność w miesiącu 2 − obecność w miesiącu 1 (pp); testowana dla talii z ≥ {dc.MIN_LISTS} "
+                         f"listami i ≥ {dc.MIN_PILOTS} pilotami w obu miesiącach; przedział: bootstrap po pilotach "
+                         "losowanych niezależnie w każdym miesiącu (bez par)."),
+    ("raportowanie zmiany", f"|zmiana| ≥ {dc.MIN_CHANGE_PP:.0f} pp i odrzucenie w korekcie Benjamini–Hochberg "
+                            f"(q = {dc.BH_Q}) w jednej rodzinie: wszystkie testowane pary (talia, strefa, karta) "
+                            "porównania we wszystkich taliach; p dwustronne z przybliżenia normalnego (zmiana / błąd "
+                            "standardowy z bootstrapu)."),
+    ("rozkład zmiany", "zmiana wewnątrz wariantów + zmiana proporcji wariantów (symetrycznie, sumuje się do zmiany); "
+                       "wszystkie etykiety wariantów eksportu, pusta = „(bez wariantu)”."),
+    ("karta poza testem", "obecność 0% w jednym z miesięcy: nowa karta idzie ścieżką pierwszego pojawienia się, "
+                          "karta, która zniknęła, jest tylko wymieniona."),
+    ("pierwsze pojawienie", f"najwcześniejsza data listy talii z kartą w strefie w całym eksporcie; listy i piloci z "
+                            f"kartą w {dc.FIRST_SEEN_DAYS} dniach od niej; „przed początkiem danych” w pierwszych "
+                            f"{dc.FIRST_SEEN_DAYS} dniach eksportu."),
+    ("zmiany list pilota", "kolejne opublikowane listy tego samego pilota w tej samej talii (okres formatu): suma "
+                           "|różnic kopii| w maindecku i sideboardzie, karty dodane/usunięte, przeniesienia main ↔ "
+                           "sideboard; następna lista innej talii = zmiana talii. Tylko rozkłady dla talii."),
 ]
 
 # (legacy material, why it has no deckdb counterpart)
@@ -401,6 +428,113 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
     return written
 
 
+def chart_card_changes(tested: pd.DataFrame, path: Path, title: str, footer: str) -> Optional[Path]:
+    rep_ = tested[tested["Raportowana"] == 1].copy()
+    if rep_.empty:
+        return None
+    rep_["_abs"] = rep_["Zmiana_pp"].abs()
+    rep_ = rep_.sort_values("_abs", ascending=False).head(30).sort_values("Zmiana_pp")
+    labels = [f"{r.Talia}: {r.Karta} ({'MD' if r.Strefa == 'main' else 'SB'})" for r in rep_.itertuples()]
+    y = np.arange(len(rep_))
+    fig, ax = plt.subplots(figsize=(13, 0.36 * len(rep_) + 4))
+    within = rep_["Wewnatrz_wariantow_pp"].to_numpy()
+    mix = rep_["Proporcje_wariantow_pp"].to_numpy()
+    ax.barh(y, within, height=0.5, color="#2a6fb0", label="wewnątrz wariantów (pp)")
+    ax.barh(y, mix, left=within, height=0.5, color="#e3a346", label="proporcje wariantów (pp)")
+    ax.errorbar(rep_["Zmiana_pp"], y, xerr=[rep_["Zmiana_pp"] - rep_["Przedzial_dol_pp"],
+                                             rep_["Przedzial_gora_pp"] - rep_["Zmiana_pp"]],
+                fmt="o", color="#111111", ecolor="#555555", capsize=2, label="zmiana [przedział bootstrap]")
+    ax.axvline(0, color="#333333", linewidth=1)
+    ax.set_yticks(y)
+    ax.set_yticklabels(labels, fontsize=7.5)
+    ax.set_xlabel("zmiana obecności (pp)")
+    ax.set_title(title, fontsize=10)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.08), ncol=3, fontsize=8, frameon=False)
+    ax.grid(axis="x", linestyle="--", alpha=0.3)
+    return _save(fig, path, footer)
+
+
+def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date, period_start: date,
+                     root: Path) -> List[Path]:
+    m2s, m2e, complete = di.month_period(as_of)
+    m1s, m1e = di.previous_month(m2s)
+    label = f"{m1s:%Y-%m}_vs_{m2s:%Y-%m}" + ("" if complete else "_niepelny")
+    out = root / f"karty_{label}"
+    t = dc.change_tables(export, cards, (m1s, m1e), (m2s, m2e))
+    first = dc.first_appearances(export, cards, m2s, m2e)
+    pilots = dc.pilot_list_changes(export, cards, period_start, as_of)
+    tested = t["tested"]
+    rows = pd.concat([di.window_rows(export, m1s, m1e), di.window_rows(export, m2s, m2e)])
+    cov = di.coverage(rows)
+    n_tested = len(tested)
+    n_rep = int(tested["Raportowana"].sum()) if n_tested else 0
+    status = _status_rows(export, f"warstwa kart, miesiące {m1s:%Y-%m} i {m2s:%Y-%m}", m1s, m2e, rows, cov, [
+        ("Porównanie", f"{m1s} … {m1e} vs {m2s} … {m2e}"
+                       + ("" if complete else f" — miesiąc 2 NIEPEŁNY, porównanie tylko robocze")),
+        ("Plik kart", str(cards.path)),
+        ("sha256 pliku kart", cards.sha256),
+        ("name_match_version / scryfall_dump_id", f"{cards.name_match_version} / {cards.scryfall_dump_id}"),
+        ("data_version kart", cards.data_version),
+        ("Wiersze lądów z nadtypem Basic (wyłączone)", cards.basic_rows),
+        ("Talie testowane (≥ 30 list i ≥ 10 pilotów w obu miesiącach)",
+         int(t["eligible"]["Testowana"].sum()) if not t["eligible"].empty else 0),
+        ("Rodzina BH (testowane pary talia–strefa–karta)", n_tested),
+        ("Zmiany raportowane (|zmiana| ≥ 10 pp i BH q = 0,10)", n_rep),
+        ("Karty poza testem (0% w jednym miesiącu)", len(t["outside"])),
+        ("Pierwsze pojawienia w miesiącu 2", len(first)),
+        ("Bootstrap", f"{di.BOOT_DRAWS} losowań, ziarno {di.BOOT_SEED}, piloci niezależnie w każdym miesiącu"),
+    ])
+    reported = tested[tested["Raportowana"] == 1] if n_tested else tested
+    sheets = {
+        "STATUS": status,
+        "Zmiany_raportowane": reported,
+        "Testowane": tested,
+        "Poza_testem": t["outside"],
+        "Pierwsze_pojawienia": first,
+        "Talie_kwalifikacja": t["eligible"],
+        f"Obecnosc_{m1s:%Y-%m}": t["presence_1"],
+        f"Obecnosc_{m2s:%Y-%m}": t["presence_2"],
+        "Listy_pilotow": pilots,
+    }
+    out.mkdir(parents=True, exist_ok=True)
+    written: List[Path] = []
+    xlsx = out / f"deckdb_karty_ROBOCZE_{label}.xlsx"
+    with pd.ExcelWriter(xlsx, engine="openpyxl") as writer:
+        for name, df in sheets.items():
+            (df if not df.empty else pd.DataFrame([{"Info": "brak wierszy"}])).to_excel(writer, sheet_name=name[:31],
+                                                                                         index=False)
+        pd.DataFrame(GLOSSARY + CARD_GLOSSARY, columns=["Pojęcie", "Definicja"]).to_excel(
+            writer, sheet_name="Slownik", index=False)
+    written.append(xlsx)
+    for name, df in (("zmiany_raportowane", reported), ("pierwsze_pojawienia", first), ("listy_pilotow", pilots)):
+        pth = out / f"{name}_ROBOCZE_{label}.csv"
+        st = _stamp_cols(df, export)
+        st["cards_sha256"] = cards.sha256
+        st.to_csv(pth, index=False, encoding="utf-8-sig")
+        written.append(pth)
+    gl = out / "SLOWNIK.md"
+    gl.write_text(
+        "# Słownik pojęć — warstwa kart (tryb deckdb, ROBOCZE)\n\n"
+        f"DeckDB reguły `{export.rules_version}`, eksport przypisań sha256 `{export.sha256}`, eksport kart "
+        f"`{cards.path.name}` sha256 `{cards.sha256}`.\n\n"
+        + "\n".join(f"- **{a}** — {b}" for a, b in GLOSSARY + CARD_GLOSSARY) + "\n",
+        encoding="utf-8",
+    )
+    written.append(gl)
+    g = dict(CARD_GLOSSARY)
+    footer = (
+        _stamp(export, "karty", m1s, m2e, cov, "" if complete else " (miesiąc 2 niepełny)")
+        + f" · karty sha256 {cards.sha256}\n"
+        + "\n".join(f"{k}: {g[k]}" for k in ("zmiana obecności", "raportowanie zmiany", "rozkład zmiany"))
+    )
+    ch = chart_card_changes(tested, out / "zmiany_kart.png",
+                            f"Zmiany obecności kart {m1s:%Y-%m} → {m2s:%Y-%m} (raportowane: {n_rep} z {n_tested} "
+                            "testowanych; top 30 wg |zmiany|)", footer)
+    if ch is not None:
+        written.append(ch)
+    return written
+
+
 def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_base: Path,
                            trend_weeks: int = 12, cache_dir: Optional[Path] = None,
                            log: Callable[[str], None] = print) -> List[Path]:
@@ -416,6 +550,9 @@ def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of:
     written = build_week(export, as_of, trend_weeks, root)
     written += build_month(export, as_of, root)
     written += build_format_period(export, start, key, as_of, root)
+    if cfg.cards_path is not None:
+        cards = dc.load_cards(cfg.cards_path, export)
+        written += build_card_layer(export, cards, as_of, start, root)
     if cache_dir is not None:
         cache = di.match_mtgo_cache(month_rows, cache_dir, ms, me)
         log(f"[deckdb] cache MTGO (kontrola, miesiąc {ms:%Y-%m}): dopasowane {cache['matched']}, eksport bez cache'u "
