@@ -89,14 +89,15 @@ CARD_GLOSSARY: List[tuple[str, str]] = [
                          f"listami i ≥ {dc.MIN_PILOTS} pilotami w obu miesiącach; przedział: bootstrap po pilotach "
                          "losowanych niezależnie w każdym miesiącu (bez par)."),
     ("raportowanie zmiany", f"|zmiana| ≥ {dc.MIN_CHANGE_PP:.0f} pp i odrzucenie w korekcie Benjamini–Hochberg "
-                            f"(q = {dc.BH_Q}) w jednej rodzinie: test zmiany ogółem i test składowej wewnątrz "
-                            "wariantów dla każdej testowanej pary (talia, strefa, karta) porównania, we wszystkich "
-                            "taliach naraz (2 × liczba par); p dwustronne z przybliżenia normalnego (wartość / błąd "
-                            "standardowy z bootstrapu)."),
+                            f"(q = {dc.BH_Q}) w rodzinie testów zmiany ogółem: wszystkie testowane pary (talia, "
+                            "strefa, karta) porównania we wszystkich taliach; p dwustronne z przybliżenia normalnego "
+                            "(wartość / błąd standardowy z bootstrapu). FDR jest kontrolowany osobno w każdej "
+                            "kategorii (zmiana ogółem; składowa wewnątrz wariantów)."),
     ("rozkład zmiany", "zmiana wewnątrz wariantów + zmiana proporcji wariantów (symetrycznie, sumuje się do zmiany); "
                        "wszystkie etykiety wariantów eksportu, pusta = „(bez wariantu)”."),
-    (dc.KIND_LIST, f"składowa wewnątrz wariantów |≥ {dc.MIN_CHANGE_PP:.0f} pp|, której test odrzuca w tej samej "
-                   f"rodzinie BH (q = {dc.BH_Q}); bootstrap składowej na tych samych losowaniach pilotów."),
+    (dc.KIND_LIST, f"składowa wewnątrz wariantów |≥ {dc.MIN_CHANGE_PP:.0f} pp| istotna w osobnej rodzinie BH "
+                   f"(q = {dc.BH_Q}) testów składowej wewnątrz wariantów (te same testowane pary; bootstrap składowej "
+                   "na tych samych losowaniach pilotów). FDR jest kontrolowany osobno w każdej kategorii."),
     (dc.KIND_COMPOSITION, "zgłoszona zmiana obecności (raportowanie zmiany), która nie jest zmianą list: wynika "
                           "z proporcji wariantów talii, nie ze zmiany list wewnątrz wariantów."),
     ("karta poza testem", "obecność 0% w jednym z miesięcy; nie jest testowana zmianą obecności."),
@@ -536,11 +537,12 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         ("Talie testowane (≥ 30 list i ≥ 10 pilotów w obu miesiącach)",
          int(t["eligible"]["Testowana"].sum()) if not t["eligible"].empty else 0),
         ("Testowane pary talia–strefa–karta", n_tested),
-        ("Rodzina BH (q = 0,10): test zmiany ogółem + test składowej wewnątrz wariantów", 2 * n_tested),
+        ("Rodziny BH (każda q = 0,10)", f"dwie: testy zmiany ogółem ({n_tested}) i testy składowej wewnątrz "
+                                         f"wariantów ({n_tested}); FDR kontrolowany osobno w każdej kategorii"),
         ("Zmiany obecności zgłoszone (|zmiana| ≥ 10 pp, BH q = 0,10)",
          int(tested["Raportowana"].sum()) if n_tested else 0),
         (f"  w tym „{dc.KIND_COMPOSITION}”", len(composition)),
-        (f"„{dc.KIND_LIST}” (|wewnątrz| ≥ 10 pp, test składowej odrzuca w tej samej rodzinie BH)",
+        (f"„{dc.KIND_LIST}” (|wewnątrz| ≥ 10 pp, BH q = 0,10 w rodzinie składowych wewnątrz wariantów)",
          len(list_changes)),
         (f"  w tym bez zgłoszonej zmiany ogółem", int((list_changes["Raportowana"] == 0).sum()) if n_tested else 0),
         ("Zniknięcia (0% w miesiącu 2)", _n(gone)),

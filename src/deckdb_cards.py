@@ -15,15 +15,16 @@ Measures, for deck D, month T, zone z and card c (oracle_id), on D's lists in T:
                     >= 10 pilots in BOTH months; interval = bootstrap over pilots drawn
                     independently in each month (no pairing), 2000 draws, percentiles 2.5 / 97.5;
                     p-value two-sided from the normal approximation z = change / bootstrap SE;
-                    Benjamini-Hochberg q = 0.10 over ONE family (below); reported when |change| >=
-                    10 pp and BH rejects. A card with 0% presence in one of the months is not tested.
+                    Benjamini-Hochberg q = 0.10 in the family of total-change tests (below); reported
+                    when |change| >= 10 pp and BH rejects. A card with 0% presence in one of the months is not tested.
   decomposition   = change within variants + change of variant proportions (symmetric, sums to
                     the change exactly; all export variant labels, empty -> "(bez wariantu)"). The
-                    within-variant component has its own bootstrap (same draws). ONE BH family
-                    (q = 0.10, order of 2026-10-21 f): the total-change test AND the within-variant test
-                    of every tested (deck, zone, card), all decks together (2 x tested hypotheses).
-                    "zmiana list" = |within| >= 10 pp and its test rejected; a reported total change
-                    that is not one is "zmiana składu talii" (variant proportions). The split depends on
+                    within-variant component has its own bootstrap (same draws). TWO BH families, each
+                    q = 0.10 over every tested (deck, zone, card) of all decks: total-change tests and
+                    within-variant tests -- FDR is controlled separately in each category (the single
+                    joint family of 2026-10-21 f was reverted before the full-October run).
+                    "zmiana list" = |within| >= 10 pp and significant in its family; a reported total
+                    change that is not one is "zmiana składu talii" (variant proportions). The split depends on
                     the current variant definitions; a deck without variants has within = total.
   gone card       = 0% in month 2: reported when (1 - share of D's month-1 pilots playing it) ^
                     (D's month-2 pilots) < 0.05 and >= 3 pilots played it in month 1; otherwise an
@@ -61,9 +62,9 @@ MIN_CHANGE_PP = 10.0
 BH_Q = 0.10
 FIRST_SEEN_DAYS = 30
 NO_VARIANT = "(bez wariantu)"
-# order of 2026-10-21 e/f: a "list change" is a within-variant change significant in the single BH family
-# (total-change and within-variant tests together); a reported total change that is not one is a
-# "change of the deck's composition" (variant proportions)
+# a "list change" is a within-variant change significant in the BH family of within-variant tests; a
+# reported total change (BH family of total-change tests) that is not one is a "change of the deck's
+# composition" (variant proportions). FDR is controlled separately in each of the two families.
 KIND_LIST = "zmiana list"
 KIND_COMPOSITION = "zmiana składu talii"
 GONE_P = 0.05            # a gone card is reported when P(0 pilots in month 2 | month-1 pilot share) < GONE_P
@@ -285,11 +286,9 @@ def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, dat
             out_rows.append(rec)
     tested = pd.DataFrame(out_rows)
     if not tested.empty:
-        # one family: both tests of every tested pair (order of 2026-10-21 f)
-        n = len(tested)
-        reject_all, q_all = _bh(np.concatenate([tested["p"].to_numpy(), tested["p_wewnatrz"].to_numpy()]), BH_Q)
-        reject, qv = reject_all[:n], q_all[:n]
-        reject_w, qv_w = reject_all[n:], q_all[n:]
+        # two families, FDR controlled separately in each (total change; within-variant component)
+        reject, qv = _bh(tested["p"].to_numpy(), BH_Q)
+        reject_w, qv_w = _bh(tested["p_wewnatrz"].to_numpy(), BH_Q)
         tested["q_BH"] = qv
         tested["BH_odrzuca"] = reject.astype(int)
         tested["q_BH_wewnatrz"] = qv_w

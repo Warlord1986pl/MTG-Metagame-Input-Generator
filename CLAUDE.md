@@ -250,8 +250,9 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   presence per (deck, zone, oracle_id) per month, basics (`is_basic`) excluded; change between the two
   last months for decks with >= 30 lists and >= 10 pilots in both, pilot bootstrap (no pairing), BH
   q = 0.10 over one family (all decks), reported at |change| >= 10 pp; the within-variant component
-  has its own bootstrap, and both tests of every pair form ONE BH family (q = 0.10): "zmiana list" =
-  |within| >= 10 pp and its test rejected, any other reported change = "zmiana składu talii". 0% in
+  has its own bootstrap and its own BH family (q = 0.10; FDR controlled separately per category):
+  "zmiana list" = |within| >= 10 pp and significant there, any other reported change = "zmiana
+  składu talii". 0% in
   one month is never tested: gone reported if (1 - share of month-1 pilots playing it)^(month-2
   pilots) < 0.05 and >= 3 pilots in month 1; new card / first appearance reported with >= 2 pilots;
   the rest are observations. Pilot list-change distributions. The card file must match the
