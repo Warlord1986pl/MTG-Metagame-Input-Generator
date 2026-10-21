@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import deckdb_input as di  # noqa: E402
 
 WARN_PP = 1.0
+WARN_MIN_LISTS = 20
 
 
 def md(df: pd.DataFrame, digits: int = 1) -> str:
@@ -145,14 +146,17 @@ def main() -> int:
     print(md(exp, 2))
     # decision 2026-10-21 d: the expected conversion stays in this control script only; warn when a deck's
     # expected conversion is more than 1 pp away from the common baseline
-    # checked over every deck of the period, not only the tabulated ones
-    all_exp, _ = expected_conversion(rows, [d for d in counts.index if d != di.NO_DECK_LABEL])
+    # checked over every deck of the period with >= WARN_MIN_LISTS lists (order of 2026-10-21 e),
+    # not only the tabulated ones
+    warned = [d for d in counts.index if d != di.NO_DECK_LABEL and counts[d] >= WARN_MIN_LISTS]
+    all_exp, _ = expected_conversion(rows, warned)
     far = all_exp[all_exp["Oczekiwana_minus_baza_pp"].abs() > WARN_PP]
     for r in far.itertuples():
-        print(f"OSTRZEŻENIE: {r.Talia}: oczekiwana konwersja {r.Oczekiwana_konwersja_pct:.2f}% odbiega od bazy "
-              f"wspólnej o {r.Oczekiwana_minus_baza_pp:+.2f} pp (> {WARN_PP} pp)")
+        print(f"OSTRZEŻENIE: {r.Talia} ({r.Listy} list): oczekiwana konwersja {r.Oczekiwana_konwersja_pct:.2f}% "
+              f"odbiega od bazy wspólnej o {r.Oczekiwana_minus_baza_pp:+.2f} pp (> {WARN_PP} pp)")
     if far.empty:
-        print(f"oczekiwana konwersja: żadna talia nie odbiega od bazy wspólnej o więcej niż {WARN_PP} pp")
+        print(f"oczekiwana konwersja: żadna z {len(warned)} talii z >= {WARN_MIN_LISTS} listami nie odbiega od bazy "
+              f"wspólnej o więcej niż {WARN_PP} pp")
     print()
     print(md(pilot_measures(rows, decks)))
     boot, secs = pilot_bootstrap(rows, decks, args.boot, args.seed)
