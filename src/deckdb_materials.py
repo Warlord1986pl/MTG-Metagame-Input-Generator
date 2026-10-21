@@ -173,6 +173,15 @@ OMITTED_MATERIALS: List[tuple[str, str]] = [
                                                                      "period's events are in the Events sheet"),
 ]
 
+# Render override for test renders only (scripts/deckdb_presentation_test.py): e.g. {"figsize": (12.8, 7.2),
+# "dpi": 150}. Empty for every material.
+RENDER_OVERRIDE: Dict[str, object] = {}
+
+
+def _render(**defaults) -> Dict[str, object]:
+    return {**defaults, **RENDER_OVERRIDE}
+
+
 _STYLE = _build_style("classic", None, None)  # (performance, trend, deck, legend) colours of the legacy charts
 
 
@@ -275,7 +284,7 @@ def _share_charts(decks: pd.DataFrame, archs: pd.DataFrame, out: Path, what: str
         p = _chart_compare_presence(
             tbl, out / f"share_top32_{name}.png",
             f"{key}s, {what}: {M_SHARE}, {M_PRESENCE}, {M_TOP8} (top {TOP_N_CHART} by share)",
-            key_col=key, bars=SHARE_BARS, ylabel="%", top_n=TOP_N_CHART, footer=footer)
+            key_col=key, bars=SHARE_BARS, ylabel="%", top_n=TOP_N_CHART, footer=footer, **_render())
         if p is not None:
             written.append(p)
     return written
@@ -294,7 +303,8 @@ def _trend_chart(trend: pd.DataFrame, current: pd.DataFrame, key: str, level: st
         hist, cur, len(weeks), len(weeks), "deckdb", level, path.parent, *_STYLE[1:],
         value_col="Share_Top32_pct", title=f"{key}s: {M_SHARE} - last {len(weeks)} ISO weeks (disjoint)",
         xlabel="ISO week", ylabel=f"{M_SHARE} (%)", week_labels={i: w for w, i in idx.items()},
-        show_trend_status=False, legend_title=f"{key}s (top 10 of the last week)", footer=footer, out_path=path)
+        show_trend_status=False, legend_title=f"{key}s (top 10 of the last week)", footer=footer, out_path=path,
+        **_render())
     return p
 
 
@@ -394,7 +404,7 @@ def _conversion_chart(tbl: pd.DataFrame, key: str, baseline: float, path: Path, 
         f"{title}\n{M_CONVERSION}: red-blue scale diverging around the {M_BASELINE} {baseline:.2f}% (Top 8 lists / "
         "lists of the period); other columns: own 0..max blue scale",
         columns=columns, scales=scales, cell_text=_conversion_cell, top_n=TOP_N_CHART, colorbar_label="",
-        footer=footer, figsize=(4 + 1.6 * len(columns), 9))
+        footer=footer, **_render(figsize=(4 + 1.6 * len(columns), 9)))
 
 
 def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as_of: date, root: Path) -> List[Path]:
@@ -534,7 +544,7 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
                    "bar colours: rank order only",
             top_n=TOP_N_CARD_CHART,
             footer=f"{stamp}\n{_terms(*terms, glossary=CARD_GLOSSARY)}\n{VARIANT_SPLIT_NOTE}\n{FDR_NOTE}",
-            figsize=(18, 10))
+            **_render(figsize=(18, 10)))
         if p is not None:
             written.append(p)
     return written
