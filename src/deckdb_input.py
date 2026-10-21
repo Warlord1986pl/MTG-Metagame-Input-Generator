@@ -58,6 +58,12 @@ STATUS_ROGUE = "rogue"
 STATUS_UNASSIGNED = "unassigned"
 
 BOOT_MIN_PILOTS = 10
+# pilot labels (order of 2026-10-21 e): "mało pilotów" = < BOOT_MIN_PILOTS pilots, no interval;
+# "koncentracja" = the most frequent pilot has >= 1/3 of the deck's lists or >= 1/2 of its Top 8 entries
+LABEL_FEW_PILOTS = "mało pilotów"
+LABEL_CONCENTRATION = "koncentracja"
+CONCENTRATION_LISTS = 1 / 3
+CONCENTRATION_TOP8 = 1 / 2
 BOOT_DRAWS = 2000
 BOOT_SEED = 20261021
 
@@ -315,14 +321,17 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
             "Trofea": int(grp["trophy"].sum()),
             "Piloci_Top32": n_pilots,
         }
+        labels = []
         if n_pilots >= BOOT_MIN_PILOTS:
             rec["Przedzial_dol_pct"], rec["Przedzial_gora_pct"] = pilot_bootstrap(per, draws, rng)
             rec["Przedzial_info"] = f"bootstrap po pilotach, {n_pilots} pilotów"
         else:
-            rec["Przedzial_info"] = (
-                f"bez przedziału: koncentracja — {n_pilots} pilotów (< {BOOT_MIN_PILOTS}), "
-                f"najczęstszy ma {lead['lists'] / lists * 100.0:.0f}% list"
-            )
+            rec["Przedzial_info"] = f"bez przedziału: {n_pilots} pilotów (< {BOOT_MIN_PILOTS})"
+            labels.append(LABEL_FEW_PILOTS)
+        if pilots and label != NO_DECK_LABEL and (
+                lead["lists"] / lists >= CONCENTRATION_LISTS or (top8 and lead["top8"] / top8 >= CONCENTRATION_TOP8)):
+            labels.append(LABEL_CONCENTRATION)
+        rec["Etykieta_pilotow"] = ", ".join(labels)
         if pilots and label != NO_DECK_LABEL:
             rest = grp[grp["player"] != lead["player"]]
             rec.update({

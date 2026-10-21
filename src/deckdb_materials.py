@@ -54,7 +54,10 @@ GLOSSARY: List[tuple[str, str]] = [
                   "wszystkie listy okresu (z danych, nie 25%)."),
     ("przedział", f"przedział 95% konwersji: bootstrap po pilotach ({di.BOOT_DRAWS} losowań pilotów talii ze "
                   f"zwracaniem, wszystkie listy wylosowanego pilota), tylko przy co najmniej {di.BOOT_MIN_PILOTS} "
-                  "pilotach; poniżej brak przedziału i etykieta koncentracji."),
+                  "pilotach; poniżej brak przedziału i etykieta „mało pilotów”."),
+    ("etykiety pilotów", f"„{di.LABEL_FEW_PILOTS}”: mniej niż {di.BOOT_MIN_PILOTS} pilotów w okresie, bez przedziału; "
+                         f"„{di.LABEL_CONCENTRATION}”: najczęstszy pilot ma co najmniej 1/3 list talii albo co "
+                         "najmniej 1/2 jej wejść do Top 8 (tylko talie)."),
     ("oczekiwana konwersja", "Σ 8/L po listach talii / listy talii; tylko w skrypcie kontrolnym "
                              "(scripts/deckdb_methodology_stats.py), nie w materiałach."),
     ("trofeum", "lista z final_rank = 1; podawane jako liczba (miesiąc, okres formatu)."),
@@ -178,9 +181,10 @@ def chart_share(tbl: pd.DataFrame, key: str, n_events: int, path: Path, title: s
 
 
 def _conv_text(r: pd.Series) -> str:
+    text = f"{r['Konwersja_pct']:.1f}%"
     if not math.isnan(r["Przedzial_dol_pct"]):
-        return f"{r['Konwersja_pct']:.1f}% [{r['Przedzial_dol_pct']:.0f}–{r['Przedzial_gora_pct']:.0f}]"
-    return f"{r['Konwersja_pct']:.1f}% (bez przedz., {int(r['Piloci_Top32'])} pil.)"
+        text += f" [{r['Przedzial_dol_pct']:.0f}–{r['Przedzial_gora_pct']:.0f}]"
+    return text + (f"\n{r['Etykieta_pilotow']}" if r.get("Etykieta_pilotow") else "")
 
 
 def chart_conversion(tbl: pd.DataFrame, key: str, baseline: float, path: Path, title: str, footer: str,
@@ -404,7 +408,7 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
                   "Remis_najcz_pilota"]
     pilots = decks[decks["Talia"] != di.NO_DECK_LABEL][pilot_cols].reset_index(drop=True)
     deck_cols = ["Talia", "Archetyp", "Listy", "Top8", "Konwersja_pct", "Przedzial_dol_pct", "Przedzial_gora_pct",
-                 "Przedzial_info", "Trofea", "Piloci_Top32"]
+                 "Przedzial_info", "Etykieta_pilotow", "Trofea", "Piloci_Top32"]
     status = _status_rows(export, "okres formatu", start, as_of, rows, cov, [
         ("Początek okresu formatu", f"{start.isoformat()} (effective_mtgo, wpis {event_key} w rules/format_events.yaml)"),
         ("Baza wspólna konwersji (listy Top 8 / listy okresu), %", round(baseline, 3)),
@@ -420,11 +424,12 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
     written.append(chart_conversion(
         decks, "Talia", baseline, out / "konwersja_talie.png",
         f"Talie, okres formatu od {start.isoformat()}: konwersja Top 32 → Top 8 i piloci (top {TOP_N_CHART} wg list)",
-        f"{stamp}\n{_glossary_terms('konwersja', 'przedział', 'najczęstszy pilot', 'okres formatu')}", pilots=True))
+        f"{stamp}\n{_glossary_terms('konwersja', 'przedział', 'etykiety pilotów', 'najczęstszy pilot', 'okres formatu')}",
+        pilots=True))
     written.append(chart_conversion(
         archs, "Archetyp", baseline, out / "konwersja_archetypy.png",
         f"Archetypy, okres formatu od {start.isoformat()}: konwersja Top 32 → Top 8",
-        f"{stamp}\n{_glossary_terms('konwersja', 'przedział', 'okres formatu')}", pilots=False))
+        f"{stamp}\n{_glossary_terms('konwersja', 'przedział', 'etykiety pilotów', 'okres formatu')}", pilots=False))
     return written
 
 

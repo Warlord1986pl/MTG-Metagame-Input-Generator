@@ -133,7 +133,12 @@ def test_conversion_baseline_pilots_and_bootstrap_threshold(tmp_path):
     assert a["Najcz_pilot_konwersja_pct"] == pytest.approx(60.0)
     assert a["Bez_najcz_pilota_konwersja_pct"] == pytest.approx(200 / 11)
     assert a["Piloci_Top8"] == 3
-    assert math.isnan(b["Przedzial_dol_pct"]) and "koncentracja" in b["Przedzial_info"]
+    # B: 3 pilots (< 10) and q0 holds 1/3 of the lists and the only Top 8 entry -> both labels
+    assert math.isnan(b["Przedzial_dol_pct"]) and b["Etykieta_pilotow"] == "mało pilotów, koncentracja"
+    # A: p0 has 5/16 lists (< 1/3) but 3/5 of the Top 8 entries (>= 1/2) -> concentration only
+    assert a["Etykieta_pilotow"] == "koncentracja"
+    arch_b = di.conversion_table(r[r["deck"] == "B"], "material_archetype", "Archetyp", pilots=False)
+    assert arch_b.loc[0, "Etykieta_pilotow"] == "mało pilotów"  # no concentration label for archetypes
     arch = di.conversion_table(r, "material_archetype", "Archetyp", pilots=False)
     assert "Najcz_pilot_listy" not in arch.columns and arch.loc[0, "Listy"] == 19
 
