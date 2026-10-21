@@ -19,8 +19,12 @@ aggregate of its decks' lists. Rogue and unassigned lists are one "bez talii" ro
 
   share of Top 32 Challenge     = deck lists / all lists of the window
   event presence                = distinct events with >= 1 list of the deck
-  Top 8                         = lists with final_rank <= 8; conversion = Top 8 / lists
-  trophies                      = lists with final_rank == 1
+  Top 8                         = lists with final_rank <= 8; conversion = Top 8 / lists, Wilson
+                                  interval on lists; baseline = all Top 8 lists / all lists of the
+                                  window (measured, not assumed 25%)
+  trophies                      = lists with final_rank == 1; trophies / lists
+  Top 8 / winner event freq.    = events with >= 1 list of the deck at final_rank <= 8 (== 1)
+                                  / events of the window
   Swiss winrate                 = sum(swiss_wins) / sum(swiss_wins + swiss_losses), Wilson interval
                                   on matches (too narrow: one player brings many lists)
   players / top player share    = distinct ``player`` / max lists of one ``player`` / deck lists
@@ -51,12 +55,17 @@ WILSON_NOTE = (
     "Przedział Wilsona (95%) liczony na meczach szwajcarskich jest zaniżony (za wąski): "
     "jeden gracz wnosi wiele list, więc mecze nie są niezależne."
 )
+CONVERSION_WILSON_NOTE = (
+    "Przedział Wilsona (95%) konwersji liczony na listach jest zaniżony (za wąski): "
+    "jeden gracz wnosi wiele list, więc listy nie są niezależne."
+)
 WINRATE_NOTE = "Winrate szwajcarski list, które awansowały do Top 32 (bez drabinki Top 8, bez bye)."
 NO_DECK_WINRATE_NOTE = "Wiersz „bez talii” (Rogue + nieprzypisane) jest niejednorodny; jego winrate tylko poglądowo."
 
-# Variant split threshold D2: a variant is shown when it has >= 5% of the deck's lists, >= 3 lists
-# and >= 2 players, and only for a deck with >= 20 lists in at least one calendar month of the
-# window (counted inside the window).
+# Variant reporting threshold D2 (DeckDB docs/decisions.md, entry 35): a variant is reported IN A
+# MONTH when, in that month, it has >= 5% of the deck's lists, >= 3 lists and >= 2 distinct players;
+# only months with >= 20 lists of the deck count. Evaluated per calendar month, on the window's rows.
+# D2 counts players by loginid; `player` is a 1:1 pseudonym of it, so the distinct count is the same.
 VARIANT_MIN_SHARE = 0.05
 VARIANT_MIN_LISTS = 3
 VARIANT_MIN_PLAYERS = 2
@@ -191,12 +200,21 @@ def wilson_interval(wins: int, n: int, z: float = WILSON_Z) -> tuple[float, floa
     return (center - half, center + half)
 
 
-def group_metrics(rows: pd.DataFrame, key: pd.Series, key_name: str, total_lists: int) -> pd.DataFrame:
+def top8_baseline(rows: pd.DataFrame) -> float:
+    """All Top 8 lists / all lists of the window, in percent (the conversion baseline)."""
+    return float((rows["final_rank"] <= 8).sum()) / len(rows) * 100.0 if len(rows) else math.nan
+
+
+def group_metrics(rows: pd.DataFrame, key: pd.Series, key_name: str, total_lists: int, total_events: int) -> pd.DataFrame:
     """One row per value of *key* over *rows*; every count comes straight from the export rows."""
     out: List[dict] = []
     for label, grp in rows.groupby(key, sort=False):
         lists = len(grp)
         top8 = int((grp["final_rank"] <= 8).sum())
+        trophies = int((grp["final_rank"] == 1).sum())
+        top8_events = int(grp.loc[grp["final_rank"] <= 8, "event_id"].nunique())
+        win_events = int(grp.loc[grp["final_rank"] == 1, "event_id"].nunique())
+        clo, chi = wilson_interval(top8, lists)
         wins = int(grp["swiss_wins"].sum())
         losses = int(grp["swiss_losses"].sum())
         matches = wins + losses
@@ -209,7 +227,14 @@ def group_metrics(rows: pd.DataFrame, key: pd.Series, key_name: str, total_lists
             "Eventy_z_lista": int(grp["event_id"].nunique()),
             "Top8": top8,
             "Konwersja_Top32_Top8_pct": top8 / lists * 100.0,
-            "Trofea": int((grp["final_rank"] == 1).sum()),
+            "Konwersja_Wilson95_dol_pct": clo * 100.0,
+            "Konwersja_Wilson95_gora_pct": chi * 100.0,
+            "Eventy_z_Top8": top8_events,
+            "Top8_eventy_pct": top8_events / total_events * 100.0,
+            "Trofea": trophies,
+            "Trofea_na_liste_pct": trophies / lists * 100.0,
+            "Eventy_ze_zwyciestwem": win_events,
+            "Zwyciestwa_eventy_pct": win_events / total_events * 100.0,
             "Wygrane_szw": wins,
             "Przegrane_szw": losses,
             "Mecze_szw": matches,
@@ -227,7 +252,7 @@ def group_metrics(rows: pd.DataFrame, key: pd.Series, key_name: str, total_lists
 
 def deck_table(rows: pd.DataFrame) -> pd.DataFrame:
     """Deck level; Rogue + unassigned as one NO_DECK_LABEL row."""
-    tbl = group_metrics(rows, _material_deck(rows), "Talia", len(rows))
+    tbl = group_metrics(rows, _material_deck(rows), "Talia", len(rows), rows["event_id"].nunique())
     arch = (
         rows.assign(_d=_material_deck(rows), _a=_material_archetype(rows))
         .drop_duplicates("_d").set_index("_d")["_a"]
@@ -242,7 +267,7 @@ def archetype_table(rows: pd.DataFrame) -> pd.DataFrame:
     per_deck = assigned.groupby("deck")["archetype"].nunique()
     if (per_deck > 1).any():
         raise DeckdbInputError(f"Talie z więcej niż jednym archetypem: {sorted(per_deck[per_deck > 1].index)}")
-    tbl = group_metrics(rows, _material_archetype(rows), "Archetyp", len(rows))
+    tbl = group_metrics(rows, _material_archetype(rows), "Archetyp", len(rows), rows["event_id"].nunique())
     decks = rows.assign(_a=_material_archetype(rows), _d=_material_deck(rows)).groupby("_a")["_d"].nunique()
     tbl.insert(1, "Talie", tbl["Archetyp"].map(decks).astype(int))
     return tbl
@@ -253,34 +278,35 @@ def no_deck_split(rows: pd.DataFrame) -> pd.DataFrame:
     sub = rows[rows["status"] != STATUS_ASSIGNED]
     if sub.empty:
         return pd.DataFrame()
-    return group_metrics(sub, sub["status"], "Status", len(rows))
+    return group_metrics(sub, sub["status"], "Status", len(rows), rows["event_id"].nunique())
 
 
 def variant_table(rows: pd.DataFrame) -> pd.DataFrame:
-    """Variants passing D2, for decks passing the monthly gate. Deck metrics are not affected."""
+    """Variants reported under D2, one row per (month, deck, variant). Deck metrics are not affected."""
     assigned = rows[rows["status"] == STATUS_ASSIGNED]
     out: List[dict] = []
-    for deck, grp in assigned.groupby("deck"):
-        month_counts = grp.groupby(grp["event_date"].str[:7]).size()
-        if month_counts.max() < VARIANT_MIN_DECK_LISTS_PER_MONTH:
-            continue
+    for (month, deck), grp in assigned.groupby([assigned["event_date"].str[:7], "deck"]):
         deck_lists = len(grp)
+        if deck_lists < VARIANT_MIN_DECK_LISTS_PER_MONTH:
+            continue
         for variant, vgrp in grp[grp["variant"] != ""].groupby("variant"):
             n = len(vgrp)
             players = int(vgrp["player"].nunique())
             if n / deck_lists >= VARIANT_MIN_SHARE and n >= VARIANT_MIN_LISTS and players >= VARIANT_MIN_PLAYERS:
                 out.append({
+                    "Miesiac": month,
                     "Talia": deck,
                     "Wariant": variant,
                     "Listy_wariantu": n,
-                    "Listy_talii": deck_lists,
+                    "Listy_talii_w_miesiacu": deck_lists,
                     "Udzial_w_talii_pct": n / deck_lists * 100.0,
                     "Gracze_wariantu": players,
-                    "Maks_listy_talii_w_miesiacu": int(month_counts.max()),
                 })
     if not out:
         return pd.DataFrame()
-    return pd.DataFrame(out).sort_values(["Listy_talii", "Talia", "Listy_wariantu"], ascending=[False, True, False]).reset_index(drop=True)
+    return pd.DataFrame(out).sort_values(
+        ["Miesiac", "Listy_talii_w_miesiacu", "Talia", "Listy_wariantu"], ascending=[True, False, True, False]
+    ).reset_index(drop=True)
 
 
 def event_table(rows: pd.DataFrame) -> pd.DataFrame:

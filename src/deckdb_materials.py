@@ -38,7 +38,7 @@ OMITTED_MATERIALS: List[tuple[str, str]] = [
     ("encounter_prob_Deck/_Archetype.png", "udział w Top 32 nie jest prawdopodobieństwem spotkania talii (metodologia DeckDB)"),
     ("record_probability.png / record_probabilities.xlsx", "rozkład rekordów z winrate Videre"),
     ("deck_analysis*.xlsx: Importance, Quartile, Prep Priority, Performance Label, Trend Label", "miary złożone z Meta i winrate Videre, bez definicji dla eksportu"),
-    ("challenge_statistics.xlsx: Top8/Top16/Winner Event Freq %, AvgPlace, Top16/Top4/Top2", "miary spoza polecenia (nie zdefiniowane dla trybu deckdb)"),
+    ("challenge_statistics.xlsx: Top16 Event Freq %, Top16/Top4/Top2 Count, AvgPlace, BestPlace", "miary spoza polecenia (nie zdefiniowane dla trybu deckdb)"),
     ("challenge_statistics.xlsx: arkusze C16/C32/C64/C96", "eksport nie ma kolumny poziomu Challenge'a"),
     ("challenge_statistics.xlsx: BestPilots, finalists_*.csv: piloci", "nicki/loginid nie mogą trafić do materiałów"),
     ("challenge_C*_decklist.csv", "zawierały nicki; miejsca talii są w eksporcie"),
@@ -89,31 +89,54 @@ def chart_share(tbl: pd.DataFrame, key: str, n_events: int, path: Path, title: s
     return _save(fig, path, stamp)
 
 
-def chart_conversion(tbl: pd.DataFrame, key: str, n_events: int, path: Path, title: str, stamp: str) -> Path:
-    """Counterpart of challenge_conversion_matrix_*: top TOP_N_CHART rows by lists; each column
-    coloured on its own scale, cells show the value itself."""
-    df = tbl.sort_values("Listy", ascending=False).head(TOP_N_CHART)
+def chart_conversion(tbl: pd.DataFrame, key: str, n_events: int, baseline: float, path: Path, title: str,
+                     stamp: str) -> Path:
+    """Counterpart of challenge_conversion_matrix_*: top TOP_N_CHART rows by lists. Conversion is
+    coloured on a diverging scale centred on *baseline* (window Top 8 lists / window lists); every
+    other column on its own 0..max scale. Cells show the value itself."""
+    df = tbl.sort_values("Listy", ascending=False).head(TOP_N_CHART).reset_index(drop=True)
+    conv_col = "Konwersja_Top32_Top8_pct"
     cols = [
-        ("Udzial_Top32_pct", f"{SHARE_LABEL}\n%", lambda v: f"{v:.1f}%"),
-        ("Eventy_z_lista", f"obecność\n(z {n_events} eventów)", lambda v: f"{int(v)}"),
-        ("Top8", "Top 8\n(listy)", lambda v: f"{int(v)}"),
-        ("Konwersja_Top32_Top8_pct", "konwersja\nTop 32 → Top 8", lambda v: f"{v:.1f}%"),
-        ("Trofea", "trofea", lambda v: f"{int(v)}"),
+        ("Udzial_Top32_pct", f"{SHARE_LABEL}\n%", lambda r: f"{r['Udzial_Top32_pct']:.1f}%"),
+        ("Eventy_z_lista", f"obecność\n(z {n_events} eventów)", lambda r: f"{int(r['Eventy_z_lista'])}"),
+        ("Top8", "Top 8\n(listy)", lambda r: f"{int(r['Top8'])}"),
+        ("Top8_eventy_pct", "Top 8\n% eventów", lambda r: f"{r['Top8_eventy_pct']:.1f}%"),
+        (conv_col, "konwersja Top 32 → Top 8\n[Wilson 95%]",
+         lambda r: f"{r[conv_col]:.1f}% [{r['Konwersja_Wilson95_dol_pct']:.0f}–{r['Konwersja_Wilson95_gora_pct']:.0f}]"),
+        ("Trofea", "trofea", lambda r: f"{int(r['Trofea'])}"),
+        ("Zwyciestwa_eventy_pct", "zwycięstwa\n% eventów", lambda r: f"{r['Zwyciestwa_eventy_pct']:.1f}%"),
+        ("Trofea_na_liste_pct", "trofea /\nlisty %", lambda r: f"{r['Trofea_na_liste_pct']:.1f}%"),
     ]
-    data = df[[c for c, _, _ in cols]].to_numpy(dtype=float)
-    col_max = np.where(data.max(axis=0) > 0, data.max(axis=0), 1)
-    norm = data / col_max
-    fig, ax = plt.subplots(figsize=(12, 0.38 * len(df) + 2))
-    ax.imshow(norm, aspect="auto", cmap="YlGnBu", vmin=0, vmax=1)
-    for i in range(data.shape[0]):
+    seq = plt.get_cmap("YlGnBu")
+    div = plt.get_cmap("RdBu")
+    rgba = np.zeros((len(df), len(cols), 4))
+    level = np.zeros((len(df), len(cols)))  # 0..1 colour intensity, for text contrast
+    for j, (col, _, _) in enumerate(cols):
+        vals = df[col].to_numpy(dtype=float)
+        if col == conv_col:
+            span = np.nanmax(np.abs(vals - baseline)) or 1.0
+            pos = 0.5 + 0.5 * (vals - baseline) / span
+            rgba[:, j] = div(pos)
+            level[:, j] = np.abs(pos - 0.5) * 2
+        else:
+            top = np.nanmax(vals) if np.nanmax(vals) > 0 else 1.0
+            rgba[:, j] = seq(vals / top)
+            level[:, j] = vals / top
+    fig, ax = plt.subplots(figsize=(15, 0.38 * len(df) + 2.6))
+    ax.imshow(rgba, aspect="auto")
+    for i, row in df.iterrows():
         for j, (_, _, fmt) in enumerate(cols):
-            ax.text(j, i, fmt(data[i, j]), ha="center", va="center", fontsize=8,
-                    color="#111111" if norm[i, j] < 0.65 else "#ffffff")
+            ax.text(j, i, fmt(row), ha="center", va="center", fontsize=7.5,
+                    color="#111111" if level[i, j] < 0.65 else "#ffffff")
     ax.set_yticks(range(len(df)))
     ax.set_yticklabels(df[key])
     ax.set_xticks(range(len(cols)))
-    ax.set_xticklabels([lbl for _, lbl, _ in cols])
-    ax.set_title(f"{title}\nkolor: skala osobna dla każdej kolumny")
+    ax.set_xticklabels([lbl for _, lbl, _ in cols], fontsize=8)
+    ax.set_title(
+        f"{title}\nkonwersja: skala rozbieżna wokół bazy {baseline:.1f}% (listy Top 8 / listy okna, z danych okna); "
+        f"pozostałe kolumny: skala osobna 0…max\n{di.CONVERSION_WILSON_NOTE}",
+        fontsize=9,
+    )
     return _save(fig, path, stamp)
 
 
@@ -178,6 +201,7 @@ def build_working_breakdown(
         raise di.DeckdbInputError(f"Okno {start}..{end}: brak list w eksporcie")
     out_dir.mkdir(parents=True, exist_ok=True)
     cov = di.coverage(rows)
+    baseline = di.top8_baseline(rows)
     stamp = _stamp(export, start, end, cov)
     label = f"{start.isoformat()}_to_{end.isoformat()}"
     n_events = cov["events"]
@@ -203,6 +227,9 @@ def build_working_breakdown(
         ("  w tym nieprzypisane", int((rows["status"] == di.STATUS_UNASSIGNED).sum())),
         ("Suma player_count eventów okna", cov["participants"]),
         ("Pokrycie uczestników (listy / suma player_count), %", round(cov["coverage_pct"], 2)),
+        ("Baza konwersji Top 32 → Top 8 (listy Top 8 / listy okna), %", round(baseline, 2)),
+        ("  listy Top 8 w oknie", int((rows["final_rank"] <= 8).sum())),
+        ("Przedział konwersji", di.CONVERSION_WILSON_NOTE),
         ("rules_version", export.rules_version),
         ("Plik eksportu", str(export.path)),
         ("sha256 eksportu", export.sha256),
@@ -211,9 +238,10 @@ def build_working_breakdown(
         ("Winrate", di.WINRATE_NOTE),
         ("Przedział", di.WILSON_NOTE),
         ("Bez talii", di.NO_DECK_WINRATE_NOTE),
-        ("Warianty (D2)", f">= {di.VARIANT_MIN_SHARE:.0%} list talii, >= {di.VARIANT_MIN_LISTS} listy, "
-                          f">= {di.VARIANT_MIN_PLAYERS} graczy; talia z >= {di.VARIANT_MIN_DECK_LISTS_PER_MONTH} "
-                          "listami w co najmniej jednym miesiącu kalendarzowym okna; metryki talii bez zmian"),
+        ("Warianty (D2, DeckDB decisions.md wpis 35)",
+         f"w każdym miesiącu kalendarzowym okna osobno: >= {di.VARIANT_MIN_SHARE:.0%} list talii w miesiącu, "
+         f">= {di.VARIANT_MIN_LISTS} listy, >= {di.VARIANT_MIN_PLAYERS} różnych graczy; liczą się tylko miesiące "
+         f"z >= {di.VARIANT_MIN_DECK_LISTS_PER_MONTH} listami talii; metryki talii bez zmian"),
         ("Trend", f"{trend_weeks} okien 14-dniowych co 7 dni, ostatnie kończy się {end.isoformat()}"),
     ]
     if cache is not None:
@@ -245,6 +273,10 @@ def build_working_breakdown(
     fin_csv = out_dir / f"finalisci_ROBOCZE_{label}.csv"
     _stamp_cols(finalists, export).to_csv(fin_csv, index=False, encoding="utf-8-sig")
     written.append(fin_csv)
+    for name, tbl in (("talie", decks), ("archetypy", archs)):
+        tbl_csv = out_dir / f"{name}_ROBOCZE_{label}.csv"
+        _stamp_cols(tbl, export).to_csv(tbl_csv, index=False, encoding="utf-8-sig")
+        written.append(tbl_csv)
     hist_csv = out_dir / f"udzial_top32_historia_ROBOCZE_{label}.csv"
     _stamp_cols(trend_d, export).to_csv(hist_csv, index=False, encoding="utf-8-sig")
     written.append(hist_csv)
@@ -253,10 +285,10 @@ def build_working_breakdown(
                                f"Talie: {SHARE_LABEL} i obecność w eventach", stamp))
     written.append(chart_share(archs, "Archetyp", n_events, out_dir / "udzial_top32_archetypy.png",
                                f"Archetypy: {SHARE_LABEL} i obecność w eventach", stamp))
-    written.append(chart_conversion(decks, "Talia", n_events, out_dir / "konwersja_talie.png",
-                                    f"Talie: {SHARE_LABEL}, Top 8, konwersja, trofea (top {TOP_N_CHART})", stamp))
-    written.append(chart_conversion(archs, "Archetyp", n_events, out_dir / "konwersja_archetypy.png",
-                                    f"Archetypy: {SHARE_LABEL}, Top 8, konwersja, trofea", stamp))
+    written.append(chart_conversion(decks, "Talia", n_events, baseline, out_dir / "konwersja_talie.png",
+                                    f"Talie: {SHARE_LABEL}, Top 8, konwersja, trofea, zwycięstwa (top {TOP_N_CHART})", stamp))
+    written.append(chart_conversion(archs, "Archetyp", n_events, baseline, out_dir / "konwersja_archetypy.png",
+                                    f"Archetypy: {SHARE_LABEL}, Top 8, konwersja, trofea, zwycięstwa", stamp))
     written.append(chart_winrate(decks, "Talia", out_dir / "winrate_szwajcarski_talie.png",
                                  f"Talie: winrate szwajcarski (top {TOP_N_CHART} wg {SHARE_LABEL})", stamp))
     written.append(chart_winrate(archs, "Archetyp", out_dir / "winrate_szwajcarski_archetypy.png",

@@ -118,7 +118,7 @@ def test_variant_threshold_d2(tmp_path):
         rows.append(_row(2, 200 + i, "2026-10-02", "assigned", "Burn", "Aggro", f"b{i}", i + 1, 3, 3, variant="X Burn"))
     exp = di.load_export(_write(tmp_path, rows))
     var = di.variant_table(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2)))
-    assert list(var["Wariant"]) == ["V1 Zoo"]  # V2: 1 player, V3: 2 lists
+    assert list(var["Wariant"]) == ["V1 Zoo"] and list(var["Miesiac"]) == ["2026-10"]  # V2: 1 player, V3: 2 lists
 
 
 def test_finalists_have_no_player_identifiers(tmp_path):
@@ -169,8 +169,35 @@ def test_working_breakdown_and_cli_mode(tmp_path):
     out = dm.working_dir(tmp_path / "out", date(2026, 10, 1), date(2026, 10, 1))
     files = dm.build_working_breakdown(exp, date(2026, 10, 1), date(2026, 10, 1), out, None, trend_weeks=0,
                                        log=lambda _m: None)
-    assert "ROBOCZE" in out.name and len(files) == 9  # no trend charts with trend_weeks=0
+    assert "ROBOCZE" in out.name and len(files) == 11  # no trend charts with trend_weeks=0
     status = pd.read_excel(files[0], sheet_name="STATUS")
     assert exp.sha256 in status["Wartość"].astype(str).tolist()
     fin = pd.read_csv(files[1], encoding="utf-8-sig", dtype=str)
     assert set(fin["rules_version"]) == {"rv1"} and set(fin["export_sha256"]) == {exp.sha256}
+
+
+def test_event_frequencies_conversion_interval_and_baseline(tmp_path):
+    exp = di.load_export(_sample(tmp_path))
+    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
+    zoo = di.deck_table(rows).set_index("Talia").loc["Zoo"]
+    assert zoo["Eventy_z_Top8"] == 2 and zoo["Top8_eventy_pct"] == pytest.approx(100.0)
+    assert zoo["Eventy_ze_zwyciestwem"] == 1 and zoo["Zwyciestwa_eventy_pct"] == pytest.approx(50.0)
+    assert zoo["Trofea_na_liste_pct"] == pytest.approx(100 / 3)
+    lo, hi = di.wilson_interval(2, 3)
+    assert zoo["Konwersja_Wilson95_dol_pct"] == pytest.approx(lo * 100)
+    assert zoo["Konwersja_Wilson95_gora_pct"] == pytest.approx(hi * 100)
+    # 4 of 6 window lists have final_rank <= 8 -- measured, not 25%
+    assert di.top8_baseline(rows) == pytest.approx(400 / 6)
+
+
+def test_variant_threshold_is_evaluated_per_month(tmp_path):
+    rows = []
+    for i in range(25):  # October: 25 Zoo lists, no variant
+        rows.append(_row(1, 300 + i, "2026-10-30", "assigned", "Zoo", "Aggro", f"o{i}", i + 1, 3, 3))
+    for i in range(10):  # November: 10 Zoo lists, 3 of them "V Zoo" by 2 players
+        rows.append(_row(2, 400 + i, "2026-11-02", "assigned", "Zoo", "Aggro", f"n{i % 2}" if i < 3 else f"m{i}",
+                         i + 1, 3, 3, variant="V Zoo" if i < 3 else ""))
+    exp = di.load_export(_write(tmp_path, rows))
+    var = di.variant_table(di.window_rows(exp, date(2026, 10, 30), date(2026, 11, 2)))
+    # window-wide it would pass (3/35 lists, 2 players); November has < 20 Zoo lists, so it does not count
+    assert var.empty
