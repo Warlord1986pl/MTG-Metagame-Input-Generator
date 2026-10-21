@@ -4,7 +4,8 @@ Input: the ``deckdb export-cards`` file (``cards_path`` in docs/deckdb_config.cs
 ``docs/export.md``): one row per (event_id, decktournamentid, zone, oracle_id), qty summed over the
 oracle_id, ``is_basic`` from the supertype Basic. Lands with ``is_basic`` = 1 are excluded from every
 measure. The file must cover exactly the lists of the assignment export (unmatched keys are counted
-both ways and refuse the run) and carry one name-match version, equal to the assignment export's.
+both ways and refuse the run) and carry one name-match version and one ``data_version``, both equal
+to the assignment export's (an assignment export without ``data_version`` is refused).
 
 Measures, for deck D, month T, zone z and card c (oracle_id), on D's lists in T:
 
@@ -96,6 +97,14 @@ def load_cards(path: Optional[Path], export: di.DeckdbExport) -> CardLayer:
     if one["name_match_version"] != export.name_match_version:
         raise di.DeckdbInputError(
             f"Wersja mapowania nazw: karty {one['name_match_version']}, przypisania {export.name_match_version}")
+    # order of 2026-10-21 f: both files must come from the same DeckDB state
+    if export.data_version is None:
+        raise di.DeckdbInputError(
+            f"{export.path.name}: eksport przypisań bez kolumny data_version (sprzed DeckDB 2026-10-21 d) — "
+            "nie da się sprawdzić, że pochodzi z tego samego stanu bazy co eksport kart")
+    if one["data_version"] != export.data_version:
+        raise di.DeckdbInputError(
+            f"data_version: karty {one['data_version']}, przypisania {export.data_version}")
     df["event_id"] = df["event_id"].map(di._norm_id)
     df["decktournamentid"] = df["decktournamentid"].map(di._norm_id)
     card_keys = set(zip(df["event_id"], df["decktournamentid"]))

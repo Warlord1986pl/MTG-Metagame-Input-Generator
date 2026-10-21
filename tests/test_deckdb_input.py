@@ -12,14 +12,14 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import deckdb_input as di  # noqa: E402
 
-COLS = list(di.REQUIRED_COLUMNS)
+COLS = list(di.REQUIRED_COLUMNS) + ["data_version"]
 
 
 def _row(eid, dtid, day, status, deck, arch, player, rank, variant="", rv="rv1", pc=40):
     return {
         "event_id": str(eid), "decktournamentid": str(dtid), "loginid": f"L{player}", "event_date": day,
         "status": status, "deck": deck, "archetype": arch, "rules_version": rv, "name_match_version": "2",
-        "variant": variant, "player": f"g-{player}", "final_rank": rank, "player_count": pc,
+        "variant": variant, "player": f"g-{player}", "final_rank": rank, "player_count": pc, "data_version": "dv",
     }
 
 

@@ -298,6 +298,7 @@ def _status_rows(export: di.DeckdbExport, level: str, start: date, end: date, ro
         ("Pokrycie uczestników (listy / suma player_count), %", round(cov["coverage_pct"], 2)),
         ("rules_version", export.rules_version),
         ("name_match_version", export.name_match_version),
+        ("data_version", export.data_version or "brak w eksporcie przypisań"),
         ("Plik eksportu", str(export.path)),
         ("sha256 eksportu", export.sha256),
         ("Daty eventów w eksporcie", f"{export.first_event_date} … {export.last_event_date}"),
@@ -526,8 +527,7 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         ("Plik kart", str(cards.path)),
         ("sha256 pliku kart", cards.sha256),
         ("name_match_version / scryfall_dump_id", f"{cards.name_match_version} / {cards.scryfall_dump_id}"),
-        ("data_version kart", cards.data_version + " (eksport przypisań nie ma data_version: zgodność "
-                                                   "sprawdzana zbiorem list i wersją mapowania nazw)"),
+        ("data_version (karty = przypisania)", cards.data_version),
         ("Wiersze lądów z nadtypem Basic (wyłączone)", cards.basic_rows),
         ("Talie testowane (≥ 30 list i ≥ 10 pilotów w obu miesiącach)",
          int(t["eligible"]["Testowana"].sum()) if not t["eligible"].empty else 0),
@@ -621,12 +621,14 @@ def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of:
     ms, me, _ = di.month_period(as_of)
     month_rows = di.window_rows(export, ms, me)
     di.window_rows(export, start, as_of)
+    di.window_rows(export, *di.previous_month(ms))
+    # the card file (versions, data_version, list keys) is checked before writing anything, too
+    cards = dc.load_cards(cfg.cards_path, export) if cfg.cards_path is not None else None
     root = root_dir(outputs_base, as_of)
     written = build_week(export, as_of, trend_weeks, root)
     written += build_month(export, as_of, root)
     written += build_format_period(export, start, key, as_of, root)
-    if cfg.cards_path is not None:
-        cards = dc.load_cards(cfg.cards_path, export)
+    if cards is not None:
         written += build_card_layer(export, cards, as_of, start, root)
     if cache_dir is not None:
         cache = di.match_mtgo_cache(month_rows, cache_dir, ms, me)

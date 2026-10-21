@@ -111,6 +111,7 @@ class DeckdbExport:
     sha256: str
     rules_version: str
     name_match_version: str
+    data_version: Optional[str]  # None for exports from before DeckDB's 2026-10-21 d (no such column)
     first_event_date: str
     last_event_date: str
     rows: pd.DataFrame
@@ -153,6 +154,9 @@ def load_export(path: Path) -> DeckdbExport:
     versions = sorted(set(df["rules_version"].str.strip()))
     if len(versions) != 1:
         raise DeckdbInputError(f"{path}: więcej niż jedna wartość rules_version: {versions}")
+    data_versions = sorted(set(df["data_version"])) if "data_version" in df.columns else []
+    if len(data_versions) > 1:
+        raise DeckdbInputError(f"{path}: więcej niż jedna wartość data_version: {data_versions}")
 
     df["event_id"] = df["event_id"].map(_norm_id)
     df["decktournamentid"] = df["decktournamentid"].map(_norm_id)
@@ -178,6 +182,7 @@ def load_export(path: Path) -> DeckdbExport:
         sha256=sha256_of(path),
         rules_version=versions[0],
         name_match_version=",".join(sorted(set(df["name_match_version"]))),
+        data_version=data_versions[0] if data_versions else None,
         first_event_date=str(df["event_date"].min()),
         last_event_date=str(df["event_date"].max()),
         rows=df,

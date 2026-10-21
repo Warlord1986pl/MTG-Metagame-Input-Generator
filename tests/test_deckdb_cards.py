@@ -57,6 +57,12 @@ def test_load_cards_checks_keys_versions_and_drops_basics(tmp_path):
     missing = cards.rows[cards.rows["decktournamentid"] != "1"].assign(is_basic="0")
     with pytest.raises(di.DeckdbInputError, match="nie zgadzają się"):
         dc.load_cards(_cards_csv(tmp_path, missing.to_dict("records")), exp)
+    other = cards.rows.assign(data_version="dv2", is_basic="0")
+    with pytest.raises(di.DeckdbInputError, match="data_version"):
+        dc.load_cards(_cards_csv(tmp_path, other.to_dict("records")), exp)
+    exp.data_version = None  # an assignment export from before DeckDB 2026-10-21 d
+    with pytest.raises(di.DeckdbInputError, match="bez kolumny data_version"):
+        dc.load_cards(_cards_csv(tmp_path, cards.rows.assign(is_basic="0").to_dict("records")), exp)
 
 
 def test_change_test_family_and_first_appearance_path(tmp_path):
