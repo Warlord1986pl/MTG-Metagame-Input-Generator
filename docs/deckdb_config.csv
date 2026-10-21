@@ -1,2 +1,4 @@
 key,value
 export_path,E:/github/DeckDB/data/exports/assignments_ee3ed9fbbbbd6ad6_2026-10-18.csv
+format_events_path,E:/github/DeckDB/rules/format_events.yaml
+cards_path,

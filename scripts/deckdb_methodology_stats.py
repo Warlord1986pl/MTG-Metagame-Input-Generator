@@ -23,6 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import deckdb_input as di  # noqa: E402
 
+WARN_PP = 1.0
+
 
 def md(df: pd.DataFrame, digits: int = 1) -> str:
     """Markdown table without the optional `tabulate` dependency."""
@@ -36,12 +38,8 @@ def md(df: pd.DataFrame, digits: int = 1) -> str:
 
 
 def period_rows(since: date) -> tuple[di.DeckdbExport, pd.DataFrame]:
-    export = di.load_export(di.load_deckdb_config())
+    export = di.load_export(di.load_deckdb_config().export_path)
     rows = di.window_rows(export, since, date.fromisoformat(export.last_event_date))
-    rows = rows.assign(
-        material_deck=rows["deck"].where(rows["status"] == di.STATUS_ASSIGNED, di.NO_DECK_LABEL),
-        top8=(rows["final_rank"] <= 8).astype(int),
-    )
     lists_per_event = rows.groupby("event_id")["event_id"].transform("size")
     rows["expected_top8"] = 8.0 / lists_per_event  # 8/L, L = lists of the event
     return export, rows
@@ -145,6 +143,16 @@ def main() -> int:
     exp, base = expected_conversion(rows, decks)
     print(f"\nbaza wspólna (listy Top 8 / listy okresu): {base:.3f}%")
     print(md(exp, 2))
+    # decision 2026-10-21 d: the expected conversion stays in this control script only; warn when a deck's
+    # expected conversion is more than 1 pp away from the common baseline
+    # checked over every deck of the period, not only the tabulated ones
+    all_exp, _ = expected_conversion(rows, [d for d in counts.index if d != di.NO_DECK_LABEL])
+    far = all_exp[all_exp["Oczekiwana_minus_baza_pp"].abs() > WARN_PP]
+    for r in far.itertuples():
+        print(f"OSTRZEŻENIE: {r.Talia}: oczekiwana konwersja {r.Oczekiwana_konwersja_pct:.2f}% odbiega od bazy "
+              f"wspólnej o {r.Oczekiwana_minus_baza_pp:+.2f} pp (> {WARN_PP} pp)")
+    if far.empty:
+        print(f"oczekiwana konwersja: żadna talia nie odbiega od bazy wspólnej o więcej niż {WARN_PP} pp")
     print()
     print(md(pilot_measures(rows, decks)))
     boot, secs = pilot_bootstrap(rows, decks, args.boot, args.seed)

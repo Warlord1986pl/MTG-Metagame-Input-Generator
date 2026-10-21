@@ -1648,9 +1648,14 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default="legacy",
         help=(
             "legacy: dotychczasowy tryb (Videre + MTGGoldfish/mtgo.com, mapowania, reguły kartowe). "
-            "deckdb: wyłącznie eksport DeckDB ze ścieżki w --deckdb-config, materiały robocze w "
-            "<outputs-base>/deckdb_robocze/ (bez Videre, mapowań i reguł kartowych)."
+            "deckdb: wyłącznie eksport DeckDB ze ścieżek w --deckdb-config, materiały robocze trzech "
+            "poziomów czasu na --as-of w <outputs-base>/deckdb_robocze/ (bez Videre, mapowań i reguł kartowych)."
         ),
+    )
+    parser.add_argument(
+        "--as-of",
+        default=None,
+        help="YYYY-MM-DD, data stanu dla --input-mode deckdb (tydzień ISO, miesiąc, okres formatu)",
     )
     parser.add_argument(
         "--deckdb-config",
@@ -1788,39 +1793,36 @@ def _write_challenge_failure_status(run_dir: Path, week_start: date, week_end: d
 
 def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
     """Input mode "deckdb": DeckDB export only (deckdb_input.py), no Videre / MTGGoldfish / mtgo.com
-    fetch, no mapping, alias or card rule. Writes working materials per window and nothing else
-    (no history, league or site data)."""
+    fetch, no mapping, alias or card rule. Writes the working materials of the three time levels
+    (docs/deckdb_metodologia.md) for the --as-of date and nothing else (no history, league or site data)."""
     try:
         import deckdb_input as di
-        from deckdb_materials import build_working_breakdown, working_dir
+        from deckdb_materials import build_deckdb_materials
     except ModuleNotFoundError:
         from . import deckdb_input as di
-        from .deckdb_materials import build_working_breakdown, working_dir
+        from .deckdb_materials import build_deckdb_materials
 
-    windows = resolve_windows(args)
-    export = di.load_export(di.load_deckdb_config(Path(args.deckdb_config)))
+    if not getattr(args, "as_of", None):
+        raise di.DeckdbInputError("--input-mode deckdb wymaga --as-of YYYY-MM-DD (data stanu)")
+    as_of = parse_date(args.as_of)
+    cfg = di.load_deckdb_config(Path(args.deckdb_config))
+    export = di.load_export(cfg.export_path)
     log(f"[deckdb] eksport {export.path} (reguły {export.rules_version}, sha256 {export.sha256}, "
         f"{len(export.rows)} list, {export.first_event_date}..{export.last_event_date})")
-    # Validate every window before writing anything.
-    for week_start, week_end in windows:
-        di.window_rows(export, week_start, week_end)
     if getattr(args, "outputs_base", None):
         outputs_base = Path(args.outputs_base)
     else:
         outputs_base = Path(args.history_output_dir).parent
     cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name)
-    written: List[Path] = []
-    for week_start, week_end in windows:
-        written += build_working_breakdown(
-            export,
-            week_start,
-            week_end,
-            working_dir(outputs_base, week_start, week_end),
-            cache_dir=cache_dir,
-            trend_weeks=int(getattr(args, "trend_weeks", 4)),
-            log=log,
-        )
-    return written
+    return build_deckdb_materials(
+        export,
+        cfg,
+        as_of,
+        outputs_base,
+        trend_weeks=int(getattr(args, "trend_weeks", 4)),
+        cache_dir=cache_dir,
+        log=log,
+    )
 
 
 def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunResult]:

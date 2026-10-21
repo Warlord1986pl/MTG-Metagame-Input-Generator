@@ -15,46 +15,49 @@ import deckdb_input as di  # noqa: E402
 COLS = list(di.REQUIRED_COLUMNS)
 
 
-def _row(eid, dtid, day, status, deck, arch, player, rank, w, l, bye=0, variant="", rv="rv1", pc=40):
+def _row(eid, dtid, day, status, deck, arch, player, rank, variant="", rv="rv1", pc=40):
     return {
         "event_id": str(eid), "decktournamentid": str(dtid), "loginid": f"L{player}", "event_date": day,
-        "status": status, "deck": deck, "archetype": arch, "rules_version": rv, "variant": variant,
-        "player": f"g-{player}", "final_rank": rank, "swiss_wins": w, "swiss_losses": l, "had_bye": bye,
-        "swiss_rounds": 6, "player_count": pc,
+        "status": status, "deck": deck, "archetype": arch, "rules_version": rv, "name_match_version": "2",
+        "variant": variant, "player": f"g-{player}", "final_rank": rank, "player_count": pc,
     }
 
 
-def _write(tmp_path: Path, rows) -> Path:
-    p = tmp_path / "export.csv"
+def _write(tmp_path: Path, rows, name="export.csv") -> Path:
+    p = tmp_path / name
     pd.DataFrame(rows, columns=COLS).to_csv(p, index=False, encoding="utf-8")
     return p
 
 
 def _sample(tmp_path: Path) -> Path:
     return _write(tmp_path, [
-        _row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1, 5, 1),
-        _row(1, 12, "2026-10-01", "assigned", "Zoo", "Aggro", "b", 9, 4, 2, bye=1),
-        _row(1, 13, "2026-10-01", "rogue", "Rogue", "Rogue", "c", 2, 4, 2),
-        _row(2, 21, "2026-10-02", "assigned", "Zoo", "Aggro", "a", 3, 5, 1, pc=60),
-        _row(2, 22, "2026-10-02", "assigned", "Burn", "Aggro", "d", 12, 3, 3, pc=60),
-        _row(2, 23, "2026-10-02", "unassigned", "Unassigned", "Unassigned", "e", 1, 6, 0, pc=60),
+        _row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1),
+        _row(1, 12, "2026-10-01", "assigned", "Zoo", "Aggro", "b", 9),
+        _row(1, 13, "2026-10-01", "rogue", "Rogue", "Rogue", "c", 2),
+        _row(2, 21, "2026-10-02", "assigned", "Zoo", "Aggro", "a", 3, pc=60),
+        _row(2, 22, "2026-10-02", "assigned", "Burn", "Aggro", "d", 12, pc=60),
+        _row(2, 23, "2026-10-02", "unassigned", "Unassigned", "Unassigned", "e", 1, pc=60),
     ])
+
+
+def _period(tmp_path):
+    exp = di.load_export(_sample(tmp_path))
+    return exp, di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
 
 
 def test_refuses_more_than_one_rules_version(tmp_path):
     p = _write(tmp_path, [
-        _row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1, 5, 1),
-        _row(1, 12, "2026-10-01", "assigned", "Zoo", "Aggro", "b", 2, 5, 1, rv="rv2"),
+        _row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1),
+        _row(1, 12, "2026-10-01", "assigned", "Zoo", "Aggro", "b", 2, rv="rv2"),
     ])
     with pytest.raises(di.DeckdbInputError, match="rules_version"):
         di.load_export(p)
 
 
-def test_refuses_window_ending_after_last_event_date(tmp_path):
+def test_refuses_period_ending_after_last_event_date(tmp_path):
     exp = di.load_export(_sample(tmp_path))
     with pytest.raises(di.DeckdbInputError, match="ostatniej dacie"):
         di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 3))
-    assert len(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))) == 6
     assert len(di.window_rows(exp, date(2026, 10, 2), date(2026, 10, 2))) == 3  # closed both sides
 
 
@@ -65,72 +68,106 @@ def test_config_has_no_default_path(tmp_path):
         di.load_deckdb_config(cfg)
     with pytest.raises(di.DeckdbInputError):
         di.load_deckdb_config(tmp_path / "missing.csv")
+    cfg.write_text("key,value\nexport_path,x.csv\nformat_events_path,\n", encoding="utf-8")
+    c = di.load_deckdb_config(cfg)
+    assert c.export_path == Path("x.csv") and c.format_events_path is None and c.cards_path is None
 
 
-def test_deck_metrics_come_only_from_export_columns(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
-    tbl = di.deck_table(rows).set_index("Talia")
+def test_time_levels():
+    weeks = di.complete_iso_weeks(date(2026, 10, 18), 2)  # a Sunday
+    assert weeks == [(date(2026, 10, 5), date(2026, 10, 11)), (date(2026, 10, 12), date(2026, 10, 18))]
+    assert di.complete_iso_weeks(date(2026, 10, 21), 1) == [(date(2026, 10, 12), date(2026, 10, 18))]
+    assert di.iso_week_label(date(2026, 10, 12)) == "2026-W42"
+    assert di.month_period(date(2026, 10, 18)) == (date(2026, 10, 1), date(2026, 10, 18), False)
+    assert di.month_period(date(2026, 9, 30)) == (date(2026, 9, 1), date(2026, 9, 30), True)
+
+
+def test_format_period_start_is_last_confirmed_major(tmp_path):
+    y = tmp_path / "fe.yaml"
+    y.write_text(
+        "events:\n"
+        "- {key: a, major: true, status: confirmed, effective_mtgo: '2026-05-19'}\n"
+        "- {key: b, major: false, status: confirmed, effective_mtgo: '2026-08-11'}\n"
+        "- {key: c, major: true, status: proposal, effective_mtgo: '2026-09-01'}\n"
+        "- {key: d, major: true, status: confirmed, effective_mtgo: '2026-11-01'}\n", encoding="utf-8")
+    assert di.format_period_start(y, date(2026, 10, 18)) == (date(2026, 5, 19), "a")
+    with pytest.raises(di.DeckdbInputError):
+        di.format_period_start(None, date(2026, 10, 18))
+
+
+def test_share_table_week_month_measures(tmp_path):
+    _, rows = _period(tmp_path)
+    tbl = di.share_table(rows, "material_deck", "Talia", trophies=True).set_index("Talia")
     zoo = tbl.loc["Zoo"]
     assert zoo["Listy"] == 3 and zoo["Udzial_Top32_pct"] == pytest.approx(50.0)
-    assert zoo["Eventy_z_lista"] == 2
-    assert zoo["Top8"] == 2 and zoo["Konwersja_Top32_Top8_pct"] == pytest.approx(200 / 3)
+    assert zoo["Eventy_z_lista"] == 2 and zoo["Obecnosc_pct_eventow"] == pytest.approx(100.0)
+    assert zoo["Top8"] == 2 and zoo["Eventy_z_Top8"] == 2 and zoo["Top8_pct_eventow"] == pytest.approx(100.0)
     assert zoo["Trofea"] == 1
-    assert zoo["Wygrane_szw"] == 14 and zoo["Mecze_szw"] == 18  # bye is not a match
-    assert zoo["Winrate_szw_pct"] == pytest.approx(14 / 18 * 100)
-    lo, hi = di.wilson_interval(14, 18)
-    assert zoo["Wilson95_dol_pct"] == pytest.approx(lo * 100) and lo < 14 / 18 < hi
-    assert zoo["Gracze"] == 2 and zoo["Najczestszy_gracz_udzial_pct"] == pytest.approx(200 / 3)
-    assert zoo["Listy_z_bye"] == 1
-    # Rogue + unassigned: one row in materials, separate in the working split
-    nd = tbl.loc[di.NO_DECK_LABEL]
-    assert nd["Listy"] == 2 and nd["Archetyp"] == di.NO_DECK_LABEL
-    split = di.no_deck_split(rows).set_index("Status")
+    assert tbl.loc[di.NO_DECK_LABEL, "Listy"] == 2 and tbl["Listy"].sum() == len(rows)
+    assert "Trofea" not in di.share_table(rows, "material_deck", "Talia", trophies=False).columns
+    split = di.no_deck_split(rows, trophies=False).set_index("Status")
     assert split.loc["rogue", "Listy"] == 1 and split.loc["unassigned", "Listy"] == 1
-    assert tbl["Listy"].sum() == len(rows)
+    assert split.loc["rogue", "Udzial_Top32_pct"] == pytest.approx(100 / 6)
 
 
-def test_archetype_is_pooled_decks(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
-    arch = di.archetype_table(rows).set_index("Archetyp")
-    aggro = arch.loc["Aggro"]
-    assert aggro["Talie"] == 2 and aggro["Listy"] == 4 and aggro["Wygrane_szw"] == 17
-    assert aggro["Gracze"] == 3  # a, b, d -- union of players, not a sum over decks
-
-
-def test_coverage(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
-    cov = di.coverage(rows)
-    assert cov == {"events": 2, "lists": 6, "participants": 100, "coverage_pct": 6.0}
-
-
-def test_variant_threshold_d2(tmp_path):
+def test_conversion_baseline_pilots_and_bootstrap_threshold(tmp_path):
     rows = []
-    # 20 Zoo lists in October: 15 x V1 (3 players), 3 x V2 (1 player), 2 x V3 (2 players), none plain
-    for i in range(20):
+    # deck A: 12 pilots; pilot p0 has 5 lists (3 in Top 8), others 1 list each (2 in Top 8 among them)
+    for i in range(5):
+        rows.append(_row(i + 1, 100 + i, "2026-10-01", "assigned", "A", "Aggro", "p0", 1 if i < 3 else 20))
+    for k in range(1, 12):
+        rows.append(_row(20 + k, 200 + k, "2026-10-01", "assigned", "A", "Aggro", f"p{k}", 5 if k <= 2 else 25))
+    # deck B: 3 pilots only
+    for k in range(3):
+        rows.append(_row(40 + k, 300 + k, "2026-10-01", "assigned", "B", "Aggro", f"q{k}", 2 if k == 0 else 30))
+    exp = di.load_export(_write(tmp_path, rows))
+    r = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 1))
+    assert di.top8_baseline(r) == pytest.approx(6 / 19 * 100)
+    t = di.conversion_table(r, "material_deck", "Talia", pilots=True).set_index("Talia")
+    a, b = t.loc["A"], t.loc["B"]
+    assert a["Listy"] == 16 and a["Top8"] == 5 and a["Konwersja_pct"] == pytest.approx(500 / 16)
+    assert a["Piloci_Top32"] == 12 and not math.isnan(a["Przedzial_dol_pct"])
+    assert a["Przedzial_dol_pct"] <= a["Konwersja_pct"] <= a["Przedzial_gora_pct"]
+    assert a["Najcz_pilot_listy"] == 5 and a["Najcz_pilot_udzial_Top32_pct"] == pytest.approx(500 / 16)
+    assert a["Najcz_pilot_udzial_Top8_pct"] == pytest.approx(60.0)
+    assert a["Najcz_pilot_konwersja_pct"] == pytest.approx(60.0)
+    assert a["Bez_najcz_pilota_konwersja_pct"] == pytest.approx(200 / 11)
+    assert a["Piloci_Top8"] == 3
+    assert math.isnan(b["Przedzial_dol_pct"]) and "koncentracja" in b["Przedzial_info"]
+    arch = di.conversion_table(r, "material_archetype", "Archetyp", pilots=False)
+    assert "Najcz_pilot_listy" not in arch.columns and arch.loc[0, "Listy"] == 19
+
+
+def test_variant_threshold_d2_per_month(tmp_path):
+    rows = []
+    for i in range(20):  # October: 20 Zoo lists, V1 x15 (3 players), V2 x3 (1 player), V3 x2 (2 players)
         variant = "V1 Zoo" if i < 15 else ("V2 Zoo" if i < 18 else "V3 Zoo")
         player = f"p{i % 3}" if i < 15 else ("solo" if i < 18 else f"q{i}")
-        rows.append(_row(1, 100 + i, "2026-10-01", "assigned", "Zoo", "Aggro", player, i + 1, 3, 3, variant=variant))
-    # Burn: 19 lists, all one variant -> no split (monthly gate)
-    for i in range(19):
-        rows.append(_row(2, 200 + i, "2026-10-02", "assigned", "Burn", "Aggro", f"b{i}", i + 1, 3, 3, variant="X Burn"))
+        rows.append(_row(1, 100 + i, "2026-10-30", "assigned", "Zoo", "Aggro", player, i + 1, variant=variant))
+    for i in range(10):  # November: 10 Zoo lists, 3 x "W Zoo" by 2 players -- month below 20 lists
+        rows.append(_row(2, 400 + i, "2026-11-02", "assigned", "Zoo", "Aggro", f"n{i % 2}" if i < 3 else f"m{i}",
+                         i + 1, variant="W Zoo" if i < 3 else ""))
     exp = di.load_export(_write(tmp_path, rows))
-    var = di.variant_table(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2)))
-    assert list(var["Wariant"]) == ["V1 Zoo"] and list(var["Miesiac"]) == ["2026-10"]  # V2: 1 player, V3: 2 lists
+    var = di.variant_table(di.window_rows(exp, date(2026, 10, 30), date(2026, 11, 2)))
+    assert list(var["Wariant"]) == ["V1 Zoo"] and list(var["Miesiac"]) == ["2026-10"]
 
 
 def test_finalists_have_no_player_identifiers(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    fin = di.finalists_table(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2)))
+    _, rows = _period(tmp_path)
+    fin = di.finalists_table(rows)
     assert list(fin.columns) == ["EventID", "Data", "Talia_1", "Talia_2"]
     assert list(fin["Talia_1"]) == ["Zoo"]  # event 2 has no rank 2 in this sample
 
 
+def test_coverage_and_events(tmp_path):
+    _, rows = _period(tmp_path)
+    assert di.coverage(rows) == {"events": 2, "lists": 6, "participants": 100, "coverage_pct": 6.0}
+    ev = di.event_table(rows)
+    assert list(ev["Tydzien_ISO"]) == ["2026-W40", "2026-W40"] and list(ev["Miesiac"]) == ["2026-10"] * 2
+
+
 def test_match_mtgo_cache_counts_both_ways(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
+    _, rows = _period(tmp_path)
     cache = tmp_path / "cache"
     cache.mkdir()
     (cache / "1.json").write_text(json.dumps({
@@ -142,62 +179,50 @@ def test_match_mtgo_cache_counts_both_ways(tmp_path):
         "decklists": [{"decktournamentid": "31"}],
     }), encoding="utf-8")
     res = di.match_mtgo_cache(rows, cache, date(2026, 10, 1), date(2026, 10, 2))
-    assert res["matched"] == 2
-    assert res["export_not_in_cache"] == 4  # 13 + event 2's three lists
-    assert res["cache_not_in_export"] == 1  # 99; the Showcase is never counted
+    assert res["matched"] == 2 and res["export_not_in_cache"] == 4 and res["cache_not_in_export"] == 1
     assert res["export_events_not_in_cache"] == 1 and res["cache_events_not_in_export"] == 0
 
 
-def test_wilson_empty():
-    assert all(math.isnan(v) for v in di.wilson_interval(0, 0))
-
-
-def test_working_breakdown_and_cli_mode(tmp_path):
+def test_materials_three_levels_and_cli_mode(tmp_path):
     import deckdb_materials as dm
     import metagame_input_generator as mig
 
-    export_csv = _sample(tmp_path)
-    cfg = tmp_path / "cfg.csv"
-    cfg.write_text(f"key,value\nexport_path,{export_csv.as_posix()}\n", encoding="utf-8")
-    args = mig.parse_args([
-        "--input-mode", "deckdb", "--deckdb-config", str(cfg), "--week-start", "2026-10-01",
-        "--week-end", "2026-10-02", "--trend-weeks", "1", "--outputs-base", str(tmp_path / "out"),
-    ])
-    with pytest.raises(di.DeckdbInputError):  # 14-day trend window starts before the file
-        mig.run_deckdb_generation(args, log=lambda _m: None)
-    exp = di.load_export(export_csv)
-    out = dm.working_dir(tmp_path / "out", date(2026, 10, 1), date(2026, 10, 1))
-    files = dm.build_working_breakdown(exp, date(2026, 10, 1), date(2026, 10, 1), out, None, trend_weeks=0,
-                                       log=lambda _m: None)
-    assert "ROBOCZE" in out.name and len(files) == 11  # no trend charts with trend_weeks=0
-    status = pd.read_excel(files[0], sheet_name="STATUS")
-    assert exp.sha256 in status["Wartość"].astype(str).tolist()
-    fin = pd.read_csv(files[1], encoding="utf-8-sig", dtype=str)
-    assert set(fin["rules_version"]) == {"rv1"} and set(fin["export_sha256"]) == {exp.sha256}
-
-
-def test_event_frequencies_conversion_interval_and_baseline(tmp_path):
-    exp = di.load_export(_sample(tmp_path))
-    rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2))
-    zoo = di.deck_table(rows).set_index("Talia").loc["Zoo"]
-    assert zoo["Eventy_z_Top8"] == 2 and zoo["Top8_eventy_pct"] == pytest.approx(100.0)
-    assert zoo["Eventy_ze_zwyciestwem"] == 1 and zoo["Zwyciestwa_eventy_pct"] == pytest.approx(50.0)
-    assert zoo["Trofea_na_liste_pct"] == pytest.approx(100 / 3)
-    lo, hi = di.wilson_interval(2, 3)
-    assert zoo["Konwersja_Wilson95_dol_pct"] == pytest.approx(lo * 100)
-    assert zoo["Konwersja_Wilson95_gora_pct"] == pytest.approx(hi * 100)
-    # 4 of 6 window lists have final_rank <= 8 -- measured, not 25%
-    assert di.top8_baseline(rows) == pytest.approx(400 / 6)
-
-
-def test_variant_threshold_is_evaluated_per_month(tmp_path):
     rows = []
-    for i in range(25):  # October: 25 Zoo lists, no variant
-        rows.append(_row(1, 300 + i, "2026-10-30", "assigned", "Zoo", "Aggro", f"o{i}", i + 1, 3, 3))
-    for i in range(10):  # November: 10 Zoo lists, 3 of them "V Zoo" by 2 players
-        rows.append(_row(2, 400 + i, "2026-11-02", "assigned", "Zoo", "Aggro", f"n{i % 2}" if i < 3 else f"m{i}",
-                         i + 1, 3, 3, variant="V Zoo" if i < 3 else ""))
-    exp = di.load_export(_write(tmp_path, rows))
-    var = di.variant_table(di.window_rows(exp, date(2026, 10, 30), date(2026, 11, 2)))
-    # window-wide it would pass (3/35 lists, 2 players); November has < 20 Zoo lists, so it does not count
-    assert var.empty
+    days = pd.date_range("2026-09-01", "2026-10-18", freq="D")
+    for n, d in enumerate(days):
+        for k in range(10):
+            deck = ["Zoo", "Burn", "Tron"][k % 3]
+            rows.append(_row(1000 + n, 10 * n + k, d.date().isoformat(), "assigned", deck,
+                             "Ramp" if deck == "Tron" else "Aggro", f"p{(n + k) % 13}", k + 1, pc=50))
+    export_csv = _write(tmp_path, rows)
+    fe = tmp_path / "fe.yaml"
+    fe.write_text("events:\n- {key: x, major: true, status: confirmed, effective_mtgo: '2026-09-07'}\n",
+                  encoding="utf-8")
+    cfg = tmp_path / "cfg.csv"
+    cfg.write_text(f"key,value\nexport_path,{export_csv.as_posix()}\nformat_events_path,{fe.as_posix()}\n",
+                   encoding="utf-8")
+    out = tmp_path / "out"
+    args = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-18",
+                           "--trend-weeks", "3", "--outputs-base", str(out)])
+    files = mig.run_deckdb_generation(args, log=lambda _m: None)
+    root = dm.root_dir(out, date(2026, 10, 18))
+    assert {p.name for p in root.iterdir()} == {"tydzien_2026-W42", "miesiac_2026-10_niepelny",
+                                               "okres_formatu_2026-09-07_to_2026-10-18"}
+    exp = di.load_export(export_csv)
+    for x in [f for f in files if f.suffix == ".xlsx"]:
+        book = pd.read_excel(x, sheet_name=None)
+        assert {"STATUS", "Slownik", "Pominiete"} <= set(book)
+        assert exp.sha256 in book["STATUS"]["Wartość"].astype(str).tolist()
+        assert not any("Winrate" in c or "swiss" in c.lower() for s in book.values() for c in map(str, s.columns))
+    for x in [f for f in files if f.suffix == ".csv"]:
+        c = pd.read_csv(x, encoding="utf-8-sig", dtype=str)
+        assert set(c["export_sha256"]) == {exp.sha256} and not ({"player", "loginid"} & set(c.columns))
+    period = pd.read_excel(root / "okres_formatu_2026-09-07_to_2026-10-18" /
+                           "deckdb_ROBOCZE_2026-09-07_to_2026-10-18.xlsx", sheet_name=None)
+    assert "Piloci" in period and "Najcz_pilot_listy" not in period["Archetypy"].columns
+    # a period the export does not cover is refused before anything is written
+    args2 = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-19",
+                            "--outputs-base", str(tmp_path / "out2")])
+    with pytest.raises(di.DeckdbInputError):
+        mig.run_deckdb_generation(args2, log=lambda _m: None)
+    assert not (tmp_path / "out2").exists()

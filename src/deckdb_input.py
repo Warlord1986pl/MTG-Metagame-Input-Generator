@@ -1,36 +1,41 @@
-"""DeckDB assignment export as the only input of the metagame analysis (decision K33 in DeckDB).
+"""DeckDB assignment export as the only input of the metagame analysis (DeckDB decisions K33, K36).
 
 Input mode "deckdb" (``--input-mode deckdb``) replaces both the MTGGoldfish ``Deck`` column and the
 Videre API: deck, archetype and variant come only from the export's ``deck``/``archetype``/
-``variant`` columns, the Swiss record and bye only from ``swiss_wins``/``swiss_losses``/``had_bye``
-(never re-derived from MTGO ``winloss``). None of the pipeline's own label machinery runs in this
-mode -- no user/challenge mapping, no deck alias, no archetype rule, no card rule (Broodscale,
-Moonshadow). The legacy mode is untouched.
+``variant`` columns. None of the pipeline's own label machinery runs in this mode -- no
+user/challenge mapping, no deck alias, no archetype rule, no card rule (Broodscale, Moonshadow).
+The legacy mode is untouched. Specification: ``docs/deckdb_metodologia.md`` (accepted 2026-10-21).
 
-The export file is never guessed: its path is read from ``docs/deckdb_config.csv``
-(``key,value``, key ``export_path``). The file format is documented in DeckDB ``docs/export.md``
-("Format eksportu dla Analizy metagame"). The loader refuses to work (``DeckdbInputError``) when
-the file has more than one ``rules_version``, or when a requested window ends after the last
-event date in the file (or starts before the first one).
+Paths are never guessed: ``docs/deckdb_config.csv`` (``key,value``) holds ``export_path`` (the
+assignment export, DeckDB ``docs/export.md``), ``format_events_path`` (DeckDB
+``rules/format_events.yaml``, read only) and optionally ``cards_path`` (``deckdb export-cards``).
+The loader refuses to work (``DeckdbInputError``) when the file has more than one
+``rules_version``, or when a requested period ends after the last event date in the file (or
+starts before the first one).
 
-Metrics (window closed on both sides by ``event_date``), always at deck level; an archetype is the
-aggregate of its decks' lists. Rogue and unassigned lists are one "bez talii" row in materials
-(``NO_DECK_LABEL``) and are kept apart only in the working file:
+Three time levels (every period closed on both sides by ``event_date``):
 
-  share of Top 32 Challenge     = deck lists / all lists of the window
-  event presence                = distinct events with >= 1 list of the deck
-  Top 8                         = lists with final_rank <= 8; conversion = Top 8 / lists, Wilson
-                                  interval on lists; baseline = all Top 8 lists / all lists of the
-                                  window (measured, not assumed 25%)
-  trophies                      = lists with final_rank == 1; trophies / lists
-  Top 8 / winner event freq.    = events with >= 1 list of the deck at final_rank <= 8 (== 1)
-                                  / events of the window
-  Swiss winrate                 = sum(swiss_wins) / sum(swiss_wins + swiss_losses), Wilson interval
-                                  on matches (too narrow: one player brings many lists)
-  players / top player share    = distinct ``player`` / max lists of one ``player`` / deck lists
-  coverage                      = window lists / sum(player_count) over the window's events
+  week (ISO, disjoint)   share, presence, Top 8 (lists, % of events)
+  calendar month         the same + trophies (count) + variants by D2
+  format period          conversion with a pilot-bootstrap interval, trophies, pilot measures;
+                         from the MTGO effective date of the last confirmed major format event,
+                         cumulative up to the as-of date
 
-``loginid`` is read only for the MTGO-cache join check and never reaches a material.
+  share                  = deck lists / all lists of the period
+  presence               = distinct events with >= 1 list of the deck (also as % of events)
+  Top 8                  = lists with final_rank <= 8; Top 8 % of events = events with >= 1 Top 8
+                           list of the deck / events of the period
+  conversion             = Top 8 lists / lists; common baseline = all Top 8 lists / all lists of
+                           the period; interval = bootstrap over pilots, only with >= 10 pilots
+  pilot measures (decks) = pilots in Top 32 / Top 8; the most frequent pilot (most Top 32 lists of
+                           the deck, ties: more Top 8 lists, then the player id) -- share of Top 32
+                           lists and of Top 8 entries, own conversion and conversion without them
+  coverage               = lists / sum(player_count) over the period's events
+
+Rogue and unassigned lists are one "bez talii" row in materials (``NO_DECK_LABEL``), apart only in
+the working split. Winrate is not a measure (K36); the Swiss columns are not read. Pilots are the
+export's ``player`` only; ``loginid`` is read only for the MTGO-cache join check and never reaches
+a material.
 """
 
 from __future__ import annotations
@@ -41,8 +46,9 @@ import math
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
+import numpy as np
 import pandas as pd
 
 DEFAULT_CONFIG_CSV = Path("docs") / "deckdb_config.csv"
@@ -50,21 +56,14 @@ NO_DECK_LABEL = "bez talii"
 STATUS_ASSIGNED = "assigned"
 STATUS_ROGUE = "rogue"
 STATUS_UNASSIGNED = "unassigned"
-WILSON_Z = 1.959963984540054
-WILSON_NOTE = (
-    "Przedział Wilsona (95%) liczony na meczach szwajcarskich jest zaniżony (za wąski): "
-    "jeden gracz wnosi wiele list, więc mecze nie są niezależne."
-)
-CONVERSION_WILSON_NOTE = (
-    "Przedział Wilsona (95%) konwersji liczony na listach jest zaniżony (za wąski): "
-    "jeden gracz wnosi wiele list, więc listy nie są niezależne."
-)
-WINRATE_NOTE = "Winrate szwajcarski list, które awansowały do Top 32 (bez drabinki Top 8, bez bye)."
-NO_DECK_WINRATE_NOTE = "Wiersz „bez talii” (Rogue + nieprzypisane) jest niejednorodny; jego winrate tylko poglądowo."
+
+BOOT_MIN_PILOTS = 10
+BOOT_DRAWS = 2000
+BOOT_SEED = 20261021
 
 # Variant reporting threshold D2 (DeckDB docs/decisions.md, entry 35): a variant is reported IN A
 # MONTH when, in that month, it has >= 5% of the deck's lists, >= 3 lists and >= 2 distinct players;
-# only months with >= 20 lists of the deck count. Evaluated per calendar month, on the window's rows.
+# only months with >= 20 lists of the deck count. Evaluated per calendar month, on the period's rows.
 # D2 counts players by loginid; `player` is a 1:1 pseudonym of it, so the distinct count is the same.
 VARIANT_MIN_SHARE = 0.05
 VARIANT_MIN_LISTS = 3
@@ -80,20 +79,24 @@ REQUIRED_COLUMNS = (
     "deck",
     "archetype",
     "rules_version",
+    "name_match_version",
     "variant",
     "player",
     "final_rank",
-    "swiss_wins",
-    "swiss_losses",
-    "had_bye",
-    "swiss_rounds",
     "player_count",
 )
-_INT_COLUMNS = ("final_rank", "swiss_wins", "swiss_losses", "had_bye", "swiss_rounds", "player_count")
+_INT_COLUMNS = ("final_rank", "player_count")
 
 
 class DeckdbInputError(RuntimeError):
-    """The export cannot be used as-is; nothing is computed or written."""
+    """The input cannot be used as-is; nothing is computed or written."""
+
+
+@dataclass
+class DeckdbConfig:
+    export_path: Path
+    format_events_path: Optional[Path]
+    cards_path: Optional[Path]
 
 
 @dataclass
@@ -101,6 +104,7 @@ class DeckdbExport:
     path: Path
     sha256: str
     rules_version: str
+    name_match_version: str
     first_event_date: str
     last_event_date: str
     rows: pd.DataFrame
@@ -111,23 +115,28 @@ def _norm_id(value: object) -> str:
     return text[:-2] if text.endswith(".0") else text
 
 
-def load_deckdb_config(config_csv: Path = DEFAULT_CONFIG_CSV) -> Path:
-    """Returns the export path written in *config_csv* (key ``export_path``); never a default."""
+def sha256_of(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_deckdb_config(config_csv: Path = DEFAULT_CONFIG_CSV) -> DeckdbConfig:
+    """Paths written in *config_csv*; ``export_path`` is required, nothing has a default."""
     if not config_csv.exists():
         raise DeckdbInputError(f"Brak pliku konfiguracji DeckDB: {config_csv}")
     cfg = pd.read_csv(config_csv, dtype=str, keep_default_na=False)
     values = dict(zip(cfg["key"].str.strip(), cfg["value"].str.strip()))
-    export_path = values.get("export_path", "")
-    if not export_path:
+    if not values.get("export_path"):
         raise DeckdbInputError(f"{config_csv}: brak wartości export_path")
-    return Path(export_path)
+
+    def _opt(key: str) -> Optional[Path]:
+        return Path(values[key]) if values.get(key) else None
+
+    return DeckdbConfig(Path(values["export_path"]), _opt("format_events_path"), _opt("cards_path"))
 
 
 def load_export(path: Path) -> DeckdbExport:
     if not path.exists():
         raise DeckdbInputError(f"Plik eksportu DeckDB nie istnieje: {path}")
-    raw = path.read_bytes()
-    sha = hashlib.sha256(raw).hexdigest()
     df = pd.read_csv(path, dtype=str, keep_default_na=False, encoding="utf-8")
     missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
     if missing:
@@ -153,11 +162,16 @@ def load_export(path: Path) -> DeckdbExport:
     dup = df.duplicated(["event_id", "decktournamentid"]).sum()
     if dup:
         raise DeckdbInputError(f"{path}: {dup} powtórzonych kluczy (event_id, decktournamentid)")
+    df["material_deck"] = df["deck"].where(df["status"] == STATUS_ASSIGNED, NO_DECK_LABEL)
+    df["material_archetype"] = df["archetype"].where(df["status"] == STATUS_ASSIGNED, NO_DECK_LABEL)
+    df["top8"] = (df["final_rank"] <= 8).astype(int)
+    df["trophy"] = (df["final_rank"] == 1).astype(int)
 
     return DeckdbExport(
         path=path,
-        sha256=sha,
+        sha256=sha256_of(path),
         rules_version=versions[0],
+        name_match_version=",".join(sorted(set(df["name_match_version"]))),
         first_event_date=str(df["event_date"].min()),
         last_event_date=str(df["event_date"].max()),
         rows=df,
@@ -165,15 +179,15 @@ def load_export(path: Path) -> DeckdbExport:
 
 
 def window_rows(export: DeckdbExport, start: date, end: date) -> pd.DataFrame:
-    """Rows with start <= event_date <= end. Refuses a window the file does not fully cover."""
+    """Rows with start <= event_date <= end. Refuses a period the file does not fully cover."""
     if end.isoformat() > export.last_event_date:
         raise DeckdbInputError(
-            f"Okno {start}..{end} kończy się po ostatniej dacie eventu w eksporcie "
+            f"Okres {start}..{end} kończy się po ostatniej dacie eventu w eksporcie "
             f"({export.last_event_date}, {export.path.name})"
         )
     if start.isoformat() < export.first_event_date:
         raise DeckdbInputError(
-            f"Okno {start}..{end} zaczyna się przed pierwszą datą eventu w eksporcie "
+            f"Okres {start}..{end} zaczyna się przed pierwszą datą eventu w eksporcie "
             f"({export.first_event_date}, {export.path.name})"
         )
     df = export.rows
@@ -181,104 +195,171 @@ def window_rows(export: DeckdbExport, start: date, end: date) -> pd.DataFrame:
     return df[mask].copy()
 
 
-def _material_deck(rows: pd.DataFrame) -> pd.Series:
-    """Deck label for materials: Rogue and unassigned become one NO_DECK_LABEL row."""
-    return rows["deck"].where(rows["status"] == STATUS_ASSIGNED, NO_DECK_LABEL)
+# --- time levels -------------------------------------------------------------------------------
+
+def iso_week_label(day: date) -> str:
+    y, w, _ = day.isocalendar()
+    return f"{y}-W{w:02d}"
 
 
-def _material_archetype(rows: pd.DataFrame) -> pd.Series:
-    return rows["archetype"].where(rows["status"] == STATUS_ASSIGNED, NO_DECK_LABEL)
+def complete_iso_weeks(as_of: date, n: int) -> List[tuple[date, date]]:
+    """The last *n* ISO weeks (Monday..Sunday) ending on or before *as_of*, oldest first."""
+    last_sunday = as_of - timedelta(days=(as_of.weekday() + 1) % 7)
+    return [(last_sunday - timedelta(days=7 * i + 6), last_sunday - timedelta(days=7 * i)) for i in reversed(range(n))]
 
 
-def wilson_interval(wins: int, n: int, z: float = WILSON_Z) -> tuple[float, float]:
-    if n <= 0:
-        return (math.nan, math.nan)
-    p = wins / n
-    denom = 1 + z * z / n
-    center = (p + z * z / (2 * n)) / denom
-    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
-    return (center - half, center + half)
+def month_period(as_of: date) -> tuple[date, date, bool]:
+    """(first day of as_of's month, min(last day, as_of), complete?)."""
+    first = as_of.replace(day=1)
+    last = (first + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    return first, min(last, as_of), as_of >= last
+
+
+def previous_month(first_day: date) -> tuple[date, date]:
+    last = first_day - timedelta(days=1)
+    return last.replace(day=1), last
+
+
+def format_period_start(format_events_path: Optional[Path], as_of: date) -> tuple[date, str]:
+    """``effective_mtgo`` of the latest confirmed ``major`` event on or before *as_of*, and its key."""
+    if format_events_path is None or not format_events_path.exists():
+        raise DeckdbInputError(f"Brak pliku zdarzeń formatu (format_events_path): {format_events_path}")
+    import yaml
+
+    data = yaml.safe_load(format_events_path.read_text(encoding="utf-8")) or {}
+    best: Optional[tuple[date, str]] = None
+    for ev in data.get("events") or []:
+        if not (ev.get("major") and ev.get("status") == "confirmed" and ev.get("effective_mtgo")):
+            continue
+        day = date.fromisoformat(str(ev["effective_mtgo"]))
+        if day <= as_of and (best is None or day > best[0]):
+            best = (day, str(ev.get("key", "")))
+    if best is None:
+        raise DeckdbInputError(f"{format_events_path}: brak potwierdzonego dużego zdarzenia formatu przed {as_of}")
+    return best
+
+
+# --- measures ----------------------------------------------------------------------------------
+
+def coverage(rows: pd.DataFrame) -> dict:
+    events = rows.groupby("event_id")["player_count"].first()
+    participants = int(events.sum())
+    return {
+        "events": int(events.size),
+        "lists": int(len(rows)),
+        "participants": participants,
+        "coverage_pct": len(rows) / participants * 100.0 if participants else math.nan,
+    }
 
 
 def top8_baseline(rows: pd.DataFrame) -> float:
-    """All Top 8 lists / all lists of the window, in percent (the conversion baseline)."""
-    return float((rows["final_rank"] <= 8).sum()) / len(rows) * 100.0 if len(rows) else math.nan
+    """All Top 8 lists / all lists of the period, in percent (the common conversion baseline)."""
+    return float(rows["top8"].sum()) / len(rows) * 100.0 if len(rows) else math.nan
 
 
-def group_metrics(rows: pd.DataFrame, key: pd.Series, key_name: str, total_lists: int, total_events: int) -> pd.DataFrame:
-    """One row per value of *key* over *rows*; every count comes straight from the export rows."""
+def share_table(rows: pd.DataFrame, key: str, key_name: str, trophies: bool) -> pd.DataFrame:
+    """Week/month level: share, presence, Top 8 (lists, % of events); trophies for the month."""
+    n_lists, n_events = len(rows), rows["event_id"].nunique()
     out: List[dict] = []
     for label, grp in rows.groupby(key, sort=False):
-        lists = len(grp)
-        top8 = int((grp["final_rank"] <= 8).sum())
-        trophies = int((grp["final_rank"] == 1).sum())
-        top8_events = int(grp.loc[grp["final_rank"] <= 8, "event_id"].nunique())
-        win_events = int(grp.loc[grp["final_rank"] == 1, "event_id"].nunique())
-        clo, chi = wilson_interval(top8, lists)
-        wins = int(grp["swiss_wins"].sum())
-        losses = int(grp["swiss_losses"].sum())
-        matches = wins + losses
-        lo, hi = wilson_interval(wins, matches)
-        per_player = grp.groupby("player").size()
-        out.append({
+        events = int(grp["event_id"].nunique())
+        top8_events = int(grp.loc[grp["top8"] == 1, "event_id"].nunique())
+        rec = {
             key_name: label,
-            "Listy": lists,
-            "Udzial_Top32_pct": lists / total_lists * 100.0,
-            "Eventy_z_lista": int(grp["event_id"].nunique()),
-            "Top8": top8,
-            "Konwersja_Top32_Top8_pct": top8 / lists * 100.0,
-            "Konwersja_Wilson95_dol_pct": clo * 100.0,
-            "Konwersja_Wilson95_gora_pct": chi * 100.0,
+            "Listy": len(grp),
+            "Udzial_Top32_pct": len(grp) / n_lists * 100.0,
+            "Eventy_z_lista": events,
+            "Obecnosc_pct_eventow": events / n_events * 100.0,
+            "Top8": int(grp["top8"].sum()),
             "Eventy_z_Top8": top8_events,
-            "Top8_eventy_pct": top8_events / total_events * 100.0,
-            "Trofea": trophies,
-            "Trofea_na_liste_pct": trophies / lists * 100.0,
-            "Eventy_ze_zwyciestwem": win_events,
-            "Zwyciestwa_eventy_pct": win_events / total_events * 100.0,
-            "Wygrane_szw": wins,
-            "Przegrane_szw": losses,
-            "Mecze_szw": matches,
-            "Winrate_szw_pct": (wins / matches * 100.0) if matches else math.nan,
-            "Wilson95_dol_pct": lo * 100.0,
-            "Wilson95_gora_pct": hi * 100.0,
-            "Listy_z_bye": int(grp["had_bye"].sum()),
-            "Gracze": int(per_player.size),
-            "Najczestszy_gracz_udzial_pct": int(per_player.max()) / lists * 100.0,
-        })
+            "Top8_pct_eventow": top8_events / n_events * 100.0,
+        }
+        if trophies:
+            rec["Trofea"] = int(grp["trophy"].sum())
+        out.append(rec)
     if not out:
         return pd.DataFrame()
     return pd.DataFrame(out).sort_values(["Listy", key_name], ascending=[False, True]).reset_index(drop=True)
 
 
-def deck_table(rows: pd.DataFrame) -> pd.DataFrame:
-    """Deck level; Rogue + unassigned as one NO_DECK_LABEL row."""
-    tbl = group_metrics(rows, _material_deck(rows), "Talia", len(rows), rows["event_id"].nunique())
-    arch = (
-        rows.assign(_d=_material_deck(rows), _a=_material_archetype(rows))
-        .drop_duplicates("_d").set_index("_d")["_a"]
-    )
-    tbl.insert(1, "Archetyp", tbl["Talia"].map(arch))
-    return tbl
+def pilot_bootstrap(per_pilot: pd.DataFrame, draws: int, rng: np.random.Generator) -> tuple[float, float]:
+    """Percentile 95% interval of conversion (%) drawing pilots with replacement, all lists of each."""
+    n_l = per_pilot["lists"].to_numpy()
+    n_t = per_pilot["top8"].to_numpy()
+    idx = rng.integers(0, len(n_l), size=(draws, len(n_l)))
+    conv = n_t[idx].sum(axis=1) / n_l[idx].sum(axis=1) * 100.0
+    lo, hi = np.percentile(conv, [2.5, 97.5])
+    return float(lo), float(hi)
 
 
-def archetype_table(rows: pd.DataFrame) -> pd.DataFrame:
-    """Archetype = pooled lists of its decks (a deck has exactly one archetype in the export)."""
+def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
+                     draws: int = BOOT_DRAWS, seed: int = BOOT_SEED) -> pd.DataFrame:
+    """Format-period level. *pilots*: add pilot measures (decks only, never for archetypes or the
+    'bez talii' row). The bootstrap interval is given only with >= BOOT_MIN_PILOTS pilots."""
+    rng = np.random.default_rng(seed)
+    out: List[dict] = []
+    for label, grp in sorted(rows.groupby(key), key=lambda kv: (-len(kv[1]), str(kv[0]))):
+        per = grp.groupby("player").agg(lists=("top8", "size"), top8=("top8", "sum")).reset_index()
+        n_pilots = len(per)
+        per = per.sort_values(["lists", "top8", "player"], ascending=[False, False, True])
+        lead = per.iloc[0]
+        lists, top8 = len(grp), int(grp["top8"].sum())
+        rec = {
+            key_name: label,
+            "Listy": lists,
+            "Top8": top8,
+            "Konwersja_pct": top8 / lists * 100.0,
+            "Przedzial_dol_pct": math.nan,
+            "Przedzial_gora_pct": math.nan,
+            "Przedzial_info": "",
+            "Trofea": int(grp["trophy"].sum()),
+            "Piloci_Top32": n_pilots,
+        }
+        if n_pilots >= BOOT_MIN_PILOTS:
+            rec["Przedzial_dol_pct"], rec["Przedzial_gora_pct"] = pilot_bootstrap(per, draws, rng)
+            rec["Przedzial_info"] = f"bootstrap po pilotach, {n_pilots} pilotów"
+        else:
+            rec["Przedzial_info"] = (
+                f"bez przedziału: koncentracja — {n_pilots} pilotów (< {BOOT_MIN_PILOTS}), "
+                f"najczęstszy ma {lead['lists'] / lists * 100.0:.0f}% list"
+            )
+        if pilots and label != NO_DECK_LABEL:
+            rest = grp[grp["player"] != lead["player"]]
+            rec.update({
+                "Piloci_Top8": int(grp.loc[grp["top8"] == 1, "player"].nunique()),
+                "Najcz_pilot_listy": int(lead["lists"]),
+                "Najcz_pilot_udzial_Top32_pct": lead["lists"] / lists * 100.0,
+                "Najcz_pilot_Top8": int(lead["top8"]),
+                "Najcz_pilot_udzial_Top8_pct": (lead["top8"] / top8 * 100.0) if top8 else math.nan,
+                "Najcz_pilot_konwersja_pct": lead["top8"] / lead["lists"] * 100.0,
+                "Bez_najcz_pilota_listy": len(rest),
+                "Bez_najcz_pilota_konwersja_pct": rest["top8"].mean() * 100.0 if len(rest) else math.nan,
+                "Remis_najcz_pilota": int((per["lists"] == lead["lists"]).sum() > 1),
+            })
+        out.append(rec)
+    return pd.DataFrame(out)
+
+
+def archetype_decks(rows: pd.DataFrame) -> pd.Series:
     assigned = rows[rows["status"] == STATUS_ASSIGNED]
     per_deck = assigned.groupby("deck")["archetype"].nunique()
     if (per_deck > 1).any():
         raise DeckdbInputError(f"Talie z więcej niż jednym archetypem: {sorted(per_deck[per_deck > 1].index)}")
-    tbl = group_metrics(rows, _material_archetype(rows), "Archetyp", len(rows), rows["event_id"].nunique())
-    decks = rows.assign(_a=_material_archetype(rows), _d=_material_deck(rows)).groupby("_a")["_d"].nunique()
-    tbl.insert(1, "Talie", tbl["Archetyp"].map(decks).astype(int))
-    return tbl
+    return rows.groupby("material_archetype")["material_deck"].nunique()
 
 
-def no_deck_split(rows: pd.DataFrame) -> pd.DataFrame:
-    """Working file only: Rogue and unassigned as separate rows (shares of all window lists)."""
+def deck_archetype_map(rows: pd.DataFrame) -> pd.Series:
+    return rows.drop_duplicates("material_deck").set_index("material_deck")["material_archetype"]
+
+
+def no_deck_split(rows: pd.DataFrame, trophies: bool) -> pd.DataFrame:
+    """Working split: Rogue and unassigned as separate rows (shares of all lists of the period)."""
     sub = rows[rows["status"] != STATUS_ASSIGNED]
     if sub.empty:
         return pd.DataFrame()
-    return group_metrics(sub, sub["status"], "Status", len(rows), rows["event_id"].nunique())
+    tbl = share_table(rows.assign(_s=rows["status"].where(rows["status"] != STATUS_ASSIGNED, "")), "_s", "Status",
+                      trophies)
+    return tbl[tbl["Status"] != ""].reset_index(drop=True)
 
 
 def variant_table(rows: pd.DataFrame) -> pd.DataFrame:
@@ -318,26 +399,16 @@ def event_table(rows: pd.DataFrame) -> pd.DataFrame:
         "Listy": grp.size(),
         "Bez_talii": grp["status"].apply(lambda s: int((s != STATUS_ASSIGNED).sum())),
     }).reset_index(drop=True)
+    tbl["Tydzien_ISO"] = tbl["Data"].map(lambda d: iso_week_label(date.fromisoformat(d)))
+    tbl["Miesiac"] = tbl["Data"].str[:7]
     tbl["Pokrycie_pct"] = tbl["Listy"] / tbl["Gracze_eventu"] * 100.0
     return tbl.sort_values(["Data", "EventID"]).reset_index(drop=True)
 
 
-def coverage(rows: pd.DataFrame) -> dict:
-    events = rows.groupby("event_id")["player_count"].first()
-    participants = int(events.sum())
-    return {
-        "events": int(events.size),
-        "lists": int(len(rows)),
-        "participants": participants,
-        "coverage_pct": len(rows) / participants * 100.0 if participants else math.nan,
-    }
-
-
 def finalists_table(rows: pd.DataFrame) -> pd.DataFrame:
     """Place 1 and 2 per event, deck labels only (no player identifiers)."""
-    deck = _material_deck(rows)
     out = []
-    for eid, grp in rows.assign(_d=deck).groupby("event_id"):
+    for eid, grp in rows.groupby("event_id"):
         first = grp[grp["final_rank"] == 1]
         second = grp[grp["final_rank"] == 2]
         if first.empty or second.empty:
@@ -345,51 +416,39 @@ def finalists_table(rows: pd.DataFrame) -> pd.DataFrame:
         out.append({
             "EventID": eid,
             "Data": first.iloc[0]["event_date"],
-            "Talia_1": first.iloc[0]["_d"],
-            "Talia_2": second.iloc[0]["_d"],
+            "Talia_1": first.iloc[0]["material_deck"],
+            "Talia_2": second.iloc[0]["material_deck"],
         })
-    return pd.DataFrame(out, columns=["EventID", "Data", "Talia_1", "Talia_2"]).sort_values(["Data", "EventID"]).reset_index(drop=True)
+    return pd.DataFrame(out, columns=["EventID", "Data", "Talia_1", "Talia_2"]).sort_values(
+        ["Data", "EventID"]).reset_index(drop=True)
 
 
-def trend_windows(end: date, weeks: int, days: int = 14) -> List[tuple[date, date]]:
-    """Weekly-stepped closed windows of *days* days ending at *end*, oldest first (the same grid
-    as the legacy weekly runs)."""
-    return [(e - timedelta(days=days - 1), e) for e in (end - timedelta(days=7 * i) for i in reversed(range(weeks)))]
-
-
-def trend_table(export: DeckdbExport, end: date, weeks: int, key: str) -> pd.DataFrame:
-    """Share of Top 32 Challenge per window of trend_windows(); *key* is 'Talia' or 'Archetyp'."""
+def weekly_trend(export: DeckdbExport, weeks: List[tuple[date, date]], key: str, key_name: str) -> pd.DataFrame:
+    """Share of Top 32 Challenge per disjoint ISO week."""
     out = []
-    for ws, we in trend_windows(end, weeks):
+    for ws, we in weeks:
         rows = window_rows(export, ws, we)
-        labels = _material_deck(rows) if key == "Talia" else _material_archetype(rows)
-        counts = labels.value_counts()
-        for label, n in counts.items():
+        for label, n in rows[key].value_counts().items():
             out.append({
-                "Okno_od": ws.isoformat(),
-                "Okno_do": we.isoformat(),
-                key: label,
+                "Tydzien_ISO": iso_week_label(ws),
+                "Od": ws.isoformat(),
+                "Do": we.isoformat(),
+                key_name: label,
                 "Listy": int(n),
-                "Listy_okna": int(len(rows)),
-                "Eventy_okna": int(rows["event_id"].nunique()),
+                "Listy_tygodnia": int(len(rows)),
+                "Eventy_tygodnia": int(rows["event_id"].nunique()),
                 "Udzial_Top32_pct": n / len(rows) * 100.0,
             })
     return pd.DataFrame(out)
 
 
-def _cache_file(cache_dir: Path, event_id: str) -> Optional[Path]:
-    for name in (f"{event_id}.json", f"{event_id}.0.json"):
-        p = cache_dir / name
-        if p.exists():
-            return p
-    return None
-
+# --- MTGO cache join check ---------------------------------------------------------------------
 
 def match_mtgo_cache(rows: pd.DataFrame, cache_dir: Path, start: date, end: date) -> dict:
-    """Join window lists with the MTGO JSON cache by (event_id, decktournamentid), both ways.
+    """Join period lists with the MTGO JSON cache by (event_id, decktournamentid), both ways.
 
     Cache side: every Modern Challenge (description starting "Modern Challenge", so no Showcase /
-    RC events, which the export never has) dated in the window, plus any export event found in the
+    RC events, which the export never has) dated in the period, plus any export event found in the
     cache regardless of its description.
     """
     export_keys = set(zip(rows["event_id"], rows["decktournamentid"]))

@@ -233,20 +233,24 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
 
 ### Input mode "deckdb" (`deckdb_input.py`, `deckdb_materials.py`, since 2026-10-21, WORKING)
 
-- DeckDB decision K33: the metagame analysis is to rest on the DeckDB assignment export only.
-  `python src/metagame_input_generator.py --input-mode deckdb --week-start 2026-10-01 --week-end 2026-10-18 --trend-weeks 12`
-  reads the export whose path is in `docs/deckdb_config.csv` (`export_path`, no default) and writes
-  only `outputs/deckdb_robocze/ROBOCZE_<window>/` -- no Videre/MTGGoldfish/mtgo.com fetch, no
-  mapping/alias/archetype rule, no card rule, no history/league/site write. Default
-  `--input-mode legacy` is the unchanged pipeline (verified: W42 rerun identical except the XML
-  `generated_at` stamp).
-- Refuses (`DeckdbInputError`, exit 2) a file with > 1 `rules_version` and any window (incl. trend
-  windows) ending after the file's last / starting before its first `event_date`.
-- Format and metric definitions: DeckDB `docs/export.md` ("Format eksportu dla Analizy metagame")
-  and the module docstring of `deckdb_input.py`. Rogue + unassigned = one "bez talii" row in
-  materials, separate only in the workbook's `Bez_talii_rozbicie`. No loginid/player in any
-  material; every material carries `rules_version` + export sha256. Legacy materials without an
-  export counterpart are listed in `deckdb_materials.OMITTED_MATERIALS`.
+- DeckDB decisions K33 (DeckDB is the only source) and K36 (conversion, not winrate; pilot measures;
+  format period). Spec: `docs/deckdb_metodologia.md` (accepted 2026-10-21 with decisions, see there).
+  `python src/metagame_input_generator.py --input-mode deckdb --as-of 2026-10-18 --trend-weeks 12`
+  reads the paths in `docs/deckdb_config.csv` (`export_path` required; `format_events_path` = DeckDB
+  `rules/format_events.yaml`, read only; `cards_path` = `deckdb export-cards` output, enables the card
+  layer) and writes only `outputs/deckdb_robocze/ROBOCZE_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
+  fetch, no mapping/alias/archetype rule, no card rule, no history/league/site write. Default
+  `--input-mode legacy` is the unchanged pipeline (W42 rerun identical except the XML `generated_at`).
+- Three time levels, one subdirectory each: `tydzien_<YYYY-Www>` (last complete ISO week + trend of
+  N disjoint ISO weeks), `miesiac_<YYYY-MM>[_niepelny]` (+ trophies, D2 variants),
+  `okres_formatu_<start>_to_<as-of>` (conversion vs. the common baseline with a pilot-bootstrap
+  interval only at >= 10 pilots, trophies, pilot measures for decks only). Winrate is gone (K36);
+  the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
+- Refuses (`DeckdbInputError`, exit 2) a file with > 1 `rules_version` and any period ending after
+  the file's last / starting before its first `event_date`; all periods are checked before writing.
+- Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the
+  glossary (`Slownik` sheet, `SLOWNIK.md`, chart footer). No loginid/player in any material.
+  Legacy materials without a counterpart: `deckdb_materials.OMITTED_MATERIALS` (`Pominiete` sheet).
 
 ### Key design decisions
 
