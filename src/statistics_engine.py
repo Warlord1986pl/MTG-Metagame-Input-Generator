@@ -626,12 +626,27 @@ def _create_trend_chart(
     deck_colors: dict[str, str],
     legend_colors: dict[str, str],
     caption: Optional[str] = None,
+    value_col: str = "Meta",
+    title: Optional[str] = None,
+    xlabel: str = "Week",
+    ylabel: str = "Meta %",
+    week_labels: Optional[dict[int, str]] = None,
+    show_trend_status: bool = True,
+    legend_title: str = "Decks (Trend Status)",
+    footer: Optional[str] = None,
+    out_path: Optional[Path] = None,
+    figsize: tuple = (18, 11),
+    dpi: int = 300,
 ) -> tuple[Optional[Path], dict[str, str]]:
     """Returns (png_path, status_by_key): status_by_key is the exact direction used to build
     each legend entry (the trend_symbol computation below), keyed by Deck/Archetype display
     name -- so callers can cross-check the tabular Trend Label column against what the legend
     actually shows, instead of re-deriving it separately (see run_statistics's post-generation
     guard). Empty dict whenever no chart was produced.
+
+    The keyword arguments after *caption* default to the legacy chart. Input mode "deckdb" uses
+    them for its share-of-Top-32 trend: own value column and labels, ISO-week tick labels
+    (*week_labels*), no trend status (*show_trend_status*=False), a *footer* and an explicit path.
     """
     if df_history.empty or "WeekIndex" not in df_history.columns:
         return None, {}
@@ -659,7 +674,7 @@ def _create_trend_chart(
     if hist.empty:
         return None, {}
 
-    fig, ax = plt.subplots(figsize=(18, 11))
+    fig, ax = plt.subplots(figsize=figsize)
     cmap = plt.cm.rainbow
     color_count = max(1, len(top) - 1)
     base_deck_colors = {deck: cmap(1 - i / color_count) for i, deck in enumerate(top)}
@@ -671,8 +686,15 @@ def _create_trend_chart(
         series = hist[hist["Deck"].astype(str) == deck].sort_values("WeekIndex")
         if series.empty:
             continue
-        values = pd.to_numeric(series["Meta"], errors="coerce").fillna(0)
+        values = pd.to_numeric(series[value_col], errors="coerce").fillna(0)
         weeks = pd.to_numeric(series["WeekIndex"], errors="coerce").astype(int)
+        line_color = _deck_color_override(deck, deck_colors) or base_deck_colors[deck]
+        if not show_trend_status:
+            ax.plot(weeks, values, marker="o", linewidth=2.5, markersize=8, color=line_color)
+            legend_elements.append(
+                Line2D([0], [0], color=line_color, linewidth=2.5, marker="o", markersize=6, label=deck)
+            )
+            continue
 
         # Direction is resolved from level_hist (the FULL, un-windowed history for this key),
         # not from `hist` above (already sliced to the weeks_back display window) -- otherwise
@@ -695,30 +717,38 @@ def _create_trend_chart(
         status = resolve_trend_status(prior_values, current, threshold=threshold)
         status_by_key[deck] = status
         trend_symbol = "^" if status == "Rising Deck" else "v" if status == "Falling Deck" else "-"
-        line_color = _deck_color_override(deck, deck_colors) or base_deck_colors[deck]
         ax.plot(weeks, values, marker="o", linewidth=2.5, markersize=8, color=line_color)
         legend_elements.append(
             Line2D([0], [0], color=line_color, linewidth=2.5, marker="o", markersize=6, label=f"{deck} {trend_symbol}")
         )
 
-    title = f"Meta Trend ({chart_type}) - Last {weeks_back} Weeks"
+    title = title or f"Meta Trend ({chart_type}) - Last {weeks_back} Weeks"
     ax.set_title(f"{title}\n{caption}" if caption else title)
-    ax.set_xlabel("Week")
-    ax.set_ylabel("Meta %")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.grid(True, linestyle="--", alpha=0.3)
 
-    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
-    ax.legend(handles=legend_elements, title="Decks (Trend Status)", loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=9, framealpha=0.95, title_fontsize=10)
+    if week_labels:
+        ticks = sorted(w for w in week_labels if w >= min_week)
+        ax.set_xticks(ticks)
+        ax.set_xticklabels([week_labels[w] for w in ticks], rotation=35, ha="right")
+    else:
+        ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    ax.legend(handles=legend_elements, title=legend_title, loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=9, framealpha=0.95, title_fontsize=10)
 
-    trend_box_text = "^ Rising  |  - Stable  |  v Falling"
-    box_face = _legend_color("Trend Box", legend_colors, "wheat")
-    ax.text(0.5, -0.08, trend_box_text, transform=ax.transAxes, ha="center", fontsize=10, bbox=dict(boxstyle="round", facecolor=box_face, alpha=0.5))
+    if show_trend_status:
+        trend_box_text = "^ Rising  |  - Stable  |  v Falling"
+        box_face = _legend_color("Trend Box", legend_colors, "wheat")
+        ax.text(0.5, -0.08, trend_box_text, transform=ax.transAxes, ha="center", fontsize=10, bbox=dict(boxstyle="round", facecolor=box_face, alpha=0.5))
 
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.12, right=0.82)
+    if footer:
+        fig.text(0.01, 0.005, footer, fontsize=8, ha="left", va="bottom", color="#444444")
+        plt.subplots_adjust(bottom=min(0.45, 0.12 + 0.02 * (footer.count("\n") + 1)))
 
-    out_path = output_dir / f"meta_trend_{chart_type}_{file_tag}_last{weeks_back}w.png"
-    plt.savefig(out_path, dpi=300, bbox_inches="tight", facecolor="white")
+    out_path = out_path or output_dir / f"meta_trend_{chart_type}_{file_tag}_last{weeks_back}w.png"
+    plt.savefig(out_path, dpi=dpi, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return out_path, status_by_key
 

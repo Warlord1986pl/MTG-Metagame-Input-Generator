@@ -965,11 +965,18 @@ def _parse_run_dir_window(run_dir: Path) -> Optional["tuple[date, date]"]:
         return None
 
 
-def _safe_chart(fig: plt.Figure, out_path: Path) -> Optional[Path]:
+def _safe_chart(fig: plt.Figure, out_path: Path, footer: Optional[str] = None, dpi: int = 150) -> Optional[Path]:
+    """Saves and closes *fig*. *footer* (optional, used by input mode "deckdb") is printed under the
+    plot; without it the layout is exactly the legacy one."""
     try:
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        fig.tight_layout()
-        fig.savefig(out_path, dpi=150)
+        if footer:
+            lines = footer.count("\n") + 1
+            fig.text(0.01, 0.005, footer, fontsize=7, ha="left", va="bottom", color="#444444")
+            fig.tight_layout(rect=(0, min(0.45, 0.022 * lines + 0.01), 1, 1))
+        else:
+            fig.tight_layout()
+        fig.savefig(out_path, dpi=dpi)
         return out_path
     except Exception:
         return None
@@ -986,59 +993,79 @@ def _chart_compare_presence(
     total_encounter_players: int = 1000,
     sample_size: int = 5,
     min_encounter_pct: float = 5.0,
+    bars: Optional[List[tuple]] = None,
+    ylabel: str = "Share %",
+    top_n: Optional[int] = None,
+    footer: Optional[str] = None,
+    figsize: tuple = (13, 6),
+    dpi: int = 150,
 ) -> Optional[Path]:
+    """Grouped bars per deck. Legacy (bars=None): Top32 / Top8 event frequency vs Metagame Share,
+    filtered by the encounter-probability cutoff. With *bars* = [(column, legend label), ...] the
+    same chart is drawn from those columns, sorted by them in order, without the encounter cutoff
+    (top_n rows), e.g. input mode "deckdb"."""
     if deck_stats.empty:
         return None
 
-    cols = [key_col, "Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"]
-    missing = [c for c in cols if c not in deck_stats.columns]
-    if missing:
-        return None
+    if bars is None:
+        cols = [key_col, "Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"]
+        missing = [c for c in cols if c not in deck_stats.columns]
+        if missing:
+            return None
 
-    plot_df = deck_stats[cols].copy().fillna(0)
-    if str(sort_by).strip().lower() == "meta":
-        plot_df = plot_df.sort_values(["Meta Share %", "Top32EventFreqPct", "Top8EventFreqPct"], ascending=False)
+        plot_df = deck_stats[cols].copy().fillna(0)
+        if str(sort_by).strip().lower() == "meta":
+            plot_df = plot_df.sort_values(["Meta Share %", "Top32EventFreqPct", "Top8EventFreqPct"], ascending=False)
+        else:
+            plot_df = plot_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"], ascending=False)
+        if plot_df.empty:
+            return None
+
+        # Use the same encounter-probability cutoff as Encounter Probability charts.
+        threshold = min_encounter_pct / 100.0
+        N = max(1, int(total_encounter_players))
+        ss = max(1, int(sample_size))
+
+        def _enc_prob(meta_share_pct: float) -> float:
+            K = round(N * float(meta_share_pct) / 100.0)
+            K = max(0, min(K, N))
+            ss_capped = min(ss, N)
+            max_succ = min(K, ss_capped)
+            if max_succ < 1:
+                return 0.0
+            total = comb(N, ss_capped)
+            if total == 0:
+                return 0.0
+            prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
+            return prob / total
+
+        plot_df = plot_df[plot_df["Meta Share %"].apply(_enc_prob) >= threshold]
+        bars = [("Top32EventFreqPct", "Top32 Event Frequency %"), ("Top8EventFreqPct", "Top8 Event Frequency %"),
+                ("Meta Share %", "Metagame Share %")]
     else:
-        plot_df = plot_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct", "Meta Share %"], ascending=False)
-    if plot_df.empty:
-        return None
-
-    # Use the same encounter-probability cutoff as Encounter Probability charts.
-    threshold = min_encounter_pct / 100.0
-    N = max(1, int(total_encounter_players))
-    ss = max(1, int(sample_size))
-
-    def _enc_prob(meta_share_pct: float) -> float:
-        K = round(N * float(meta_share_pct) / 100.0)
-        K = max(0, min(K, N))
-        ss_capped = min(ss, N)
-        max_succ = min(K, ss_capped)
-        if max_succ < 1:
-            return 0.0
-        total = comb(N, ss_capped)
-        if total == 0:
-            return 0.0
-        prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
-        return prob / total
-
-    plot_df = plot_df[plot_df["Meta Share %"].apply(_enc_prob) >= threshold]
+        cols = [key_col] + [c for c, _ in bars]
+        if any(c not in deck_stats.columns for c in cols):
+            return None
+        plot_df = deck_stats[cols].copy().fillna(0).sort_values([c for c, _ in bars], ascending=False)
+        if top_n is not None:
+            plot_df = plot_df.head(top_n)
     if plot_df.empty:
         return None
 
     x = list(range(len(plot_df)))
-    w = 0.26
-    fig, ax = plt.subplots(figsize=(13, 6))
-    ax.bar([i - w for i in x], plot_df["Top32EventFreqPct"], width=w, label="Top32 Event Frequency %")
-    ax.bar(x, plot_df["Top8EventFreqPct"], width=w, label="Top8 Event Frequency %")
-    ax.bar([i + w for i in x], plot_df["Meta Share %"], width=w, label="Metagame Share %")
+    w = 0.26 if len(bars) == 3 else 0.78 / len(bars)
+    offsets = [(k - (len(bars) - 1) / 2) * w for k in range(len(bars))]
+    fig, ax = plt.subplots(figsize=figsize)
+    for (col, label), off in zip(bars, offsets):
+        ax.bar([i + off for i in x], plot_df[col], width=w, label=label)
 
     ax.set_title(title)
-    ax.set_ylabel("Share %")
+    ax.set_ylabel(ylabel)
     ax.set_xticks(x)
     ax.set_xticklabels(plot_df[key_col], rotation=35, ha="right")
     ax.legend(loc="upper right")
     ax.grid(axis="y", linestyle="--", alpha=0.35)
-    return _safe_chart(fig, out_path)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_delta_ranking(
@@ -1052,57 +1079,81 @@ def _chart_delta_ranking(
     show_median_line: bool = False,
     median_restrict_to_universe_a: bool = True,
     log: Optional[Callable[[str], None]] = None,
+    delta_col: Optional[str] = None,
+    err_cols: Optional[tuple] = None,
+    ylabel: Optional[str] = None,
+    top_n: Optional[int] = None,
+    footer: Optional[str] = None,
+    figsize: tuple = (13, 7),
+    dpi: int = 150,
 ) -> Optional[Path]:
     """Vertical ranking of delta between Top32 event frequency and metagame share.
-    
+
     Uses the same encounter-probability cutoff as Challenge vs Meta chart
     to ensure consistent deck selection across all presentations.
+
+    With *delta_col* the ranking is drawn from that precomputed column instead (no encounter cutoff,
+    the top_n largest |values|), optionally with error bars from *err_cols* = (low, high) columns --
+    input mode "deckdb" (card presence changes).
     """
     if stats_df.empty:
         return None
-    required = {key_col, "Top32EventFreqPct", "Meta Share %"}
-    if not required.issubset(set(stats_df.columns)):
-        return None
+    if delta_col is not None:
+        if not {key_col, delta_col}.issubset(stats_df.columns):
+            return None
+        plot_df = stats_df.copy()
+        plot_df["Delta pp"] = pd.to_numeric(plot_df[delta_col], errors="coerce").fillna(0)
+        if top_n is not None:
+            plot_df = plot_df.reindex(plot_df["Delta pp"].abs().sort_values(ascending=False).index).head(top_n)
+        df = plot_df
+    else:
+        required = {key_col, "Top32EventFreqPct", "Meta Share %"}
+        if not required.issubset(set(stats_df.columns)):
+            return None
 
-    df = stats_df[[key_col, "Top32EventFreqPct", "Meta Share %"]].copy()
-    df["Top32EventFreqPct"] = pd.to_numeric(df["Top32EventFreqPct"], errors="coerce").fillna(0)
-    df["Meta Share %"] = pd.to_numeric(df["Meta Share %"], errors="coerce").fillna(0)
-    df["Delta pp"] = (df["Top32EventFreqPct"] - df["Meta Share %"]).round(2)
+        df = stats_df[[key_col, "Top32EventFreqPct", "Meta Share %"]].copy()
+        df["Top32EventFreqPct"] = pd.to_numeric(df["Top32EventFreqPct"], errors="coerce").fillna(0)
+        df["Meta Share %"] = pd.to_numeric(df["Meta Share %"], errors="coerce").fillna(0)
+        df["Delta pp"] = (df["Top32EventFreqPct"] - df["Meta Share %"]).round(2)
 
-    # Apply same encounter-probability cutoff as Challenge vs Meta to keep decks consistent
-    threshold = min_encounter_pct / 100.0
-    N = max(1, int(total_encounter_players))
-    ss = max(1, int(sample_size))
+        # Apply same encounter-probability cutoff as Challenge vs Meta to keep decks consistent
+        threshold = min_encounter_pct / 100.0
+        N = max(1, int(total_encounter_players))
+        ss = max(1, int(sample_size))
 
-    def _enc_prob(meta_share_pct: float) -> float:
-        K = round(N * float(meta_share_pct) / 100.0)
-        K = max(0, min(K, N))
-        ss_capped = min(ss, N)
-        max_succ = min(K, ss_capped)
-        if max_succ < 1:
-            return 0.0
-        total = comb(N, ss_capped)
-        if total == 0:
-            return 0.0
-        prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
-        return prob / total
+        def _enc_prob(meta_share_pct: float) -> float:
+            K = round(N * float(meta_share_pct) / 100.0)
+            K = max(0, min(K, N))
+            ss_capped = min(ss, N)
+            max_succ = min(K, ss_capped)
+            if max_succ < 1:
+                return 0.0
+            total = comb(N, ss_capped)
+            if total == 0:
+                return 0.0
+            prob = sum(comb(K, k) * comb(N - K, ss_capped - k) for k in range(1, max_succ + 1))
+            return prob / total
 
-    plot_df = df[df["Meta Share %"].apply(_enc_prob) >= threshold].copy()
+        plot_df = df[df["Meta Share %"].apply(_enc_prob) >= threshold].copy()
     if plot_df.empty:
         return None
     plot_df = plot_df.sort_values("Delta pp", ascending=False)
 
-    fig, ax = plt.subplots(figsize=(13, 7))
+    fig, ax = plt.subplots(figsize=figsize)
     # Match metagame encounter chart style: bar colors come from a visual palette,
     # independent from delta sign.
     cmap = plt.cm.rainbow
     colors = cmap(np.linspace(1, 0, len(plot_df))) if len(plot_df) > 0 else []
     x = np.arange(len(plot_df))
     ax.bar(x, plot_df["Delta pp"], color=colors)
+    if err_cols is not None:
+        lo = plot_df["Delta pp"] - pd.to_numeric(plot_df[err_cols[0]], errors="coerce")
+        hi = pd.to_numeric(plot_df[err_cols[1]], errors="coerce") - plot_df["Delta pp"]
+        ax.errorbar(x, plot_df["Delta pp"], yerr=[lo, hi], fmt="none", ecolor="#333333", capsize=3, linewidth=1)
     ax.axhline(0, color="#333333", linewidth=1.2)
     ax.set_xticks(x)
     ax.set_xticklabels(plot_df[key_col], rotation=35, ha="right")
-    ax.set_ylabel("Delta pp (Top32 Event Frequency % - Metagame Share %)")
+    ax.set_ylabel(ylabel or "Delta pp (Top32 Event Frequency % - Metagame Share %)")
     ax.set_title(title)
     ax.grid(axis="y", linestyle="--", alpha=0.25)
 
@@ -1138,7 +1189,7 @@ def _chart_delta_ranking(
             ax.legend(loc="upper right", fontsize=8, framealpha=0.85)
             emit(f"[delta-median] {title}: median={median_val:+.1f} pp over n={n_median}")
 
-    return _safe_chart(fig, out_path)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_conversion_matrix(
@@ -1146,53 +1197,79 @@ def _chart_conversion_matrix(
     key_col: str,
     out_path: Path,
     title: str,
+    columns: Optional[List[tuple]] = None,
+    scales: Optional[Dict[str, tuple]] = None,
+    cell_text: Optional[Callable[[pd.Series, str], str]] = None,
+    top_n: int = 20,
+    colorbar_label: str = "%",
+    footer: Optional[str] = None,
+    figsize: tuple = (12, 7),
+    dpi: int = 150,
 ) -> Optional[Path]:
-    """Matrix chart with percentages for Top32/Top8/Win frequency and conversions."""
+    """Matrix chart with percentages for Top32/Top8/Win frequency and conversions.
+
+    Legacy (columns=None): five % columns on one 0..100 YlGnBu scale. With *columns* = [(column,
+    tick label), ...] the same matrix is drawn from those columns (rows sorted by them in order,
+    top_n rows); *scales* maps a column to ("seq", vmax) -- YlGnBu 0..vmax -- or ("div", centre,
+    span) -- RdBu around centre; *cell_text(row, column)* formats a cell (input mode "deckdb")."""
     if stats_df.empty:
         return None
 
-    cols = [
-        key_col,
-        "Top32EventFreqPct",
-        "Top8EventFreqPct",
-        "WinnerEventFreqPct",
-        "Top8ShareOfTop32EntriesPct",
-        "WinnerShareOfTop32EntriesPct",
-    ]
+    if columns is None:
+        columns = [
+            ("Top32EventFreqPct", "Top32\nEvent %"),
+            ("Top8EventFreqPct", "Top8\nEvent %"),
+            ("WinnerEventFreqPct", "Winner\nEvent %"),
+            ("Top8ShareOfTop32EntriesPct", "Top8/Top32\nEntries %"),
+            ("WinnerShareOfTop32EntriesPct", "Win/Top32\nEntries %"),
+        ]
+        sort_cols = ["Top32EventFreqPct", "Top8EventFreqPct"]
+    else:
+        sort_cols = [c for c, _ in columns]
+    cols = [key_col] + [c for c, _ in columns]
     if not set(cols).issubset(set(stats_df.columns)):
         return None
 
-    matrix_df = stats_df[cols].copy()
+    matrix_df = stats_df.copy()
     for c in cols[1:]:
         matrix_df[c] = pd.to_numeric(matrix_df[c], errors="coerce").fillna(0)
     # A strict top-14 cut can drop decks that only spike in a few Top8s within
     # the selected window (for example, Domain Zoo in shorter challenge ranges).
     # Keep a slightly wider panel so the matrix stays readable while preserving
     # those meaningful appearances.
-    matrix_df = matrix_df.sort_values(["Top32EventFreqPct", "Top8EventFreqPct"], ascending=False).head(20)
+    matrix_df = matrix_df.sort_values(sort_cols, ascending=False).head(top_n).reset_index(drop=True)
     if matrix_df.empty:
         return None
 
     value_cols = cols[1:]
     data = matrix_df[value_cols].to_numpy(dtype=float)
 
-    fig, ax = plt.subplots(figsize=(12, 7))
-    im = ax.imshow(data, aspect="auto", cmap="YlGnBu", vmin=0, vmax=100)
+    fig, ax = plt.subplots(figsize=figsize)
+    if scales is None:
+        im = ax.imshow(data, aspect="auto", cmap="YlGnBu", vmin=0, vmax=100)
+        level = data / 100.0
+    else:
+        seq, div = plt.get_cmap("YlGnBu"), plt.get_cmap("RdBu")
+        rgba = np.zeros((*data.shape, 4))
+        level = np.zeros(data.shape)
+        for j, col in enumerate(value_cols):
+            kind = scales.get(col, ("seq", max(float(np.nanmax(data[:, j])), 1e-9)))
+            if kind[0] == "div":
+                pos = np.clip(0.5 + 0.5 * (data[:, j] - kind[1]) / (kind[2] or 1.0), 0.0, 1.0)
+                rgba[:, j] = div(pos)
+                level[:, j] = np.abs(pos - 0.5) * 2
+            else:
+                pos = np.clip(data[:, j] / (kind[1] or 1.0), 0.0, 1.0)
+                rgba[:, j] = seq(pos)
+                level[:, j] = pos
+        ax.imshow(rgba, aspect="auto")
+        im = plt.cm.ScalarMappable(cmap="YlGnBu", norm=plt.Normalize(0, 1))
     ax.set_title(title)
     ax.set_yticks(range(len(matrix_df)))
     ax.set_yticklabels(matrix_df[key_col])
     ax.set_xticks(range(len(value_cols)))
-    ax.set_xticklabels(
-        [
-            "Top32\nEvent %",
-            "Top8\nEvent %",
-            "Winner\nEvent %",
-            "Top8/Top32\nEntries %",
-            "Win/Top32\nEntries %",
-        ],
-        rotation=0,
-    )
-    
+    ax.set_xticklabels([label for _, label in columns], rotation=0)
+
     # Two-layer separators keep boundaries visible on both dark and bright cells.
     x_bounds = np.arange(-0.5, len(value_cols), 1)
     y_bounds = np.arange(-0.5, len(matrix_df), 1)
@@ -1206,12 +1283,14 @@ def _chart_conversion_matrix(
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             val = data[i, j]
-            txt_color = "#111111" if val < 65 else "#ffffff"
-            ax.text(j, i, f"{val:.1f}%", ha="center", va="center", fontsize=8, color=txt_color)
+            txt_color = "#111111" if level[i, j] < 0.65 else "#ffffff"
+            text = cell_text(matrix_df.iloc[i], value_cols[j]) if cell_text is not None else f"{val:.1f}%"
+            ax.text(j, i, text, ha="center", va="center", fontsize=8, color=txt_color)
 
-    cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
-    cbar.set_label("%")
-    return _safe_chart(fig, out_path)
+    if scales is None or colorbar_label:
+        cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+        cbar.set_label(colorbar_label)
+    return _safe_chart(fig, out_path, footer=footer, dpi=dpi)
 
 
 def _chart_trend_lines(df: pd.DataFrame, key_col: str, out_path: Path, title: str) -> Optional[Path]:
