@@ -201,3 +201,73 @@ Tabela (udziały i konwersje w %):
 | Izzet Murktide | 37 | 10 | 18 | 5 | 27.0 | 1 | 60.0 | 60.0 | 27.0 | 10 | 60.0 | 14.8 |
 | Mill | 33 | 4 | 16 | 3 | 18.2 | 2 | 50.0 | 50.0 | 12.1 | 6 | 33.3 | 7.4 |
 | Hammer Time | 32 | 4 | 17 | 3 | 21.9 | 1 | 0.0 | 50.0 | 12.5 | 7 | 0.0 | 16.0 |
+
+## (e) Przedział ufności konwersji: bootstrap po pilotach
+
+**Metoda.** Listy jednego pilota nie są niezależne (ten sam gracz, ta sama umiejętność, często ta
+sama lista), dlatego jednostką losowania jest pilot, nie lista. Dla talii z P pilotami w okresie:
+
+1. dla każdego pilota policz jego listy talii n_p i listy Top 8 t_p;
+2. wylosuj ze zwracaniem P pilotów (pilot może wystąpić kilka razy, wtedy wnosi wszystkie swoje
+   listy tyle razy);
+3. konwersja próby = Σ t_p / Σ n_p po wylosowanych pilotach;
+4. powtórz B = 2000 razy; przedział 95% = percentyle 2,5 i 97,5 rozkładu konwersji prób.
+
+Ziarno generatora jest stałe (`--seed`, domyślnie 20261021), więc wynik jest powtarzalny. Wariant
+procentylowy, bez korekty BCa. Eventy nie są losowane (polecenie: piloci).
+
+**Czas obliczenia** (okres 2026-05-19 … 2026-10-18, 8387 list, 32 talie z co najmniej 30 listami,
+ten komputer): wczytanie eksportu i wybór okresu 0,13 s; bootstrap B = 2000 dla 32 talii
+0,13–0,14 s; B = 10 000: 0,28 s. Koszt jest pomijalny także dla wszystkich talii i archetypów.
+
+**Porównanie z Wilsonem** (Wilson 95% na listach, czyli dzisiejszy przedział z adnotacją
+„zaniżony”). Iloraz szerokości bootstrap / Wilson przy B = 2000: mediana 1,07, zakres 0,87–1,42;
+w 12 z 32 talii bootstrap jest szerszy o ponad 20%, w 9 węższy. Szerszy jest tam, gdzie piloci są
+skoncentrowani: Living End (61 pilotów, 1,42), Mono-Black Midrange (5 pilotów, 1,42), Goryo's
+Vengeance (1,42), Control (1,33), Izzet Murktide (1,30). W taliach z setkami pilotów i małym
+udziałem najczęstszego (Prowess, Affinity, Tron, Devoted Combo) oba przedziały są praktycznie
+równe — zaniżenie Wilsona jest tam niewielkie. Kontrola stabilności: inne ziarno (B = 2000) daje
+medianę 1,08 (zakres 0,90–1,44), B = 10 000 medianę 1,08 (0,89–1,47); pojedyncze ilorazy wahają się
+o kilka setnych, więc talie z ilorazem około 1 nie różnią się istotnie.
+
+Ograniczenie: przy bardzo małej liczbie pilotów bootstrap jest zawodny. Mono-Black Midrange (5
+pilotów) dostaje przedział 0,0–31,6%, wyznaczony głównie przez to, czy w próbie znalazł się
+najczęstszy pilot (lub jego brak); to nie jest wiarygodny przedział, tylko sygnał, że konwersja
+talii to konwersja jednego gracza. Patrz „nierozstrzygnięte” niżej.
+
+Tabela (B = 2000, ziarno 20261021; konwersja i granice w %, szerokości w pp):
+
+| Talia | Listy | Piloci | Konwersja_pct | Bootstrap_dol | Bootstrap_gora | Wilson_dol | Wilson_gora | Szer_bootstrap_pp | Szer_Wilson_pp | Iloraz_szerokosci |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Broodscale Combo | 787 | 262 | 26.43 | 22.74 | 30.19 | 23.47 | 29.62 | 7.45 | 6.15 | 1.21 |
+| Energy | 704 | 294 | 26.28 | 22.11 | 30.40 | 23.16 | 29.65 | 8.29 | 6.49 | 1.28 |
+| Prowess | 625 | 268 | 24.48 | 21.17 | 27.87 | 21.27 | 28.00 | 6.70 | 6.73 | 1.00 |
+| Goryo's Vengeance | 523 | 222 | 24.86 | 19.63 | 30.13 | 21.34 | 28.73 | 10.50 | 7.39 | 1.42 |
+| Blink | 504 | 211 | 26.19 | 21.77 | 30.24 | 22.54 | 30.20 | 8.47 | 7.66 | 1.11 |
+| Affinity | 473 | 178 | 24.31 | 20.75 | 28.06 | 20.66 | 28.38 | 7.31 | 7.71 | 0.95 |
+| Tron | 385 | 149 | 24.42 | 20.16 | 28.53 | 20.39 | 28.95 | 8.37 | 8.55 | 0.98 |
+| Ruby Storm | 344 | 133 | 25.00 | 19.10 | 28.83 | 20.72 | 29.83 | 9.73 | 9.12 | 1.07 |
+| Eldrazi Ramp | 310 | 145 | 28.39 | 23.27 | 33.54 | 23.66 | 33.65 | 10.27 | 9.99 | 1.03 |
+| Devoted Combo | 293 | 116 | 25.26 | 20.52 | 30.32 | 20.62 | 30.53 | 9.80 | 9.91 | 0.99 |
+| Prison | 273 | 96 | 27.11 | 21.72 | 32.43 | 22.18 | 32.67 | 10.71 | 10.49 | 1.02 |
+| Land Destruction | 270 | 124 | 26.30 | 19.68 | 32.34 | 21.40 | 31.85 | 12.67 | 10.45 | 1.21 |
+| Reanimator | 260 | 104 | 23.08 | 16.67 | 29.24 | 18.37 | 28.57 | 12.57 | 10.20 | 1.23 |
+| Dimir Midrange | 248 | 107 | 26.21 | 20.47 | 32.08 | 21.13 | 32.02 | 11.62 | 10.89 | 1.07 |
+| Living End | 245 | 61 | 27.76 | 17.87 | 33.68 | 22.52 | 33.67 | 15.81 | 11.15 | 1.42 |
+| Zoo | 242 | 105 | 26.45 | 19.62 | 31.80 | 21.29 | 32.34 | 12.18 | 11.05 | 1.10 |
+| Amulet Titan | 194 | 62 | 28.35 | 19.08 | 34.91 | 22.48 | 35.07 | 15.83 | 12.59 | 1.26 |
+| Neobrand | 157 | 88 | 22.29 | 16.20 | 28.17 | 16.49 | 29.42 | 11.97 | 12.93 | 0.93 |
+| Belcher | 152 | 49 | 28.29 | 18.55 | 36.12 | 21.73 | 35.92 | 17.58 | 14.18 | 1.24 |
+| Hollow One | 133 | 64 | 21.80 | 15.20 | 29.79 | 15.63 | 29.56 | 14.58 | 13.93 | 1.05 |
+| Yawgmoth | 104 | 42 | 29.81 | 21.92 | 37.98 | 21.86 | 39.19 | 16.06 | 17.33 | 0.93 |
+| Control | 103 | 48 | 26.21 | 15.25 | 37.50 | 18.69 | 35.45 | 22.25 | 16.77 | 1.33 |
+| Esper Ketra | 99 | 47 | 22.22 | 14.70 | 28.74 | 15.16 | 31.36 | 14.03 | 16.20 | 0.87 |
+| Emry | 98 | 54 | 20.41 | 12.77 | 28.42 | 13.62 | 29.43 | 15.66 | 15.81 | 0.99 |
+| Burn | 97 | 36 | 15.46 | 10.00 | 26.56 | 9.60 | 23.96 | 16.57 | 14.36 | 1.15 |
+| Rakdos Moonshadow | 83 | 50 | 34.94 | 23.61 | 44.09 | 25.56 | 45.66 | 20.47 | 20.10 | 1.02 |
+| Necrodominance | 79 | 44 | 24.05 | 14.77 | 33.80 | 15.97 | 34.54 | 19.03 | 18.56 | 1.03 |
+| Plunge into Cosmogoyf | 63 | 23 | 17.46 | 9.76 | 26.57 | 10.04 | 28.62 | 16.81 | 18.58 | 0.90 |
+| Mono-Black Midrange | 59 | 5 | 27.12 | 0.00 | 31.58 | 17.44 | 39.60 | 31.58 | 22.16 | 1.42 |
+| Izzet Murktide | 37 | 18 | 27.03 | 7.69 | 43.48 | 15.40 | 42.98 | 35.79 | 27.58 | 1.30 |
+| Mill | 33 | 16 | 12.12 | 0.00 | 23.68 | 4.82 | 27.33 | 23.68 | 22.51 | 1.05 |
+| Hammer Time | 32 | 17 | 12.50 | 0.00 | 29.17 | 4.97 | 28.07 | 29.17 | 23.10 | 1.26 |
