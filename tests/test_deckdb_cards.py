@@ -69,13 +69,50 @@ def test_change_test_family_and_first_appearance_path(tmp_path):
     assert x["Przedzial_dol_pp"] < 50 < x["Przedzial_gora_pp"]
     assert x["Wewnatrz_wariantow_pp"] + x["Proporcje_wariantow_pp"] == pytest.approx(50.0)
     assert x["Wewnatrz_wariantow_pp"] == pytest.approx(50.0)  # one variant: no mix change
-    assert tested.loc["Y", "Zmiana_pp"] == 0 and tested.loc["Y", "Raportowana"] == 0
-    paths = dict(zip(t["outside"]["Karta"], t["outside"]["Sciezka"]))
-    assert paths["New"].startswith("pierwsze pojawienie") and paths["Gone"].startswith("zniknięcie")
+    assert x["Kategoria"] == dc.KIND_LIST and x["BH_wewnatrz_odrzuca"] == 1
+    # Y: 100% in both months -> change 0 with bootstrap SE 0 must be p = 1, never a BH rejection
+    y = tested.loc["Y"]
+    assert y["Zmiana_pp"] == 0 and y["p"] == 1 and y["BH_odrzuca"] == 0 and y["Kategoria"] == ""
+    out = t["outside"].set_index("Karta")
+    assert out.loc["New", "Sciezka"].startswith("nowa karta") and out.loc["New", "Zgloszona"] == 1  # 3 pilots
+    # Gone: 12.5% of 40 September lists by 5 pilots; P(0 of 40 October lists) = 0.875^40 < 0.05
+    assert out.loc["Gone", "Sciezka"].startswith("zniknięcie") and out.loc["Gone", "Zgloszona"] == 1
+    assert out.loc["Gone", "P_zero_list"] == pytest.approx(0.875 ** 40)
     p2 = t["presence_2"].set_index("Karta")
     assert p2.loc["X", "Obecnosc_pct"] == pytest.approx(60.0) and p2.loc["X", "Sr_kopii"] == 2
     first = dc.first_appearances(exp, cards, date(2026, 10, 1), date(2026, 10, 10))
     assert set(first["Karta"]) == {"New"} and first.iloc[0]["Listy_z_karta_30d"] == 3
+    assert first.iloc[0]["Zgloszona"] == 1
+
+
+def test_composition_change_and_report_thresholds(tmp_path, monkeypatch):
+    """Card K is in every list of variant A and in none of B; A grows from 10/40 to 30/40 lists:
+    the change (+50 pp) is all variant proportions -> "zmiana składu talii", not "zmiana list"."""
+    rows, cards = [], []
+    n = 0
+    for day, a_lists in (("2026-09-10", 10), ("2026-10-10", 30)):
+        for i in range(40):
+            n += 1
+            variant = "A Zoo" if i < a_lists else "B Zoo"
+            rows.append(_row(2000 + n // 8, n, day, "assigned", "Zoo", "Aggro", f"p{i % 20}", (i % 32) + 1,
+                             variant=variant))
+            cards.append(_card(2000 + n // 8, n, "main", "y", "Y", 4))
+            if variant == "A Zoo":
+                cards.append(_card(2000 + n // 8, n, "main", "k", "K", 1))
+            if day.startswith("2026-09") and i == 0:  # a September-only card by 1 pilot
+                cards.append(_card(2000 + n // 8, n, "sideboard", "solo", "Solo", 1))
+            if day.startswith("2026-10") and i in (0, 20):  # an October-only card, 2 lists by ONE pilot (p0)
+                cards.append(_card(2000 + n // 8, n, "sideboard", "one", "One", 1))
+    exp = di.load_export(_write(tmp_path, rows))
+    lay = dc.load_cards(_cards_csv(tmp_path, cards), exp)
+    t = dc.change_tables(exp, lay, (date(2026, 9, 10), date(2026, 9, 30)), (date(2026, 10, 1), date(2026, 10, 10)))
+    k = t["tested"].set_index("Karta").loc["K"]
+    assert k["Zmiana_pp"] == pytest.approx(50.0) and k["Raportowana"] == 1
+    assert k["Wewnatrz_wariantow_pp"] == pytest.approx(0.0) and k["Proporcje_wariantow_pp"] == pytest.approx(50.0)
+    assert k["Kategoria"] == dc.KIND_COMPOSITION
+    out = t["outside"].set_index("Karta")
+    assert out.loc["Solo", "Zgloszona"] == 0  # 1 pilot in September (< 3) -> observation
+    assert out.loc["One", "Zgloszona"] == 0  # 1 pilot in October (< 2) -> observation
 
 
 def test_bh_and_eligibility_thresholds(tmp_path, monkeypatch):

@@ -91,11 +91,21 @@ CARD_GLOSSARY: List[tuple[str, str]] = [
                             "standardowy z bootstrapu)."),
     ("rozkład zmiany", "zmiana wewnątrz wariantów + zmiana proporcji wariantów (symetrycznie, sumuje się do zmiany); "
                        "wszystkie etykiety wariantów eksportu, pusta = „(bez wariantu)”."),
-    ("karta poza testem", "obecność 0% w jednym z miesięcy: nowa karta idzie ścieżką pierwszego pojawienia się, "
-                          "karta, która zniknęła, jest tylko wymieniona."),
+    (dc.KIND_LIST, f"składowa wewnątrz wariantów |≥ {dc.MIN_CHANGE_PP:.0f} pp| istotna w osobnej rodzinie BH "
+                   f"(q = {dc.BH_Q}) składowych wewnątrz wariantów (ten sam zbiór testowanych par, osobny bootstrap "
+                   "tej składowej na tych samych losowaniach pilotów)."),
+    (dc.KIND_COMPOSITION, "zgłoszona zmiana obecności (raportowanie zmiany), która nie jest zmianą list: wynika "
+                          "z proporcji wariantów talii, nie ze zmiany list wewnątrz wariantów."),
+    ("karta poza testem", "obecność 0% w jednym z miesięcy; nie jest testowana zmianą obecności."),
+    ("zniknięcie karty", f"0% w miesiącu 2; zgłaszane, gdy (1 − obecność w miesiącu 1)^(listy talii w miesiącu 2) "
+                         f"< {dc.GONE_P} i kartę grało w miesiącu 1 co najmniej {dc.MIN_PILOTS_GONE} pilotów; "
+                         "pozostałe to obserwacje."),
+    ("nowa karta", f"0% w miesiącu 1; zgłaszana przy co najmniej {dc.MIN_PILOTS_NEW} pilotach w miesiącu 2; "
+                   "pozostałe to obserwacje."),
     ("pierwsze pojawienie", f"najwcześniejsza data listy talii z kartą w strefie w całym eksporcie; listy i piloci z "
                             f"kartą w {dc.FIRST_SEEN_DAYS} dniach od niej; „przed początkiem danych” w pierwszych "
-                            f"{dc.FIRST_SEEN_DAYS} dniach eksportu."),
+                            f"{dc.FIRST_SEEN_DAYS} dniach eksportu; zgłaszane przy co najmniej {dc.MIN_PILOTS_NEW} "
+                            "pilotach w tych dniach, pozostałe to obserwacje."),
     ("zmiany list pilota", "kolejne opublikowane listy tego samego pilota w tej samej talii (okres formatu): suma "
                            "|różnic kopii| w maindecku i sideboardzie, karty dodane/usunięte, przeniesienia main ↔ "
                            "sideboard; następna lista innej talii = zmiana talii. Tylko rozkłady dla talii."),
@@ -433,8 +443,35 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
     return written
 
 
-def chart_card_changes(tested: pd.DataFrame, path: Path, title: str, footer: str) -> Optional[Path]:
-    rep_ = tested[tested["Raportowana"] == 1].copy()
+def chart_list_changes(tested: pd.DataFrame, path: Path, title: str, footer: str) -> Optional[Path]:
+    """List changes: the within-variant component with its bootstrap interval, total change as a dot."""
+    rep_ = tested[tested["Kategoria"] == dc.KIND_LIST].copy()
+    if rep_.empty:
+        return None
+    rep_["_abs"] = rep_["Wewnatrz_wariantow_pp"].abs()
+    rep_ = rep_.sort_values("_abs", ascending=False).head(30).sort_values("Wewnatrz_wariantow_pp")
+    labels = [f"{r.Talia}: {r.Karta} ({'MD' if r.Strefa == 'main' else 'SB'}) · {r.Piloci_z_karta_1}→"
+              f"{r.Piloci_z_karta_2} pil." for r in rep_.itertuples()]
+    y = np.arange(len(rep_))
+    fig, ax = plt.subplots(figsize=(13, 0.36 * len(rep_) + 4))
+    w = rep_["Wewnatrz_wariantow_pp"].to_numpy()
+    ax.barh(y, w, height=0.5, color="#2a6fb0", label="zmiana list: składowa wewnątrz wariantów (pp)")
+    ax.errorbar(w, y, xerr=[w - rep_["Wewnatrz_dol_pp"], rep_["Wewnatrz_gora_pp"] - w], fmt="none",
+                ecolor="#1b3d61", capsize=2, label="przedział bootstrap składowej")
+    ax.plot(rep_["Zmiana_pp"], y, "o", color="#e3a346", label="zmiana obecności ogółem (pp)")
+    ax.axvline(0, color="#333333", linewidth=1)
+    ax.set_yticks(y)
+    ax.set_yticklabels(labels, fontsize=7.5)
+    ax.set_xlabel("pp")
+    ax.set_title(title, fontsize=10)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.08), ncol=3, fontsize=8, frameon=False)
+    ax.grid(axis="x", linestyle="--", alpha=0.3)
+    return _save(fig, path, footer)
+
+
+def chart_composition_changes(tested: pd.DataFrame, path: Path, title: str, footer: str) -> Optional[Path]:
+    """Composition changes: reported total change split into within / proportions (stacked)."""
+    rep_ = tested[tested["Kategoria"] == dc.KIND_COMPOSITION].copy()
     if rep_.empty:
         return None
     rep_["_abs"] = rep_["Zmiana_pp"].abs()
@@ -444,8 +481,8 @@ def chart_card_changes(tested: pd.DataFrame, path: Path, title: str, footer: str
     fig, ax = plt.subplots(figsize=(13, 0.36 * len(rep_) + 4))
     within = rep_["Wewnatrz_wariantow_pp"].to_numpy()
     mix = rep_["Proporcje_wariantow_pp"].to_numpy()
-    ax.barh(y, within, height=0.5, color="#2a6fb0", label="wewnątrz wariantów (pp)")
-    ax.barh(y, mix, left=within, height=0.5, color="#e3a346", label="proporcje wariantów (pp)")
+    ax.barh(y, mix, height=0.5, color="#e3a346", label="proporcje wariantów (pp)")
+    ax.barh(y, within, left=mix, height=0.5, color="#9cc3e4", label="wewnątrz wariantów, nieistotna (pp)")
     ax.errorbar(rep_["Zmiana_pp"], y, xerr=[rep_["Zmiana_pp"] - rep_["Przedzial_dol_pp"],
                                              rep_["Przedzial_gora_pp"] - rep_["Zmiana_pp"]],
                 fmt="o", color="#111111", ecolor="#555555", capsize=2, label="zmiana [przedział bootstrap]")
@@ -469,33 +506,52 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
     first = dc.first_appearances(export, cards, m2s, m2e)
     pilots = dc.pilot_list_changes(export, cards, period_start, as_of)
     tested = t["tested"]
+    outside = t["outside"]
     rows = pd.concat([di.window_rows(export, m1s, m1e), di.window_rows(export, m2s, m2e)])
     cov = di.coverage(rows)
     n_tested = len(tested)
-    n_rep = int(tested["Raportowana"].sum()) if n_tested else 0
+    kind = tested["Kategoria"] if n_tested else pd.Series(dtype=str)
+    list_changes = tested[kind == dc.KIND_LIST] if n_tested else tested
+    composition = tested[kind == dc.KIND_COMPOSITION] if n_tested else tested
+    gone = outside[outside["Sciezka"].str.startswith("zniknięcie")] if not outside.empty else outside
+    new = outside[outside["Sciezka"].str.startswith("nowa")] if not outside.empty else outside
+
+    def _n(df: pd.DataFrame) -> str:
+        return f"{int(df['Zgloszona'].sum())} zgłoszonych, {int((df['Zgloszona'] == 0).sum())} obserwacji" \
+            if not df.empty else "0"
+
     status = _status_rows(export, f"warstwa kart, miesiące {m1s:%Y-%m} i {m2s:%Y-%m}", m1s, m2e, rows, cov, [
         ("Porównanie", f"{m1s} … {m1e} vs {m2s} … {m2e}"
-                       + ("" if complete else f" — miesiąc 2 NIEPEŁNY, porównanie tylko robocze")),
+                       + ("" if complete else " — miesiąc 2 NIEPEŁNY, porównanie tylko robocze")),
         ("Plik kart", str(cards.path)),
         ("sha256 pliku kart", cards.sha256),
         ("name_match_version / scryfall_dump_id", f"{cards.name_match_version} / {cards.scryfall_dump_id}"),
-        ("data_version kart", cards.data_version),
+        ("data_version kart", cards.data_version + " (eksport przypisań nie ma data_version: zgodność "
+                                                   "sprawdzana zbiorem list i wersją mapowania nazw)"),
         ("Wiersze lądów z nadtypem Basic (wyłączone)", cards.basic_rows),
         ("Talie testowane (≥ 30 list i ≥ 10 pilotów w obu miesiącach)",
          int(t["eligible"]["Testowana"].sum()) if not t["eligible"].empty else 0),
-        ("Rodzina BH (testowane pary talia–strefa–karta)", n_tested),
-        ("Zmiany raportowane (|zmiana| ≥ 10 pp i BH q = 0,10)", n_rep),
-        ("Karty poza testem (0% w jednym miesiącu)", len(t["outside"])),
-        ("Pierwsze pojawienia w miesiącu 2", len(first)),
-        ("Bootstrap", f"{di.BOOT_DRAWS} losowań, ziarno {di.BOOT_SEED}, piloci niezależnie w każdym miesiącu"),
+        ("Testowane pary talia–strefa–karta (obie rodziny BH)", n_tested),
+        ("Zmiany obecności zgłoszone (|zmiana| ≥ 10 pp, BH q = 0,10)",
+         int(tested["Raportowana"].sum()) if n_tested else 0),
+        (f"  w tym „{dc.KIND_COMPOSITION}”", len(composition)),
+        (f"„{dc.KIND_LIST}” (|wewnątrz| ≥ 10 pp, BH q = 0,10 w rodzinie składowych wewnątrz wariantów)",
+         len(list_changes)),
+        (f"  w tym bez zgłoszonej zmiany ogółem", int((list_changes["Raportowana"] == 0).sum()) if n_tested else 0),
+        ("Zniknięcia (0% w miesiącu 2)", _n(gone)),
+        ("Nowe karty (0% w miesiącu 1)", _n(new)),
+        ("Pierwsze pojawienia w miesiącu 2", _n(first)),
+        ("Bootstrap", f"{di.BOOT_DRAWS} losowań, ziarno {di.BOOT_SEED}, piloci niezależnie w każdym miesiącu; "
+                      "składowa wewnątrz wariantów liczona na tych samych losowaniach"),
     ])
-    reported = tested[tested["Raportowana"] == 1] if n_tested else tested
     sheets = {
         "STATUS": status,
-        "Zmiany_raportowane": reported,
-        "Testowane": tested,
-        "Poza_testem": t["outside"],
+        "Zmiany_list": list_changes,
+        "Zmiany_skladu_talii": composition,
+        "Znikniecia": gone,
+        "Nowe_karty": new,
         "Pierwsze_pojawienia": first,
+        "Testowane": tested,
         "Talie_kwalifikacja": t["eligible"],
         f"Obecnosc_{m1s:%Y-%m}": t["presence_1"],
         f"Obecnosc_{m2s:%Y-%m}": t["presence_2"],
@@ -511,7 +567,15 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
         pd.DataFrame(GLOSSARY + CARD_GLOSSARY, columns=["Pojęcie", "Definicja"]).to_excel(
             writer, sheet_name="Slownik", index=False)
     written.append(xlsx)
-    for name, df in (("zmiany_raportowane", reported), ("pierwsze_pojawienia", first), ("listy_pilotow", pilots)):
+    reported_only = {
+        "zmiany_list": list_changes,
+        "zmiany_skladu_talii": composition,
+        "znikniecia": gone[gone["Zgloszona"] == 1] if not gone.empty else gone,
+        "nowe_karty": new[new["Zgloszona"] == 1] if not new.empty else new,
+        "pierwsze_pojawienia": first[first["Zgloszona"] == 1] if not first.empty else first,
+        "listy_pilotow": pilots,
+    }
+    for name, df in reported_only.items():
         pth = out / f"{name}_ROBOCZE_{label}.csv"
         st = _stamp_cols(df, export)
         st["cards_sha256"] = cards.sha256
@@ -527,14 +591,20 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
     )
     written.append(gl)
     g = dict(CARD_GLOSSARY)
-    footer = (
-        _stamp(export, "karty", m1s, m2e, cov, "" if complete else " (miesiąc 2 niepełny)")
-        + f" · karty sha256 {cards.sha256}\n"
-        + "\n".join(f"{k}: {g[k]}" for k in ("zmiana obecności", "raportowanie zmiany", "rozkład zmiany"))
-    )
-    ch = chart_card_changes(tested, out / "zmiany_kart.png",
-                            f"Zmiany obecności kart {m1s:%Y-%m} → {m2s:%Y-%m} (raportowane: {n_rep} z {n_tested} "
-                            "testowanych; top 30 wg |zmiany|)", footer)
+    stamp = (_stamp(export, "karty", m1s, m2e, cov, "" if complete else " (miesiąc 2 niepełny)")
+             + f" · karty sha256 {cards.sha256}\n")
+    ch = chart_list_changes(
+        tested, out / "zmiany_list.png",
+        f"Zmiany list {m1s:%Y-%m} → {m2s:%Y-%m}: {len(list_changes)} istotnych wewnątrz wariantów "
+        f"z {n_tested} testowanych (top 30 wg |składowej|)\npiloci z kartą w miesiącu 1 → 2",
+        stamp + "\n".join(f"{k}: {g[k]}" for k in ("zmiana obecności", dc.KIND_LIST, "rozkład zmiany")))
+    if ch is not None:
+        written.append(ch)
+    ch = chart_composition_changes(
+        tested, out / "zmiany_skladu_talii.png",
+        f"Zmiany składu talii {m1s:%Y-%m} → {m2s:%Y-%m}: {len(composition)} zgłoszonych zmian obecności bez "
+        "istotnej zmiany list\n(top 30 wg |zmiany|)",
+        stamp + "\n".join(f"{k}: {g[k]}" for k in ("raportowanie zmiany", dc.KIND_COMPOSITION, "rozkład zmiany")))
     if ch is not None:
         written.append(ch)
     return written

@@ -16,13 +16,19 @@ Measures, for deck D, month T, zone z and card c (oracle_id), on D's lists in T:
                     p-value two-sided from the normal approximation z = change / bootstrap SE;
                     Benjamini-Hochberg q = 0.10 over ONE family: every tested (deck, zone, card)
                     of the comparison, all decks together; reported when |change| >= 10 pp and BH
-                    rejects. A card with 0% presence in one of the months is not tested: it goes the
-                    first-appearance way (new) or is listed as gone.
+                    rejects. A card with 0% presence in one of the months is not tested (below).
   decomposition   = change within variants + change of variant proportions (symmetric, sums to
-                    the change exactly; all export variant labels, empty -> "(bez wariantu)").
+                    the change exactly; all export variant labels, empty -> "(bez wariantu)"). The
+                    within-variant component has its own bootstrap (same draws) and its OWN BH family
+                    (q = 0.10, same tested set): "zmiana list" = |within| >= 10 pp and significant there;
+                    a reported change that is not one is "zmiana składu talii" (variant proportions).
+  gone card       = 0% in month 2: reported when (1 - p_T1)^(lists of D in month 2) < 0.05 and >= 3
+                    pilots played it in month 1; otherwise an observation.
+  new card        = 0% in month 1: reported with >= 2 pilots in month 2; otherwise an observation.
   first appearance = earliest event_date of a list of D (status assigned) with >= 1 copy of c in z,
                     over the whole export; lists and pilots of D with c in the 30 days from it;
-                    "przed początkiem danych" within 30 days of the export's first date.
+                    "przed początkiem danych" within 30 days of the export's first date; reported
+                    with >= 2 pilots in those 30 days, otherwise an observation.
   pilot list changes = consecutive lists of the same pilot (format period), same deck: sum of
                     |copy differences| per zone, cards added / removed, moves main <-> sideboard;
                     a next list of another deck counts as a deck change. Only distributions per deck.
@@ -51,6 +57,13 @@ MIN_CHANGE_PP = 10.0
 BH_Q = 0.10
 FIRST_SEEN_DAYS = 30
 NO_VARIANT = "(bez wariantu)"
+# order of 2026-10-21 e: a "list change" is a within-variant change significant in its own BH family;
+# a reported total change that is not one is a "change of the deck's composition" (variant proportions)
+KIND_LIST = "zmiana list"
+KIND_COMPOSITION = "zmiana składu talii"
+GONE_P = 0.05            # a gone card is reported when P(0 lists in month 2 | presence in month 1) < GONE_P
+MIN_PILOTS_GONE = 3      # ... and >= 3 pilots played it in month 1
+MIN_PILOTS_NEW = 2       # a new card / first appearance is reported with >= 2 pilots
 CARD_COLUMNS = ("event_id", "decktournamentid", "zone", "oracle_id", "canonical_name", "qty", "is_basic",
                 "name_match_version", "scryfall_dump_id", "data_version")
 
@@ -135,23 +148,55 @@ def _norm_sf2(z: np.ndarray) -> np.ndarray:
     return np.array([erfc(abs(v) / sqrt(2.0)) for v in z])
 
 
-def _pilot_matrix(lists: pd.DataFrame, long: pd.DataFrame, keys: List[tuple]) -> tuple[np.ndarray, np.ndarray]:
-    """(lists per pilot, lists-with-card per pilot x card) for one deck and month."""
+def _pilot_variant_arrays(lists: pd.DataFrame, long: pd.DataFrame, keys: List[tuple],
+                          variants: List[str]) -> tuple[np.ndarray, np.ndarray]:
+    """(lists per pilot x variant, lists-with-card per pilot x variant x card) for one deck and month."""
     pilots = sorted(lists["player"].unique())
     pidx = {p: i for i, p in enumerate(pilots)}
-    n_l = lists.groupby("player").size().reindex(pilots).to_numpy(dtype=float)
+    vidx = {v: i for i, v in enumerate(variants)}
     kidx = {k: j for j, k in enumerate(keys)}
-    m = np.zeros((len(pilots), len(keys)))
-    for (player, zone, oid), n in long.groupby(["player", "zone", "oracle_id"]).size().items():
-        m[pidx[player], kidx[(zone, oid)]] = n
-    return n_l, m
+    n = np.zeros((len(pilots), len(variants)))
+    for (player, v), c in lists.groupby(["player", "_v"]).size().items():
+        n[pidx[player], vidx[v]] = c
+    x = np.zeros((len(pilots), len(variants), len(keys)))
+    for (player, v, zone, oid), c in long.groupby(["player", "_v", "zone", "oracle_id"]).size().items():
+        x[pidx[player], vidx[v], kidx[(zone, oid)]] = c
+    return n, x
 
 
-def _boot_presence(n_l: np.ndarray, m: np.ndarray, draws: int, rng: np.random.Generator) -> np.ndarray:
-    """draws x cards presence (%) with pilots drawn with replacement (multinomial weights)."""
-    p = len(n_l)
-    w = np.stack([np.bincount(rng.integers(0, p, p), minlength=p) for _ in range(draws)]).astype(float)
-    return (w @ m) / (w @ n_l)[:, None] * 100.0
+def _weights(n_pilots: int, draws: int, rng: np.random.Generator) -> np.ndarray:
+    """draws x pilots multinomial weights of a draw of pilots with replacement."""
+    return np.stack([np.bincount(rng.integers(0, n_pilots, n_pilots), minlength=n_pilots)
+                     for _ in range(draws)]).astype(float)
+
+
+def _components(w1: np.ndarray, n1: np.ndarray, x1: np.ndarray, w2: np.ndarray, n2: np.ndarray,
+                x2: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """For weight rows w (draws x pilots): presence 1, presence 2, change within variants and change of
+    variant proportions, each draws x cards, in % / pp. A variant absent in one month takes the
+    other month's presence (its whole contribution goes to the proportions); absent in both: 0."""
+    out = []
+    for w, n, x in ((w1, n1, x1), (w2, n2, x2)):
+        nv = w @ n                                                        # draws x V
+        xv = (w @ x.reshape(x.shape[0], -1)).reshape(len(w), *x.shape[1:])  # draws x V x C
+        tot = nv.sum(axis=1)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            q = xv / nv[:, :, None]
+        out.append((xv.sum(axis=1) / tot[:, None], q, nv / tot[:, None]))
+    (p1, q1, s1), (p2, q2, s2) = out
+    q1f = np.where(np.isnan(q1), q2, q1)
+    q2f = np.where(np.isnan(q2), q1, q2)
+    q1f, q2f = np.nan_to_num(q1f), np.nan_to_num(q2f)
+    within = (((s1 + s2) / 2)[:, :, None] * (q2f - q1f)).sum(axis=1)
+    mix = (((q1f + q2f) / 2) * (s2 - s1)[:, :, None]).sum(axis=1)
+    return p1 * 100.0, p2 * 100.0, within * 100.0, mix * 100.0
+
+
+def _p_two_sided(est: np.ndarray, boot: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    se = boot.std(axis=0, ddof=1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        z = np.where(se > 0, est / se, np.where(est == 0, 0.0, np.inf))
+    return se, np.where(np.isinf(z), 0.0, _norm_sf2(np.nan_to_num(z, posinf=0.0)))
 
 
 def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, date], m2: tuple[date, date],
@@ -164,9 +209,9 @@ def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, dat
     long = {}
     for tag, (s, e) in (("1", m1), ("2", m2)):
         r = di.window_rows(export, s, e)
-        r = r[r["status"] == di.STATUS_ASSIGNED]
+        r = r[r["status"] == di.STATUS_ASSIGNED].assign(_v=lambda d: d["variant"].replace("", NO_VARIANT))
         lists[tag] = r
-        long[tag] = _lists_with_cards(r, cards)
+        long[tag] = _lists_with_cards(r, cards).assign(_v=lambda d: d["variant"].replace("", NO_VARIANT))
     for deck in sorted(set(lists["1"]["deck"]) & set(lists["2"]["deck"])):
         l1, l2 = lists["1"][lists["1"]["deck"] == deck], lists["2"][lists["2"]["deck"] == deck]
         ok = (len(l1) >= MIN_LISTS and len(l2) >= MIN_LISTS and l1["player"].nunique() >= MIN_PILOTS
@@ -179,57 +224,64 @@ def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, dat
         names = pd.concat([c1, c2]).drop_duplicates(["zone", "oracle_id"]).set_index(["zone", "oracle_id"])[
             "canonical_name"]
         keys = list(names.index)
-        n1, x1 = _pilot_matrix(l1, c1, keys)
-        n2, x2 = _pilot_matrix(l2, c2, keys)
-        p1 = x1.sum(axis=0) / n1.sum() * 100.0
-        p2 = x2.sum(axis=0) / n2.sum() * 100.0
-        b = _boot_presence(n2, x2, draws, rng) - _boot_presence(n1, x1, draws, rng)
-        v1 = l1["variant"].replace("", NO_VARIANT)
-        v2 = l2["variant"].replace("", NO_VARIANT)
-        for j, (zone, oid) in enumerate(keys):
-            rec = {"Talia": deck, "Strefa": zone, "oracle_id": oid, "Karta": names[(zone, oid)],
-                   "Obecnosc_1_pct": p1[j], "Obecnosc_2_pct": p2[j]}
-            if p1[j] == 0 or p2[j] == 0:
-                rec["Sciezka"] = "pierwsze pojawienie (0% w miesiącu 1)" if p1[j] == 0 else "zniknięcie (0% w miesiącu 2)"
+        variants = sorted(set(l1["_v"]) | set(l2["_v"]))
+        n1, x1 = _pilot_variant_arrays(l1, c1, keys, variants)
+        n2, x2 = _pilot_variant_arrays(l2, c2, keys, variants)
+        e1, e2 = np.ones((1, len(n1))), np.ones((1, len(n2)))
+        p1, p2, within, mix = (a[0] for a in _components(e1, n1, x1, e2, n2, x2))
+        bp1, bp2, bwithin, _bmix = _components(_weights(len(n1), draws, rng), n1, x1,
+                                               _weights(len(n2), draws, rng), n2, x2)
+        change = p2 - p1
+        bchange = bp2 - bp1
+        se, pv = _p_two_sided(change, bchange)
+        se_w, pv_w = _p_two_sided(within, bwithin)
+        lo, hi = np.percentile(bchange, [2.5, 97.5], axis=0)
+        lo_w, hi_w = np.percentile(bwithin, [2.5, 97.5], axis=0)
+        pilots1 = c1.groupby(["zone", "oracle_id"])["player"].nunique()
+        pilots2 = c2.groupby(["zone", "oracle_id"])["player"].nunique()
+        copies1 = c1.groupby(["zone", "oracle_id"])["qty"].mean()
+        copies2 = c2.groupby(["zone", "oracle_id"])["qty"].mean()
+        for j, k in enumerate(keys):
+            rec = {"Talia": deck, "Strefa": k[0], "oracle_id": k[1], "Karta": names[k],
+                   "Obecnosc_1_pct": p1[j], "Obecnosc_2_pct": p2[j],
+                   "Piloci_z_karta_1": int(pilots1.get(k, 0)), "Piloci_z_karta_2": int(pilots2.get(k, 0)),
+                   "Listy_talii_1": len(l1), "Listy_talii_2": len(l2)}
+            if p1[j] == 0:
+                rec["Sciezka"] = "nowa karta (0% w miesiącu 1)"
+                rec["Zgloszona"] = int(rec["Piloci_z_karta_2"] >= MIN_PILOTS_NEW)
                 outside.append(rec)
                 continue
-            d = p2[j] - p1[j]
-            se = float(np.std(b[:, j], ddof=1))
-            lo, hi = np.percentile(b[:, j], [2.5, 97.5])
-            # decomposition over variants (symmetric midpoints)
-            has1 = set(c1.loc[(c1["zone"] == zone) & (c1["oracle_id"] == oid), "decktournamentid"])
-            has2 = set(c2.loc[(c2["zone"] == zone) & (c2["oracle_id"] == oid), "decktournamentid"])
-            pa = l1.assign(_v=v1, _x=l1["decktournamentid"].isin(has1)).groupby("_v")["_x"].agg(["mean", "size"])
-            pb = l2.assign(_v=v2, _x=l2["decktournamentid"].isin(has2)).groupby("_v")["_x"].agg(["mean", "size"])
-            vs = pa.index.union(pb.index)
-            wa = (pa["size"] / len(l1)).reindex(vs, fill_value=0)
-            wb = (pb["size"] / len(l2)).reindex(vs, fill_value=0)
-            qa = pa["mean"].reindex(vs)
-            qb = pb["mean"].reindex(vs)
-            qa, qb = qa.fillna(qb), qb.fillna(qa)
+            if p2[j] == 0:
+                prob0 = (1.0 - p1[j] / 100.0) ** len(l2)
+                rec["Sciezka"] = "zniknięcie (0% w miesiącu 2)"
+                rec["P_zero_list"] = prob0
+                rec["Zgloszona"] = int(prob0 < GONE_P and rec["Piloci_z_karta_1"] >= MIN_PILOTS_GONE)
+                outside.append(rec)
+                continue
             rec.update({
-                "Sr_kopii_1": float(c1.loc[(c1["zone"] == zone) & (c1["oracle_id"] == oid), "qty"].mean()),
-                "Sr_kopii_2": float(c2.loc[(c2["zone"] == zone) & (c2["oracle_id"] == oid), "qty"].mean()),
-                "Zmiana_pp": d,
-                "Przedzial_dol_pp": float(lo),
-                "Przedzial_gora_pp": float(hi),
-                "SE_bootstrap_pp": se,
-                "z": d / se if se > 0 else math.inf,
-                "Wewnatrz_wariantow_pp": float((((wa + wb) / 2) * (qb - qa)).sum() * 100.0),
-                "Proporcje_wariantow_pp": float((((qa + qb) / 2) * (wb - wa)).sum() * 100.0),
-                "Listy_talii_1": len(l1), "Listy_talii_2": len(l2),
+                "Sr_kopii_1": float(copies1.get(k, math.nan)), "Sr_kopii_2": float(copies2.get(k, math.nan)),
+                "Zmiana_pp": change[j], "Przedzial_dol_pp": lo[j], "Przedzial_gora_pp": hi[j],
+                "SE_bootstrap_pp": se[j], "p": pv[j],
+                "Wewnatrz_wariantow_pp": within[j], "Wewnatrz_dol_pp": lo_w[j], "Wewnatrz_gora_pp": hi_w[j],
+                "SE_wewnatrz_pp": se_w[j], "p_wewnatrz": pv_w[j],
+                "Proporcje_wariantow_pp": mix[j],
                 "Piloci_talii_1": int(l1["player"].nunique()), "Piloci_talii_2": int(l2["player"].nunique()),
             })
             out_rows.append(rec)
     tested = pd.DataFrame(out_rows)
     if not tested.empty:
-        z = tested["z"].to_numpy(dtype=float)
-        tested["p"] = np.where(np.isinf(z), 0.0, _norm_sf2(np.nan_to_num(z, posinf=0.0)))
         reject, qv = _bh(tested["p"].to_numpy(), BH_Q)
+        reject_w, qv_w = _bh(tested["p_wewnatrz"].to_numpy(), BH_Q)
         tested["q_BH"] = qv
         tested["BH_odrzuca"] = reject.astype(int)
+        tested["q_BH_wewnatrz"] = qv_w
+        tested["BH_wewnatrz_odrzuca"] = reject_w.astype(int)
         tested["Raportowana"] = ((tested["Zmiana_pp"].abs() >= MIN_CHANGE_PP) & reject).astype(int)
-        tested = tested.sort_values(["Raportowana", "Zmiana_pp"], ascending=[False, True]).reset_index(drop=True)
+        list_change = (tested["Wewnatrz_wariantow_pp"].abs() >= MIN_CHANGE_PP) & reject_w
+        tested["Kategoria"] = np.where(list_change, KIND_LIST,
+                                       np.where(tested["Raportowana"] == 1, KIND_COMPOSITION, ""))
+        tested = tested.sort_values(["Kategoria", "Wewnatrz_wariantow_pp"], ascending=[False, True]).reset_index(
+            drop=True)
     return {
         "tested": tested,
         "outside": pd.DataFrame(outside),
@@ -258,6 +310,7 @@ def first_appearances(export: di.DeckdbExport, cards: CardLayer, since: date, un
             f"Listy_z_karta_{FIRST_SEEN_DAYS}d": len(later), f"Piloci_z_karta_{FIRST_SEEN_DAYS}d": int(later["player"].nunique()),
             "Okno_30d_niepelne": int(d1.isoformat() > export.last_event_date),
             "Przed_poczatkiem_danych": int(d0 < start_data + timedelta(days=FIRST_SEEN_DAYS)),
+            "Zgloszona": int(later["player"].nunique() >= MIN_PILOTS_NEW),
         })
     return pd.DataFrame(out).sort_values(["Talia", "Pierwsza_data", "Karta"]).reset_index(drop=True) if out else pd.DataFrame()
 
