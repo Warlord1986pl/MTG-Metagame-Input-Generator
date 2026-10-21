@@ -81,9 +81,9 @@ def test_change_test_family_and_first_appearance_path(tmp_path):
     assert y["Zmiana_pp"] == 0 and y["p"] == 1 and y["BH_odrzuca"] == 0 and y["Kategoria"] == ""
     out = t["outside"].set_index("Karta")
     assert out.loc["New", "Sciezka"].startswith("nowa karta") and out.loc["New", "Zgloszona"] == 1  # 3 pilots
-    # Gone: 12.5% of 40 September lists by 5 pilots; P(0 of 40 October lists) = 0.875^40 < 0.05
+    # Gone: played by 5 of the 20 September pilots; P(none of the 20 October pilots) = 0.75^20 < 0.05
     assert out.loc["Gone", "Sciezka"].startswith("zniknięcie") and out.loc["Gone", "Zgloszona"] == 1
-    assert out.loc["Gone", "P_zero_list"] == pytest.approx(0.875 ** 40)
+    assert out.loc["Gone", "P_zero_list"] == pytest.approx(0.75 ** 20)
     p2 = t["presence_2"].set_index("Karta")
     assert p2.loc["X", "Obecnosc_pct"] == pytest.approx(60.0) and p2.loc["X", "Sr_kopii"] == 2
     first = dc.first_appearances(exp, cards, date(2026, 10, 1), date(2026, 10, 10))

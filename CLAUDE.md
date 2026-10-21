@@ -251,11 +251,12 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   last months for decks with >= 30 lists and >= 10 pilots in both, pilot bootstrap (no pairing), BH
   q = 0.10 over one family (all decks), reported at |change| >= 10 pp; the within-variant component
   has its own bootstrap, and both tests of every pair form ONE BH family (q = 0.10): "zmiana list" =
-  |within| >= 10 pp and its test rejected, any other reported change = "zmiana składu talii". 0% in one month is never tested: gone reported if
-  (1 - p1)^(lists in month 2) < 0.05 and >= 3 pilots in month 1; new card / first appearance reported
-  with >= 2 pilots; the rest are observations. Pilot list-change distributions. The card file must
-  match the assignment lists 1:1 and its name-match version, or the run is refused (the assignment
-  export has no `data_version`, so that check cannot be made yet).
+  |within| >= 10 pp and its test rejected, any other reported change = "zmiana składu talii". 0% in
+  one month is never tested: gone reported if (1 - share of month-1 pilots playing it)^(month-2
+  pilots) < 0.05 and >= 3 pilots in month 1; new card / first appearance reported with >= 2 pilots;
+  the rest are observations. Pilot list-change distributions. The card file must match the
+  assignment lists 1:1, its name-match version and its `data_version` (an assignment export without
+  `data_version`, i.e. from before DeckDB c4958cb, is refused), checked before anything is written.
 - Refuses (`DeckdbInputError`, exit 2) a file with > 1 `rules_version` and any period ending after
   the file's last / starting before its first `event_date`; all periods are checked before writing.
 - Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the

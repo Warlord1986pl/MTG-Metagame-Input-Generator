@@ -97,8 +97,8 @@ CARD_GLOSSARY: List[tuple[str, str]] = [
     (dc.KIND_COMPOSITION, "zgłoszona zmiana obecności (raportowanie zmiany), która nie jest zmianą list: wynika "
                           "z proporcji wariantów talii, nie ze zmiany list wewnątrz wariantów."),
     ("karta poza testem", "obecność 0% w jednym z miesięcy; nie jest testowana zmianą obecności."),
-    ("zniknięcie karty", f"0% w miesiącu 2; zgłaszane, gdy (1 − obecność w miesiącu 1)^(listy talii w miesiącu 2) "
-                         f"< {dc.GONE_P} i kartę grało w miesiącu 1 co najmniej {dc.MIN_PILOTS_GONE} pilotów; "
+    ("zniknięcie karty", f"0% w miesiącu 2; zgłaszane, gdy (1 − odsetek pilotów talii z miesiąca 1 grających kartę)"
+                         f"^(liczba pilotów talii w miesiącu 2) < {dc.GONE_P} i kartę grało w miesiącu 1 co najmniej {dc.MIN_PILOTS_GONE} pilotów; "
                          "pozostałe to obserwacje."),
     ("nowa karta", f"0% w miesiącu 1; zgłaszana przy co najmniej {dc.MIN_PILOTS_NEW} pilotach w miesiącu 2; "
                    "pozostałe to obserwacje."),

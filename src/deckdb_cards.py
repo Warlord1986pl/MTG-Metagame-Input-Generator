@@ -25,8 +25,9 @@ Measures, for deck D, month T, zone z and card c (oracle_id), on D's lists in T:
                     "zmiana list" = |within| >= 10 pp and its test rejected; a reported total change
                     that is not one is "zmiana składu talii" (variant proportions). The split depends on
                     the current variant definitions; a deck without variants has within = total.
-  gone card       = 0% in month 2: reported when (1 - p_T1)^(lists of D in month 2) < 0.05 and >= 3
-                    pilots played it in month 1; otherwise an observation.
+  gone card       = 0% in month 2: reported when (1 - share of D's month-1 pilots playing it) ^
+                    (D's month-2 pilots) < 0.05 and >= 3 pilots played it in month 1; otherwise an
+                    observation (order of 2026-10-21 f: on pilots, not lists).
   new card        = 0% in month 1: reported with >= 2 pilots in month 2; otherwise an observation.
   first appearance = earliest event_date of a list of D (status assigned) with >= 1 copy of c in z,
                     over the whole export; lists and pilots of D with c in the 30 days from it;
@@ -65,7 +66,7 @@ NO_VARIANT = "(bez wariantu)"
 # "change of the deck's composition" (variant proportions)
 KIND_LIST = "zmiana list"
 KIND_COMPOSITION = "zmiana składu talii"
-GONE_P = 0.05            # a gone card is reported when P(0 lists in month 2 | presence in month 1) < GONE_P
+GONE_P = 0.05            # a gone card is reported when P(0 pilots in month 2 | month-1 pilot share) < GONE_P
 MIN_PILOTS_GONE = 3      # ... and >= 3 pilots played it in month 1
 MIN_PILOTS_NEW = 2       # a new card / first appearance is reported with >= 2 pilots
 CARD_COLUMNS = ("event_id", "decktournamentid", "zone", "oracle_id", "canonical_name", "qty", "is_basic",
@@ -264,7 +265,9 @@ def change_tables(export: di.DeckdbExport, cards: CardLayer, m1: tuple[date, dat
                 outside.append(rec)
                 continue
             if p2[j] == 0:
-                prob0 = (1.0 - p1[j] / 100.0) ** len(l2)
+                # on pilots (order of 2026-10-21 f): share of D's month-1 pilots playing the card,
+                # to the power of D's month-2 pilots
+                prob0 = (1.0 - rec["Piloci_z_karta_1"] / l1["player"].nunique()) ** l2["player"].nunique()
                 rec["Sciezka"] = "zniknięcie (0% w miesiącu 2)"
                 rec["P_zero_list"] = prob0
                 rec["Zgloszona"] = int(prob0 < GONE_P and rec["Piloci_z_karta_1"] >= MIN_PILOTS_GONE)
