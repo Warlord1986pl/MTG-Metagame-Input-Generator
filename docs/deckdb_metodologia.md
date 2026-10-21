@@ -325,3 +325,190 @@ nie jest generowany.
 6. Okres formatu zaczyna się od `effective_mtgo` (2026-05-19), nie od `announced`
    (2026-05-18). Eksport ma 64 listy z 2026-05-18, rozegrane jeszcze przed zmianą na MTGO, więc
    start od `effective_mtgo` wydaje się właściwy; do potwierdzenia.
+
+## (g) Warstwa kart — tylko specyfikacja
+
+Nic z tej sekcji nie jest zaimplementowane. Jedyne liczby to ilustracja dla jednej talii
+(g.6), policzona jednorazowo poza repozytorium, bez korekty na wielokrotne porównania.
+
+### g.1 Jakich danych o kartach to wymaga
+
+Dla każdej listy z eksportu przypisań (klucz `event_id`, `decktournamentid`) i każdej strefy
+(`main`, `side`): lista kart jako `oracle_id` z liczbą kopii, przy czym:
+
+- **normalizacja po `oracle_id`:** liczba kopii karty w strefie to suma `qty` po wszystkich
+  wierszach z tym samym `oracle_id`, nigdy `qty` jednego wiersza i nigdy suma po `docid`. `docid`
+  MTGO identyfikuje druk, a gracz potrafi mieć tę samą kartę w kilku drukach w jednej strefie
+  (DeckDB `docs/schema.md`: 4504 z 154 624 grup (lista, strefa, nazwa) ma więcej niż jeden
+  `docid`, np. Watery Grave pod trzema);
+- **druki pod inną nazwą:** karty z setu MTGO Through the Omenpaths (OM1) to cyfrowe odpowiedniki
+  kart Marvel's Spider-Man pod innymi nazwami. Dopasowanie po samej nazwie MTGO traktuje je jako
+  inne karty niż odpowiednik; dopiero mapowanie nazw → `oracle_id` (DeckDB `card_name_map`,
+  `name_match_version` 2, 21 nazw OM1) je łączy. To samo dotyczy zapisu kart dzielonych i
+  dwustronnych (np. „Fire/Ice” → „Fire // Ice”);
+- **lądy podstawowe:** rozpoznawane po typie karty (supertyp Basic i typ Land, z danych Scryfalla
+  dla `oracle_id`), nie po liście nazw. Domyślnie wyłączone ze wszystkich miar warstwy kart
+  (obecność, zmiana, pierwsze pojawienie, zmiany list pilota), bo odzwierciedlają bazę many, nie
+  wybór kart. Rozbieżność do rozstrzygnięcia: obecny pipeline wyłącza tylko Plains, Island, Swamp,
+  Mountain, Forest i Wastes (`challenge_mtgo_source.BASIC_LAND_NAMES`), a definicja po typie
+  wyłącza także lądy Snow-Covered, które bywają świadomym wyborem;
+- **wersje:** każda tabela kart musi mieć wersję mapowania nazw (`name_match_version`) i zrzut
+  Scryfalla, z którego pochodzi `oracle_id`; materiał podaje je obok `rules_version` i sha256;
+- z eksportu przypisań, bez zmian: `deck`, `variant`, `player`, `event_date`, `final_rank`.
+  Klucz listy musi się zgadzać 1:1 między plikiem kart a plikiem przypisań z tego samego
+  przebiegu; niedopasowania w obie strony są raportowane, a nie pomijane.
+
+### g.2 Obecność karty w talii
+
+Dla talii D, okresu T, strefy z ∈ {main, side} i karty c (`oracle_id`), na listach D w T:
+
+- **obecność** p(c, z) = listy D z co najmniej jedną kopią c w strefie z / wszystkie listy D;
+- **średnia liczba kopii** m(c, z) = suma kopii c w strefie z / listy D z co najmniej jedną kopią
+  (średnia tylko po listach z kartą, nie po wszystkich listach);
+- maindeck i sideboard zawsze osobno; karta w obu strefach jednej listy liczy się w każdej z nich.
+  Zbiorcza obecność „w dowolnej strefie” nie jest miarą podstawową;
+- materiał podaje też liczbę list i pilotów D w T oraz liczbę pilotów z kartą (koncentracja:
+  karta grana przez jednego pilota to jego wybór, nie obecność w talii).
+
+Okres T to poziom miesiąca z punktu (b) (cykl analizy zmian list jest miesięczny według
+metodologii DeckDB), z możliwością okresu formatu jako całości.
+
+### g.3 Zmiana obecności między okresami
+
+- **zmiana** Δ = p_T2 − p_T1 w punktach procentowych (najpierw dla kolejnych miesięcy; przy
+  dużym zdarzeniu formatu porównanie nie przekracza jego daty, okresy są do niej wyrównane);
+- **przedział:** bootstrap po pilotach, osobno w każdym okresie: w T1 losuje się ze zwracaniem
+  tylu pilotów D, ilu D ma w T1, i bierze wszystkie ich listy; tak samo w T2; Δ próby = różnica
+  obecności; B = 2000 (ziarno stałe), przedział 95% = percentyle 2,5 i 97,5. Pilot grający D w obu
+  okresach jest losowany niezależnie w każdym (para nie jest zachowywana — do decyzji, g.8);
+- **rozkład na warianty:** z wariantów eksportu (pusty → „bez wariantu”; wszystkie etykiety, nie
+  tylko raportowane według D2, bo inaczej rozkład nie sumuje się do Δ): p_T = Σ_v w_v,T · p_v,T,
+  gdzie w_v,T to udział wariantu v w listach D w T. Rozkład symetryczny (średnie z obu okresów):
+  - zmiana wewnątrz wariantów = Σ_v ((w_v,T1 + w_v,T2) / 2) · (p_v,T2 − p_v,T1);
+  - zmiana proporcji wariantów = Σ_v ((p_v,T1 + p_v,T2) / 2) · (w_v,T2 − w_v,T1);
+  - obie części sumują się dokładnie do Δ. Wariant obecny tylko w jednym okresie ma w drugim
+    nieokreśloną obecność; przyjmuje się tę z okresu, w którym jest, więc cały jego wkład trafia do
+    zmiany proporcji. Materiał podaje obie części jako dwie liczby; rozbicie na pojedyncze warianty
+    tylko dla wariantów raportowanych według D2.
+
+### g.4 Próg raportowania zmiany
+
+Zmiana karty jest raportowana, gdy jednocześnie:
+
+1. talia ma w **każdym** z dwóch okresów co najmniej **30 list** i co najmniej **10 różnych
+   pilotów** (z tabel (d) i (e): poniżej około 10 pilotów bootstrap po pilotach jest zawodny);
+2. |Δ| ≥ **10 pp**;
+3. zmiana przechodzi kontrolę wielokrotnych porównań: **Benjamini–Hochberg, FDR q = 0,10**.
+   Rodzina = wszystkie pary (talia, strefa, karta) spełniające warunek 1 w danym porównaniu
+   okresów (we wszystkich taliach naraz), niezależnie od wielkości Δ, żeby filtr wielkości nie
+   zmieniał rodziny. Wartość p dwustronna z bootstrapu przez przybliżenie normalne
+   (z = Δ / błąd standardowy z prób bootstrapu), a nie z liczenia prób po drugiej stronie zera:
+   rodzina ma rząd kilku tysięcy porównań (około 30 talii × 200 par strefa–karta), a przy B = 2000
+   najmniejsza wartość p z liczenia prób to 1/2000, za mało na próg BH przy takiej rodzinie.
+
+Karty spełniające 1–2, ale nie 3, mogą trafić do pliku roboczego jako niepotwierdzone, nigdy do
+materiału.
+
+### g.5 Pierwsze pojawienie się karty i zmiany list pilota
+
+**Pierwsze pojawienie się karty c w talii D** (osobno main i side): najwcześniejsza `event_date`
+listy D (status `assigned`) z co najmniej jedną kopią c. Materiał podaje datę, miejsce tej listy
+oraz liczbę list i pilotów D z c w 30 dniach od tej daty (żeby odróżnić pojedynczy eksperyment od
+przyjęcia karty). Zastrzeżenia:
+
+- data zależy od wersji reguł (lista może zmienić talię przy nowych regułach), więc jest
+  podawana z `rules_version` i liczona od nowa przy każdym eksporcie;
+- pierwsze pojawienie w pierwszych 30 dniach danych (od 2025-07-01) oznacza „przed początkiem
+  danych”, nie datę debiutu;
+- dla kart z nowego setu obok podaje się datę wydania setu na MTGO z `rules/format_events.yaml`.
+
+**Zmiany list u tego samego pilota:** dla pilota i talii D kolejne opublikowane listy D tego
+pilota, w porządku daty i eventu. Dla pary kolejnych list: suma |różnic liczby kopii| po
+(strefa, `oracle_id`), osobno main i side, plus liczba kart dodanych i usuniętych oraz liczba
+przeniesień main ↔ side (karta, której ubyło w jednej strefie i przybyło w drugiej). Zastrzeżenia:
+widać tylko listy z Top 32, więc „kolejne” znaczy kolejne opublikowane, nie kolejne rozegrane;
+podaje się odstęp w dniach. Para, w której druga lista jest inną talią, to zmiana talii, nie
+zmiana listy, i liczy się osobno. Materiał podaje tylko rozkład dla talii (mediana, kwartyle,
+odsetek par bez zmian), nigdy wiersze poszczególnych pilotów.
+
+### g.6 ILUSTRACJA (bez korekty na wielokrotne porównania): Blink, wrzesień vs październik 2026
+
+**To jest ilustracja, nie materiał.** Okresy: 2026-09-01 … 09-30 i 2026-10-01 … 10-18 (październik
+niepełny); karty z cache'u MTGO po nazwie MTGO (bez `oracle_id`, kopie zsumowane po drukach tej
+samej nazwy), lądy podstawowe wyłączone razem ze Snow-Covered; B = 2000. Wszystkie 181 list Blink
+z obu okresów ma karty w cache'u.
+
+- wrzesień: 141 list, 78 pilotów, warianty Esper Blink 112, Jeskai Blink 21, Blink: inne 6,
+  Azorius Blink 2; październik: 40 list, 26 pilotów, Jeskai Blink 21, Esper Blink 14, Blink: inne
+  3, Azorius Blink 2;
+- 199 par (strefa, karta); 46 z |Δ| ≥ 10 pp, z czego 43 mają przedział bootstrapu bez zera
+  (**bez korekty BH**, więc nie wiadomo, ile przeszłoby próg g.4); czas obliczenia 1,3 s;
+- obraz zmiany to przede wszystkim przesunięcie proporcji wariantów (Esper → Jeskai), nie zmiana
+  list wewnątrz wariantów: karty pakietu Esper tracą około 40 pp prawie wyłącznie przez proporcje,
+  karty Jeskai zyskują 35–40 pp tak samo. Zmiany wewnątrz wariantów widać w kilku kartach, np.
+  Ashiok, Dream Render w sideboardzie (+53,7 pp, z czego +44,9 wewnątrz wariantów), Elesh Norn,
+  Mother of Machines w sideboardzie (−24,5; wewnątrz −19,5), Rest in Peace w maindecku i Test of
+  Talents w sideboardzie (po +42,5; wewnątrz +27,3), Ephemerate w maindecku (−37,5: −16,0 wewnątrz,
+  −21,5 proporcje).
+
+| Strefa | Karta | Obecność IX % | Obecność X % | Śr. kopii IX | Śr. kopii X | Δ pp | Bootstrap 95% | Wewnątrz wariantów pp | Proporcje wariantów pp |
+|---|---|---|---|---|---|---|---|---|---|
+| main | Watery Grave | 78,7 | 35,0 | 1,0 | 1,0 | −43,7 | −63,4 … −21,3 | 0,5 | −44,2 |
+| main | Overlord of the Balemurk | 80,9 | 37,5 | 4,0 | 4,0 | −43,4 | −63,0 … −20,9 | 0,0 | −43,4 |
+| main | Ephemerate | 95,0 | 57,5 | 2,6 | 2,5 | −37,5 | −57,3 … −14,2 | −16,0 | −21,5 |
+| side | Elesh Norn, Mother of Machines | 27,0 | 2,5 | 1,0 | 1,0 | −24,5 | −35,2 … −13,7 | −19,5 | −5,0 |
+| side | Nihil Spellbomb | 29,1 | 12,5 | 1,6 | 1,4 | −16,6 | −31,4 … 1,9 | −3,1 | −13,5 |
+| side | Containment Priest | 17,7 | 5,0 | 1,4 | 1,5 | −12,7 | −22,9 … −2,4 | −21,7 | 9,0 |
+| main | Ragavan, Nimble Pilferer | 14,2 | 47,5 | 3,7 | 3,2 | 33,3 | 8,1 … 54,7 | −1,6 | 34,9 |
+| main | Galvanic Discharge | 11,3 | 52,5 | 3,9 | 4,0 | 41,2 | 18,1 … 61,3 | 8,0 | 33,1 |
+| main | Rest in Peace | 0,0 | 42,5 | — | 1,0 | 42,5 | 20,0 … 61,5 | 27,3 | 15,2 |
+| side | Test of Talents | 0,0 | 42,5 | — | 1,1 | 42,5 | 21,0 … 61,4 | 27,3 | 15,2 |
+| main | Fable of the Mirror-Breaker | 5,0 | 50,0 | 2,0 | 2,2 | 45,0 | 22,7 … 64,4 | 20,9 | 24,2 |
+| side | Ashiok, Dream Render | 16,3 | 70,0 | 1,2 | 1,2 | 53,7 | 32,4 … 72,7 | 44,9 | 8,8 |
+
+Ta sama ilustracja dla pozostałych definicji, na listach Blink z kartami w cache'u (cache zaczyna
+się 2026-07-01, eksport 2025-07-01: karty ma tylko 365 z 2166 list Blink w eksporcie):
+
+- pierwsze pojawienie: 23 karty mają pierwszą listę Blink w październiku (np. Test of Talents
+  2026-10-04, Teyo, Lightshield Expert 2026-10-11, Path to Exile 2026-10-17). Przez brak kart dla
+  list sprzed lipca 2026 to nie są daty debiutu — to właśnie cenzurowanie, które usuwa pełne
+  źródło (g.7);
+- listy pilota: 75 pilotów ma co najmniej 2 listy Blink, 205 par kolejnych list; suma |zmian
+  kopii| (main + side, bez lądów podstawowych): mediana 5, kwartyle 0 i 12; 65 par bez zmian.
+
+Wnioski z ilustracji dla specyfikacji: (1) bez rozkładu na warianty zmiana obecności kart myli
+zmianę proporcji wariantów ze zmianą list i w Blink przypisałaby kilkudziesięciu kartom zmianę,
+której wewnątrz wariantów nie ma; (2) przy 40 listach i 26 pilotach przedziały mają szerokość
+około 40 pp, więc próg 10 pp jest minimum, a nie typowym rozmiarem wykrywalnej zmiany; (3) 46
+kandydatów z jednej talii pokazuje, że bez korekty na wielokrotne porównania materiał byłby
+listą fałszywych alarmów.
+
+### g.7 Źródło danych o kartach: cache MTGO w pipelinie albo eksport kart z DeckDB
+
+| | A. Łączenie z cache'em MTGO w pipelinie | B. Eksport kart z DeckDB |
+|---|---|---|
+| Zasięg | cache od 2026-07-01 (dla Blink karty ma 365 z 2166 list eksportu); starsze eventy wymagałyby ponownego pobrania z mtgo.com | wszystkie listy eksportu przypisań (742 Challenge od 2025-07-01, 23 715 list) |
+| Tożsamość karty | nazwa MTGO z `card_attributes.card_name`, bez `oracle_id`; OM1 i zapis kart dzielonych wymagałyby własnego mapowania w pipelinie | `oracle_id` z wersjonowanego `card_name_map` (`name_match_version` 2, w tym 21 nazw OM1) |
+| Druki | suma `qty` po wierszach o tej samej nazwie (działa dla zwykłych druków, nie dla OM1) | suma po `oracle_id` — reguła agregacji DeckDB, ta sama, na której stoi klasyfikator |
+| Lądy podstawowe | lista nazw (dziś 6 nazw, bez Snow-Covered) | typ karty ze zrzutu Scryfalla |
+| Spójność z przypisaniami | dwa niezależne odczyty tych samych list; łączenie po (`event_id`, `decktournamentid`) działa (październik: 903/903 w obie strony), ale nic nie gwarantuje, że lista w cache'u jest tą samą wersją, z której DeckDB liczył przypisanie | ta sama baza i ten sam przebieg co przypisania; jedna wersja reguł i mapowania nazw w obu plikach |
+| Koszt | łączenie gotowe (`deckdb_input.match_mtgo_cache`), ale mapowanie nazw → `oracle_id` byłoby drugą, niezależną implementacją | nie istnieje: w dokumentacji DeckDB nie znalazłem polecenia eksportu kart; wymaga pracy po stronie DeckDB i specyfikacji formatu; rząd wielkości około 790 tys. wierszy (około 33 wiersze na listę według `docs/schema.md`) |
+| Identyfikacja pilota | `loginid` i nick są w cache'u — ryzyko, że trafią do obliczeń | tylko `player` (ta sama sól co w eksporcie przypisań) |
+
+**Propozycja:** źródło B jako jedyne źródło warstwy kart. Plik obok eksportu przypisań, z tego
+samego przebiegu, kolumny: `event_id`, `decktournamentid`, `zone` (`main`/`side`), `oracle_id`,
+`card_name` (nazwa kanoniczna), `qty` (suma po drukach), `is_basic_land`, `name_match_version`,
+`scryfall_dump_id`, `rules_version`. Źródło A tylko jako kontrola spójności (liczba niedopasowanych
+list i różnic liczby kopii po nazwach), tak jak dziś dla przypisań. Pipeline odmawia pracy, gdy
+wersje reguł albo mapowania nazw w obu plikach się różnią.
+
+### g.8 Nierozstrzygnięte w warstwie kart
+
+1. Czy lądy Snow-Covered (i inne lądy z supertypem Basic) wyłączać razem z podstawowymi.
+2. Bootstrap zmiany: niezależne losowanie pilotów w obu okresach (jak wyżej) czy losowanie
+   pilotów wspólnych w parach, co zawęziłoby przedział dla pilotów grających w obu okresach.
+3. Rodzina BH: jedno porównanie okresów we wszystkich taliach (propozycja) czy osobno dla każdej
+   talii; q = 0,10 czy 0,05.
+4. Porównanie z niepełnym miesiącem (październik do 18 dnia): porównywać czy czekać na pełny.
+5. Rozkład na warianty zależy od etykiet wariantów eksportu, a te od wersji reguł; zmiana reguł
+   wariantów między okresami musi być wykluczona albo oznaczona.
