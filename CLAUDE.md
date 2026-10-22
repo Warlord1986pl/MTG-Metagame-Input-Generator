@@ -265,6 +265,13 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
 - Every material: `rules_version` + export sha256 (chart footer, STATUS, CSV columns) and the
   glossary (`Glossary` sheet, `GLOSSARY.md`, chart footer); all materials in English, charts drawn by the legacy chart functions (optional parameters, legacy defaults unchanged). No loginid/player in any material.
   Legacy materials without a counterpart: `deckdb_materials.OMITTED_MATERIALS` (`Omitted` sheet).
+- Slide mode (`deckdb_slides.py`, since 2026-10-22): a separate renderer, the report charts above stay as
+  they are. 1920x1080 at 144 dpi (1 figure pt = 1 slide pt), no text below 14 pt; share bars <= 10 decks +
+  one pooled "other decks" row (+ "no deck"), share and Top 8 conversion only; matrices <= 12 rows (deck
+  pilot measures on their own slide); card changes <= 8 per slide (list changes by |within-variant
+  component|, composition changes by |presence change|); one source line per slide, glossary in the speaker
+  notes. `python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/deckdb_working/presentation_test`
+  renders it, writes `presentation_test.pptx` and checks fonts, cut-off and overlapping texts.
 
 ### Key design decisions
 
