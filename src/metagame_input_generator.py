@@ -1662,6 +1662,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default="docs/deckdb_config.csv",
         help="CSV key,value z export_path (jawna ścieżka pliku eksportu DeckDB) dla --input-mode deckdb",
     )
+    parser.add_argument(
+        "--deckdb-slides",
+        action="store_true",
+        help=(
+            "tylko z --input-mode deckdb i --as-of: dodatkowo tryb slajdów (deckdb_slides.py, 1920x1080, >= 14 pt), "
+            "obrazy w WORKING_<as-of>/slides/, plik deckdb_slides_WORKING_<as-of>.pptx obok materiałów; "
+            "wykresy raportowe bez zmian"
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -1814,7 +1823,7 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
     else:
         outputs_base = Path(args.history_output_dir).parent
     cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name)
-    return build_deckdb_materials(
+    written = build_deckdb_materials(
         export,
         cfg,
         as_of,
@@ -1823,6 +1832,20 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         cache_dir=cache_dir,
         log=log,
     )
+    if getattr(args, "deckdb_slides", False):
+        try:
+            import deckdb_slides as ds
+            from deckdb_materials import root_dir
+        except ModuleNotFoundError:
+            from . import deckdb_slides as ds
+            from .deckdb_materials import root_dir
+        root = root_dir(outputs_base, as_of)
+        slides = ds.build_deckdb_slides(export, cfg, as_of, root / "slides",
+                                        int(getattr(args, "trend_weeks", 4)), log=log)
+        pptx = ds.write_pptx(slides, root / f"deckdb_slides_WORKING_{as_of.isoformat()}.pptx")
+        log(f"[deckdb slides] {len(slides)} slajdów -> {pptx}")
+        written += [s.png for s in slides] + [pptx]
+    return written
 
 
 def run_generation(args: argparse.Namespace, log=print) -> List[GenerationRunResult]:
@@ -2510,6 +2533,8 @@ def main() -> None:
         run_monthly_skeleton(args.period, format_name=args.format_name)
         return
 
+    if getattr(args, "deckdb_slides", False) and getattr(args, "input_mode", "legacy") != "deckdb":
+        raise RuntimeError("--deckdb-slides działa tylko z --input-mode deckdb i --as-of")
     if getattr(args, "input_mode", "legacy") == "deckdb":
         run_deckdb_generation(args)
         return

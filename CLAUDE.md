@@ -272,6 +272,8 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   component|, composition changes by |presence change|); one source line per slide, glossary in the speaker
   notes. `python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/deckdb_working/presentation_test`
   renders it, writes `presentation_test.pptx` and checks fonts, cut-off and overlapping texts.
+  In a run: `--input-mode deckdb --as-of YYYY-MM-DD --deckdb-slides` adds `WORKING_<as-of>/slides/*.png` and
+  `WORKING_<as-of>/deckdb_slides_WORKING_<as-of>.pptx` next to the report materials (refused without `--input-mode deckdb`).
 
 ### Key design decisions
 
