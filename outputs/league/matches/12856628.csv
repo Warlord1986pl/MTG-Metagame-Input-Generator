@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856628,2026-10-20,C64,Challenge,QF,AKvsJJ,3106810,hubed,3199255,2,0,Rakdos Aggro,Dimir Midrange
+12856628,2026-10-20,C64,Challenge,QF,reidq7,3155916,Demian77,234436,2,0,Amulet Titan,Rakdos Aggro
+12856628,2026-10-20,C64,Challenge,QF,Martin_Dominguez,1755256,Jumba,2618500,2,1,Azorius Control,Tron
+12856628,2026-10-20,C64,Challenge,QF,musasabi,1210536,Capitano_CL,535716,2,1,Affinity,Rakdos Aggro
+12856628,2026-10-20,C64,Challenge,SF,AKvsJJ,3106810,reidq7,3155916,2,1,Rakdos Aggro,Amulet Titan
+12856628,2026-10-20,C64,Challenge,SF,Martin_Dominguez,1755256,musasabi,1210536,2,1,Azorius Control,Affinity
+12856628,2026-10-20,C64,Challenge,F,Martin_Dominguez,1755256,AKvsJJ,3106810,2,0,Azorius Control,Rakdos Aggro

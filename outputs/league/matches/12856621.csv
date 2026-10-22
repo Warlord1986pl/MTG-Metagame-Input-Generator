@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856621,2026-10-20,C32,Challenge,QF,Chichichi,2788809,Kollslaw,3311758,2,0,Eldrazi Ramp,Eldrazi Ramp
+12856621,2026-10-20,C32,Challenge,QF,Capitano_CL,535716,ShadowTitan1,2130633,2,0,Rakdos Aggro,Domain Zoo
+12856621,2026-10-20,C32,Challenge,QF,Cesstyx,3093520,komattaman,2690217,2,1,Boros Energy,Rakdos Aggro
+12856621,2026-10-20,C32,Challenge,QF,rastaf,254536,xfile,2449332,2,0,Rakdos Aggro,Eldrazi Ramp
+12856621,2026-10-20,C32,Challenge,SF,Capitano_CL,535716,Cesstyx,3093520,2,0,Rakdos Aggro,Boros Energy
+12856621,2026-10-20,C32,Challenge,SF,rastaf,254536,Chichichi,2788809,2,0,Rakdos Aggro,Eldrazi Ramp
+12856621,2026-10-20,C32,Challenge,F,Capitano_CL,535716,rastaf,254536,2,0,Rakdos Aggro,Rakdos Aggro
