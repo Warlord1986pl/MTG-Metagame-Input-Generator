@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857053,2026-10-21,C64,Challenge,QF,MarcoIa,3056350,harlouuk,1239343,2,1,Rakdos Aggro,Amulet Titan
+12857053,2026-10-21,C64,Challenge,QF,sioutis_kk,3499660,levunga21,494936,2,0,Affinity,Azorius Control
+12857053,2026-10-21,C64,Challenge,QF,FranBenitez91,319589,Riftbound,3502250,2,1,Azorius Blink,Eldrazi Tron
+12857053,2026-10-21,C64,Challenge,QF,justFeather,2446403,wild88plk,1393029,2,0,Eldrazi Ramp,Affinity
+12857053,2026-10-21,C64,Challenge,SF,sioutis_kk,3499660,justFeather,2446403,2,1,Affinity,Eldrazi Ramp
+12857053,2026-10-21,C64,Challenge,SF,MarcoIa,3056350,FranBenitez91,319589,2,1,Rakdos Aggro,Azorius Blink
+12857053,2026-10-21,C64,Challenge,F,sioutis_kk,3499660,MarcoIa,3056350,2,0,Affinity,Rakdos Aggro
