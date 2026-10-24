@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856958,2026-10-22,C32,Challenge,QF,komattaman,2690217,manohito,2908947,2,1,Rakdos Midrange,Rakdos Aggro
+12856958,2026-10-22,C32,Challenge,QF,Greenbeing,3538784,howa,1855222,2,1,WBG,UG
+12856958,2026-10-22,C32,Challenge,QF,mtgobazaar8,2832302,Attomium,1778538,2,1,Eldrazi Ramp,Broodscale Combo
+12856958,2026-10-22,C32,Challenge,QF,jaximus5,2654687,bobthedog,5694,2,0,Rakdos Aggro,5c Omnath
+12856958,2026-10-22,C32,Challenge,SF,Greenbeing,3538784,mtgobazaar8,2832302,2,0,WBG,Eldrazi Ramp
+12856958,2026-10-22,C32,Challenge,SF,jaximus5,2654687,komattaman,2690217,2,0,Rakdos Aggro,Rakdos Midrange
+12856958,2026-10-22,C32,Challenge,F,jaximus5,2654687,Greenbeing,3538784,2,1,Rakdos Aggro,WBG
