@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856968,2026-10-23,C32,Challenge,QF,JPA93,1181017,Sodeq,1754547,2,0,Prowess,Broodscale Combo
+12856968,2026-10-23,C32,Challenge,QF,Jumba,2618500,Mistakenn,2129541,2,1,Eldrazi Ramp,Amulet Titan
+12856968,2026-10-23,C32,Challenge,QF,Sarlanga,643454,AverageHasteEnjoyer,3346301,2,1,Domain Zoo,Amulet Titan
+12856968,2026-10-23,C32,Challenge,QF,Varo,923582,wild88plk,1393029,2,1,Affinity,Affinity
+12856968,2026-10-23,C32,Challenge,SF,Sarlanga,643454,Jumba,2618500,2,1,Domain Zoo,Eldrazi Ramp
+12856968,2026-10-23,C32,Challenge,SF,Varo,923582,JPA93,1181017,2,0,Affinity,Prowess
+12856968,2026-10-23,C32,Challenge,F,Sarlanga,643454,Varo,923582,2,0,Domain Zoo,Affinity
