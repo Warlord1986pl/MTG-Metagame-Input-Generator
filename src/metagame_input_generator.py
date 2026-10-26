@@ -1672,6 +1672,14 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--allow-pending-triage",
+        action="store_true",
+        help=(
+            "tylko z --input-mode deckdb: materiały mimo triage'u DeckDB ze statusem pending (K43); każdy materiał "
+            "ma wtedy oznaczenie 'triage pending: <n> list group(s) awaiting decision'"
+        ),
+    )
+    parser.add_argument(
         "--deckdb-slides",
         action="store_true",
         help=(
@@ -1825,6 +1833,8 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
     as_of = parse_date(args.as_of)
     cfg = di.load_deckdb_config(Path(args.deckdb_config))
     export = di.load_export(cfg.export_path)
+    triage = di.load_triage(export, bool(getattr(args, "allow_pending_triage", False)))  # DeckDB K43
+    log(f"[deckdb] triage {triage.status} ({triage.path.name})" + (f": {triage.note}" if triage.note else ""))
     log(f"[deckdb] eksport {export.path} (reguły {export.rules_version}, sha256 {export.sha256}, "
         f"{len(export.rows)} list, {export.first_event_date}..{export.last_event_date})")
     if getattr(args, "outputs_base", None):
@@ -1841,6 +1851,7 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         cache_dir=cache_dir,
         log=log,
         level=getattr(args, "deckdb_level", "all"),
+        triage=triage,
     )
     if getattr(args, "deckdb_slides", False):
         try:

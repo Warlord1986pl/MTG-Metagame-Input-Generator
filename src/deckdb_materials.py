@@ -249,12 +249,20 @@ def _terms(*terms: str, glossary: Optional[List[tuple[str, str]]] = None) -> str
     return "\n".join(f"{t}: {g[t]}" for t in terms)
 
 
+# DeckDB K43: the triage state of the run (set by build_deckdb_materials); a pending triage marks every material
+TRIAGE: Optional[di.TriageState] = None
+
+
+def _triage_note() -> str:
+    return TRIAGE.note if TRIAGE is not None else ""
+
+
 def _stamp(export: di.DeckdbExport, level: str, start: date, end: date, cov: dict, note: str = "") -> str:
     return (
         f"WORKING - {level} {start.isoformat()}..{end.isoformat()}{note} - {cov['events']} events, {cov['lists']} "
         f"Challenge Top 32 lists, {M_COVERAGE} {cov['coverage_pct']:.1f}%\n"
         f"DeckDB rules {export.rules_version} - export {export.path.name} sha256 {export.sha256}\n"
-        f"data_version {export.data_version}"
+        f"data_version {export.data_version}" + (f"\n{_triage_note().upper()}" if _triage_note() else "")
     )
 
 
@@ -289,6 +297,10 @@ def _status(export: di.DeckdbExport, level: str, start: date, end: date, rows: p
         ("Population", "published Challenge Top 32 lists of Modern Challenges; not the MTGO or league metagame"),
         ("Winrate", "not a measure (DeckDB K36)"),
     ]
+    if TRIAGE is not None:
+        base.insert(1, ("Triage (DeckDB K43)", f"{TRIAGE.status} - {TRIAGE.path.name}"))
+        if TRIAGE.note:
+            base.insert(1, ("TRIAGE PENDING", TRIAGE.note))
     return pd.DataFrame(base + extra, columns=["Field", "Value"])
 
 
@@ -323,6 +335,13 @@ def _write_level(out_dir: Path, label: str, export: di.DeckdbExport, sheets: Dic
         encoding="utf-8",
     )
     written.append(gl)
+    status = sheets.get("STATUS")
+    if status is not None:  # status.md: the STATUS sheet as text (the triage marker on top when pending)
+        st = out_dir / "status.md"
+        st.write_text("# Status (input mode deckdb, WORKING)\n\n" + (f"**{_triage_note()}**\n\n" if _triage_note() else "")
+                      + "\n".join(f"- {f}: {v}" for f, v in zip(status["Field"], status["Value"])) + "\n",
+                      encoding="utf-8")
+        written.append(st)
     return written
 
 
@@ -849,9 +868,23 @@ LEVELS = ("all", "week", "month")
 
 def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_base: Path,
                            trend_weeks: int = 12, cache_dir: Optional[Path] = None,
-                           log: Callable[[str], None] = print, level: str = "all") -> List[Path]:
+                           log: Callable[[str], None] = print, level: str = "all",
+                           triage: Optional[di.TriageState] = None) -> List[Path]:
     """*level* "week": the weekly set (week_<YYYY-Www>); "month": the monthly set (month_*, format_period_*,
-    cards_* -- deck results are monthly material, K41); "all": both."""
+    cards_* -- deck results are monthly material, K41); "all": both. *triage* (di.load_triage, DeckDB K43): with a
+    pending triage every material carries its marker (chart footers, STATUS / status.md, speaker notes)."""
+    global TRIAGE
+    TRIAGE = triage
+    _pres().MARK = _triage_note()
+    try:
+        return _build(export, cfg, as_of, outputs_base, trend_weeks, cache_dir, log, level)
+    finally:
+        TRIAGE = None
+        _pres().MARK = ""
+
+
+def _build(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_base: Path, trend_weeks: int,
+           cache_dir: Optional[Path], log: Callable[[str], None], level: str) -> List[Path]:
     if level not in LEVELS:
         raise di.DeckdbInputError(f"nieznany poziom materiałów {level!r}, dozwolone {LEVELS}")
     weekly, monthly = level in ("all", "week"), level in ("all", "month")

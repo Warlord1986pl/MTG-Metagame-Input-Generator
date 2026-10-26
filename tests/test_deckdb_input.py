@@ -29,6 +29,12 @@ def _write(tmp_path: Path, rows, name="export.csv") -> Path:
     return p
 
 
+def _triage(dir_: Path, status: str, pending: int = 0, dv: str = "dv") -> Path:
+    p = dir_ / f"triage_{dv}.json"
+    p.write_text(json.dumps({"data_version": dv, "status": status, "pending_groups": pending}), encoding="utf-8")
+    return p
+
+
 def _sample(tmp_path: Path) -> Path:
     return _write(tmp_path, [
         _row(1, 11, "2026-10-01", "assigned", "Zoo", "Aggro", "a", 1),
@@ -215,6 +221,7 @@ def test_materials_three_levels_and_cli_mode(tmp_path):
             rows.append(_row(1000 + n, 10 * n + k, d.date().isoformat(), "assigned", deck,
                              "Ramp" if deck == "Tron" else "Aggro", f"p{(n + k) % 13}", k + 1, pc=50))
     export_csv = _write(tmp_path, rows)
+    _triage(tmp_path, "complete")
     fe = tmp_path / "fe.yaml"
     fe.write_text("events:\n- {key: x, major: true, status: confirmed, effective_mtgo: '2026-09-07'}\n",
                   encoding="utf-8")
@@ -363,3 +370,39 @@ def test_results_concentration_top_tenth(tmp_path):
     assert c["Top8_entries"] == 5 and c["Top_pilots_share_Top8_pct"] == pytest.approx(80.0)  # t0 3 + t1 1
     assert c["Top_pilots_share_lists_pct"] == pytest.approx(4 / 22 * 100)
     assert c["Fewest_Top8_in_group"] == 1 and c["Pilots_with_that_Top8_count"] == 2 and c["Of_them_in_group"] == 1
+
+
+def test_triage_gate_and_pending_marker(tmp_path):
+    """DeckDB K43: no triage file or a pending one refuses the run; --allow-pending-triage marks every material."""
+    import deckdb_materials as dm
+    import metagame_input_generator as mig
+
+    rows = []
+    days = pd.date_range("2026-09-01", "2026-10-18", freq="D")
+    for n, d in enumerate(days):
+        for k in range(10):
+            rows.append(_row(1000 + n, 10 * n + k, d.date().isoformat(), "assigned", ["Zoo", "Burn"][k % 2], "Aggro",
+                             f"p{(n + k) % 13}", k + 1, pc=50))
+    export_csv = _write(tmp_path, rows)
+    fe = tmp_path / "fe.yaml"
+    fe.write_text("events:\n- {key: x, major: true, status: confirmed, effective_mtgo: '2026-09-07'}\n", encoding="utf-8")
+    cfg = tmp_path / "cfg.csv"
+    cfg.write_text(f"key,value\nexport_path,{export_csv.as_posix()}\nformat_events_path,{fe.as_posix()}\n",
+                   encoding="utf-8")
+    base = ["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-18", "--trend-weeks", "3"]
+    with pytest.raises(di.DeckdbInputError, match="triage"):  # no triage file
+        mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o1")]), log=lambda _m: None)
+    _triage(tmp_path, "pending", 3)
+    with pytest.raises(di.DeckdbInputError, match="pending"):
+        mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o2")]), log=lambda _m: None)
+    assert not (tmp_path / "o1").exists() and not (tmp_path / "o2").exists()
+    _triage(tmp_path, "pending", 3, dv="other")  # a triage file of another data_version does not count
+    mark = "triage pending: 3 list group(s) awaiting decision"
+    mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o3"), "--allow-pending-triage",
+                                                     "--deckdb-level", "week"]), log=lambda _m: None)
+    week = dm.root_dir(tmp_path / "o3", date(2026, 10, 18)) / "week_2026-W42"
+    assert mark in (week / "status.md").read_text(encoding="utf-8")
+    assert mark in (week / "presentation" / "speaker_notes.md").read_text(encoding="utf-8")
+    status = pd.read_excel(week / "deckdb_WORKING_2026-W42.xlsx", sheet_name="STATUS")
+    assert mark in status["Value"].astype(str).tolist()
+    assert dm.TRIAGE is None  # the marker does not leak into the next run

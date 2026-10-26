@@ -255,6 +255,10 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   colour only where the interval excludes the baseline, grey otherwise and on "no deck"; trophies,
   pilot measures for decks only), cards. Winrate is gone (K36);
   the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
+- Triage gate (DeckDB K43, order 2026-10-26 e): deckdb mode refuses to run unless `triage_<data_version>.json`
+  (DeckDB `scripts/weekly_triage.py`) sits next to the assignment export with status `complete` for the export's
+  `data_version`; `--allow-pending-triage` runs anyway and marks every material ("triage pending: <n> list group(s)
+  awaiting decision" in chart footers, STATUS sheet, per-package `status.md`, `presentation/speaker_notes.md`).
 - Presentation set (`deckdb_presentation.py`, order 2026-10-26 b, spec section (i)): every package also gets
   `presentation/` (week: `decks_share.png`, `archetypes_share.png`, trends; month: trends; format period:
   `deck_results.png`; cards: `list_changes.png` without `mana_only_land` cards -- DeckDB K42 column of

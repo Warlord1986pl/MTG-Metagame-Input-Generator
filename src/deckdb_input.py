@@ -211,6 +211,36 @@ def load_export(path: Path) -> DeckdbExport:
     )
 
 
+@dataclass
+class TriageState:
+    path: Path
+    status: str
+    pending_groups: int
+
+    @property
+    def note(self) -> str:
+        """Marker carried by every material when the triage is pending (empty when complete)."""
+        return "" if self.status == "complete" else f"triage pending: {self.pending_groups} list group(s) awaiting decision"
+
+
+def load_triage(export: DeckdbExport, allow_pending: bool = False) -> TriageState:
+    """DeckDB K43: triage_<data_version>.json next to the export must exist with status complete; status pending is
+    accepted only with *allow_pending* (--allow-pending-triage), and the materials then carry TriageState.note."""
+    path = export.path.parent / f"triage_{export.data_version}.json"
+    if not path.exists():
+        raise DeckdbInputError(f"Brak pliku triage'u DeckDB dla data_version eksportu: {path} (scripts/weekly_triage.py, K43)")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("data_version") != export.data_version:
+        raise DeckdbInputError(f"{path}: data_version {data.get('data_version')!r} różny od eksportu {export.data_version!r}")
+    state = TriageState(path, str(data.get("status")), int(data.get("pending_groups") or 0))
+    if state.status not in ("complete", "pending"):
+        raise DeckdbInputError(f"{path}: nieznany status triage'u {state.status!r}")
+    if state.status == "pending" and not allow_pending:
+        raise DeckdbInputError(f"Triage DeckDB ma status pending ({state.pending_groups} grup czeka na decyzję, {path}); "
+                               "materiały powstają po triage'u (K43) albo z --allow-pending-triage")
+    return state
+
+
 def window_rows(export: DeckdbExport, start: date, end: date) -> pd.DataFrame:
     """Rows with start <= event_date <= end. Refuses a period the file does not fully cover."""
     if end.isoformat() > export.last_event_date:

@@ -594,3 +594,12 @@ opcjonalnym `font_sizes` (domyślnie bez zmian).
 Kontrola trybu dotychczasowego po zestawie prezentacyjnym (2026-10-26 b, W42, jak wyżej): pierwszy przebieg dał
 2 różne wykresy trendu trybu dotychczasowego (`fontsize=None` w `set_title` zmniejszał tytuł), po poprawce
 83 pliki, 82 identyczne, 1 różny (`metagame_input_grouped.xml`, wyłącznie `generated_at`).
+
+## (j) Triage DeckDB przed materiałami (K43, polecenie 2026-10-26 e, punkt 3)
+
+Tryb deckdb czyta obok pliku eksportu przypisań plik `triage_<data_version>.json` (DeckDB
+`scripts/weekly_triage.py`) dla `data_version` eksportu. Brak pliku, inny `data_version` w pliku albo status
+`pending` przerywa przebieg przed zapisem czegokolwiek (`DeckdbInputError`). Flaga `--allow-pending-triage` pozwala
+wygenerować materiały przy statusie `pending`; wtedy każdy materiał ma oznaczenie „triage pending: <n> list group(s)
+awaiting decision”: stopki wykresów roboczych (linia wielkimi literami) i prezentacyjnych (dopisek do jedynej linii),
+arkusz STATUS, nowy plik `status.md` w każdym pakiecie i `presentation/speaker_notes.md`.

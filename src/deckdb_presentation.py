@@ -57,9 +57,12 @@ C_TEXT, C_SOFT = "#222222", "#555555"
 POOLED = (di.OTHER_DECKS_LABEL, di.NO_DECK_LABEL)
 
 
+MARK = ""  # DeckDB K43: "triage pending: ..." while a run has a pending triage (set by deckdb_materials)
+
+
 def footer(start: date, end: date, rows: pd.DataFrame) -> str:
     return (f"MTGO Modern Challenge Top 32 · {start.isoformat()} – {end.isoformat()} · "
-            f"{rows['event_id'].nunique()} events, {len(rows)} lists")
+            f"{rows['event_id'].nunique()} events, {len(rows)} lists" + (f" · {MARK}" if MARK else ""))
 
 
 def _fig():
@@ -265,5 +268,6 @@ def write_notes(out: Path, notes: Dict[str, str]) -> Path:
     path = out / "speaker_notes.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n\n".join(f"## {name}\n\n{text}" for name, text in notes.items())
-    path.write_text(f"# Speaker notes\n\n{body}\n", encoding="utf-8")
+    mark = f"**{MARK}**\n\n" if MARK else ""
+    path.write_text(f"# Speaker notes\n\n{mark}{body}\n", encoding="utf-8")
     return path
