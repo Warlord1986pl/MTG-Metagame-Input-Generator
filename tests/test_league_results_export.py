@@ -140,104 +140,83 @@ def test_export_login_id_is_raw_not_resolved() -> None:
         print("  (no season had an aliased loginid's own raw results yet -- nothing to verify)")
 
 
-def test_rank_change_anchor_is_daily_and_freezes_on_season_close() -> None:
+def test_rank_change_anchor_is_previous_edition_week_start() -> None:
     from league_engine import rank_change_anchor
 
-    # Unfrozen: anchor is always exactly one day back -- this is what fixes the old weekly
-    # (most-recent-Wednesday) checkpoint, which landed ON as_of itself once a week and made every
-    # pilot show zero movement that day.
-    assert rank_change_anchor(date(2026, 9, 2)) == date(2026, 9, 1)
-    assert rank_change_anchor(date(2026, 9, 3)) == date(2026, 9, 2)
-    assert rank_change_anchor(date(2026, 9, 9)) == date(2026, 9, 8)
+    start, end = date(2026, 9, 1), date(2026, 11, 30)  # Autumn 2026: Tuesday-Monday edition weeks
+    # First edition week (09-01..09-07): nothing before it -> anchor clamps to season start.
+    assert rank_change_anchor(date(2026, 9, 1), start, end) == date(2026, 9, 1)
+    assert rank_change_anchor(date(2026, 9, 7), start, end) == date(2026, 9, 1)
+    # Week 3 (09-15..09-21) -> anchor = start of week 2; window 7..13 days, same all week.
+    for d in range(15, 22):
+        assert rank_change_anchor(date(2026, 9, d), start, end) == date(2026, 9, 8)
+    # AsOf 2026-09-24 (Thursday of week 4) -> 2026-09-15: baseline = events through 2026-09-14.
+    assert rank_change_anchor(date(2026, 9, 24), start, end) == date(2026, 9, 15)
+    # Closed: computed from season_end (Mon 11-30, in the week starting Tue 11-24) and frozen.
+    for as_of in (date(2026, 11, 30), date(2026, 12, 1), date(2027, 3, 1)):
+        assert rank_change_anchor(as_of, start, end) == date(2026, 11, 17)
 
-    # Frozen: once as_of has moved past coverage_end, the anchor pins permanently to
-    # coverage_end - 1 day -- confirmed against the real Summer 2026 dates (closed 2026-08-31).
-    for as_of in (date(2026, 9, 1), date(2026, 9, 2), date(2026, 9, 10), date(2026, 10, 1)):
-        assert rank_change_anchor(as_of, coverage_end=date(2026, 8, 31)) == date(2026, 8, 30)
-    # as_of == coverage_end itself is still within the season -- not frozen yet.
-    assert rank_change_anchor(date(2026, 8, 31), coverage_end=date(2026, 8, 31)) == date(2026, 8, 30)
+
+def test_rank_change_anchor_keeps_legacy_rule_for_seasons_closed_before_the_switch() -> None:
+    """Summer 2026 closed on 2026-08-31, before the edition-week rule existed; its published
+    anchor (2026-08-30) and therefore its published files must never change."""
+    from league_engine import rank_change_anchor
+
+    start, end = date(2026, 6, 1), date(2026, 8, 31)
+    for as_of in (date(2026, 9, 1), date(2026, 9, 24), date(2027, 1, 1)):
+        assert rank_change_anchor(as_of, start, end) == date(2026, 8, 30)
+    assert rank_change_anchor(date(2026, 8, 20), start, end) == date(2026, 8, 19)
 
 
-def test_open_season_prevrank_uses_snapshot_not_the_always_stale_live_filter() -> None:
-    """Regression for the real bug found live 2026-09-15: with a daily rank_change_anchor
-    (as_of - 1 day) and mtgo.com's real ingestion lag of 2-8 days (see find_late_arrivals), the
-    newest EventDate ever on disk for an open season is routinely already older than `anchor`, so
-    the live "EventDate < anchor" filter used to select every ingested event -- identical to
-    `current` -- making PrevRank == Rank for literally everyone, every single day. Confirmed live:
-    two consecutive published rebuilds (2026-09-14, 2026-09-15) showed movement: "same" for
-    450/450 then 464/464 Autumn 2026 pilots, while that exact same rebuild's snapshot-based DPoints
-    showed real nonzero deltas for 75 pilots -- proof the underlying data plainly changed and only
-    PrevRank failed to see it.
-
-    This test reproduces the exact shape of that bug with a synthetic, 2-day-lagged single event
-    (EventDate before `anchor` the same way real lagged data always is) and asserts the acceptance
-    bar directly: WITHOUT a snapshot, PrevRank == Rank for every pilot (the old, now-documented
-    fallback -- not itself wrong, since there is nothing else to compare against); WITH the same
-    weekly-snapshot base DELTA_COLS already used, PrevRank must differ from Rank for pilots whose
-    snapshot rank actually differs -- i.e. real movement must be visible again.
-    """
+def test_open_season_prevrank_comes_from_results_before_the_anchor_not_the_snapshot() -> None:
+    """PrevRank must be reproducible from the results alone: rank in the table of events dated
+    before the anchor. A weekly snapshot on disk that disagrees must not influence it (it still
+    feeds DELTA_COLS)."""
     import shutil
     import tempfile
 
     import league_engine as le
 
-    tmp = Path(tempfile.mkdtemp(prefix="rankchange_snapshot_test_"))
+    tmp = Path(tempfile.mkdtemp(prefix="rankchange_anchor_test_"))
     try:
         results_dir = tmp / "results"
         results_dir.mkdir()
         snapshot_dir = tmp / "snapshots"
-
         season_start, season_end = date(2026, 9, 1), date(2026, 11, 30)
-        as_of = date(2026, 9, 15)  # anchor = 2026-09-14
+        as_of = date(2026, 9, 24)  # anchor 2026-09-15
 
-        # A single event dated 2026-09-13 -- two real days before `as_of`, one day before `anchor`
-        # -- exactly the lag shape find_late_arrivals already documents as routine, and the shape
-        # that made the old live filter always see prev == current.
-        event = pd.DataFrame([
-            {"EventID": "e1", "EventDate": "2026-09-13", "Tier": "C32", "EventClass": "Challenge",
-             "Pilot": "Alice", "LoginID": "111", "Place": 1, "Deck": "", "DeckGuess": "",
-             "LeaguePoints": 5, "SwissRank": 1, "SwissPoints": 8, "OMWP": 0, "GWP": 0, "OGWP": 0},
-            {"EventID": "e1", "EventDate": "2026-09-13", "Tier": "C32", "EventClass": "Challenge",
-             "Pilot": "Bob", "LoginID": "222", "Place": 2, "Deck": "", "DeckGuess": "",
-             "LeaguePoints": 4, "SwissRank": 2, "SwissPoints": 7, "OMWP": 0, "GWP": 0, "OGWP": 0},
-        ])
-        event.to_csv(results_dir / "e1.csv", index=False)
+        def row(event_id, day, pilot, login, place, pts):
+            return {"EventID": event_id, "EventDate": day, "Tier": "C32", "EventClass": "Challenge",
+                    "Pilot": pilot, "LoginID": login, "Place": place, "Deck": "", "DeckGuess": "",
+                    "LeaguePoints": pts, "SwissRank": place, "SwissPoints": 0, "OMWP": 0, "GWP": 0, "OGWP": 0}
 
-        # Last week's frozen snapshot: Bob was ahead of Alice then -- a real prior standings
-        # capture, not a re-filter of the same (lagged) data current_ranked is built from.
-        last_week = pd.DataFrame([
-            {"Rank": 1, "Pilot": "Bob", "LoginID": "222", "Points": 9, "PremierPoints": 0,
+        # Before the anchor Bob leads; after it (dated 09-16, ingested late) Alice overtakes him.
+        pd.DataFrame([row("e1", "2026-09-10", "Bob", "222", 1, 5), row("e1", "2026-09-10", "Alice", "111", 2, 4)]
+                     ).to_csv(results_dir / "e1.csv", index=False)
+        pd.DataFrame([row("e2", "2026-09-16", "Alice", "111", 1, 5), row("e2", "2026-09-16", "Bob", "222", 9, 1)]
+                     ).to_csv(results_dir / "e2.csv", index=False)
+        # A snapshot claiming the opposite order must be ignored for PrevRank.
+        misleading = pd.DataFrame([
+            {"Rank": 1, "Pilot": "Alice", "LoginID": "111", "Points": 9, "PremierPoints": 0,
              "Wins": 1, "Top2": 2, "Top4": 2, "Top8": 2, "Top16": 2, "Starts": 2},
-            {"Rank": 2, "Pilot": "Alice", "LoginID": "111", "Points": 3, "PremierPoints": 0,
-             "Wins": 0, "Top2": 0, "Top4": 1, "Top8": 1, "Top16": 1, "Starts": 1},
+            {"Rank": 2, "Pilot": "Bob", "LoginID": "222", "Points": 1, "PremierPoints": 0,
+             "Wins": 0, "Top2": 0, "Top4": 0, "Top8": 0, "Top16": 1, "Starts": 1},
         ])
-        le.write_weekly_snapshot(snapshot_dir, "Autumn 2026", date(2026, 9, 7), last_week, today=date(2026, 9, 7))
+        le.write_weekly_snapshot(snapshot_dir, "Autumn 2026", date(2026, 9, 17), misleading, today=date(2026, 9, 17))
 
-        without_snapshot = le.build_season_table(results_dir, season_start, season_end, as_of=as_of)
-        alice_ns = without_snapshot[without_snapshot["LoginID"] == "111"].iloc[0]
-        bob_ns = without_snapshot[without_snapshot["LoginID"] == "222"].iloc[0]
-        assert int(alice_ns["PrevRank"]) == int(alice_ns["Rank"]), (
-            "documented fallback: no snapshot -> live filter -> prev==current for this lag shape"
-        )
-        assert int(bob_ns["PrevRank"]) == int(bob_ns["Rank"])
-
-        with_snapshot = le.build_season_table(
-            results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
-        )
-        alice = with_snapshot[with_snapshot["LoginID"] == "111"].iloc[0]
-        bob = with_snapshot[with_snapshot["LoginID"] == "222"].iloc[0]
-        assert int(alice["Rank"]) == 1 and int(bob["Rank"]) == 2, "Alice won e1, must rank 1st now"
-        assert int(alice["PrevRank"]) == 2, f"Alice's PrevRank must come from last week's snapshot (2), got {alice['PrevRank']}"
-        assert int(bob["PrevRank"]) == 1, f"Bob's PrevRank must come from last week's snapshot (1), got {bob['PrevRank']}"
-        assert int(alice["RankChange"]) == 1, "Alice moved up one place week-over-week"
-        assert int(bob["RankChange"]) == -1, "Bob moved down one place week-over-week"
+        table = le.build_season_table(results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir)
+        alice = table[table["LoginID"] == "111"].iloc[0]
+        bob = table[table["LoginID"] == "222"].iloc[0]
+        assert table.attrs["rank_change_anchor"] == "2026-09-15"
+        assert (int(alice["Rank"]), int(alice["PrevRank"]), int(alice["RankChange"])) == (1, 2, 1)
+        assert (int(bob["Rank"]), int(bob["PrevRank"]), int(bob["RankChange"])) == (2, 1, -1)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
 def test_weekly_window_start_used_by_late_arrivals_unchanged() -> None:
-    """find_late_arrivals still needs a genuine weekly bucket -- confirms it kept the old
-    Wednesday-anchored math after rank_change_anchor itself moved to a daily baseline."""
+    """find_late_arrivals still needs a genuine weekly bucket -- confirms it kept the
+    Wednesday-anchored math (unrelated to RankChange's edition-week anchor)."""
     from league_engine import weekly_window_start
 
     assert weekly_window_start(date(2026, 9, 2)) == date(2026, 9, 2)  # a Wednesday itself
@@ -356,7 +335,7 @@ def test_independent_reproduction_of_published_baseline_rank() -> None:
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     season_mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)
 
-    anchor = rank_change_anchor(as_of, season_end)
+    anchor = rank_change_anchor(as_of, season_start, season_end)
 
     baseline = all_results[season_mask & (dates < anchor)].copy()
     baseline["LoginID"] = baseline["LoginID"].astype(str).str.strip()
