@@ -236,16 +236,120 @@ def test_materials_three_levels_and_cli_mode(tmp_path):
         assert not any("Winrate" in c or "swiss" in c.lower() for s in book.values() for c in map(str, s.columns))
     assert all((d / "GLOSSARY.md").exists() for d in root.iterdir())
     assert all(f.suffix == ".png" for f in files if "share_top32" in f.name or "trend_share" in f.name
-               or "conversion_matrix" in f.name)
+               or "results_matrix" in f.name or "change_vs_previous_week" in f.name)
+    week_dir = root / "week_2026-W42"
+    assert {"change_vs_previous_week_decks.png", "change_vs_previous_week_archetypes.png", "share_top32_decks.png",
+            "top8_WORKING_2026-W42.csv"} <= {p.name for p in week_dir.iterdir()}
+    week = pd.read_excel(week_dir / "deckdb_WORKING_2026-W42.xlsx", sheet_name=None)
+    # K41: no result measure of decks in the weekly materials
+    banned = ("conversion", "percentile", "top8_lists", "top8_event", "trophies", "ci_low_pct")
+    assert not any(b in c.lower() for s in ("Decks", "Archetypes") for c in map(str, week[s].columns) for b in banned)
+    assert {"Change_pp", "Change_CI_excludes_0", "Pilots", "Event_presence_pct"} <= set(week["Decks"].columns)
+    assert not any("conversion" in t.lower() for t in week["Glossary"]["Term"])
+    assert (root / "format_period_2026-09-07_to_2026-10-18" / "results_matrix_decks.png").exists()
     for x in [f for f in files if f.suffix == ".csv"]:
         c = pd.read_csv(x, encoding="utf-8-sig", dtype=str)
         assert set(c["export_sha256"]) == {exp.sha256} and not ({"player", "loginid"} & set(c.columns))
     period = pd.read_excel(root / "format_period_2026-09-07_to_2026-10-18" /
                            "deckdb_WORKING_2026-09-07_to_2026-10-18.xlsx", sheet_name=None)
     assert "Pilots" in period and "Top_pilot_lists" not in period["Archetypes"].columns
+    # --deckdb-level week writes the weekly set only
+    args_w = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-18",
+                             "--trend-weeks", "3", "--outputs-base", str(tmp_path / "outw"), "--deckdb-level", "week"])
+    mig.run_deckdb_generation(args_w, log=lambda _m: None)
+    assert {p.name for p in dm.root_dir(tmp_path / "outw", date(2026, 10, 18)).iterdir()} == {"week_2026-W42"}
     # a period the export does not cover is refused before anything is written
     args2 = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-19",
                             "--outputs-base", str(tmp_path / "out2")])
     with pytest.raises(di.DeckdbInputError):
         mig.run_deckdb_generation(args2, log=lambda _m: None)
     assert not (tmp_path / "out2").exists()
+
+
+def _week_rows(day0, share_a, n_events=4, lists=8, tag=""):
+    """*n_events* events of *lists* lists each on consecutive days from *day0*: the first share_a x lists
+    of every event are deck A, then one B, one Rogue, the rest C<k> (one deck per list)."""
+    rows = []
+    for e in range(n_events):
+        d = (pd.Timestamp(day0) + pd.Timedelta(days=e)).date().isoformat()
+        n_a = int(share_a * lists)
+        for k in range(lists):
+            if k < n_a:
+                deck, status = "A", "assigned"
+            elif k == n_a:
+                deck, status = "B", "assigned"
+            elif k == n_a + 1:
+                deck, status = "Rogue", "rogue"
+            else:
+                deck, status = f"C{k}", "assigned"
+            rows.append(_row(f"{tag}{e}", f"{tag}{e}{k}", d, status, deck, "Aggro", f"{tag}{e}-{k % 3}", k + 1))
+    return rows
+
+
+def test_week_share_table_pooling_change_and_event_bootstrap(tmp_path):
+    rows = _week_rows("2026-10-05", 0.0, tag="9") + _week_rows("2026-10-12", 0.5, tag="8")
+    exp = di.load_export(_write(tmp_path, rows))
+    prev = di.window_rows(exp, date(2026, 10, 5), date(2026, 10, 11))
+    cur = di.window_rows(exp, date(2026, 10, 12), date(2026, 10, 15))
+    t = di.week_share_table(cur, prev, "material_deck", "Deck", top_n=2)
+    assert list(t["Deck"]) == ["A", "B", di.OTHER_DECKS_LABEL, di.NO_DECK_LABEL]
+    a, b, other = t.iloc[0], t.iloc[1], t.iloc[2]
+    assert a["Share_Top32_pct"] == pytest.approx(50.0) and a["Prev_week_share_pct"] == 0.0
+    # every event has the same A share -> the event bootstrap interval is the point itself and excludes 0
+    assert a["Change_CI_low_pp"] == pytest.approx(50.0) and a["Change_CI_excludes_0"] == 1
+    # one B per event in both weeks -> no change, the interval [0, 0] does not exclude 0
+    assert b["Change_pp"] == 0.0 and b["Change_CI_excludes_0"] == 0
+    assert a["Events_with_list"] == 4 and a["Week_events"] == 4 and a["Event_presence_pct"] == 100.0
+    assert a["Pilots"] == 12  # 4 events x 3 pilots
+    assert other["Labels_in_row"] == 2 and t["Lists"].sum() == len(cur)
+    assert t["Share_Top32_pct"].sum() == pytest.approx(100.0)
+    assert t["Prev_week_share_pct"].sum() == pytest.approx(100.0)
+    pd.testing.assert_frame_equal(t, di.week_share_table(cur, prev, "material_deck", "Deck", top_n=2))  # fixed seed
+    arch = di.week_share_table(cur, prev, "material_archetype", "Archetype")
+    assert list(arch["Archetype"]) == ["Aggro", di.NO_DECK_LABEL]
+
+
+def test_top8_table_has_places_variants_and_no_players(tmp_path):
+    rows = _week_rows("2026-10-12", 0.5, n_events=2, lists=10)
+    rows[0]["variant"] = "V A"
+    exp = di.load_export(_write(tmp_path, rows))
+    t = di.top8_table(di.window_rows(exp, date(2026, 10, 12), date(2026, 10, 13)))
+    assert len(t) == 16 and set(t["Place"]) == set(range(1, 9)) and t["Winner"].sum() == 2
+    assert t.loc[0, "Variant"] == "V A" and t.loc[t["Deck"] == di.NO_DECK_LABEL, "Variant"].eq("").all()
+    assert not ({"player", "loginid", "Player"} & set(t.columns))
+
+
+def test_place_percentile_and_result_flags(tmp_path):
+    rows = []
+    for e in range(12):  # 12 events of 4 lists: W always 1st, L always 4th, M 2nd or 3rd, X the other place
+        mid = 2 if e % 2 else 3
+        for deck, rank in (("W", 1), ("M", mid), ("X", 5 - mid), ("L", 4)):
+            rows.append(_row(e, f"{e}{deck}", "2026-10-01", "assigned", deck, "Aggro", f"{deck}{e}", rank))
+    rows.append(_row(99, 991, "2026-10-01", "assigned", "W", "Aggro", "z", 1))
+    rows.append(_row(99, 992, "2026-10-01", "assigned", "L", "Aggro", "z2", 3))  # ranks 1, 3: not 1..L
+    exp = di.load_export(_write(tmp_path, rows))
+    r = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 1))
+    first = r[r["event_id"] == "0"].set_index("deck")["place_percentile"]
+    assert first.to_dict() == pytest.approx({"W": 100.0, "M": 100 / 3, "X": 200 / 3, "L": 0.0})
+    assert r.loc[r["event_id"] == "99", "place_percentile"].isna().all()
+    assert di.percentile_baseline(r) == pytest.approx(50.0)
+    t = di.conversion_table(r, "material_deck", "Deck", pilots=True).set_index("Deck")
+    assert t.loc["W", "Mean_place_percentile"] == pytest.approx(100.0)
+    assert t.loc["W", "Percentile_CI_excludes_baseline"] == 1 and t.loc["L", "Percentile_CI_excludes_baseline"] == 1
+    assert t.loc["M", "Mean_place_percentile"] == pytest.approx(50.0)
+    assert t.loc["M", "Percentile_CI_excludes_baseline"] == 0
+    # every list is in the Top 8, conversion = baseline = 100% -> no conversion interval excludes it
+    assert t["Conversion_CI_excludes_baseline"].sum() == 0
+
+
+def test_results_concentration_top_tenth(tmp_path):
+    rows = []
+    for k in range(20):  # 20 pilots, one event each (t0..t2 in the Top 8); t0 also wins 2 more events
+        rows.append(_row(k, k, "2026-10-01", "assigned", "A", "Aggro", f"t{k}", 1 if k < 3 else 20))
+    rows += [_row(50 + k, 500 + k, "2026-10-02", "assigned", "A", "Aggro", "t0", 1) for k in range(2)]
+    exp = di.load_export(_write(tmp_path, rows))
+    c = di.results_concentration(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2)))
+    assert c["Pilots"] == 20 and c["Top_pilots"] == 2  # ceil(0.1 x 20)
+    assert c["Top8_entries"] == 5 and c["Top_pilots_share_Top8_pct"] == pytest.approx(80.0)  # t0 3 + t1 1
+    assert c["Top_pilots_share_lists_pct"] == pytest.approx(4 / 22 * 100)
+    assert c["Fewest_Top8_in_group"] == 1 and c["Pilots_with_that_Top8_count"] == 2 and c["Of_them_in_group"] == 1

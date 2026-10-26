@@ -144,3 +144,11 @@ def test_pilot_list_changes(tmp_path):
     assert zoo["List_pairs"] == 1 and zoo["Deck_changes"] == 1
     assert zoo["Main_median"] == 2 and zoo["Side_median"] == 3  # main: X -1, Z +1; side: S -2, X +1
     assert zoo["Main_side_moves_mean"] == 1 and zoo["Gap_days_median"] == 2
+
+
+def test_new_cards_in_week_first_appearance_with_two_pilots(tmp_path):
+    exp, cards = _two_months(tmp_path)
+    t = dc.new_cards_in_week(exp, cards, date(2026, 10, 5), date(2026, 10, 11))
+    assert list(zip(t["Card"], t["Zone"])) == [("New", "sideboard")]  # X and Y were first seen in September
+    assert t.loc[0, "Pilots_with_card"] == 3 and t.loc[0, "Reported"] == 1 and t.loc[0, "First_date"] == "2026-10-10"
+    assert dc.new_cards_in_week(exp, cards, date(2026, 9, 28), date(2026, 10, 4)).empty

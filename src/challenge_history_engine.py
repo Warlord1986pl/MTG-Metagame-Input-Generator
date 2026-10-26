@@ -965,6 +965,10 @@ def _parse_run_dir_window(run_dir: Path) -> Optional["tuple[date, date]"]:
         return None
 
 
+# fill of bars / cells drawn without emphasis (optional parameters used by input mode "deckdb")
+GREY_CELL = "#c8c8c8"
+
+
 def _safe_chart(fig: plt.Figure, out_path: Path, footer: Optional[str] = None, dpi: int = 150) -> Optional[Path]:
     """Saves and closes *fig*. *footer* (optional, used by input mode "deckdb") is printed under the
     plot; without it the layout is exactly the legacy one."""
@@ -999,11 +1003,13 @@ def _chart_compare_presence(
     footer: Optional[str] = None,
     figsize: tuple = (13, 6),
     dpi: int = 150,
+    keep_order: bool = False,
 ) -> Optional[Path]:
     """Grouped bars per deck. Legacy (bars=None): Top32 / Top8 event frequency vs Metagame Share,
     filtered by the encounter-probability cutoff. With *bars* = [(column, legend label), ...] the
     same chart is drawn from those columns, sorted by them in order, without the encounter cutoff
-    (top_n rows), e.g. input mode "deckdb"."""
+    (top_n rows), e.g. input mode "deckdb"; *keep_order* keeps the caller's row order (pooled rows
+    such as "other decks" stay last)."""
     if deck_stats.empty:
         return None
 
@@ -1046,7 +1052,9 @@ def _chart_compare_presence(
         cols = [key_col] + [c for c, _ in bars]
         if any(c not in deck_stats.columns for c in cols):
             return None
-        plot_df = deck_stats[cols].copy().fillna(0).sort_values([c for c, _ in bars], ascending=False)
+        plot_df = deck_stats[cols].copy().fillna(0)
+        if not keep_order:
+            plot_df = plot_df.sort_values([c for c, _ in bars], ascending=False)
         if top_n is not None:
             plot_df = plot_df.head(top_n)
     if plot_df.empty:
@@ -1086,6 +1094,8 @@ def _chart_delta_ranking(
     footer: Optional[str] = None,
     figsize: tuple = (13, 7),
     dpi: int = 150,
+    highlight_col: Optional[str] = None,
+    highlight_legend: Optional[tuple] = None,
 ) -> Optional[Path]:
     """Vertical ranking of delta between Top32 event frequency and metagame share.
 
@@ -1094,7 +1104,9 @@ def _chart_delta_ranking(
 
     With *delta_col* the ranking is drawn from that precomputed column instead (no encounter cutoff,
     the top_n largest |values|), optionally with error bars from *err_cols* = (low, high) columns --
-    input mode "deckdb" (card presence changes).
+    input mode "deckdb" (card presence changes). With *highlight_col* only rows with a truthy value
+    keep the palette colour, the others are drawn grey; *highlight_legend* = (label of highlighted,
+    label of grey) adds a legend explaining the two.
     """
     if stats_df.empty:
         return None
@@ -1144,8 +1156,16 @@ def _chart_delta_ranking(
     # independent from delta sign.
     cmap = plt.cm.rainbow
     colors = cmap(np.linspace(1, 0, len(plot_df))) if len(plot_df) > 0 else []
+    if highlight_col is not None:
+        keep = plot_df[highlight_col].fillna(0).astype(bool).to_numpy()
+        colors = [c if k else GREY_CELL for c, k in zip(colors, keep)]
     x = np.arange(len(plot_df))
     ax.bar(x, plot_df["Delta pp"], color=colors)
+    if highlight_legend is not None:
+        from matplotlib.patches import Patch
+        ax.legend(handles=[Patch(facecolor=cmap(0.85), label=highlight_legend[0]),
+                           Patch(facecolor=GREY_CELL, label=highlight_legend[1])],
+                  loc="upper right", fontsize=8, framealpha=0.85)
     if err_cols is not None:
         lo = plot_df["Delta pp"] - pd.to_numeric(plot_df[err_cols[0]], errors="coerce")
         hi = pd.to_numeric(plot_df[err_cols[1]], errors="coerce") - plot_df["Delta pp"]
@@ -1205,13 +1225,16 @@ def _chart_conversion_matrix(
     footer: Optional[str] = None,
     figsize: tuple = (12, 7),
     dpi: int = 150,
+    grey_cell: Optional[Callable[[pd.Series, str], bool]] = None,
 ) -> Optional[Path]:
     """Matrix chart with percentages for Top32/Top8/Win frequency and conversions.
 
     Legacy (columns=None): five % columns on one 0..100 YlGnBu scale. With *columns* = [(column,
     tick label), ...] the same matrix is drawn from those columns (rows sorted by them in order,
     top_n rows); *scales* maps a column to ("seq", vmax) -- YlGnBu 0..vmax -- or ("div", centre,
-    span) -- RdBu around centre; *cell_text(row, column)* formats a cell (input mode "deckdb")."""
+    span) -- RdBu around centre; *cell_text(row, column)* formats a cell; with *scales*, a cell for
+    which *grey_cell(row, column)* is true is drawn grey instead of its scale colour (input mode
+    "deckdb")."""
     if stats_df.empty:
         return None
 
@@ -1262,6 +1285,11 @@ def _chart_conversion_matrix(
                 pos = np.clip(data[:, j] / (kind[1] or 1.0), 0.0, 1.0)
                 rgba[:, j] = seq(pos)
                 level[:, j] = pos
+            if grey_cell is not None:
+                for i in range(len(matrix_df)):
+                    if grey_cell(matrix_df.iloc[i], col):
+                        rgba[i, j] = matplotlib.colors.to_rgba(GREY_CELL)
+                        level[i, j] = 0.0
         ax.imshow(rgba, aspect="auto")
         im = plt.cm.ScalarMappable(cmap="YlGnBu", norm=plt.Normalize(0, 1))
     ax.set_title(title)

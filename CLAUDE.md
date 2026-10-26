@@ -241,10 +241,19 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   layer) and writes only `outputs/deckdb_working/WORKING_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
   fetch, no mapping/alias/archetype rule, no card rule, no history/league/site write. Default
   `--input-mode legacy` is the unchanged pipeline (W42 rerun identical except the XML `generated_at`).
-- Three time levels, one subdirectory each: `week_<YYYY-Www>` (last complete ISO week + trend of
-  N disjoint ISO weeks), `month_<YYYY-MM>[_incomplete]` (+ trophies, D2 variants),
-  `format_period_<start>_to_<as-of>` (conversion vs. the common baseline with a pilot-bootstrap
-  interval only at >= 10 pilots, trophies, pilot measures for decks only). Winrate is gone (K36);
+- Three time levels, one subdirectory each; `--deckdb-level week|month|all` (default `all`) picks the
+  set (DeckDB K41, order 2026-10-26 a, spec `docs/deckdb_metodologia.md` section (h)). Weekly set
+  `week_<YYYY-Www>` (last complete ISO week): share of the top 10 decks + one pooled "other decks" row
+  + "no deck", and of every archetype; change vs the previous week, emphasised only when the 95%
+  event-bootstrap interval (events drawn in both weeks independently, 2000 draws, seed 20261026)
+  excludes 0; presence, pilots, trend of N disjoint ISO weeks, Top 8 of every event (deck + variant,
+  no players, no rates), new cards (first list of the deck with the card, >= 2 pilots in the week).
+  No deck result measure weekly (no percentile, conversion, Top 8 rates, trophies). Monthly set:
+  `month_<YYYY-MM>[_incomplete]` (+ trophies, D2 variants, pilot measures, results concentration,
+  12-week trend), `format_period_<start>_to_<as-of>` (mean place percentile = main measure, conversion
+  auxiliary, both vs. their common baseline with a pilot-bootstrap interval only at >= 10 pilots;
+  colour only where the interval excludes the baseline, grey otherwise and on "no deck"; trophies,
+  pilot measures for decks only), cards. Winrate is gone (K36);
   the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
 - Card layer (`deckdb_cards.py`, only when `cards_path` is set): `cards_<M1>_vs_<M2>[_incomplete]` --
   presence per (deck, zone, oracle_id) per month, basics (`is_basic`) excluded; change between the two

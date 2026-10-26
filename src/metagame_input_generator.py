@@ -1663,6 +1663,15 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="CSV key,value z export_path (jawna ścieżka pliku eksportu DeckDB) dla --input-mode deckdb",
     )
     parser.add_argument(
+        "--deckdb-level",
+        choices=["all", "week", "month"],
+        default="all",
+        help=(
+            "tylko z --input-mode deckdb: week = materiały tygodniowe (week_<YYYY-Www>, bez wyników talii, K41); "
+            "month = materiały miesięczne (month_*, format_period_* z wynikami talii, cards_*); all = oba"
+        ),
+    )
+    parser.add_argument(
         "--deckdb-slides",
         action="store_true",
         help=(
@@ -1831,6 +1840,7 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         trend_weeks=int(getattr(args, "trend_weeks", 4)),
         cache_dir=cache_dir,
         log=log,
+        level=getattr(args, "deckdb_level", "all"),
     )
     if getattr(args, "deckdb_slides", False):
         try:

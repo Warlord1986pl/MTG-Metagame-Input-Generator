@@ -7,12 +7,20 @@ legacy palette, layout, fonts, colour scales and number formats; no styling code
 
 Levels, each its own directory under ``<outputs-base>/deckdb_working/WORKING_<as-of>/``:
 
-  week_<YYYY-Www>                        the last complete ISO week: share of Challenge Top 32, event
-                                         presence, Top 8; trend over the last N disjoint ISO weeks
-  month_<YYYY-MM>[_incomplete]           the as-of month: the same + trophies, variants by D2
-  format_period_<start>_to_<as-of>       Top 8 conversion with the common baseline and the pilot
-                                         bootstrap CI, trophies, pilot measures (decks only)
-  cards_<M1>_vs_<M2>[_incomplete]        card layer (deckdb_cards.py), when a card export is configured
+  week_<YYYY-Www>                        weekly set (K41): the last complete ISO week -- share of Challenge
+                                         Top 32 for the top 10 decks + "other decks" + "no deck" and every
+                                         archetype, change vs the previous week with an event-bootstrap
+                                         interval, event presence, pilots, trend over the last N disjoint
+                                         ISO weeks, Top 8 of every event, new cards; no deck results
+  month_<YYYY-MM>[_incomplete]           monthly set: the as-of month -- share, presence, Top 8, trophies,
+                                         pilot measures, variants by D2, results concentration, trend
+  format_period_<start>_to_<as-of>       monthly set: mean place percentile (main, K41) and Top 8
+                                         conversion (auxiliary) with the common baselines and the pilot
+                                         bootstrap CI, coloured only where it excludes the baseline;
+                                         trophies, pilot measures (decks only), results concentration
+  cards_<M1>_vs_<M2>[_incomplete]        monthly set: card layer (deckdb_cards.py), with a card export
+
+``--deckdb-level week|month|all`` selects the set.
 
 Every material states the DeckDB rules version, the export's sha256 and data_version (chart footer,
 STATUS sheet, CSV columns) and carries the glossary (``Glossary`` sheet, ``GLOSSARY.md``, the terms a
@@ -55,6 +63,16 @@ M_TROPHY = "trophies"
 M_PILOTS = "pilots"
 M_TOP_PILOT = "top pilot"
 M_COVERAGE = "participant coverage"
+M_PERCENTILE = "mean place percentile"
+M_COLOUR_RULE = "results colour rule"
+M_OTHER = di.OTHER_DECKS_LABEL
+M_CHANGE = "change vs previous week"
+M_CHANGE_CI = "95% CI of the change (event bootstrap)"
+M_WEEK_PILOTS = "pilots (week)"
+M_WEEK_TOP8 = "Top 8 of the week"
+M_NEW_CARD_WEEK = "new card (week)"
+M_CONCENTRATION = "results concentration"
+M_NOT_WEEKLY = "not computed weekly"
 
 GLOSSARY: List[tuple[str, str]] = [
     ("event", "one Modern Challenge of the DeckDB export (event_id); premier events are not in the export. Date = "
@@ -66,11 +84,24 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_PRESENCE, "number of events of the period with at least one list of the deck; also as % of the events."),
     (M_TOP8, "a list with final_rank <= 8. 'Top 8 lists' = their number; 'Top 8 (% of events)' = events with at least "
              "one Top 8 list of the deck / events of the period."),
-    (M_CONVERSION, "Top 32 -> Top 8: Top 8 lists of the deck / lists of the deck (DeckDB K36, the main result measure)."),
-    (M_BASELINE, "all Top 8 lists / all lists of the period, measured (not assumed 25%); the conversion colour scale "
-                 "diverges around it."),
-    (M_CI, f"95% interval of the Top 8 conversion: {di.BOOT_DRAWS} draws of the deck's pilots with replacement, all "
-           f"lists of each drawn pilot, percentiles 2.5 / 97.5; given only with >= {di.BOOT_MIN_PILOTS} pilots."),
+    (M_PERCENTILE, "per list p = 100 x (1 - (final_rank - 1) / (L - 1)), L = published lists of its event (100 = the "
+                   "winner, 0 = the last published list); per deck the mean p of its lists (DeckDB K41, the main result "
+                   "measure; format period, monthly materials only). Its split-half reliability includes the constancy "
+                   "of the deck's pilots, so it is an upper bound of the deck's own signal."),
+    (M_CONVERSION, "Top 32 -> Top 8: Top 8 lists of the deck / lists of the deck (DeckDB K36; an auxiliary result "
+                   "measure since K41)."),
+    (M_BASELINE, "of the conversion: all Top 8 lists / all lists of the period, measured (not assumed 25%); of the "
+                 "percentile: the mean p of all lists of the period. The colour scales diverge around it."),
+    (M_CI, f"95% interval of the mean place percentile and of the Top 8 conversion: {di.BOOT_DRAWS} draws of the "
+           f"deck's pilots with replacement (the same draws for both), all lists of each drawn pilot, percentiles "
+           f"2.5 / 97.5; given only with >= {di.BOOT_MIN_PILOTS} pilots."),
+    (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} cell is coloured (red below / blue above the {M_BASELINE}) "
+                    f"only when its {M_CI} excludes the baseline; every other cell of those columns is grey, also "
+                    "without an interval and always on the 'no deck' row, which is not a deck (DeckDB K41)."),
+    (M_CONCENTRATION, f"share of the best {di.TOP_PILOTS_FRAC:.0%} of the window's pilots (ceil(0.10 x pilots), ranked "
+                      "by Top 8 entries, ties by trophies, then by the anonymous id) in its lists, Top 8 entries and "
+                      "trophies; the group is cut inside a tie, whose size is given. The ranking uses the Top 8 entries "
+                      "it measures, so part of the concentration is selection on the outcome."),
     ("pilot labels", f"'{di.LABEL_FEW_PILOTS}': fewer than {di.BOOT_MIN_PILOTS} pilots in the period, no interval; "
                      f"'{di.LABEL_CONCENTRATION}': the top pilot holds >= 1/3 of the deck's lists or >= 1/2 of its Top 8 "
                      "entries (decks only)."),
@@ -92,7 +123,29 @@ GLOSSARY: List[tuple[str, str]] = [
                  "and >= 2 pilots, only in months with >= 20 lists of the deck; names by K16; a variant does not "
                  "change the deck's measures."),
     ("no deck", "Rogue + unassigned lists (one row in materials, split only in the No_deck_split sheet)."),
+    (M_OTHER, f"week: every deck outside the top {di.WEEK_TOP_N} of the week by share, pooled into one row (lists and "
+              "share summed); the previous week is pooled by the same rows."),
+    (M_CHANGE, "share in the week - share in the previous ISO week, in percentage points (pp)."),
+    (M_CHANGE_CI, f"95% interval of the {M_CHANGE}: {di.CHANGE_DRAWS} draws, the events of each week drawn with "
+                  f"replacement independently (all lists of a drawn event), percentiles 2.5 / 97.5, seed "
+                  f"{di.CHANGE_SEED}. A change is emphasised only when the interval excludes 0; the others are shown "
+                  "without emphasis (grey)."),
+    (M_WEEK_PILOTS, "distinct values of the anonymous player column with a list of the deck in the week (a count)."),
+    (M_WEEK_TOP8, "the lists with final_rank <= 8 of every event of the week: place, deck and variant; the winner is "
+                  "place 1. No player names, no rates."),
+    ("variant label", "the export's variant column (full name by K16); empty for a deck without variants and for the "
+                      "'no deck' row."),
+    (M_NEW_CARD_WEEK, f"a card (deck, zone, oracle_id; basics excluded) whose first list of the deck with it over the "
+                      f"whole export falls in the week; reported with >= {dc.MIN_PILOTS_NEW} pilots of the deck playing "
+                      "it in the week, otherwise an observation."),
+    (M_NOT_WEEKLY, "winrate, matchups, encounter probability, place percentile, conversion and deck result rankings "
+                   "(DeckDB K41: deck results are monthly material)."),
 ]
+
+WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_OTHER, "no deck", M_CHANGE, M_CHANGE_CI,
+              M_WEEK_PILOTS, M_WEEK_TOP8, "variant label", M_NEW_CARD_WEEK, M_PILOTS, M_COVERAGE, "week",
+              M_NOT_WEEKLY)
+WEEK_GLOSSARY: List[tuple[str, str]] = [(t, d) for t, d in GLOSSARY if t in WEEK_TERMS]
 
 VARIANT_SPLIT_NOTE = ("The split into list changes and deck composition changes depends on the current variant "
                       "definitions in the DeckDB rules; in decks without variants the whole change counts as a list "
@@ -163,6 +216,8 @@ OMITTED_MATERIALS: List[tuple[str, str]] = [
      "not defined for the deckdb mode"),
     ("trophies / lists, winner % of events", "decision 2026-10-21 d: trophies as counts only"),
     ("expected conversion", "decision 2026-10-21 d: control script only"),
+    ("weekly Top 8 lists / Top 8 % of events / trophies per deck, weekly conversion or percentile",
+     "DeckDB K41: deck results are monthly material; the week has the Top 8 of every event (top8_*.csv)"),
     ("challenge_statistics.xlsx: C16 / C32 / C64 / C96 sheets", "the export has no Challenge tier column"),
     ("BestPilots, pilot names in finalists_*.csv", "no player names or loginids in materials"),
     ("pilot measures for archetypes", "decision 2026-10-21 d"),
@@ -290,9 +345,10 @@ def _share_charts(decks: pd.DataFrame, archs: pd.DataFrame, out: Path, what: str
     return written
 
 
-def _trend_chart(trend: pd.DataFrame, current: pd.DataFrame, key: str, level: str, path: Path, footer: str
-                 ) -> Optional[Path]:
-    """Legacy trend chart (statistics_engine._create_trend_chart) on disjoint ISO weeks, no trend status."""
+def _trend_chart(trend: pd.DataFrame, current: pd.DataFrame, key: str, level: str, path: Path, footer: str,
+                 legend_title: Optional[str] = None) -> Optional[Path]:
+    """Legacy trend chart (statistics_engine._create_trend_chart) on disjoint ISO weeks, no trend status;
+    the lines are the top 10 rows of *current* by share."""
     if trend.empty:
         return None
     weeks = sorted(trend["ISO_week"].unique())
@@ -303,45 +359,118 @@ def _trend_chart(trend: pd.DataFrame, current: pd.DataFrame, key: str, level: st
         hist, cur, len(weeks), len(weeks), "deckdb", level, path.parent, *_STYLE[1:],
         value_col="Share_Top32_pct", title=f"{key}s: {M_SHARE} - last {len(weeks)} ISO weeks (disjoint)",
         xlabel="ISO week", ylabel=f"{M_SHARE} (%)", week_labels={i: w for w, i in idx.items()},
-        show_trend_status=False, legend_title=f"{key}s (top 10 of the last week)", footer=footer, out_path=path,
-        **_render())
+        show_trend_status=False, legend_title=legend_title or f"{key}s (top 10 of the last week)", footer=footer,
+        out_path=path, **_render())
     return p
 
 
-def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Path) -> List[Path]:
-    weeks = di.complete_iso_weeks(as_of, max(1, trend_weeks))
-    ws, we = weeks[-1]
-    rows = di.window_rows(export, ws, we)
+WEEK_BARS = [
+    ("Share_Top32_pct", f"{M_SHARE} (%)"),
+    ("Event_presence_pct", f"{M_PRESENCE} (% of events)"),
+]
+CHANGE_LEGEND = (f"{M_CHANGE_CI} excludes 0", "interval includes 0: not told apart from event-to-event variation")
+
+
+def _trend_charts(export: di.DeckdbExport, weeks: List[tuple[date, date]], cur_decks: pd.DataFrame,
+                  cur_archs: pd.DataFrame, out: Path, of_what: str) -> tuple[List[Path], Dict[str, pd.DataFrame]]:
+    """Share trend over the disjoint ISO *weeks*: the top 10 decks of *cur_decks* (no pooled rows) and the
+    rows of *cur_archs*."""
+    trend_d = di.weekly_trend(export, weeks, "material_deck", "Deck")
+    trend_a = di.weekly_trend(export, weeks, "material_archetype", "Archetype")
+    tcov = di.coverage(di.window_rows(export, weeks[0][0], weeks[-1][1]))
+    tfooter = f"{_stamp(export, 'trend', weeks[0][0], weeks[-1][1], tcov)}\n{_terms(M_SHARE, 'week')}"
+    decks_only = cur_decks[~cur_decks["Deck"].isin([di.NO_DECK_LABEL, di.OTHER_DECKS_LABEL])]
+    out.mkdir(parents=True, exist_ok=True)
+    written = []
+    for tbl, cur, key, name, legend in (
+            (trend_d, decks_only, "Deck", "decks", f"Decks (top 10 of {of_what})"),
+            (trend_a, cur_archs, "Archetype", "archetypes", f"Archetypes ({of_what})")):
+        p = _trend_chart(tbl, cur, key, key, out / f"trend_share_{name}_last{len(weeks)}w.png", tfooter, legend)
+        if p is not None:
+            written.append(p)
+    return written, {"decks": trend_d, "archetypes": trend_a}
+
+
+def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Path,
+               cards: Optional["dc.CardLayer"] = None) -> List[Path]:
+    """Weekly materials (DeckDB K41): share, presence, change vs the previous week with an event-bootstrap
+    interval, pilots, trend, Top 8 per event, new cards. No result measure of decks."""
+    weeks = di.complete_iso_weeks(as_of, max(2, trend_weeks))
+    (ps, pe), (ws, we) = weeks[-2], weeks[-1]
+    rows, prev = di.window_rows(export, ws, we), di.window_rows(export, ps, pe)
     cov = di.coverage(rows)
     label = di.iso_week_label(ws)
     out = root / f"week_{label}"
-    decks = di.share_table(rows, "material_deck", "Deck", trophies=False)
-    decks.insert(1, "Archetype", decks["Deck"].map(di.deck_archetype_map(rows)))
-    archs = di.share_table(rows, "material_archetype", "Archetype", trophies=False)
-    archs.insert(1, "Decks", archs["Archetype"].map(di.archetype_decks(rows)).astype(int))
-    trend_d = di.weekly_trend(export, weeks, "material_deck", "Deck")
-    trend_a = di.weekly_trend(export, weeks, "material_archetype", "Archetype")
+    decks = di.week_share_table(rows, prev, "material_deck", "Deck", top_n=di.WEEK_TOP_N)
+    decks = decks.rename(columns={"Labels_in_row": "Decks_in_row"})
+    decks.insert(1, "Archetype", decks["Deck"].map(di.deck_archetype_map(rows)).fillna(""))
+    archs = di.week_share_table(rows, prev, "material_archetype", "Archetype").drop(columns="Labels_in_row")
+    archs.insert(1, "Decks", archs["Archetype"].map(di.archetype_decks(rows)).fillna(0).astype(int))
+    top8 = di.top8_table(rows)
+    new_cards = dc.new_cards_in_week(export, cards, ws, we) if cards is not None else pd.DataFrame(
+        [{"Info": "no card export configured (cards_path)"}])
+    split = di.no_deck_split(rows, trophies=False)
+    if not split.empty:
+        split = split[["Status", "Lists", "Share_Top32_pct", "Events_with_list", "Event_presence_pct"]]
+    trend_png, trend = _trend_charts(export, weeks[-max(1, trend_weeks):], decks, archs, out, f"week {label}")
+    sig_d, sig_a = int(decks["Change_CI_excludes_0"].sum()), int(archs["Change_CI_excludes_0"].sum())
     status = _status(export, f"ISO week {label}", ws, we, rows, cov, [
-        ("Trend", f"{len(weeks)} disjoint ISO weeks, the last one {label}"),
+        ("Previous week (change)", f"{di.iso_week_label(ps)}: {ps.isoformat()} .. {pe.isoformat()}, "
+                                   f"{prev['event_id'].nunique()} events, {len(prev)} lists"),
+        ("Rows", f"decks: top {di.WEEK_TOP_N} by share, '{di.OTHER_DECKS_LABEL}', '{di.NO_DECK_LABEL}'; archetypes: "
+                 f"all + '{di.NO_DECK_LABEL}'"),
+        (M_CHANGE_CI, dict(GLOSSARY)[M_CHANGE_CI]),
+        ("Changes with an interval excluding 0", f"decks {sig_d} of {len(decks)} rows, archetypes {sig_a} of "
+                                                 f"{len(archs)} rows"),
+        ("Trend", f"{min(len(weeks), max(1, trend_weeks))} disjoint ISO weeks, the last one {label}"),
+        ("New cards", "card export not configured" if cards is None else
+         f"{int(new_cards['Reported'].sum()) if not new_cards.empty else 0} reported (>= {dc.MIN_PILOTS_NEW} pilots), "
+         f"{int((new_cards['Reported'] == 0).sum()) if not new_cards.empty else 0} observations"),
+        (M_NOT_WEEKLY, dict(GLOSSARY)[M_NOT_WEEKLY]),
     ])
-    written = _write_level(out, label, export, {
-        "STATUS": status, "Decks": decks, "Archetypes": archs,
-        "No_deck_split": di.no_deck_split(rows, trophies=False), "Events": di.event_table(rows),
-        "Trend_decks": trend_d, "Trend_archetypes": trend_a,
-    }, {"decks": decks, "archetypes": archs, "share_history_weeks": trend_d}, GLOSSARY)
-    footer = f"{_stamp(export, 'ISO week ' + label, ws, we, cov)}\n{_terms(M_SHARE, M_PRESENCE, M_TOP8, 'week')}"
-    written += _share_charts(decks, archs, out, f"ISO week {label}", footer)
-    tcov = di.coverage(di.window_rows(export, weeks[0][0], we))
-    tfooter = f"{_stamp(export, 'trend', weeks[0][0], we, tcov)}\n{_terms(M_SHARE, 'week')}"
-    for tbl, cur, key, level, name in ((trend_d, decks, "Deck", "Deck", "decks"),
-                                       (trend_a, archs, "Archetype", "Archetype", "archetypes")):
-        p = _trend_chart(tbl, cur, key, level, out / f"trend_share_{name}_last{len(weeks)}w.png", tfooter)
+    sheets = {"STATUS": status, "Decks": decks, "Archetypes": archs, "Top8": top8, "New_cards": new_cards,
+              "No_deck_split": split, "Events": di.event_table(rows), "Trend_decks": trend["decks"],
+              "Trend_archetypes": trend["archetypes"]}
+    csvs = {"decks": decks, "archetypes": archs, "top8": top8, "share_history_weeks": trend["decks"],
+            "share_history_weeks_archetypes": trend["archetypes"]}
+    extra = {}
+    if cards is not None:
+        csvs["new_cards"] = new_cards[new_cards["Reported"] == 1] if not new_cards.empty else new_cards
+        extra["new_cards"] = {"cards_sha256": cards.sha256}
+    written = _write_level(out, label, export, sheets, csvs, WEEK_GLOSSARY, extra)
+    stamp = _stamp(export, "ISO week " + label, ws, we, cov)
+    footer = f"{stamp}\n{_terms(M_SHARE, M_PRESENCE, M_OTHER, 'no deck', 'week')}"
+    for tbl, key, name in ((decks, "Deck", "decks"), (archs, "Archetype", "archetypes")):
+        rows_note = (f"top {di.WEEK_TOP_N} by share, {di.OTHER_DECKS_LABEL}, {di.NO_DECK_LABEL}" if key == "Deck"
+                     else f"all, {di.NO_DECK_LABEL}")
+        p = _chart_compare_presence(
+            tbl, out / f"share_top32_{name}.png",
+            f"{key}s, ISO week {label}: {M_SHARE} and {M_PRESENCE} ({rows_note})",
+            key_col=key, bars=WEEK_BARS, ylabel="%", keep_order=True, footer=footer, **_render())
         if p is not None:
             written.append(p)
-    return written
+        chart = tbl.assign(Label=tbl[key] + tbl["Share_Top32_pct"].map(lambda v: f" ({v:.1f}%)"))
+        p = _chart_delta_ranking(
+            chart, "Label", out / f"change_vs_previous_week_{name}.png",
+            f"{key}s, ISO week {label} vs {di.iso_week_label(ps)}: {M_CHANGE} (pp) with {M_CHANGE_CI} ({rows_note}); "
+            "label: share this week",
+            delta_col="Change_pp", err_cols=("Change_CI_low_pp", "Change_CI_high_pp"),
+            ylabel=f"{M_CHANGE} (pp); coloured = interval excludes 0, grey = it does not",
+            highlight_col="Change_CI_excludes_0", highlight_legend=CHANGE_LEGEND,
+            footer=f"{stamp}\n{_terms(M_CHANGE, M_CHANGE_CI, M_OTHER)}", **_render())
+        if p is not None:
+            written.append(p)
+    return written + trend_png
 
 
-def build_month(export: di.DeckdbExport, as_of: date, root: Path) -> List[Path]:
+def _concentration_table(rows: pd.DataFrame, window: str) -> pd.DataFrame:
+    return pd.DataFrame([{"Window": window, **di.results_concentration(rows)}])
+
+
+def build_month(export: di.DeckdbExport, as_of: date, root: Path, trend_weeks: int = 12) -> List[Path]:
+    """Monthly materials: share, presence, Top 8, trophies, pilot measures (decks), variants by D2,
+    results concentration, trend over the last *trend_weeks* disjoint ISO weeks. Deck results
+    (percentile, conversion) are in the format-period directory of the same run."""
     ms, me, complete = di.month_period(as_of)
     rows = di.window_rows(export, ms, me)
     cov = di.coverage(rows)
@@ -349,28 +478,58 @@ def build_month(export: di.DeckdbExport, as_of: date, root: Path) -> List[Path]:
     out = root / f"month_{label}"
     decks = di.share_table(rows, "material_deck", "Deck", trophies=True)
     decks.insert(1, "Archetype", decks["Deck"].map(di.deck_archetype_map(rows)))
+    decks = decks.merge(di.pilot_summary(rows, "material_deck", "Deck"), on="Deck", how="left")
+    decks["Pilot_labels"] = decks["Pilot_labels"].fillna("")
+    decks["Pilots"] = decks["Pilots"].astype("Int64")
     archs = di.share_table(rows, "material_archetype", "Archetype", trophies=True)
     archs.insert(1, "Decks", archs["Archetype"].map(di.archetype_decks(rows)).astype(int))
+    concentration = _concentration_table(rows, f"month {label}")
     note = "" if complete else f" (incomplete month: the export ends {export.last_event_date})"
+    weeks = di.complete_iso_weeks(as_of, max(1, trend_weeks))
+    trend_png, trend = _trend_charts(export, weeks, decks, archs, out, f"month {label.replace('_', ' ')}")
     status = _status(export, f"month {ms:%Y-%m}", ms, me, rows, cov, [
         ("Completeness", "complete" if complete else f"INCOMPLETE - working only; data up to {me.isoformat()}"),
         ("Variants (D2)", dict(GLOSSARY)["variants"]),
+        ("Pilot labels", dict(GLOSSARY)["pilot labels"]),
+        (M_CONCENTRATION, dict(GLOSSARY)[M_CONCENTRATION]),
+        ("Trend", f"{len(weeks)} disjoint ISO weeks {weeks[0][0].isoformat()} .. {weeks[-1][1].isoformat()}"),
+        ("Deck results (K41)", "mean place percentile and Top 8 conversion: format_period_* directory of this run"),
     ])
     written = _write_level(out, label, export, {
         "STATUS": status, "Decks": decks, "Archetypes": archs, "Variants": di.variant_table(rows),
+        "Results_concentration": concentration,
         "No_deck_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
-    }, {"decks": decks, "archetypes": archs, "finalists": di.finalists_table(rows)}, GLOSSARY)
+        "Trend_decks": trend["decks"], "Trend_archetypes": trend["archetypes"],
+    }, {"decks": decks, "archetypes": archs, "finalists": di.finalists_table(rows),
+        "results_concentration": concentration, "share_history_weeks": trend["decks"],
+        "share_history_weeks_archetypes": trend["archetypes"]}, GLOSSARY)
     footer = f"{_stamp(export, 'month', ms, me, cov, note)}\n{_terms(M_SHARE, M_PRESENCE, M_TOP8, 'month')}"
     written += _share_charts(decks, archs, out, label.replace("_", " "), footer)
-    return written
+    return written + trend_png
 
 
 _PILOT_CHART_COLS = {"Pilots_Top8", "Top_pilot_share_Top32_pct", "Top_pilot_share_Top8_pct", "Top_pilot_conversion_pct",
                      "Without_top_pilot_conversion_pct"}
 
 
+# result columns of the results matrix -> the flag that lets the cell keep its colour (K41 colour rule)
+_RESULT_FLAGS = {"Mean_place_percentile": "Percentile_CI_excludes_baseline",
+                 "Top8_conversion_pct": "Conversion_CI_excludes_baseline"}
+
+
+def _results_grey(r: pd.Series, col: str) -> bool:
+    """K41: colour only for decks whose interval excludes the baseline; the 'no deck' row is not a deck."""
+    return col in _RESULT_FLAGS and (not int(r[_RESULT_FLAGS[col]]) or di.NO_DECK_LABEL in (r.get("Deck"),
+                                                                                           r.get("Archetype")))
+
+
 def _conversion_cell(r: pd.Series, col: str) -> str:
     v = r[col]
+    if col == "Mean_place_percentile":
+        text = f"{v:.1f}"
+        if not math.isnan(r["Percentile_CI_low"]):
+            text += f" [{r['Percentile_CI_low']:.0f}-{r['Percentile_CI_high']:.0f}]"
+        return text
     if col == "Top8_conversion_pct":
         text = f"{v:.1f}%"
         if not math.isnan(r["CI_low_pct"]):
@@ -383,11 +542,18 @@ def _conversion_cell(r: pd.Series, col: str) -> str:
     return "" if pd.isna(v) else f"{int(v)}"
 
 
+def _span(shown: pd.DataFrame, key: str, col: str, centre: float) -> float:
+    decks_only = shown[shown[key] != di.NO_DECK_LABEL][col]
+    return (float((decks_only - centre).abs().max()) if not decks_only.empty else 1.0) or 1.0
+
+
 def _conversion_chart(tbl: pd.DataFrame, key: str, baseline: float, path: Path, title: str, footer: str,
-                      pilots: bool) -> Optional[Path]:
-    columns = [("Lists", "Top 32\nlists"), ("Top8_lists", "Top 8\nlists"),
-               ("Top8_conversion_pct", f"{M_CONVERSION}\n[{M_CI}]"), ("Trophies", M_TROPHY),
-               ("Pilots_Top32", f"{M_PILOTS}\nTop 32")]
+                      pilots: bool, pct_baseline: float) -> Optional[Path]:
+    """Results matrix (K41): mean place percentile (main) and Top 8 conversion (auxiliary), each coloured
+    around its common baseline only where its interval excludes the baseline, grey otherwise."""
+    columns = [("Lists", "Top 32\nlists"), ("Mean_place_percentile", f"{M_PERCENTILE}\n[{M_CI}]"),
+               ("Top8_lists", "Top 8\nlists"), ("Top8_conversion_pct", f"{M_CONVERSION}\n[{M_CI}]"),
+               ("Trophies", M_TROPHY), ("Pilots_Top32", f"{M_PILOTS}\nTop 32")]
     if pilots:
         columns += [("Pilots_Top8", f"{M_PILOTS}\nTop 8"),
                     ("Top_pilot_share_Top32_pct", f"{M_TOP_PILOT}\n% of Top 32 lists"),
@@ -395,22 +561,24 @@ def _conversion_chart(tbl: pd.DataFrame, key: str, baseline: float, path: Path, 
                     ("Top_pilot_conversion_pct", f"{M_TOP_PILOT}\nconversion"),
                     ("Without_top_pilot_conversion_pct", "conversion\nwithout top pilot")]
     shown = tbl.sort_values("Lists", ascending=False).head(TOP_N_CHART)
-    decks_only = shown[shown[key] != di.NO_DECK_LABEL]["Top8_conversion_pct"]
-    span = float((decks_only - baseline).abs().max()) if not decks_only.empty else 1.0
     scales = {c: ("seq", max(float(pd.to_numeric(shown[c], errors="coerce").max()), 1e-9)) for c, _ in columns}
-    scales["Top8_conversion_pct"] = ("div", baseline, span or 1.0)
+    scales["Top8_conversion_pct"] = ("div", baseline, _span(shown, key, "Top8_conversion_pct", baseline))
+    scales["Mean_place_percentile"] = ("div", pct_baseline, _span(shown, key, "Mean_place_percentile", pct_baseline))
     return _chart_conversion_matrix(
         tbl, key, path,
-        f"{title}\n{M_CONVERSION}: red-blue scale diverging around the {M_BASELINE} {baseline:.2f}% (Top 8 lists / "
-        "lists of the period); other columns: own 0..max blue scale",
+        f"{title}\n{M_PERCENTILE} (main, baseline {pct_baseline:.2f}) and {M_CONVERSION} (auxiliary, baseline "
+        f"{baseline:.2f}%): red below / blue above the {M_BASELINE}, coloured only where the {M_CI} excludes it, "
+        "otherwise grey; other columns: own 0..max blue scale",
         columns=columns, scales=scales, cell_text=_conversion_cell, top_n=TOP_N_CHART, colorbar_label="",
-        footer=footer, **_render(figsize=(4 + 1.6 * len(columns), 9)))
+        footer=footer, grey_cell=_results_grey, **_render(figsize=(4 + 1.6 * len(columns), 9)))
 
 
 def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as_of: date, root: Path) -> List[Path]:
     rows = di.window_rows(export, start, as_of)
     cov = di.coverage(rows)
     baseline = di.top8_baseline(rows)
+    pct_baseline = di.percentile_baseline(rows)
+    no_pct = int(rows["place_percentile"].isna().sum())
     label = f"{start.isoformat()}_to_{as_of.isoformat()}"
     out = root / f"format_period_{label}"
     decks = di.conversion_table(rows, "material_deck", "Deck", pilots=True)
@@ -422,30 +590,46 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
                   "Top_pilot_conversion_pct", "Without_top_pilot_lists", "Without_top_pilot_conversion_pct",
                   "Top_pilot_tie", "Pilot_labels"]
     pilots = decks[decks["Deck"] != di.NO_DECK_LABEL][pilot_cols].reset_index(drop=True)
-    deck_cols = ["Deck", "Archetype", "Lists", "Top8_lists", "Top8_conversion_pct", "CI_low_pct", "CI_high_pct",
-                 "CI_info", "Pilot_labels", "Trophies", "Pilots_Top32"]
+    deck_cols = ["Deck", "Archetype", "Lists", "Mean_place_percentile", "Percentile_CI_low", "Percentile_CI_high",
+                 "Percentile_CI_excludes_baseline", "Top8_lists", "Top8_conversion_pct", "CI_low_pct", "CI_high_pct",
+                 "Conversion_CI_excludes_baseline", "CI_info", "Pilot_labels", "Trophies", "Pilots_Top32"]
+    concentration = _concentration_table(rows, f"format period {label}")
+    n_excl = {c: int(decks.loc[decks["Deck"] != di.NO_DECK_LABEL, f].sum()) for c, f in (
+        ("percentile", "Percentile_CI_excludes_baseline"), ("conversion", "Conversion_CI_excludes_baseline"))}
+    with_ci = int(((decks["Deck"] != di.NO_DECK_LABEL) & decks["CI_info"].str.startswith("pilot")).sum())
     status = _status(export, "format period", start, as_of, rows, cov, [
         ("Format period start", f"{start.isoformat()} (effective_mtgo, entry {event_key} of rules/format_events.yaml)"),
+        ("Main result measure (K41)", f"{M_PERCENTILE}; {M_CONVERSION} auxiliary"),
+        (f"{M_BASELINE} of the {M_PERCENTILE} (mean p of all lists of the period)", round(pct_baseline, 3)),
+        ("  Lists without a defined percentile (event ranks not 1..L)", no_pct),
         (f"{M_BASELINE} of the {M_CONVERSION} (Top 8 lists / lists of the period), %", round(baseline, 3)),
         ("  Top 8 lists in the period", int(rows["top8"].sum())),
-        ("Conversion interval", dict(GLOSSARY)[M_CI] + f" Seed {di.BOOT_SEED}."),
+        ("Result intervals", dict(GLOSSARY)[M_CI] + f" Seed {di.BOOT_SEED}."),
+        (f"Decks with an interval ({di.BOOT_MIN_PILOTS}+ pilots) / excluding the baseline",
+         f"{with_ci}; percentile {n_excl['percentile']}, conversion {n_excl['conversion']} "
+         f"(expected by chance if no deck differed: {0.05 * with_ci:.1f} each)"),
+        (M_COLOUR_RULE, dict(GLOSSARY)[M_COLOUR_RULE]),
         ("Pilot labels", dict(GLOSSARY)["pilot labels"]),
         ("Pilot measures", "decks only (not archetypes, not the 'no deck' row); Pilots sheet"),
+        (M_CONCENTRATION, dict(GLOSSARY)[M_CONCENTRATION]),
     ])
     written = _write_level(out, label, export, {
         "STATUS": status, "Decks": decks[deck_cols], "Archetypes": archs, "Pilots": pilots,
+        "Results_concentration": concentration,
         "No_deck_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
-    }, {"decks": decks[deck_cols], "archetypes": archs, "pilots": pilots, "finalists": di.finalists_table(rows)},
-        GLOSSARY)
+    }, {"decks": decks[deck_cols], "archetypes": archs, "pilots": pilots, "finalists": di.finalists_table(rows),
+        "results_concentration": concentration}, GLOSSARY)
     stamp = _stamp(export, "format period", start, as_of, cov)
     for tbl, key, name, with_pilots, terms in (
-            (decks, "Deck", "decks", True, (M_CONVERSION, M_BASELINE, M_CI, "pilot labels", M_TOP_PILOT)),
-            (archs, "Archetype", "archetypes", False, (M_CONVERSION, M_BASELINE, M_CI, "pilot labels"))):
+            (decks, "Deck", "decks", True, (M_PERCENTILE, M_CONVERSION, M_BASELINE, M_CI, M_COLOUR_RULE,
+                                            "pilot labels", M_TOP_PILOT)),
+            (archs, "Archetype", "archetypes", False, (M_PERCENTILE, M_CONVERSION, M_BASELINE, M_CI, M_COLOUR_RULE,
+                                                       "pilot labels"))):
         p = _conversion_chart(
-            tbl, key, baseline, out / f"conversion_matrix_{name}.png",
-            f"{key}s, format period from {start.isoformat()}: {M_CONVERSION}"
+            tbl, key, baseline, out / f"results_matrix_{name}.png",
+            f"{key}s, format period from {start.isoformat()}: {M_PERCENTILE}, {M_CONVERSION}"
             + (f", {M_PILOTS} (top {TOP_N_CHART} by lists)" if with_pilots else ""),
-            f"{stamp}\n{_terms(*terms, 'format period')}", with_pilots)
+            f"{stamp}\n{_terms(*terms, 'format period')}", with_pilots, pct_baseline)
         if p is not None:
             written.append(p)
     return written
@@ -550,12 +734,20 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
     return written
 
 
+LEVELS = ("all", "week", "month")
+
+
 def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_base: Path,
                            trend_weeks: int = 12, cache_dir: Optional[Path] = None,
-                           log: Callable[[str], None] = print) -> List[Path]:
+                           log: Callable[[str], None] = print, level: str = "all") -> List[Path]:
+    """*level* "week": the weekly set (week_<YYYY-Www>); "month": the monthly set (month_*, format_period_*,
+    cards_* -- deck results are monthly material, K41); "all": both."""
+    if level not in LEVELS:
+        raise di.DeckdbInputError(f"nieznany poziom materiałów {level!r}, dozwolone {LEVELS}")
+    weekly, monthly = level in ("all", "week"), level in ("all", "month")
     start, key = di.format_period_start(cfg.format_events_path, as_of)
-    # validate every period before writing anything
-    weeks = di.complete_iso_weeks(as_of, max(1, trend_weeks))
+    # validate every period before writing anything (the weekly change needs the previous week too)
+    weeks = di.complete_iso_weeks(as_of, max(2, trend_weeks))
     for ws, we in weeks:
         di.window_rows(export, ws, we)
     ms, me, _ = di.month_period(as_of)
@@ -565,11 +757,14 @@ def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of:
     # the card file (versions, data_version, list keys) is checked before writing anything, too
     cards = dc.load_cards(cfg.cards_path, export) if cfg.cards_path is not None else None
     root = root_dir(outputs_base, as_of)
-    written = build_week(export, as_of, trend_weeks, root)
-    written += build_month(export, as_of, root)
-    written += build_format_period(export, start, key, as_of, root)
-    if cards is not None:
-        written += build_card_layer(export, cards, as_of, start, root)
+    written: List[Path] = []
+    if weekly:
+        written += build_week(export, as_of, trend_weeks, root, cards)
+    if monthly:
+        written += build_month(export, as_of, root, trend_weeks)
+        written += build_format_period(export, start, key, as_of, root)
+        if cards is not None:
+            written += build_card_layer(export, cards, as_of, start, root)
     if cache_dir is not None:
         cache = di.match_mtgo_cache(month_rows, cache_dir, ms, me)
         log(f"[deckdb] MTGO cache check (month {ms:%Y-%m}): matched {cache['matched']}, export not in cache "

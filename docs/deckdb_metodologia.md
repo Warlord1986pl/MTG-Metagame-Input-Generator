@@ -512,3 +512,58 @@ wersje reguł albo mapowania nazw w obu plikach się różnią.
 4. Porównanie z niepełnym miesiącem (październik do 18 dnia): porównywać czy czekać na pełny.
 5. Rozkład na warianty zależy od etykiet wariantów eksportu, a te od wersji reguł; zmiana reguł
    wariantów między okresami musi być wykluczona albo oznaczona.
+
+## (h) Materiały tygodniowe i miesięczne (DeckDB K41, polecenie 2026-10-26 a)
+
+Ta sekcja opisuje obecny kod (`src/deckdb_input.py`, `src/deckdb_materials.py`,
+`src/deckdb_cards.py`), nie projekt. `--deckdb-level week|month|all` (domyślnie `all`) wybiera zestaw.
+
+**Główna miara wyników talii (K41).** Średni percentyl miejsca: dla listy
+p = 100 × (1 − (`final_rank` − 1) / (L − 1)), L = liczba opublikowanych list eventu (100 = zwycięzca,
+0 = ostatnia opublikowana lista); dla talii średnia p jej list. Event, którego miejsca nie są
+dokładnie 1..L, nie ma p (w eksporcie z 2026-10-25: 0 takich eventów z 754). Baza = średnia p
+wszystkich list okresu; przy pełnych eventach to z konstrukcji 50. Konwersja Top 32 → Top 8 jest
+miarą pomocniczą. Obie mają przedział bootstrap po pilotach na tych samych losowaniach (2000,
+ziarno 20261021, tylko przy ≥ 10 pilotach); przedział konwersji jest liczbowo taki sam jak przed
+dodaniem percentyla. Na macierzy wyników (`results_matrix_*.png`) komórka percentyla albo konwersji
+ma kolor (czerwony poniżej, niebieski powyżej bazy) tylko wtedy, gdy jej przedział wyklucza bazę;
+pozostałe są szare, także bez przedziału i zawsze w wierszu „no deck”, który nie jest talią.
+Wyniki talii są wyłącznie w materiałach miesięcznych.
+
+**Zestaw tygodniowy** (`week_<YYYY-Www>`, ostatni pełny tydzień ISO, okna rozłączne):
+
+- udział w Top 32 Challenge'ów: 10 talii z największą liczbą list tygodnia (remisy po nazwie),
+  wiersz „other decks” (suma pozostałych talii, z liczbą talii w kolumnie `Decks_in_row`) i wiersz
+  „no deck” (Rogue + nieprzypisane); archetypy wszystkie i „no deck”;
+- zmiana wobec poprzedniego tygodnia ISO w pp, z wierszami złożonymi tak samo w obu tygodniach;
+  przedział 95%: eventy każdego tygodnia losowane ze zwracaniem niezależnie (wszystkie listy
+  wylosowanego eventu), 2000 losowań, ziarno 20261026, te same losowania dla wszystkich wierszy;
+  zmiana wyróżniona kolorem tylko przy przedziale wykluczającym 0, pozostałe szare
+  (`change_vs_previous_week_*.png`, legenda na wykresie). Bez korekty na wielokrotne porównania:
+  przy 12 wierszach talii i 7 archetypów przypadkiem wyróżnia się średnio około 1 zmiana;
+- obecność: eventy z co najmniej jedną listą / eventy tygodnia;
+- piloci: liczba różnych `player` przy każdym wierszu;
+- trend udziałów z ostatnich N rozłącznych tygodni (`--trend-weeks`, publikowane 12) dla 10 talii
+  bieżącego tygodnia i dla archetypów;
+- Top 8 tygodnia (`top8_*.csv`): dla każdego eventu miejsca 1–8 z talią, wariantem (K16) i
+  archetypem, zwycięzca = miejsce 1; bez nazw graczy i bez odsetków;
+- nowe karty (`new_cards_*.csv`): (talia, strefa, karta) z pierwszą listą talii z tą kartą w całym
+  eksporcie przypadającą na tydzień, raportowane przy ≥ 2 pilotach talii z kartą w tygodniu.
+
+Tygodniowo nie ma winrate'u, matchupów, prawdopodobieństwa spotkania, percentyla, konwersji, liczby
+list Top 8 na talię, trofeów ani rankingów wyników talii.
+
+**Zestaw miesięczny** (`month_<YYYY-MM>[_incomplete]`, `format_period_<start>_to_<as-of>`,
+`cards_<M1>_vs_<M2>[_incomplete]`): udział, obecność, Top 8 i trofea talii i archetypów w miesiącu
+z trendem z 12 tygodni; warianty według D2; miary pilotów talii w miesiącu (liczba pilotów, udział
+najczęstszego w listach Top 32 i w wejściach do Top 8, etykiety „low pilot count” i
+„concentration”); skupienie wyników w miesiącu i w okresie formatu (`results_concentration_*.csv`:
+najlepsze ceil(0,10 × piloci) według wejść do Top 8, remisy według trofeów, potem według
+anonimowego identyfikatora; udział w listach, wejściach do Top 8 i trofeach oraz wielkość remisu na
+granicy grupy); wyniki talii z okresu formatu (percentyl i konwersja jak wyżej); warstwa kart
+miesiąc do poprzedniego miesiąca według (g).
+
+Wykresy rysują funkcje trybu dotychczasowego przez parametry opcjonalne (domyślnie bez zmian):
+`_chart_compare_presence(keep_order=)`, `_chart_delta_ranking(highlight_col=, highlight_legend=)`,
+`_chart_conversion_matrix(grey_cell=)`, `_create_trend_chart`. Kolor szary wspólny:
+`challenge_history_engine.GREY_CELL`.

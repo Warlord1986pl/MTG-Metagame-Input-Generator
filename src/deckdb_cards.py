@@ -328,6 +328,28 @@ def first_appearances(export: di.DeckdbExport, cards: CardLayer, since: date, un
     return pd.DataFrame(out).sort_values(["Deck", "First_date", "Card"]).reset_index(drop=True) if out else pd.DataFrame()
 
 
+def new_cards_in_week(export: di.DeckdbExport, cards: CardLayer, since: date, until: date) -> pd.DataFrame:
+    """Week level (K41): (deck, zone, card) whose first list of the deck with the card over the whole export
+    falls in since..until; lists and pilots of the deck with it from that date to *until*; reported with
+    >= MIN_PILOTS_NEW pilots."""
+    rows = export.rows[export.rows["status"] == di.STATUS_ASSIGNED]
+    long = _lists_with_cards(rows, cards).sort_values(["event_date", "event_id", "decktournamentid"])
+    first = long.drop_duplicates(["deck", "zone", "oracle_id"])
+    first = first[(first["event_date"] >= since.isoformat()) & (first["event_date"] <= until.isoformat())]
+    week = long[(long["event_date"] >= since.isoformat()) & (long["event_date"] <= until.isoformat())]
+    seen = week.merge(first[["deck", "zone", "oracle_id"]], on=["deck", "zone", "oracle_id"])
+    agg = seen.groupby(["deck", "zone", "oracle_id"]).agg(Lists_with_card=("player", "size"),
+                                                         Pilots_with_card=("player", "nunique"))
+    cols = ["Deck", "Zone", "oracle_id", "Card", "First_date", "Lists_with_card", "Pilots_with_card", "Reported"]
+    if first.empty:
+        return pd.DataFrame(columns=cols)
+    out = first.set_index(["deck", "zone", "oracle_id"]).join(agg).reset_index()
+    out = out.rename(columns={"deck": "Deck", "zone": "Zone", "canonical_name": "Card", "event_date": "First_date"})
+    out["Reported"] = (out["Pilots_with_card"] >= MIN_PILOTS_NEW).astype(int)
+    return out[cols].sort_values(["Reported", "Pilots_with_card", "Deck", "Card"],
+                                 ascending=[False, False, True, True]).reset_index(drop=True)
+
+
 def pilot_list_changes(export: di.DeckdbExport, cards: CardLayer, start: date, end: date) -> pd.DataFrame:
     """Per deck: distribution of differences between consecutive lists of the same pilot."""
     rows = di.window_rows(export, start, end)

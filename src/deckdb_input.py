@@ -15,18 +15,27 @@ starts before the first one).
 
 Three time levels (every period closed on both sides by ``event_date``):
 
-  week (ISO, disjoint)   share, presence, Top 8 (lists, % of events)
-  calendar month         the same + trophies (count) + variants by D2
-  format period          conversion with a pilot-bootstrap interval, trophies, pilot measures;
-                         from the MTGO effective date of the last confirmed major format event,
-                         cumulative up to the as-of date
+  week (ISO, disjoint)   K41: share of the top 10 decks + "other decks" + "no deck" and of every
+                         archetype, change vs the previous week (event bootstrap), presence, pilots,
+                         Top 8 per event; no result measure of decks
+  calendar month         share, presence, Top 8 (lists, % of events), trophies (count), pilot
+                         measures, variants by D2, results concentration
+  format period          mean place percentile (main, K41) and conversion (auxiliary) with a
+                         pilot-bootstrap interval, trophies, pilot measures; from the MTGO effective
+                         date of the last confirmed major format event, cumulative up to the as-of date
 
   share                  = deck lists / all lists of the period
   presence               = distinct events with >= 1 list of the deck (also as % of events)
   Top 8                  = lists with final_rank <= 8; Top 8 % of events = events with >= 1 Top 8
                            list of the deck / events of the period
+  place percentile      = per list 100 x (1 - (final_rank - 1) / (L - 1)), L = published lists of
+                           the event; per deck the mean; baseline = the mean over all lists (50 when
+                           every event has ranks 1..L)
   conversion             = Top 8 lists / lists; common baseline = all Top 8 lists / all lists of
-                           the period; interval = bootstrap over pilots, only with >= 10 pilots
+                           the period; interval (both measures, same draws) = bootstrap over pilots,
+                           only with >= 10 pilots
+  change vs prev. week   = share - previous week's share (pp); interval = events drawn with
+                           replacement in each week independently, 2000 draws, seed 20261026
   pilot measures (decks) = pilots in Top 32 / Top 8; the most frequent pilot (most Top 32 lists of
                            the deck, ties: more Top 8 lists, then the player id) -- share of Top 32
                            lists and of Top 8 entries, own conversion and conversion without them
@@ -66,6 +75,17 @@ CONCENTRATION_LISTS = 1 / 3
 CONCENTRATION_TOP8 = 1 / 2
 BOOT_DRAWS = 2000
 BOOT_SEED = 20261021
+
+# weekly materials (DeckDB K41, order of 2026-10-26 a): the top WEEK_TOP_N decks by share, the rest pooled
+# into OTHER_DECKS_LABEL; the change against the previous week is emphasised only when the 95% interval
+# of the difference (events drawn with replacement in both weeks independently) excludes zero
+OTHER_DECKS_LABEL = "other decks"
+WEEK_TOP_N = 10
+CHANGE_DRAWS = 2000
+CHANGE_SEED = 20261026
+# results concentration: share of the best TOP_PILOTS_FRAC of pilots (by Top 8 entries, ties: trophies,
+# then the anonymous id) in lists, Top 8 entries and trophies
+TOP_PILOTS_FRAC = 0.10
 
 # Variant reporting threshold D2 (DeckDB docs/decisions.md, entry 35): a variant is reported IN A
 # MONTH when, in that month, it has >= 5% of the deck's lists, >= 3 lists and >= 2 distinct players;
@@ -177,6 +197,7 @@ def load_export(path: Path) -> DeckdbExport:
     df["material_archetype"] = df["archetype"].where(df["status"] == STATUS_ASSIGNED, NO_DECK_LABEL)
     df["top8"] = (df["final_rank"] <= 8).astype(int)
     df["trophy"] = (df["final_rank"] == 1).astype(int)
+    df["place_percentile"] = place_percentile(df)
 
     return DeckdbExport(
         path=path,
@@ -253,6 +274,17 @@ def format_period_start(format_events_path: Optional[Path], as_of: date) -> tupl
 
 # --- measures ----------------------------------------------------------------------------------
 
+def place_percentile(df: pd.DataFrame) -> pd.Series:
+    """Per list p = 1 - (final_rank - 1) / (L - 1) in percent, L = published lists of its event (DeckDB
+    K41). Undefined (NaN) for every list of an event whose ranks are not exactly 1..L or with L = 1."""
+    lists = df.groupby("event_id")["final_rank"].transform("size")
+    ranks = df.groupby("event_id")["final_rank"]
+    contiguous = (ranks.transform("min") == 1) & (ranks.transform("max") == lists) & (
+        ranks.transform("nunique") == lists)
+    p = (1.0 - (df["final_rank"] - 1) / (lists - 1).where(lists > 1)) * 100.0
+    return p.where(contiguous)
+
+
 def coverage(rows: pd.DataFrame) -> dict:
     events = rows.groupby("event_id")["player_count"].first()
     participants = int(events.sum())
@@ -294,49 +326,104 @@ def share_table(rows: pd.DataFrame, key: str, key_name: str, trophies: bool) -> 
     return pd.DataFrame(out).sort_values(["Lists", key_name], ascending=[False, True]).reset_index(drop=True)
 
 
+def _ratio_interval(num: np.ndarray, den: np.ndarray, idx: np.ndarray) -> tuple[float, float]:
+    """Percentile 95% interval of sum(num) / sum(den) (%) over the pilot draws *idx* (draws x pilots)."""
+    with np.errstate(invalid="ignore", divide="ignore"):  # NaN only where no list of a draw has a value
+        vals = num[idx].sum(axis=1) / den[idx].sum(axis=1) * 100.0
+    lo, hi = np.percentile(vals, [2.5, 97.5])
+    return float(lo), float(hi)
+
+
 def pilot_bootstrap(per_pilot: pd.DataFrame, draws: int, rng: np.random.Generator) -> tuple[float, float]:
     """Percentile 95% interval of conversion (%) drawing pilots with replacement, all lists of each."""
     n_l = per_pilot["lists"].to_numpy()
-    n_t = per_pilot["top8"].to_numpy()
     idx = rng.integers(0, len(n_l), size=(draws, len(n_l)))
-    conv = n_t[idx].sum(axis=1) / n_l[idx].sum(axis=1) * 100.0
-    lo, hi = np.percentile(conv, [2.5, 97.5])
-    return float(lo), float(hi)
+    return _ratio_interval(per_pilot["top8"].to_numpy(), n_l, idx)
+
+
+def percentile_baseline(rows: pd.DataFrame) -> float:
+    """Mean place percentile of all lists of the period (the common percentile baseline)."""
+    return float(rows["place_percentile"].mean())
+
+
+def _lead_pilot(grp: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    """Per-pilot lists / Top 8 / percentile sums of *grp*, sorted so that row 0 is the most frequent
+    pilot (most Top 32 lists, ties: more Top 8 lists, then the player id)."""
+    per = grp.groupby("player").agg(lists=("top8", "size"), top8=("top8", "sum"),
+                                    p_sum=("place_percentile", "sum"),
+                                    p_lists=("place_percentile", "count")).reset_index()
+    per = per.sort_values(["lists", "top8", "player"], ascending=[False, False, True])
+    return per, per.iloc[0]
+
+
+def _pilot_labels(n_pilots: int, lead: pd.Series, lists: int, top8: int, concentration: bool) -> List[str]:
+    labels = [LABEL_FEW_PILOTS] if n_pilots < BOOT_MIN_PILOTS else []
+    if concentration and (lead["lists"] / lists >= CONCENTRATION_LISTS
+                          or (top8 and lead["top8"] / top8 >= CONCENTRATION_TOP8)):
+        labels.append(LABEL_CONCENTRATION)
+    return labels
+
+
+def pilot_summary(rows: pd.DataFrame, key: str, key_name: str) -> pd.DataFrame:
+    """Month level, decks: pilots, the most frequent pilot's share of Top 32 lists and Top 8 entries, pilot
+    labels (no result measure). The 'no deck' row has no pilot measures."""
+    out: List[dict] = []
+    for label, grp in rows[rows[key] != NO_DECK_LABEL].groupby(key):
+        per, lead = _lead_pilot(grp)
+        lists, top8 = len(grp), int(grp["top8"].sum())
+        out.append({
+            key_name: label,
+            "Pilots": len(per),
+            "Top_pilot_share_Top32_pct": lead["lists"] / lists * 100.0,
+            "Top_pilot_share_Top8_pct": (lead["top8"] / top8 * 100.0) if top8 else math.nan,
+            "Pilot_labels": ", ".join(_pilot_labels(len(per), lead, lists, top8, True)),
+        })
+    return pd.DataFrame(out, columns=[key_name, "Pilots", "Top_pilot_share_Top32_pct", "Top_pilot_share_Top8_pct",
+                                      "Pilot_labels"])
 
 
 def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
                      draws: int = BOOT_DRAWS, seed: int = BOOT_SEED) -> pd.DataFrame:
-    """Format-period level. *pilots*: add pilot measures (decks only, never for archetypes or the
-    'no deck' row). The bootstrap interval is given only with >= BOOT_MIN_PILOTS pilots."""
+    """Format-period level: mean place percentile (main, K41) and Top 8 conversion (auxiliary, K36), both
+    with a pilot-bootstrap interval on the same draws, given only with >= BOOT_MIN_PILOTS pilots; the
+    *_CI_excludes_baseline flags compare each interval with the period's common baseline. *pilots*: add
+    pilot measures (decks only, never for archetypes or the 'no deck' row)."""
     rng = np.random.default_rng(seed)
+    conv_base, pct_base = top8_baseline(rows), percentile_baseline(rows)
     out: List[dict] = []
     for label, grp in sorted(rows.groupby(key), key=lambda kv: (-len(kv[1]), str(kv[0]))):
-        per = grp.groupby("player").agg(lists=("top8", "size"), top8=("top8", "sum")).reset_index()
+        per, lead = _lead_pilot(grp)
         n_pilots = len(per)
-        per = per.sort_values(["lists", "top8", "player"], ascending=[False, False, True])
-        lead = per.iloc[0]
         lists, top8 = len(grp), int(grp["top8"].sum())
         rec = {
             key_name: label,
             "Lists": lists,
+            "Mean_place_percentile": float(grp["place_percentile"].mean()),
+            "Percentile_CI_low": math.nan,
+            "Percentile_CI_high": math.nan,
+            "Percentile_CI_excludes_baseline": 0,
             "Top8_lists": top8,
             "Top8_conversion_pct": top8 / lists * 100.0,
             "CI_low_pct": math.nan,
             "CI_high_pct": math.nan,
+            "Conversion_CI_excludes_baseline": 0,
             "CI_info": "",
             "Trophies": int(grp["trophy"].sum()),
             "Pilots_Top32": n_pilots,
         }
-        labels = []
         if n_pilots >= BOOT_MIN_PILOTS:
-            rec["CI_low_pct"], rec["CI_high_pct"] = pilot_bootstrap(per, draws, rng)
+            # the same draw as before the percentile was added, so the conversion interval is unchanged
+            idx = rng.integers(0, n_pilots, size=(draws, n_pilots))
+            rec["CI_low_pct"], rec["CI_high_pct"] = _ratio_interval(per["top8"].to_numpy(), per["lists"].to_numpy(),
+                                                                    idx)
+            lo, hi = _ratio_interval(per["p_sum"].to_numpy() / 100.0, per["p_lists"].to_numpy(), idx)
+            rec["Percentile_CI_low"], rec["Percentile_CI_high"] = lo, hi
+            rec["Percentile_CI_excludes_baseline"] = int(lo > pct_base or hi < pct_base)
+            rec["Conversion_CI_excludes_baseline"] = int(rec["CI_low_pct"] > conv_base or rec["CI_high_pct"] < conv_base)
             rec["CI_info"] = f"pilot bootstrap, {n_pilots} pilots"
         else:
             rec["CI_info"] = f"no interval: {n_pilots} pilots (< {BOOT_MIN_PILOTS})"
-            labels.append(LABEL_FEW_PILOTS)
-        if pilots and label != NO_DECK_LABEL and (
-                lead["lists"] / lists >= CONCENTRATION_LISTS or (top8 and lead["top8"] / top8 >= CONCENTRATION_TOP8)):
-            labels.append(LABEL_CONCENTRATION)
+        labels = _pilot_labels(n_pilots, lead, lists, top8, pilots and label != NO_DECK_LABEL)
         rec["Pilot_labels"] = ", ".join(labels)
         if pilots and label != NO_DECK_LABEL:
             rest = grp[grp["player"] != lead["player"]]
@@ -455,6 +542,103 @@ def weekly_trend(export: DeckdbExport, weeks: List[tuple[date, date]], key: str,
                 "Share_Top32_pct": n / len(rows) * 100.0,
             })
     return pd.DataFrame(out)
+
+
+def _event_share_draws(rows: pd.DataFrame, labels: List[str], draws: int, rng: np.random.Generator) -> np.ndarray:
+    """draws x labels shares (%) of the week's lists, drawing its events with replacement."""
+    events = sorted(rows["event_id"].unique())
+    counts = pd.crosstab(rows["event_id"], rows["_group"]).reindex(index=events, columns=labels, fill_value=0)
+    m = counts.to_numpy(dtype=float)
+    idx = rng.integers(0, len(events), size=(draws, len(events)))
+    return m[idx].sum(axis=1) / m.sum(axis=1)[idx].sum(axis=1)[:, None] * 100.0
+
+
+def week_share_table(rows: pd.DataFrame, prev_rows: pd.DataFrame, key: str, key_name: str,
+                     top_n: Optional[int] = None, draws: int = CHANGE_DRAWS, seed: int = CHANGE_SEED) -> pd.DataFrame:
+    """Week level (K41). Rows: the *top_n* labels by lists of the week (ties by name; all labels when None),
+    one pooled OTHER_DECKS_LABEL row for the rest (only with *top_n*) and the NO_DECK_LABEL row last. Share,
+    presence (events with >= 1 list / events of the week), distinct pilots, and the change of share against
+    *prev_rows* (the previous week, pooled by the same rows) with a 95% interval: events drawn with
+    replacement in each week independently, the same draws for every row."""
+    named = rows.loc[rows[key] != NO_DECK_LABEL, key].value_counts()
+    named = named.sort_index().sort_values(ascending=False, kind="stable")
+    keep = list(named.index if top_n is None else named.index[:top_n])
+
+    def _grouped(r: pd.DataFrame) -> pd.DataFrame:
+        pooled = r[key].isin(keep) | (r[key] == NO_DECK_LABEL)
+        return r.assign(_group=r[key].where(pooled, OTHER_DECKS_LABEL))
+
+    cur, prev = _grouped(rows), _grouped(prev_rows)
+    present = set(cur["_group"]) | set(prev["_group"])
+    labels = keep + [lab for lab in (OTHER_DECKS_LABEL, NO_DECK_LABEL) if lab in present]
+    rng = np.random.default_rng(seed)
+    diff = _event_share_draws(cur, labels, draws, rng) - _event_share_draws(prev, labels, draws, rng)
+    lo, hi = np.percentile(diff, [2.5, 97.5], axis=0)
+    n_lists, n_events, p_lists = len(cur), cur["event_id"].nunique(), len(prev)
+    out: List[dict] = []
+    for j, lab in enumerate(labels):
+        g, p = cur[cur["_group"] == lab], prev[prev["_group"] == lab]
+        share, prev_share = len(g) / n_lists * 100.0, len(p) / p_lists * 100.0
+        out.append({
+            key_name: lab,
+            "Labels_in_row": int(g[key].nunique()),
+            "Lists": len(g),
+            "Share_Top32_pct": share,
+            "Events_with_list": int(g["event_id"].nunique()),
+            "Week_events": int(n_events),
+            "Event_presence_pct": g["event_id"].nunique() / n_events * 100.0,
+            "Pilots": int(g["player"].nunique()),
+            "Prev_week_lists": len(p),
+            "Prev_week_share_pct": prev_share,
+            "Change_pp": share - prev_share,
+            "Change_CI_low_pp": float(lo[j]),
+            "Change_CI_high_pp": float(hi[j]),
+            "Change_CI_excludes_0": int(lo[j] > 0 or hi[j] < 0),
+        })
+    return pd.DataFrame(out)
+
+
+def top8_table(rows: pd.DataFrame) -> pd.DataFrame:
+    """Week level: the eight Top 8 lists of every event with deck and variant, the winner flagged; no player
+    identifiers, no rates."""
+    t = rows[rows["top8"] == 1].sort_values(["event_date", "event_id", "final_rank"])
+    return pd.DataFrame({
+        "EventID": t["event_id"],
+        "Date": t["event_date"],
+        "Event_players": t["player_count"],
+        "Place": t["final_rank"],
+        "Deck": t["material_deck"],
+        "Variant": t["variant"].where(t["status"] == STATUS_ASSIGNED, ""),
+        "Archetype": t["material_archetype"],
+        "Winner": (t["final_rank"] == 1).astype(int),
+    }).reset_index(drop=True)
+
+
+def results_concentration(rows: pd.DataFrame, frac: float = TOP_PILOTS_FRAC) -> dict:
+    """Share of the best ceil(frac x pilots) pilots of the period in its lists, Top 8 entries and trophies.
+    Pilots are ranked by Top 8 entries, ties by trophies, then by the anonymous id (deterministic); the
+    group is cut inside the tie at its last place, so the size of that tie is reported too."""
+    per = rows.groupby("player").agg(lists=("top8", "size"), top8=("top8", "sum"), trophies=("trophy", "sum"))
+    per = per.reset_index().sort_values(["top8", "trophies", "player"], ascending=[False, False, True])
+    k = max(1, math.ceil(frac * len(per)))
+    top = per.head(k)
+    cut = int(top["top8"].iloc[-1])
+    totals = {c: int(per[c].sum()) for c in ("lists", "top8", "trophies")}
+    return {
+        "Pilots": len(per),
+        "Top_pilots_fraction_pct": frac * 100.0,
+        "Top_pilots": k,
+        "Lists": totals["lists"],
+        "Top8_entries": totals["top8"],
+        "Trophies": totals["trophies"],
+        "Top_pilots_share_lists_pct": top["lists"].sum() / totals["lists"] * 100.0,
+        "Top_pilots_share_Top8_pct": (top["top8"].sum() / totals["top8"] * 100.0) if totals["top8"] else math.nan,
+        "Top_pilots_share_trophies_pct": (top["trophies"].sum() / totals["trophies"] * 100.0)
+        if totals["trophies"] else math.nan,
+        "Fewest_Top8_in_group": cut,
+        "Pilots_with_that_Top8_count": int((per["top8"] == cut).sum()),
+        "Of_them_in_group": int((top["top8"] == cut).sum()),
+    }
 
 
 # --- MTGO cache join check ---------------------------------------------------------------------
