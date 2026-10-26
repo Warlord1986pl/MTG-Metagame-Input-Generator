@@ -567,3 +567,9 @@ Wykresy rysują funkcje trybu dotychczasowego przez parametry opcjonalne (domyś
 `_chart_compare_presence(keep_order=)`, `_chart_delta_ranking(highlight_col=, highlight_legend=)`,
 `_chart_conversion_matrix(grey_cell=)`, `_create_trend_chart`. Kolor szary wspólny:
 `challenge_history_engine.GREY_CELL`.
+
+Kontrola trybu dotychczasowego po tej zmianie (2026-10-26, W42 2026-10-05 … 2026-10-18,
+`--include-challenge-decklist --trend-weeks 12 --skip-league`, kopia plików trwałych `outputs/` w
+katalogu tymczasowym, porównanie `compare_outputs.py` z punktem odniesienia
+`outputs/deckdb_robocze/_punkt_odniesienia_legacy_W42_2026-10-21/przed/`): 83 pliki katalogu
+tygodnia, 82 identyczne, 1 różny (`metagame_input_grouped.xml`, wyłącznie `generated_at`).
