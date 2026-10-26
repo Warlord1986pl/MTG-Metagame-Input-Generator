@@ -366,10 +366,12 @@ def test_results_concentration_top_tenth(tmp_path):
     rows += [_row(50 + k, 500 + k, "2026-10-02", "assigned", "A", "Aggro", "t0", 1) for k in range(2)]
     exp = di.load_export(_write(tmp_path, rows))
     c = di.results_concentration(di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 2)))
-    assert c["Pilots"] == 20 and c["Top_pilots"] == 2  # ceil(0.1 x 20)
-    assert c["Top8_entries"] == 5 and c["Top_pilots_share_Top8_pct"] == pytest.approx(80.0)  # t0 3 + t1 1
-    assert c["Top_pilots_share_lists_pct"] == pytest.approx(4 / 22 * 100)
-    assert c["Fewest_Top8_in_group"] == 1 and c["Pilots_with_that_Top8_count"] == 2 and c["Of_them_in_group"] == 1
+    # place ceil(0.1 x 20) = 2 has 1 Top 8 entry: t0 (3) and the tied t1, t2 (1 each) are all in the group
+    assert c["Pilots"] == 20 and c["Top_pilots"] == 3 and c["Top_pilots_pct"] == pytest.approx(15.0)
+    assert c["Min_Top8_in_group"] == 1 and c["Pilots_at_threshold"] == 2
+    assert c["Group"] == "top 15% of pilots (all with at least 1 Top 8 entry)"
+    assert c["Top8_entries"] == 5 and c["Top_pilots_share_Top8_pct"] == pytest.approx(100.0)
+    assert c["Top_pilots_share_lists_pct"] == pytest.approx(5 / 22 * 100)
 
 
 def test_triage_gate_and_pending_marker(tmp_path):

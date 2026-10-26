@@ -98,10 +98,12 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} cell is coloured (red below / blue above the {M_BASELINE}) "
                     f"only when its {M_CI} excludes the baseline; every other cell of those columns is grey, also "
                     "without an interval and always on the 'no deck' row, which is not a deck (DeckDB K41)."),
-    (M_CONCENTRATION, f"share of the best {di.TOP_PILOTS_FRAC:.0%} of the window's pilots (ceil(0.10 x pilots), ranked "
-                      "by Top 8 entries, ties by trophies, then by the anonymous id) in its lists, Top 8 entries and "
-                      "trophies; the group is cut inside a tie, whose size is given. The ranking uses the Top 8 entries "
-                      "it measures, so part of the concentration is selection on the outcome."),
+    (M_CONCENTRATION, f"share of the best pilots of the window in its lists, Top 8 entries and trophies. Threshold = the "
+                      f"Top 8 count of the pilot at place ceil({di.TOP_PILOTS_FRAC:.2f} x pilots) by Top 8 entries (at "
+                      "least 1); every pilot with at least that many Top 8 entries is in the group, ties are never "
+                      "broken, so the group's actual share of pilots is given (e.g. 'top 12% of pilots (all with at "
+                      "least 3 Top 8 entries)'). The ranking uses the Top 8 entries it measures, so part of the "
+                      "concentration is selection on the outcome."),
     ("pilot labels", f"'{di.LABEL_FEW_PILOTS}': fewer than {di.BOOT_MIN_PILOTS} pilots in the period, no interval; "
                      f"'{di.LABEL_CONCENTRATION}': the top pilot holds >= 1/3 of the deck's lists or >= 1/2 of its Top 8 "
                      "entries (decks only)."),

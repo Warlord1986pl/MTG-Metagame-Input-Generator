@@ -558,9 +558,10 @@ list Top 8 na talię, trofeów ani rankingów wyników talii.
 z trendem z 12 tygodni; warianty według D2; miary pilotów talii w miesiącu (liczba pilotów, udział
 najczęstszego w listach Top 32 i w wejściach do Top 8, etykiety „low pilot count” i
 „concentration”); skupienie wyników w miesiącu i w okresie formatu (`results_concentration_*.csv`:
-najlepsze ceil(0,10 × piloci) według wejść do Top 8, remisy według trofeów, potem według
-anonimowego identyfikatora; udział w listach, wejściach do Top 8 i trofeach oraz wielkość remisu na
-granicy grupy); wyniki talii z okresu formatu (percentyl i konwersja jak wyżej); warstwa kart
+próg = liczba wejść do Top 8 pilota na miejscu ceil(0,10 × piloci), co najmniej 1; w grupie są wszyscy
+piloci z co najmniej tyloma wejściami, bez rozstrzygania remisów identyfikatorem ani losowaniem, więc podaje się
+faktyczny odsetek pilotów i próg, np. „top 12% of pilots (all with at least 3 Top 8 entries)”; udział w listach,
+wejściach do Top 8 i trofeach; uzupełnienie do poleceń 2026-10-26, punkt 2); wyniki talii z okresu formatu (percentyl i konwersja jak wyżej); warstwa kart
 miesiąc do poprzedniego miesiąca według (g).
 
 Wykresy rysują funkcje trybu dotychczasowego przez parametry opcjonalne (domyślnie bez zmian):

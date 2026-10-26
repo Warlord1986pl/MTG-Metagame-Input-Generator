@@ -83,8 +83,8 @@ OTHER_DECKS_LABEL = "other decks"
 WEEK_TOP_N = 10
 CHANGE_DRAWS = 2000
 CHANGE_SEED = 20261026
-# results concentration: share of the best TOP_PILOTS_FRAC of pilots (by Top 8 entries, ties: trophies,
-# then the anonymous id) in lists, Top 8 entries and trophies
+# results concentration: share of the best pilots (at least the Top 8 count of the pilot at place
+# ceil(TOP_PILOTS_FRAC x pilots), every tied pilot included) in lists, Top 8 entries and trophies
 TOP_PILOTS_FRAC = 0.10
 
 # Variant reporting threshold D2 (DeckDB docs/decisions.md, entry 35): a variant is reported IN A
@@ -645,19 +645,25 @@ def top8_table(rows: pd.DataFrame) -> pd.DataFrame:
 
 
 def results_concentration(rows: pd.DataFrame, frac: float = TOP_PILOTS_FRAC) -> dict:
-    """Share of the best ceil(frac x pilots) pilots of the period in its lists, Top 8 entries and trophies.
-    Pilots are ranked by Top 8 entries, ties by trophies, then by the anonymous id (deterministic); the
-    group is cut inside the tie at its last place, so the size of that tie is reported too."""
+    """Share of the best pilots of the period in its lists, Top 8 entries and trophies. The threshold is the Top 8 count
+    of the pilot at place ceil(frac x pilots) when pilots are ranked by Top 8 entries; the group is every pilot with at
+    least that many Top 8 entries (all pilots tied at the threshold are in, no tie-break by id or at random), so its
+    actual share of pilots may exceed *frac* and is reported (supplement to the orders of 2026-10-26, point 2). A
+    threshold of 0 is raised to 1 (a pilot without a Top 8 entry is never in the group)."""
     per = rows.groupby("player").agg(lists=("top8", "size"), top8=("top8", "sum"), trophies=("trophy", "sum"))
-    per = per.reset_index().sort_values(["top8", "trophies", "player"], ascending=[False, False, True])
+    per = per.reset_index().sort_values("top8", ascending=False)
     k = max(1, math.ceil(frac * len(per)))
-    top = per.head(k)
-    cut = int(top["top8"].iloc[-1])
+    cut = max(1, int(per["top8"].iloc[k - 1]))
+    top = per[per["top8"] >= cut]
     totals = {c: int(per[c].sum()) for c in ("lists", "top8", "trophies")}
+    share = len(top) / len(per) * 100.0 if len(per) else math.nan
     return {
         "Pilots": len(per),
-        "Top_pilots_fraction_pct": frac * 100.0,
-        "Top_pilots": k,
+        "Target_fraction_pct": frac * 100.0,
+        "Top_pilots": len(top),
+        "Top_pilots_pct": share,
+        "Min_Top8_in_group": cut,
+        "Group": f"top {share:.0f}% of pilots (all with at least {cut} Top 8 entr{'y' if cut == 1 else 'ies'})",
         "Lists": totals["lists"],
         "Top8_entries": totals["top8"],
         "Trophies": totals["trophies"],
@@ -665,9 +671,7 @@ def results_concentration(rows: pd.DataFrame, frac: float = TOP_PILOTS_FRAC) -> 
         "Top_pilots_share_Top8_pct": (top["top8"].sum() / totals["top8"] * 100.0) if totals["top8"] else math.nan,
         "Top_pilots_share_trophies_pct": (top["trophies"].sum() / totals["trophies"] * 100.0)
         if totals["trophies"] else math.nan,
-        "Fewest_Top8_in_group": cut,
-        "Pilots_with_that_Top8_count": int((per["top8"] == cut).sum()),
-        "Of_them_in_group": int((top["top8"] == cut).sum()),
+        "Pilots_at_threshold": int((per["top8"] == cut).sum()),
     }
 
 
