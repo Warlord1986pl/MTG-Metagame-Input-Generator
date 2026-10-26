@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856973,2026-10-24,C32,Challenge,QF,Zoza,3170981,HouseOfManaMTG,2669359,2,1,G,Eldrazi Ramp
+12856973,2026-10-24,C32,Challenge,QF,huyuCD,3492471,AzureMoon,3158693,2,1,Dimir Murktide,Living End
+12856973,2026-10-24,C32,Challenge,QF,oinkmage22,2858193,caquaa,221272,2,1,Boros Energy,Eldrazi Ramp
+12856973,2026-10-24,C32,Challenge,QF,gazmon48,1636994,peter780108,1742159,2,1,Rakdos Midrange,Azorius Control
+12856973,2026-10-24,C32,Challenge,SF,gazmon48,1636994,Zoza,3170981,2,1,Rakdos Midrange,G
+12856973,2026-10-24,C32,Challenge,SF,oinkmage22,2858193,huyuCD,3492471,2,0,Boros Energy,Dimir Murktide
+12856973,2026-10-24,C32,Challenge,F,gazmon48,1636994,oinkmage22,2858193,2,0,Rakdos Midrange,Boros Energy

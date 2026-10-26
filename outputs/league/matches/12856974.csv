@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856974,2026-10-24,C16,Challenge,QF,Tetsubou,1700365,sioutis_kk,3499660,2,0,Eldrazi Ramp,Affinity
+12856974,2026-10-24,C16,Challenge,QF,RespectTheCat,2788118,WorstShuffler,3062797,2,0,Jeskai Energy,Yawgmoth
+12856974,2026-10-24,C16,Challenge,QF,HouseOfManaMTG,2669359,Azzay0,1699326,2,1,Eldrazi Ramp,Affinity
+12856974,2026-10-24,C16,Challenge,QF,Venom01,3535587,Zarathustra,597665,2,1,Eldrazi Ramp,Affinity
+12856974,2026-10-24,C16,Challenge,SF,RespectTheCat,2788118,HouseOfManaMTG,2669359,2,1,Jeskai Energy,Eldrazi Ramp
+12856974,2026-10-24,C16,Challenge,SF,Venom01,3535587,Tetsubou,1700365,2,0,Eldrazi Ramp,Eldrazi Ramp
+12856974,2026-10-24,C16,Challenge,F,RespectTheCat,2788118,Venom01,3535587,2,0,Jeskai Energy,Eldrazi Ramp
