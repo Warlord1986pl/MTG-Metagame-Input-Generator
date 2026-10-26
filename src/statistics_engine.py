@@ -637,6 +637,7 @@ def _create_trend_chart(
     out_path: Optional[Path] = None,
     figsize: tuple = (18, 11),
     dpi: int = 300,
+    font_sizes: Optional[dict[str, float]] = None,
 ) -> tuple[Optional[Path], dict[str, str]]:
     """Returns (png_path, status_by_key): status_by_key is the exact direction used to build
     each legend entry (the trend_symbol computation below), keyed by Deck/Archetype display
@@ -646,8 +647,11 @@ def _create_trend_chart(
 
     The keyword arguments after *caption* default to the legacy chart. Input mode "deckdb" uses
     them for its share-of-Top-32 trend: own value column and labels, ISO-week tick labels
-    (*week_labels*), no trend status (*show_trend_status*=False), a *footer* and an explicit path.
+    (*week_labels*), no trend status (*show_trend_status*=False), a *footer* and an explicit path;
+    *font_sizes* (keys title, label, tick, legend, legend_title, footer; "bottom" = the bottom margin with a
+    footer) enlarges the text for a 16:9 slide -- unset keys keep the legacy sizes.
     """
+    fs = {"legend": 9, "legend_title": 10, "footer": 8, **(font_sizes or {})}
     if df_history.empty or "WeekIndex" not in df_history.columns:
         return None, {}
 
@@ -723,9 +727,11 @@ def _create_trend_chart(
         )
 
     title = title or f"Meta Trend ({chart_type}) - Last {weeks_back} Weeks"
-    ax.set_title(f"{title}\n{caption}" if caption else title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_title(f"{title}\n{caption}" if caption else title, fontsize=fs.get("title"))
+    ax.set_xlabel(xlabel, fontsize=fs.get("label"))
+    ax.set_ylabel(ylabel, fontsize=fs.get("label"))
+    if "tick" in fs:
+        ax.tick_params(labelsize=fs["tick"])
     ax.grid(True, linestyle="--", alpha=0.3)
 
     if week_labels:
@@ -734,7 +740,7 @@ def _create_trend_chart(
         ax.set_xticklabels([week_labels[w] for w in ticks], rotation=35, ha="right")
     else:
         ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
-    ax.legend(handles=legend_elements, title=legend_title, loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=9, framealpha=0.95, title_fontsize=10)
+    ax.legend(handles=legend_elements, title=legend_title, loc="center left", bbox_to_anchor=(1.02, 0.5), fontsize=fs["legend"], framealpha=0.95, title_fontsize=fs["legend_title"])
 
     if show_trend_status:
         trend_box_text = "^ Rising  |  - Stable  |  v Falling"
@@ -744,8 +750,8 @@ def _create_trend_chart(
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.12, right=0.82)
     if footer:
-        fig.text(0.01, 0.005, footer, fontsize=8, ha="left", va="bottom", color="#444444")
-        plt.subplots_adjust(bottom=min(0.45, 0.12 + 0.02 * (footer.count("\n") + 1)))
+        fig.text(0.01, 0.005, footer, fontsize=fs["footer"], ha="left", va="bottom", color="#444444")
+        plt.subplots_adjust(bottom=fs.get("bottom", min(0.45, 0.12 + 0.02 * (footer.count("\n") + 1))))
 
     out_path = out_path or output_dir / f"meta_trend_{chart_type}_{file_tag}_last{weeks_back}w.png"
     plt.savefig(out_path, dpi=dpi, bbox_inches="tight", facecolor="white")

@@ -152,3 +152,17 @@ def test_new_cards_in_week_first_appearance_with_two_pilots(tmp_path):
     assert list(zip(t["Card"], t["Zone"])) == [("New", "sideboard")]  # X and Y were first seen in September
     assert t.loc[0, "Pilots_with_card"] == 3 and t.loc[0, "Reported"] == 1 and t.loc[0, "First_date"] == "2026-10-10"
     assert dc.new_cards_in_week(exp, cards, date(2026, 9, 28), date(2026, 10, 4)).empty
+
+
+def test_presentation_list_changes_leave_out_mana_only_lands(tmp_path):
+    import deckdb_presentation as dp
+
+    tested = pd.DataFrame([
+        {"Deck": "Zoo", "Card": f"C{i}", "oracle_id": f"o{i}", "Zone": "main" if i % 2 else "sideboard",
+         "Within_variants_pp": (20 + i) * (1 if i % 3 else -1), "Category": dc.KIND_LIST} for i in range(15)]
+        + [{"Deck": "Zoo", "Card": "Land", "oracle_id": "land", "Zone": "main", "Within_variants_pp": 90.0,
+            "Category": dc.KIND_LIST},
+           {"Deck": "Zoo", "Card": "Mix", "oracle_id": "mix", "Zone": "main", "Within_variants_pp": 80.0,
+            "Category": dc.KIND_COMPOSITION}])
+    path, shown, dropped = dp.list_changes_chart(tested, frozenset({"land"}), "t", "f", tmp_path / "lc.png")
+    assert path.exists() and shown == dp.TOP_N_LIST_CHANGES and dropped == 1

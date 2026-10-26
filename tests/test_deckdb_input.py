@@ -253,6 +253,16 @@ def test_materials_three_levels_and_cli_mode(tmp_path):
     period = pd.read_excel(root / "format_period_2026-09-07_to_2026-10-18" /
                            "deckdb_WORKING_2026-09-07_to_2026-10-18.xlsx", sheet_name=None)
     assert "Pilots" in period and "Top_pilot_lists" not in period["Archetypes"].columns
+    # presentation set (order 2026-10-26 b): next to the working charts, no sha / seed / rules version inside
+    pres = {d.name: sorted(p.name for p in (d / "presentation").iterdir()) for d in root.iterdir()}
+    assert pres["week_2026-W42"] == ["archetypes_share.png", "decks_share.png", "speaker_notes.md",
+                                     "trend_archetypes.png", "trend_decks.png"]
+    assert pres["month_2026-10_incomplete"] == ["speaker_notes.md", "trend_archetypes.png", "trend_decks.png"]
+    assert pres["format_period_2026-09-07_to_2026-10-18"] == ["deck_results.png", "speaker_notes.md"]
+    for d in root.iterdir():
+        notes = (d / "presentation" / "speaker_notes.md").read_text(encoding="utf-8")
+        assert exp.sha256 not in notes and "seed" not in notes.lower() and exp.rules_version not in notes
+    assert (week_dir / "share_top32_decks.png").exists()  # working charts stay
     # --deckdb-level week writes the weekly set only
     args_w = mig.parse_args(["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-18",
                              "--trend-weeks", "3", "--outputs-base", str(tmp_path / "outw"), "--deckdb-level", "week"])

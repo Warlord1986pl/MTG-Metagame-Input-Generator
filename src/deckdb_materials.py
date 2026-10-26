@@ -460,6 +460,7 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
             footer=f"{stamp}\n{_terms(M_CHANGE, M_CHANGE_CI, M_OTHER)}", **_render())
         if p is not None:
             written.append(p)
+    written += present_week(export, out, ws, we, rows, decks, archs, trend, weeks[-max(1, trend_weeks):])
     return written + trend_png
 
 
@@ -505,6 +506,7 @@ def build_month(export: di.DeckdbExport, as_of: date, root: Path, trend_weeks: i
         "share_history_weeks_archetypes": trend["archetypes"]}, GLOSSARY)
     footer = f"{_stamp(export, 'month', ms, me, cov, note)}\n{_terms(M_SHARE, M_PRESENCE, M_TOP8, 'month')}"
     written += _share_charts(decks, archs, out, label.replace("_", " "), footer)
+    written += present_month(export, out, decks, archs, trend, weeks, label.replace("_", " "))
     return written + trend_png
 
 
@@ -632,6 +634,7 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
             f"{stamp}\n{_terms(*terms, 'format period')}", with_pilots, pct_baseline)
         if p is not None:
             written.append(p)
+    written += present_format_period(out, start, as_of, rows, decks, pct_baseline, baseline)
     return written
 
 
@@ -731,7 +734,114 @@ def build_card_layer(export: di.DeckdbExport, cards: "dc.CardLayer", as_of: date
             **_render(figsize=(18, 10)))
         if p is not None:
             written.append(p)
+    written += present_cards(out, cards, tested, m1s, m2s, m2e, rows)
     return written
+
+
+# --- presentation set (order of 2026-10-26 b, point 2; deckdb_presentation.py) -------------------------------
+
+def _pres():
+    try:
+        import deckdb_presentation as dp
+    except ModuleNotFoundError:
+        from . import deckdb_presentation as dp
+    return dp
+
+
+def _present_trends(export: di.DeckdbExport, weeks: List[tuple[date, date]], trend: Dict[str, pd.DataFrame],
+                    decks: pd.DataFrame, archs: pd.DataFrame, pres: Path, notes: Dict[str, str], of_what: str
+                    ) -> List[Path]:
+    dp = _pres()
+    foot = dp.footer(weeks[0][0], weeks[-1][1], di.window_rows(export, weeks[0][0], weeks[-1][1]))
+    decks_only = decks[~decks["Deck"].isin([di.NO_DECK_LABEL, di.OTHER_DECKS_LABEL])]
+    out = []
+    for tbl, cur, key, name, title, legend in (
+            (trend["decks"], decks_only, "Deck", "trend_decks.png",
+             f"Deck shares over the last {len(weeks)} weeks", "Decks"),
+            (trend["archetypes"], archs, "Archetype", "trend_archetypes.png",
+             f"Archetype shares over the last {len(weeks)} weeks", "Archetypes")):
+        p = dp.trend_chart(tbl, cur, key, title, foot, legend, pres / name)
+        if p is not None:
+            out.append(p)
+            notes[name] = (f"Weekly share of the Top 32 lists over the last {len(weeks)} weeks for "
+                           + (f"the ten most played decks of {of_what}." if key == "Deck" else "every archetype.")
+                           + " Single weeks move a lot; read the direction over several weeks.")
+    return out
+
+
+def _highlighted(tbl: pd.DataFrame, key: str) -> str:
+    hit = tbl[tbl["Change_CI_excludes_0"] == 1]
+    if hit.empty:
+        return "this week: none"
+    return "this week: " + ", ".join(f"{r[key]} {r['Change_pp']:+.1f} pp" for _, r in hit.iterrows())
+
+
+def present_week(export: di.DeckdbExport, out: Path, ws: date, we: date, rows: pd.DataFrame, decks: pd.DataFrame,
+                 archs: pd.DataFrame, trend: Dict[str, pd.DataFrame], weeks: List[tuple[date, date]]) -> List[Path]:
+    dp = _pres()
+    pres = out / dp.DIR_NAME
+    foot = dp.footer(ws, we, rows)
+    notes: Dict[str, str] = {}
+    written = [
+        dp.share_chart(decks, "Deck", "Most played decks this week", foot, pres / "decks_share.png"),
+        dp.share_chart(archs, "Archetype", "Archetypes this week", foot, pres / "archetypes_share.png"),
+    ]
+    notes["decks_share.png"] = (
+        "Share of this week's Challenge Top 32 lists for the ten most played decks, with all other decks pooled and "
+        "'no deck' for lists that fit no deck definition. Each label adds in how many of the week's events the deck "
+        "appeared and the change from last week, in bold green or red only when it is larger than normal "
+        f"week-to-week variation ({_highlighted(decks, 'Deck')}).")
+    notes["archetypes_share.png"] = (
+        "The same view for archetypes: share of this week's Top 32 lists, events with the archetype, and the change "
+        f"from last week ({_highlighted(archs, 'Archetype')}).")
+    written += _present_trends(export, weeks, trend, decks, archs, pres, notes, "this week")
+    return written + [dp.write_notes(pres, notes)]
+
+
+def present_month(export: di.DeckdbExport, out: Path, decks: pd.DataFrame, archs: pd.DataFrame,
+                  trend: Dict[str, pd.DataFrame], weeks: List[tuple[date, date]], label: str) -> List[Path]:
+    dp = _pres()
+    pres = out / dp.DIR_NAME
+    notes: Dict[str, str] = {}
+    written = _present_trends(export, weeks, trend, decks, archs, pres, notes, f"month {label}")
+    return written + [dp.write_notes(pres, notes)]
+
+
+def present_format_period(out: Path, start: date, as_of: date, rows: pd.DataFrame, decks: pd.DataFrame,
+                          pct_base: float, conv_base: float) -> List[Path]:
+    dp = _pres()
+    pres = out / dp.DIR_NAME
+    p = dp.results_chart(decks, pct_base, conv_base, "How the most played decks finish", dp.footer(start, as_of, rows),
+                         pres / "deck_results.png")
+    shown = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
+        dp.TOP_N_RESULTS)
+    hit = [r["Deck"] for _, r in shown.iterrows()
+           if r["Percentile_CI_excludes_baseline"] or r["Conversion_CI_excludes_baseline"]]
+    notes = {"deck_results.png": (
+        f"The {len(shown)} decks with the most Top 32 lists since {start.isoformat()}. Mean place percentile shows "
+        "where a deck's lists finish among the published lists (100 = first, 0 = last, 50 on average); Top 8 "
+        "conversion is the share of its lists that reached the Top 8. Only values clearly away from the average "
+        "are coloured" + (f" (here: {', '.join(hit)})" if hit else " (none here)") + "; grey values are within what "
+        "chance alone would give.")}
+    return [p, dp.write_notes(pres, notes)]
+
+
+def present_cards(out: Path, cards: "dc.CardLayer", tested: pd.DataFrame, m1s: date, m2s: date, m2e: date,
+                  rows: pd.DataFrame, log: Callable[[str], None] = print) -> List[Path]:
+    dp = _pres()
+    pres = out / dp.DIR_NAME
+    if cards.mana_only_ids is None:
+        log("[deckdb presentation] card export without mana_only_land: list_changes.png not drawn")
+        return [dp.write_notes(pres, {"list_changes.png": "Not drawn: the card export has no mana_only_land column."})]
+    p, shown, dropped = dp.list_changes_chart(
+        tested, cards.mana_only_ids, f"Biggest list changes, {m1s:%B} to {m2s:%B}", dp.footer(m1s, m2e, rows),
+        pres / "list_changes.png")
+    notes = {"list_changes.png": (
+        f"The {shown} biggest changes in how players build a deck's lists from {m1s:%B} to {m2s:%B}: a card that "
+        "more lists of the same deck variant added (green) or cut (red), in percentage points of the deck's lists. "
+        f"Lands that only make mana are left out ({dropped} such change{'s' if dropped != 1 else ''}); 'SB' marks a "
+        "sideboard card.")}
+    return ([p] if p is not None else []) + [dp.write_notes(pres, notes)]
 
 
 LEVELS = ("all", "week", "month")

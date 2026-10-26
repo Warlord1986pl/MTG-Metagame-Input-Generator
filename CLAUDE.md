@@ -255,6 +255,12 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   colour only where the interval excludes the baseline, grey otherwise and on "no deck"; trophies,
   pilot measures for decks only), cards. Winrate is gone (K36);
   the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
+- Presentation set (`deckdb_presentation.py`, order 2026-10-26 b, spec section (i)): every package also gets
+  `presentation/` (week: `decks_share.png`, `archetypes_share.png`, trends; month: trends; format period:
+  `deck_results.png`; cards: `list_changes.png` without `mana_only_land` cards -- DeckDB K42 column of
+  `export-cards`, read into `CardLayer.mana_only_ids`) plus `speaker_notes.md`. Plain titles, one footer line, no CI
+  whiskers (the interval only sets the colour), horizontal bars, 16:9; no definitions, seeds, sha or rules version in
+  `presentation/`. The working charts are unchanged.
 - Card layer (`deckdb_cards.py`, only when `cards_path` is set): `cards_<M1>_vs_<M2>[_incomplete]` --
   presence per (deck, zone, oracle_id) per month, basics (`is_basic`) excluded; change between the two
   last months for decks with >= 30 lists and >= 10 pilots in both, pilot bootstrap (no pairing), BH

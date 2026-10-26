@@ -573,3 +573,20 @@ Kontrola trybu dotychczasowego po tej zmianie (2026-10-26, W42 2026-10-05 … 20
 katalogu tymczasowym, porównanie `compare_outputs.py` z punktem odniesienia
 `outputs/deckdb_robocze/_punkt_odniesienia_legacy_W42_2026-10-21/przed/`): 83 pliki katalogu
 tygodnia, 82 identyczne, 1 różny (`metagame_input_grouped.xml`, wyłącznie `generated_at`).
+
+## (i) Zestaw prezentacyjny (polecenie 2026-10-26 b, punkt 2)
+
+`src/deckdb_presentation.py`; każdy pakiet ma obok wykresów roboczych (bez zmian) katalog `presentation/`:
+tydzień `decks_share.png`, `archetypes_share.png` (udział, obecność i zmiana w jednym wykresie),
+`trend_decks.png`, `trend_archetypes.png`; miesiąc `trend_decks.png`, `trend_archetypes.png`; okres formatu
+`deck_results.png` (12 talii z największą liczbą list: listy, średni percentyl miejsca, konwersja Top 8); warstwa
+kart `list_changes.png` (najwyżej 12 zmian list według składowej wewnątrz wariantów, bez kart z
+`mana_only_land` = 1 z eksportu kart DeckDB, K42). Zmiany składu talii nie mają wersji prezentacyjnej.
+Zasady: paleta trybu dotychczasowego (niebieski domyślny matplotlib dla słupków, kolory trendu „classic”
+zielony / czerwony / szary dla zmian, końce skali RdBu dla wyników, `GREY_CELL` dla „nieodróżnialne”), krótki
+tytuł, jedna linia stopki „MTGO Modern Challenge Top 32 · <okno> · <N> events, <M> lists”, bez wąsów (przedział
+decyduje tylko o kolorze), poziome słupki malejąco, nazwy z lewej, liczby poza słupkiem na białym tle, slajd 16:9
+(1920 × 1080, ≥ 14 pt poza znacznikiem SB). Wiersze zbiorcze („other decks”, „no deck”) zostają na dole w
+jaśniejszym kolorze. W `presentation/` nie ma definicji, ziaren, sha ani wersji reguł; `speaker_notes.md` ma 1–3
+zdania po angielsku na wykres. Trend rysuje `_create_trend_chart` trybu dotychczasowego z nowym parametrem
+opcjonalnym `font_sizes` (domyślnie bez zmian).

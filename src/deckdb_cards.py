@@ -76,7 +76,8 @@ CARD_COLUMNS = ("event_id", "decktournamentid", "zone", "oracle_id", "canonical_
 
 class CardLayer:
     def __init__(self, path: Path, sha256: str, rows: pd.DataFrame, name_match_version: str,
-                 scryfall_dump_id: str, data_version: str, basic_rows: int):
+                 scryfall_dump_id: str, data_version: str, basic_rows: int,
+                 mana_only_ids: Optional[frozenset] = None):
         self.path = path
         self.sha256 = sha256
         self.rows = rows
@@ -84,6 +85,8 @@ class CardLayer:
         self.scryfall_dump_id = scryfall_dump_id
         self.data_version = data_version
         self.basic_rows = basic_rows
+        # oracle_ids with mana_only_land = 1 (DeckDB K42); None for an export without the column
+        self.mana_only_ids = mana_only_ids
 
 
 def load_cards(path: Optional[Path], export: di.DeckdbExport) -> CardLayer:
@@ -116,8 +119,10 @@ def load_cards(path: Optional[Path], export: di.DeckdbExport) -> CardLayer:
             f"{len(card_keys - export_keys)} list kart bez przypisania")
     df["qty"] = pd.to_numeric(df["qty"]).astype(int)
     basic = df["is_basic"] == "1"
+    mana_only = (frozenset(df.loc[df["mana_only_land"] == "1", "oracle_id"]) if "mana_only_land" in df.columns
+                 else None)
     return CardLayer(path, di.sha256_of(path), df[~basic].copy(), one["name_match_version"],
-                     one["scryfall_dump_id"], one["data_version"], int(basic.sum()))
+                     one["scryfall_dump_id"], one["data_version"], int(basic.sum()), mana_only)
 
 
 def _lists_with_cards(export_rows: pd.DataFrame, cards: CardLayer) -> pd.DataFrame:
