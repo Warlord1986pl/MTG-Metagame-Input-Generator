@@ -727,9 +727,12 @@ def _create_trend_chart(
         )
 
     title = title or f"Meta Trend ({chart_type}) - Last {weeks_back} Weeks"
-    ax.set_title(f"{title}\n{caption}" if caption else title, fontsize=fs.get("title"))
-    ax.set_xlabel(xlabel, fontsize=fs.get("label"))
-    ax.set_ylabel(ylabel, fontsize=fs.get("label"))
+    # fontsize=None is not neutral in matplotlib (it drops the title to the base size), so pass only what is set
+    title_kw = {"fontsize": fs["title"]} if "title" in fs else {}
+    label_kw = {"fontsize": fs["label"]} if "label" in fs else {}
+    ax.set_title(f"{title}\n{caption}" if caption else title, **title_kw)
+    ax.set_xlabel(xlabel, **label_kw)
+    ax.set_ylabel(ylabel, **label_kw)
     if "tick" in fs:
         ax.tick_params(labelsize=fs["tick"])
     ax.grid(True, linestyle="--", alpha=0.3)

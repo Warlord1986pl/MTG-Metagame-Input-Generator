@@ -506,7 +506,7 @@ def build_month(export: di.DeckdbExport, as_of: date, root: Path, trend_weeks: i
         "share_history_weeks_archetypes": trend["archetypes"]}, GLOSSARY)
     footer = f"{_stamp(export, 'month', ms, me, cov, note)}\n{_terms(M_SHARE, M_PRESENCE, M_TOP8, 'month')}"
     written += _share_charts(decks, archs, out, label.replace("_", " "), footer)
-    written += present_month(export, out, decks, archs, trend, weeks, label.replace("_", " "))
+    written += present_month(export, out, decks, archs, trend, weeks, f"{ms:%B %Y}" + ("" if complete else " so far"))
     return written + trend_png
 
 
@@ -803,7 +803,7 @@ def present_month(export: di.DeckdbExport, out: Path, decks: pd.DataFrame, archs
     dp = _pres()
     pres = out / dp.DIR_NAME
     notes: Dict[str, str] = {}
-    written = _present_trends(export, weeks, trend, decks, archs, pres, notes, f"month {label}")
+    written = _present_trends(export, weeks, trend, decks, archs, pres, notes, label)
     return written + [dp.write_notes(pres, notes)]
 
 

@@ -590,3 +590,7 @@ decyduje tylko o kolorze), poziome słupki malejąco, nazwy z lewej, liczby poza
 jaśniejszym kolorze. W `presentation/` nie ma definicji, ziaren, sha ani wersji reguł; `speaker_notes.md` ma 1–3
 zdania po angielsku na wykres. Trend rysuje `_create_trend_chart` trybu dotychczasowego z nowym parametrem
 opcjonalnym `font_sizes` (domyślnie bez zmian).
+
+Kontrola trybu dotychczasowego po zestawie prezentacyjnym (2026-10-26 b, W42, jak wyżej): pierwszy przebieg dał
+2 różne wykresy trendu trybu dotychczasowego (`fontsize=None` w `set_title` zmniejszał tytuł), po poprawce
+83 pliki, 82 identyczne, 1 różny (`metagame_input_grouped.xml`, wyłącznie `generated_at`).
