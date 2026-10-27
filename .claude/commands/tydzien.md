@@ -10,3 +10,7 @@ Aktualizacja w tygodniu (DeckDB E:\github\DeckDB), bez zmian reguł i bez materi
 4. raport krótko: nowe listy, nowe grupy w kolejce (plan z kart, liczba list i pilotów, propozycja), zastosowane decyzje, status triage'u.
 
 Commit na punkt.
+
+Gotowe skrypty (DeckDB, uruchamiać `C:/Python/python.exe`, z `PYTHONIOENCODING=utf-8`), zamiast pisać je od nowa:
+- zmiany przypisań przy decyzjach: `scripts/assignment_diff.py save tmp/assign_before.json` przed `apply-decisions`, `scripts/assignment_diff.py diff tmp/assign_before.json` po nim (przejścia w okresie formatu, w całości i w miesiącu ostatniego Challenge'a);
+- wpis do `docs/decisions.md` (np. techniczny wpis zamrożenia po `freeze_cores.py`): `scripts/add_log_entry.py --decision ... --why ... --where ... --subject ... --source ...` (kolejny numer, append-only).

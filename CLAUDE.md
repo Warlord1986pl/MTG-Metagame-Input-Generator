@@ -67,6 +67,11 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
   the first week of a month); stop and list the blocking groups at `pending_blocking`; the legacy W42 control only when
   pipeline code changed since the last Monday; short report; one commit per point.
 
+- Ready-made helper scripts (use them, do not rewrite them): pipeline `scripts/legacy_w42_control.py` (legacy W42
+  control in a temp copy of the persistent outputs; exit 0 = only `generated_at` of `metagame_input_grouped.xml`
+  differs); DeckDB `scripts/assignment_diff.py` (assignment moves around `apply-decisions`), `scripts/add_log_entry.py`
+  (one `docs/decisions.md` entry), `scripts/export_diff.py` (two assignment exports compared list by list).
+
 ## Architecture
 
 ### Source modules (`src/`)
