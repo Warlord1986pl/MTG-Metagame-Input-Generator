@@ -5,7 +5,7 @@ All materials are in English. Charts are drawn by the legacy chart functions
 statistics_engine._create_trend_chart) through their optional parameters, so the deckdb mode keeps the
 legacy palette, layout, fonts, colour scales and number formats; no styling code lives here.
 
-Levels, each its own directory under ``<outputs-base>/deckdb_working/WORKING_<as-of>/``:
+Levels, each its own directory under ``<outputs-base>/_working/deckdb/WORKING_<as-of>/``:
 
   week_<YYYY-Www>                        weekly set (K41): the last complete ISO week -- share of Challenge
                                          Top 32 for the top 10 decks + "other decks" + "Rogue & unclassified" and every
@@ -48,7 +48,9 @@ except ModuleNotFoundError:
     from .challenge_history_engine import _chart_compare_presence, _chart_conversion_matrix, _chart_delta_ranking
     from .statistics_engine import _build_style, _create_trend_chart
 
-WORKING_DIR_NAME = "deckdb_working"
+# working materials under outputs/_working/deckdb/ (2026-10-27): only presentation/ (and the legacy files)
+# stay on top of outputs/
+WORKING_DIR_NAME = "_working/deckdb"
 TOP_N_CHART = 20
 TOP_N_CARD_CHART = 30
 

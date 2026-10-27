@@ -11,7 +11,7 @@ the speaker notes) and report readability per slide:
 
 The report charts (deckdb_materials.py) are not rendered or changed here.
 
-    python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/deckdb_working/presentation_test
+    python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/_working/deckdb/presentation_test
 """
 
 from __future__ import annotations

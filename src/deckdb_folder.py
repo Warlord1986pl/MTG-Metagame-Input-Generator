@@ -1,5 +1,5 @@
 """One flat presentation folder per ISO week (order of 2026-10-26 k, point B7): ``outputs/presentation/<year>-W<nn>/``,
-next to the working directories of outputs/deckdb_working/ (unchanged), no subdirectories, at most 13 files (the
+next to the working directories of outputs/_working/deckdb/ (unchanged), no subdirectories, at most 13 files (the
 presentation project takes at most 24 attachments; correction to the order of 2026-10-26 k):
 
   01_archetypes_share.png  02_archetypes_trend.png  03_decks_share.png  04_decks_trend.png

@@ -1649,7 +1649,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help=(
             "legacy: dotychczasowy tryb (Videre + MTGGoldfish/mtgo.com, mapowania, reguły kartowe). "
             "deckdb: wyłącznie eksport DeckDB ze ścieżek w --deckdb-config, materiały robocze trzech "
-            "poziomów czasu na --as-of w <outputs-base>/deckdb_working/ (bez Videre, mapowań i reguł kartowych)."
+            "poziomów czasu na --as-of w <outputs-base>/_working/deckdb/ (bez Videre, mapowań i reguł kartowych)."
         ),
     )
     parser.add_argument(

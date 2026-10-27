@@ -249,7 +249,7 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   `python src/metagame_input_generator.py --input-mode deckdb --as-of 2026-10-18 --trend-weeks 12`
   reads the paths in `docs/deckdb_config.csv` (`export_path` required; `format_events_path` = DeckDB
   `rules/format_events.yaml`, read only; `cards_path` = `deckdb export-cards` output, enables the card
-  layer) and writes only `outputs/deckdb_working/WORKING_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
+  layer) and writes only `outputs/_working/deckdb/WORKING_<as-of>/` -- no Videre/MTGGoldfish/mtgo.com
   fetch, no mapping/alias/archetype rule, no card rule, no history/league/site write. Default
   `--input-mode legacy` is the unchanged pipeline (W42 rerun identical except the XML `generated_at`).
 - Three time levels, one subdirectory each; `--deckdb-level week|month|all` (default `all`) picks the
@@ -281,6 +281,10 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   forces a month (incomplete marked "incomplete month"). Fixed colours: archetypes in `deckdb_presentation.ARCHETYPE_COLOURS`, decks in
   `docs/deckdb_colours.csv` (16 validated colours; a repeat on one trend chart is dashed and listed in notes.md).
   Run with the project venv (`E:/github/.venv/Scripts/python.exe`; the bare `python` may lack yaml).
+- Layout of `outputs/` (2026-10-27): on top only `presentation/` (the folders for the slides) and the files of the
+  legacy mode; every working material of the deckdb mode is under `outputs/_working/deckdb/` (`WORKING_<as-of>/`), the
+  older working directories under `outputs/_working/deckdb_robocze/` (incl. the legacy W42 reference
+  `_punkt_odniesienia_legacy_W42_2026-10-21/`, `przed/` + `compare_outputs.py`).
 - Presentation set (`deckdb_presentation.py`, order 2026-10-26 b, spec section (i)): every package also gets
   `presentation/` (week: `decks_share.png`, `archetypes_share.png`, trends; month: trends; format period:
   `deck_results.png`; cards: `list_changes.png` without `mana_only_land` cards -- DeckDB K42 column of
@@ -311,7 +315,7 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   one pooled "other decks" row (+ "no deck"), share and Top 8 conversion only; matrices <= 12 rows (deck
   pilot measures on their own slide); card changes <= 8 per slide (list changes by |within-variant
   component|, composition changes by |presence change|); one source line per slide, glossary in the speaker
-  notes. `python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/deckdb_working/presentation_test`
+  notes. `python scripts/deckdb_presentation_test.py --as-of 2026-10-21 --out outputs/_working/deckdb/presentation_test`
   renders it, writes `presentation_test.pptx` and checks fonts, cut-off and overlapping texts.
   In a run: `--input-mode deckdb --as-of YYYY-MM-DD --deckdb-slides` adds `WORKING_<as-of>/slides/*.png` and
   `WORKING_<as-of>/deckdb_slides_WORKING_<as-of>.pptx` next to the report materials (refused without `--input-mode deckdb`).

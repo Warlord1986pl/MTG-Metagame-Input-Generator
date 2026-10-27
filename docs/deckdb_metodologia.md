@@ -572,7 +572,7 @@ Wykresy rysują funkcje trybu dotychczasowego przez parametry opcjonalne (domyś
 Kontrola trybu dotychczasowego po tej zmianie (2026-10-26, W42 2026-10-05 … 2026-10-18,
 `--include-challenge-decklist --trend-weeks 12 --skip-league`, kopia plików trwałych `outputs/` w
 katalogu tymczasowym, porównanie `compare_outputs.py` z punktem odniesienia
-`outputs/deckdb_robocze/_punkt_odniesienia_legacy_W42_2026-10-21/przed/`): 83 pliki katalogu
+`outputs/_working/deckdb_robocze/_punkt_odniesienia_legacy_W42_2026-10-21/przed/`, do 2026-10-27 w `outputs/deckdb_robocze/`): 83 pliki katalogu
 tygodnia, 82 identyczne, 1 różny (`metagame_input_grouped.xml`, wyłącznie `generated_at`).
 
 ## (i) Zestaw prezentacyjny (polecenie 2026-10-26 b, punkt 2)
@@ -672,3 +672,8 @@ added / cut na długim tytule. Kontrola trybu dotychczasowego W42 (jak w (i)): 8
 `m_list_changes`; każdy arkusz z kolumnami `rules_version`, `export_sha256`, `data_version`. README.md, status.md,
 speaker_notes.md i GLOSSARY.md są połączone w `notes.md` z sekcjami Status, Files, Speaker notes, Glossary (w tej
 kolejności). Przebieg odmawia (`DeckdbInputError`), gdy folder miałby więcej niż 13 plików.
+
+**Porządek katalogów (2026-10-27).** Materiały robocze trybu deckdb są w `outputs/_working/deckdb/WORKING_<as-of>/`
+(wcześniej `outputs/deckdb_working/`), starsze katalogi robocze i punkt odniesienia kontroli W42 w
+`outputs/_working/deckdb_robocze/` (wcześniej `outputs/deckdb_robocze/`); na wierzchu `outputs/` zostaje tylko
+`presentation/` z folderami do prezentacji oraz pliki trybu dotychczasowego.
