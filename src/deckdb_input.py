@@ -211,33 +211,55 @@ def load_export(path: Path) -> DeckdbExport:
     )
 
 
+TRIAGE_STATUSES = ("complete", "pending_notice", "pending_blocking", "pending")  # "pending": files before K43 supplement
+
+
 @dataclass
 class TriageState:
     path: Path
     status: str
     pending_groups: int
+    share_of_week: float = 0.0  # waiting groups' lists / lists of the week (DeckDB weekly_triage.py)
+
+    @property
+    def blocking(self) -> bool:
+        return self.status in ("pending_blocking", "pending")
 
     @property
     def note(self) -> str:
-        """Marker carried by every material when the triage is pending (empty when complete)."""
-        return "" if self.status == "complete" else f"triage pending: {self.pending_groups} list group(s) awaiting decision"
+        """Marker on every material (chart footers, STATUS) -- only when a blocking triage was forced with
+        --allow-pending-triage; empty otherwise."""
+        return f"triage pending: {self.pending_groups} list group(s) awaiting decision" if self.blocking else ""
+
+    @property
+    def notice(self) -> str:
+        """pending_notice (DeckDB K43 supplement): status.md and speaker notes only, never on a chart."""
+        if self.status != "pending_notice":
+            return ""
+        return (f"{self.pending_groups} list group(s) awaiting review, {self.share_of_week * 100:.1f}% of this week's "
+                f"lists, shown as {NO_DECK_LABEL}")
 
 
 def load_triage(export: DeckdbExport, allow_pending: bool = False) -> TriageState:
-    """DeckDB K43: triage_<data_version>.json next to the export must exist with status complete; status pending is
-    accepted only with *allow_pending* (--allow-pending-triage), and the materials then carry TriageState.note."""
+    """DeckDB K43 (with the supplement of the order of 2026-10-26 k): triage_<data_version>.json next to the export.
+    complete and pending_notice run (pending_notice: TriageState.notice in status.md / speaker notes only);
+    pending_blocking (and the older "pending") is refused unless *allow_pending* (--allow-pending-triage), and every
+    material then carries TriageState.note."""
     path = export.path.parent / f"triage_{export.data_version}.json"
     if not path.exists():
         raise DeckdbInputError(f"Brak pliku triage'u DeckDB dla data_version eksportu: {path} (scripts/weekly_triage.py, K43)")
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("data_version") != export.data_version:
         raise DeckdbInputError(f"{path}: data_version {data.get('data_version')!r} różny od eksportu {export.data_version!r}")
-    state = TriageState(path, str(data.get("status")), int(data.get("pending_groups") or 0))
-    if state.status not in ("complete", "pending"):
+    state = TriageState(path, str(data.get("status")), int(data.get("pending_groups") or 0),
+                        float(data.get("waiting_share_of_week") or 0.0))
+    if state.status not in TRIAGE_STATUSES:
         raise DeckdbInputError(f"{path}: nieznany status triage'u {state.status!r}")
-    if state.status == "pending" and not allow_pending:
-        raise DeckdbInputError(f"Triage DeckDB ma status pending ({state.pending_groups} grup czeka na decyzję, {path}); "
-                               "materiały powstają po triage'u (K43) albo z --allow-pending-triage")
+    if state.blocking and not allow_pending:
+        groups = ", ".join(f"{g.get('item_key')} ({g.get('lists_in_week')} list w tygodniu, czeka {g.get('days_waiting')} dni)"
+                           for g in data.get("waiting") or []) or "brak listy grup w pliku"
+        raise DeckdbInputError(f"Triage DeckDB ma status {state.status} ({state.pending_groups} grup czeka na decyzję: "
+                               f"{groups}; {path}); materiały powstają po decyzjach (K43) albo z --allow-pending-triage")
     return state
 
 

@@ -260,6 +260,11 @@ def _triage_note() -> str:
     return TRIAGE.note if TRIAGE is not None else ""
 
 
+def _triage_notice() -> str:
+    """pending_notice (DeckDB K43 supplement): status.md and speaker notes only, no chart marker."""
+    return TRIAGE.notice if TRIAGE is not None else ""
+
+
 def _stamp(export: di.DeckdbExport, level: str, start: date, end: date, cov: dict, note: str = "") -> str:
     return (
         f"WORKING - {level} {start.isoformat()}..{end.isoformat()}{note} - {cov['events']} events, {cov['lists']} "
@@ -304,6 +309,8 @@ def _status(export: di.DeckdbExport, level: str, start: date, end: date, rows: p
         base.insert(1, ("Triage (DeckDB K43)", f"{TRIAGE.status} - {TRIAGE.path.name}"))
         if TRIAGE.note:
             base.insert(1, ("TRIAGE PENDING", TRIAGE.note))
+        if TRIAGE.notice:
+            base.insert(2, ("Triage notice", TRIAGE.notice))
     return pd.DataFrame(base + extra, columns=["Field", "Value"])
 
 
@@ -341,7 +348,8 @@ def _write_level(out_dir: Path, label: str, export: di.DeckdbExport, sheets: Dic
     status = sheets.get("STATUS")
     if status is not None:  # status.md: the STATUS sheet as text (the triage marker on top when pending)
         st = out_dir / "status.md"
-        st.write_text("# Status (input mode deckdb, WORKING)\n\n" + (f"**{_triage_note()}**\n\n" if _triage_note() else "")
+        top = _triage_note() or _triage_notice()
+        st.write_text("# Status (input mode deckdb, WORKING)\n\n" + (f"**{top}**\n\n" if top else "")
                       + "\n".join(f"- {f}: {v}" for f, v in zip(status["Field"], status["Value"])) + "\n",
                       encoding="utf-8")
         written.append(st)
@@ -878,12 +886,12 @@ def build_deckdb_materials(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of:
     pending triage every material carries its marker (chart footers, STATUS / status.md, speaker notes)."""
     global TRIAGE
     TRIAGE = triage
-    _pres().MARK = _triage_note()
+    _pres().MARK, _pres().NOTICE = _triage_note(), _triage_notice()
     try:
         return _build(export, cfg, as_of, outputs_base, trend_weeks, cache_dir, log, level)
     finally:
         TRIAGE = None
-        _pres().MARK = ""
+        _pres().MARK = _pres().NOTICE = ""
 
 
 def _build(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_base: Path, trend_weeks: int,

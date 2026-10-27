@@ -57,7 +57,8 @@ C_TEXT, C_SOFT = "#222222", "#555555"
 POOLED = (di.OTHER_DECKS_LABEL, di.NO_DECK_LABEL)
 
 
-MARK = ""  # DeckDB K43: "triage pending: ..." while a run has a pending triage (set by deckdb_materials)
+MARK = ""  # DeckDB K43: "triage pending: ..." only when a blocking triage was forced (set by deckdb_materials)
+NOTICE = ""  # DeckDB K43 supplement: pending_notice, speaker notes and status.md only, never on a chart
 
 
 def footer(start: date, end: date, rows: pd.DataFrame) -> str:
@@ -268,6 +269,6 @@ def write_notes(out: Path, notes: Dict[str, str]) -> Path:
     path = out / "speaker_notes.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n\n".join(f"## {name}\n\n{text}" for name, text in notes.items())
-    mark = f"**{MARK}**\n\n" if MARK else ""
+    mark = f"**{MARK}**\n\n" if MARK else (f"**{NOTICE}**\n\n" if NOTICE else "")
     path.write_text(f"# Speaker notes\n\n{mark}{body}\n", encoding="utf-8")
     return path
