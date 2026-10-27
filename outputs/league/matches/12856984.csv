@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856984,2026-10-25,C32,Challenge,QF,kasa,1763014,DemianDesposito10,2747375,2,1,Domain Zoo,Boros Burn
+12856984,2026-10-25,C32,Challenge,QF,fingers1991,336006,caquaa,221272,2,1,Rakdos Midrange,Eldrazi Ramp
+12856984,2026-10-25,C32,Challenge,QF,Redman1034,3363119,kasiso,2257869,2,1,Eldrazi Ramp,Jeskai Energy
+12856984,2026-10-25,C32,Challenge,QF,Tetsubou,1700365,Venom01,3535587,2,0,Eldrazi Ramp,Eldrazi Ramp
+12856984,2026-10-25,C32,Challenge,SF,Redman1034,3363119,kasa,1763014,2,0,Eldrazi Ramp,Domain Zoo
+12856984,2026-10-25,C32,Challenge,SF,Tetsubou,1700365,fingers1991,336006,2,0,Eldrazi Ramp,Rakdos Midrange
+12856984,2026-10-25,C32,Challenge,F,Tetsubou,1700365,Redman1034,3363119,2,0,Eldrazi Ramp,Eldrazi Ramp
