@@ -56,6 +56,17 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
     --source self_request_x --evidence "DM 2026-08-25" --primary-name MeninoNey --apply
 ```
 
+### Project commands (Claude Code, `.claude/commands/`)
+
+- `/tydzien` (`.claude/commands/tydzien.md`): mid-week DeckDB update without rule changes or materials: import of the
+  new Modern Challenges, `scripts/weekly_triage.py`, new groups (>= 2 lists from different pilots) to the queue and
+  deploy, the standard decision cycle when the app log has new decisions, short report; one commit per point.
+- `/poniedzialek` (`.claude/commands/poniedzialek.md`): Monday run over DeckDB and this pipeline: import up to Sunday,
+  triage, decisions, `export-assignments` + `export-cards` + triage file from one DB state, then (status `complete` or
+  `pending_notice`) the folder `outputs/presentation/<year>-W<nn>/` with `--as-of <last Sunday>` (monthly material on
+  the first week of a month); stop and list the blocking groups at `pending_blocking`; the legacy W42 control only when
+  pipeline code changed since the last Monday; short report; one commit per point.
+
 ## Architecture
 
 ### Source modules (`src/`)
