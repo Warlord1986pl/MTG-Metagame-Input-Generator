@@ -660,6 +660,30 @@ def week_share_table(rows: pd.DataFrame, prev_rows: pd.DataFrame, key: str, key_
     return pd.DataFrame(out)
 
 
+NO_VARIANT_LABEL = "(no variant)"
+
+
+def variant_week_table(rows: pd.DataFrame) -> pd.DataFrame:
+    """Week level: per variant of every deck with variants (an export variant on any of its lists of the window):
+    Top 32 lists, Top 8 lists, trophies; a list of such a deck without a variant counts as NO_VARIANT_LABEL. The
+    variant sums must equal the deck's own counts, otherwise DeckdbInputError (no fallback)."""
+    a = rows[rows["status"] == STATUS_ASSIGNED]
+    with_v = sorted(set(a.loc[a["variant"] != "", "deck"]))
+    sub = a[a["deck"].isin(with_v)].assign(_v=lambda d: d["variant"].where(d["variant"] != "", NO_VARIANT_LABEL))
+    out = sub.groupby(["deck", "_v"]).agg(Lists_Top32=("top8", "size"), Lists_Top8=("top8", "sum"),
+                                          Trophies=("trophy", "sum")).reset_index()
+    out = out.rename(columns={"deck": "Deck", "_v": "Variant"})
+    for col in ("Lists_Top32", "Lists_Top8", "Trophies"):
+        out[col] = out[col].astype(int)
+    deck = a[a["deck"].isin(with_v)].groupby("deck").agg(Lists_Top32=("top8", "size"), Lists_Top8=("top8", "sum"),
+                                                         Trophies=("trophy", "sum"))
+    summed = out.groupby("Deck")[["Lists_Top32", "Lists_Top8", "Trophies"]].sum()
+    bad = [d for d in with_v if tuple(summed.loc[d]) != tuple(int(x) for x in deck.loc[d])]
+    if bad:
+        raise DeckdbInputError(f"warianty tygodnia: suma wariantów różna od talii dla {bad}")
+    return out.sort_values(["Deck", "Lists_Top32", "Variant"], ascending=[True, False, True]).reset_index(drop=True)
+
+
 def top8_table(rows: pd.DataFrame) -> pd.DataFrame:
     """Week level: the eight Top 8 lists of every event with deck and variant, the winner flagged; no player
     identifiers, no rates."""

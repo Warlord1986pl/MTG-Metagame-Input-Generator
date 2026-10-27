@@ -69,6 +69,8 @@ SHEETS = {
     "pilots": "pilots per deck of the share chart: lists, distinct pilots, top pilot's lists and share",
     "share_history_decks": "weekly share per deck over the trend weeks",
     "share_history_archetypes": "weekly share per archetype over the trend weeks",
+    "variants_week": "Top 32 lists, Top 8 lists and trophies of the week per variant of every deck with variants "
+                     "(a list without a variant: '(no variant)'); the variant sums equal the deck's counts",
 }
 MONTH_SHEETS = {
     "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
@@ -275,7 +277,8 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
          "week; 'SB' marks a sideboard card. Lands that only make mana are left out." if len(nc_shown) else
          "No card appeared in a deck for the first time with at least 2 pilots this week."))
     data = {"decks": decks, "archetypes": archs, "top8": top8, "new_cards": nc, "pilots": pilots,
-            "share_history_decks": trend_d, "share_history_archetypes": trend_a}
+            "share_history_decks": trend_d, "share_history_archetypes": trend_a,
+            "variants_week": di.variant_week_table(rows)}
     month_note = ""
     if m_period is not None:
         mw, mnotes, mdata, month_note = _month(export, cards, out, *m_period)

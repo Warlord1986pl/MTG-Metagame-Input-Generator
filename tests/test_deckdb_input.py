@@ -501,3 +501,17 @@ def test_top10_tie_broken_by_name():
                          + [di.NO_DECK_LABEL] * 5})
     assert di.ranked_labels(rows, "material_deck") == ["Zoo", "Prowess", "Ruby Storm", "Tron"]
     assert "alphabetical" in dict(dm.GLOSSARY)[dm.M_TOP_WEEK]
+
+
+def test_variant_week_table_sums_match_the_deck(tmp_path):
+    """data.xlsx sheet variants_week: per variant Top 32 / Top 8 / trophies; the sums equal the deck's counts."""
+    exp = di.load_export(_write(tmp_path, [
+        _row(1, 1, "2026-10-01", "assigned", "Zoo", "Midrange", "a", 1, "Zoo: Phlage"),
+        _row(1, 2, "2026-10-01", "assigned", "Zoo", "Midrange", "b", 12, "Zoo: other"),
+        _row(1, 3, "2026-10-01", "assigned", "Zoo", "Midrange", "c", 5, "Zoo: Phlage"),
+        _row(1, 4, "2026-10-01", "assigned", "Burn", "Aggro", "d", 2),
+        _row(1, 5, "2026-10-01", "rogue", "Rogue", "Rogue", "e", 3)]))
+    t = di.variant_week_table(exp.rows)
+    assert t.to_dict("records") == [
+        {"Deck": "Zoo", "Variant": "Zoo: Phlage", "Lists_Top32": 2, "Lists_Top8": 2, "Trophies": 1},
+        {"Deck": "Zoo", "Variant": "Zoo: other", "Lists_Top32": 1, "Lists_Top8": 0, "Trophies": 0}]
