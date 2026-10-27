@@ -784,13 +784,14 @@ def _present_trends(export: di.DeckdbExport, weeks: List[tuple[date, date]], tre
     dp = _pres()
     foot = dp.footer(weeks[0][0], weeks[-1][1], di.window_rows(export, weeks[0][0], weeks[-1][1]))
     decks_only = decks[~decks["Deck"].isin([di.NO_DECK_LABEL, di.OTHER_DECKS_LABEL])]
+    colours = dp.Colours()
     out = []
-    for tbl, cur, key, name, title, legend in (
-            (trend["decks"], decks_only, "Deck", "trend_decks.png",
-             f"Deck shares over the last {len(weeks)} weeks", "Decks"),
+    for tbl, cur, key, name, title, colour_of in (
+            (trend["decks"], decks_only.head(di.WEEK_TOP_N), "Deck", "trend_decks.png",
+             f"Deck shares over the last {len(weeks)} weeks", colours.of_deck),
             (trend["archetypes"], archs, "Archetype", "trend_archetypes.png",
-             f"Archetype shares over the last {len(weeks)} weeks", "Archetypes")):
-        p = dp.trend_chart(tbl, cur, key, title, foot, legend, pres / name)
+             f"Archetype shares over the last {len(weeks)} weeks", colours.of_archetype)):
+        p = dp.trend_chart(tbl, list(cur[key]), key, title, foot, pres / name, colour_of)
         if p is not None:
             out.append(p)
             notes[name] = (f"Weekly share of the Top 32 lists over the last {len(weeks)} weeks for "
