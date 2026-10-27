@@ -236,7 +236,7 @@ def test_materials_three_levels_and_cli_mode(tmp_path):
     assert {p.name for p in root.iterdir()} == {"week_2026-W42", "month_2026-10_incomplete",
                                                "format_period_2026-09-07_to_2026-10-18"}
     exp = di.load_export(export_csv)
-    for x in [f for f in files if f.suffix == ".xlsx"]:
+    for x in [f for f in files if f.suffix == ".xlsx" and f.name != "data.xlsx"]:  # data.xlsx: presentation folder
         book = pd.read_excel(x, sheet_name=None)
         assert {"STATUS", "Glossary", "Omitted"} <= set(book)
         assert exp.sha256 in book["STATUS"]["Value"].astype(str).tolist()
@@ -453,15 +453,17 @@ def test_pending_notice_runs_without_marks_and_blocking_refuses(tmp_path):
         dp.footer = orig
     notice = "2 list group(s) awaiting review, 1.2% of this week's lists, shown as Rogue & unclassified"
     folder = tmp_path / "o2" / "presentation" / "2026-W42"
-    assert notice in (folder / "status.md").read_text(encoding="utf-8")
-    assert notice in (folder / "speaker_notes.md").read_text(encoding="utf-8")
+    notes = (folder / "notes.md").read_text(encoding="utf-8")
+    status, speaker = notes.split("## Files")[0], notes.split("## Speaker notes")[1].split("## Glossary")[0]
+    assert notice in status and notice in speaker
     assert seen and not any("triage" in f or "awaiting" in f for f in seen)  # no chart carries it
     assert dp.MARK == "" and dp.NOTICE == ""
 
 
 def test_presentation_folder_flat_with_month(tmp_path):
-    """Order of 2026-10-26 k, B7: one flat folder outputs/presentation/<year>-W<nn>/ with the numbered charts, the
-    data, status, notes, glossary and README; the month joins on the first week of a month or when forced."""
+    """Order of 2026-10-26 k, B7 and its correction: one flat folder outputs/presentation/<year>-W<nn>/ of at most 13
+    files: the numbered charts, data.xlsx (contents + one sheet per table) and notes.md (Status, Files, Speaker notes,
+    Glossary); the month joins on the first week of a month or when forced."""
     import deckdb_folder as fo
     import metagame_input_generator as mig
 
@@ -474,10 +476,16 @@ def test_presentation_folder_flat_with_month(tmp_path):
     names = {p.name for p in folder.iterdir()}
     assert not any(p.is_dir() for p in folder.iterdir())
     week = set(fo.WEEK_FILES)
-    assert week <= names and {"m01_deck_results.png", "m_data_deck_results.csv"} <= names
-    assert "Rogue & unclassified" in pd.read_csv(folder / "data_decks.csv", encoding="utf-8-sig")["Deck"].tolist()
-    readme = (folder / "README.md").read_text(encoding="utf-8")
-    assert all(f"`{n}`" in readme for n in week)
+    # no card export in this test: no m02_list_changes.png and no m_list_changes sheet (12 files; 13 with cards)
+    assert names == week | {"m01_deck_results.png"} and len(names) == 12 <= fo.MAX_FILES
+    xl = pd.read_excel(folder / "data.xlsx", sheet_name=None)
+    assert list(xl) == ["contents", *fo.SHEETS, "m_deck_results"]
+    assert xl["contents"]["sheet"].tolist() == list(xl)[1:]
+    assert "Rogue & unclassified" in xl["decks"]["Deck"].tolist()
+    notes = (folder / "notes.md").read_text(encoding="utf-8")
+    heads = [h for h in ("## Status", "## Files", "## Speaker notes", "## Glossary")]
+    assert [notes.index(h) for h in heads] == sorted(notes.index(h) for h in heads)
+    assert all(f"`{n}`" in notes for n in names)
     assert fo.month_for(date(2026, 11, 1)) == (date(2026, 10, 1), date(2026, 10, 31))  # Sunday 1 Nov: first week
     assert fo.month_for(date(2026, 10, 4)) == (date(2026, 9, 1), date(2026, 9, 30))
     assert fo.month_for(date(2026, 10, 25)) is None

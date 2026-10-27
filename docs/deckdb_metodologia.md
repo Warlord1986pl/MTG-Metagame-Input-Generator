@@ -664,3 +664,11 @@ barw, linia przerywana przy powtórzeniu), Top 8 z 23 wierszami (talie z jedną 
 added / cut na długim tytule. Kontrola trybu dotychczasowego W42 (jak w (i)): 83 pliki, 82 identyczne, 1 różny
 (`metagame_input_grouped.xml`, wyłącznie `generated_at`). Testy: 98 przechodzi, 1 nie przechodzi (znany test ligi
 `test_run_league_update_raises_league_blocking_error_on_frozen_week`).
+
+**Poprawka do (k), punkt B7 (2026-10-27): najwyżej 13 plików w folderze** (projekt prezentacji przyjmuje najwyżej
+24 załączniki). Wykresy PNG zostają osobno (01–09, m01–m02). Wszystkie tabele są w jednym `data.xlsx`: pierwszy arkusz
+`contents` (arkusz i jedno zdanie o nim), potem `decks`, `archetypes`, `top8`, `new_cards`, `pilots`,
+`share_history_decks`, `share_history_archetypes`, a w tygodniu z materiałem miesięcznym także `m_deck_results` i
+`m_list_changes`; każdy arkusz z kolumnami `rules_version`, `export_sha256`, `data_version`. README.md, status.md,
+speaker_notes.md i GLOSSARY.md są połączone w `notes.md` z sekcjami Status, Files, Speaker notes, Glossary (w tej
+kolejności). Przebieg odmawia (`DeckdbInputError`), gdy folder miałby więcej niż 13 plików.

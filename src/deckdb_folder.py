@@ -1,18 +1,17 @@
 """One flat presentation folder per ISO week (order of 2026-10-26 k, point B7): ``outputs/presentation/<year>-W<nn>/``,
-next to the working directories of outputs/deckdb_working/ (unchanged), no subdirectories.
+next to the working directories of outputs/deckdb_working/ (unchanged), no subdirectories, at most 13 files (the
+presentation project takes at most 24 attachments; correction to the order of 2026-10-26 k):
 
   01_archetypes_share.png  02_archetypes_trend.png  03_decks_share.png  04_decks_trend.png
   05_week_matrix_decks.png  06_week_matrix_archetypes.png  07_top8.png  08_pilots.png  09_new_cards.png
-  data_decks.csv  data_archetypes.csv  data_top8.csv  data_new_cards.csv  data_pilots.csv
-  data_share_history_decks.csv  data_share_history_archetypes.csv
-  status.md  speaker_notes.md  GLOSSARY.md  README.md
-  with the monthly material: m01_deck_results.png  m02_list_changes.png  m_data_deck_results.csv
-  m_data_list_changes.csv
+  with the monthly material: m01_deck_results.png  m02_list_changes.png
+  data.xlsx  (sheet "contents" first, then one sheet per table, SHEETS / MONTH_SHEETS)
+  notes.md   (sections Status, Files, Speaker notes, Glossary)
 
 The week is the last complete ISO week ending on or before --as-of. The monthly material (the previous month) joins
 the folder when the week contains the first Sunday of its month; ``month`` forces a month (an incomplete one is
-marked "incomplete month" in titles and footers). Every CSV carries rules_version, export_sha256 and data_version;
-no chart carries a definition, seed, sha256 or rules version.
+marked "incomplete month" in titles and footers). Every data sheet carries rules_version, export_sha256 and
+data_version; no chart carries a definition, seed, sha256 or rules version.
 """
 
 from __future__ import annotations
@@ -49,26 +48,29 @@ WEEK_FILES = {
     "08_pilots.png": "distinct pilots and the top pilot's share of the lists for the ten decks of the share chart",
     "09_new_cards.png": "cards appearing in a deck for the first time, played by at least 2 pilots this week (lands "
                         "that only make mana left out)",
-    "data_decks.csv": "the deck rows of the share chart: share, presence, pilots, change vs last week with its interval",
-    "data_archetypes.csv": "the archetype rows of the share chart",
-    "data_top8.csv": "the eight Top 8 lists of every event of the week: place, deck, variant, archetype, winner",
-    "data_new_cards.csv": "every new card of the week (reported and observations), mana-only lands flagged",
-    "data_pilots.csv": "pilots per deck of the share chart: lists, distinct pilots, top pilot's lists and share",
-    "data_share_history_decks.csv": "weekly share per deck over the trend weeks",
-    "data_share_history_archetypes.csv": "weekly share per archetype over the trend weeks",
-    "status.md": "window, events, lists, coverage, rules version, export sha256, triage status, event IDs for "
-                 "verification on mtgo.com, classification changes since the previous week",
-    "speaker_notes.md": "one to three sentences per chart, in English",
-    "GLOSSARY.md": "the definitions of every term used in this folder",
-    "README.md": "this list",
+    "data.xlsx": "every table of the folder, one sheet each; the first sheet 'contents' lists them",
+    "notes.md": "Status (window, events, lists, coverage, rules version, export sha256, triage, classification "
+                "changes, event IDs to verify on mtgo.com), Files, Speaker notes, Glossary",
 }
 MONTH_FILES = {
     "m01_deck_results.png": "the 12 decks with the most lists of the month: lists, mean place percentile, Top 8 "
                             "conversion; coloured only where the interval excludes the average",
     "m02_list_changes.png": "the biggest list changes from the month before to this month (at most 12, mana-only "
                             "lands left out), added or cut",
-    "m_data_deck_results.csv": "results of every deck of the month with the pilot-bootstrap intervals",
-    "m_data_list_changes.csv": "every reported list change of the month (mana-only lands flagged)",
+}
+MAX_FILES = 13
+SHEETS = {
+    "decks": "the deck rows of the share chart: share, presence, pilots, change vs last week with its interval",
+    "archetypes": "the archetype rows of the share chart",
+    "top8": "the eight Top 8 lists of every event of the week: place, deck, variant, archetype, winner",
+    "new_cards": "every new card of the week (reported and observations), mana-only lands flagged",
+    "pilots": "pilots per deck of the share chart: lists, distinct pilots, top pilot's lists and share",
+    "share_history_decks": "weekly share per deck over the trend weeks",
+    "share_history_archetypes": "weekly share per archetype over the trend weeks",
+}
+MONTH_SHEETS = {
+    "m_deck_results": "results of every deck of the month with the pilot-bootstrap intervals",
+    "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
                 dm.M_CHANGE_CI, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
@@ -176,7 +178,7 @@ def build_presentation_folder(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_
     out = folder_dir(outputs_base, ws)
     out.mkdir(parents=True, exist_ok=True)
     for p in out.iterdir():  # the folder is generated: a rerun replaces every file (flat, no subdirectories)
-        if p.is_file() and p.suffix in (".png", ".csv", ".md"):
+        if p.is_file() and p.suffix in (".png", ".csv", ".md", ".xlsx"):
             p.unlink()
     dp.MARK = triage.note if triage is not None else ""
     dp.NOTICE = triage.notice if triage is not None else ""
@@ -264,37 +266,49 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
         (f"{len(nc_shown)} card(s) showed up in a deck for the first time and were played by at least 2 pilots this "
          "week; 'SB' marks a sideboard card. Lands that only make mana are left out." if len(nc_shown) else
          "No card appeared in a deck for the first time with at least 2 pilots this week."))
-    data = {"data_decks.csv": decks, "data_archetypes.csv": archs, "data_top8.csv": top8, "data_new_cards.csv": nc,
-            "data_pilots.csv": pilots, "data_share_history_decks.csv": trend_d,
-            "data_share_history_archetypes.csv": trend_a}
+    data = {"decks": decks, "archetypes": archs, "top8": top8, "new_cards": nc, "pilots": pilots,
+            "share_history_decks": trend_d, "share_history_archetypes": trend_a}
     month_note = ""
     if m_period is not None:
         mw, mnotes, mdata, month_note = _month(export, cards, out, *m_period)
         w += mw
         notes.update(mnotes)
         data.update(mdata)
-    for name, df in data.items():
-        p = out / name
-        _stamp(df, export).to_csv(p, index=False, encoding="utf-8-sig")
-        w.append(p)
-    w.append(dp.write_notes(out, notes))
-    w.append(_status(export, out, label, ws, we, rows, cov, triage, colours, month_note, as_of))
-    w.append(_glossary(export, out, m_period is not None))
-    w.append(_readme(out, label, m_period))
+    w.append(_workbook(export, out / "data.xlsx", data))
+    status = _status(export, label, ws, we, rows, cov, triage, colours, month_note, as_of, decks)
+    w.append(_notes(export, out, label, status, notes, m_period is not None))
+    files = [p for p in out.iterdir() if p.is_file()]
+    if len(files) > MAX_FILES:
+        raise di.DeckdbInputError(f"{out}: {len(files)} plików, najwyżej {MAX_FILES} (projekt prezentacji przyjmuje "
+                                  "najwyżej 24 załączniki)")
     for p in w:
         log(f"[deckdb presentation folder] wrote {p}")
     return w
 
 
+def _workbook(export, path: Path, data: Dict[str, pd.DataFrame]) -> Path:
+    """data.xlsx: the sheet 'contents' (sheet, one sentence on what it holds) first, then one sheet per table, each
+    with rules_version, export_sha256 and data_version."""
+    desc = {**SHEETS, **MONTH_SHEETS}
+    contents = pd.DataFrame([{"sheet": name, "contents": desc[name] + "."} for name in data],
+                            columns=["sheet", "contents"])
+    with pd.ExcelWriter(path, engine="openpyxl") as xw:
+        contents.to_excel(xw, sheet_name="contents", index=False)
+        for name, df in data.items():
+            body = _stamp(df, export) if not df.empty else pd.DataFrame([{"Info": "no rows"}])
+            body.to_excel(xw, sheet_name=name, index=False)
+    return path
+
+
 def _month(export, cards, out: Path, ms: date, me: date, complete: bool):
     rows = di.window_rows(export, ms, me)
     inc = "" if complete else " (incomplete month)"
-    foot = dp.footer(ms, me, rows, "" if complete else "incomplete month")
+    note = "" if complete else "incomplete month"
     res = di.conversion_table(rows, "material_deck", "Deck", pilots=True)
     res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(rows)))
     pct_base, conv_base = di.percentile_baseline(rows), di.top8_baseline(rows)
-    w = [dp.results_chart(res, pct_base, conv_base, f"How the top decks finished in {ms:%B %Y}{inc}", foot,
-                          out / "m01_deck_results.png")]
+    w = [dp.results_chart(res, pct_base, conv_base, f"How the top decks finished in {ms:%B %Y}{inc}",
+                          dp.footer(ms, me, rows, note), out / "m01_deck_results.png")]
     shown = res[res["Deck"] != di.NO_DECK_LABEL].head(dp.TOP_N_RESULTS)
     hit = [r["Deck"] for _, r in shown.iterrows() if r["Percentile_CI_excludes_baseline"]
            or r["Conversion_CI_excludes_baseline"]]
@@ -303,14 +317,13 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool):
         "deck's lists finish among the published lists (100 = first, 0 = last); Top 8 conversion is the share of its "
         "lists that reached the Top 8. Only values clearly away from the average are coloured"
         + (f" (here: {', '.join(hit)})" if hit else " (none here)") + ".")}
-    data = {"m_data_deck_results.csv": res}
+    data = {"m_deck_results": res}
     if cards is not None:
         m1s, m1e = di.previous_month(ms)
         t = dc.change_tables(export, cards, (m1s, m1e), (ms, me))
         tested = t["tested"]
         mo = cards.mana_only_ids or frozenset()
-        cfoot = dp.footer(m1s, me, pd.concat([di.window_rows(export, m1s, m1e), rows]),
-                          "" if complete else "incomplete month")
+        cfoot = dp.footer(m1s, me, pd.concat([di.window_rows(export, m1s, m1e), rows]), note)
         p, n_shown, dropped = dp.list_changes_chart(tested, mo, f"Biggest list changes, {m1s:%B} to {ms:%B}{inc}",
                                                     cfoot, out / "m02_list_changes.png")
         if p is not None:
@@ -323,19 +336,20 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool):
         lc = tested[tested["Category"] == dc.KIND_LIST].copy() if not tested.empty else tested
         if not lc.empty:
             lc["Mana_only_land"] = lc["oracle_id"].isin(mo).astype(int)
-        data["m_data_list_changes.csv"] = lc
+        data["m_list_changes"] = lc
     return w, notes, data, (f"{ms.isoformat()} .. {me.isoformat()}" + ("" if complete else " - INCOMPLETE month, "
                                                                            "test material"))
 
 
-def _status(export, out: Path, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dict, triage, colours,
-            month_note: str, as_of: date) -> Path:
+def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dict, triage, colours,
+            month_note: str, as_of: date, decks: pd.DataFrame) -> List[str]:
+    """The lines of the Status section of notes.md."""
     prev_path = previous_export(export, we - timedelta(days=7))
     moves, desc = classification_changes(export, prev_path)
     # this week's lists are new (not in the previous week's export): the month of the week instead
     mmoves, _ = classification_changes(export, prev_path, we.replace(day=1)) if prev_path is not None else (None, "")
     ev = di.event_table(rows)
-    lines = ["# Status", ""]
+    lines = []
     top = (triage.note or triage.notice) if triage is not None else ""
     if top:
         lines += [f"**{top}**", ""]
@@ -353,7 +367,7 @@ def _status(export, out: Path, label: str, ws: date, we: date, rows: pd.DataFram
         "- Monthly material: " + (month_note or "not included (the week does not contain the first Sunday of the "
                                                "month)"),
     ]
-    named = [d for d in pd.read_csv(out / "data_decks.csv", dtype=str, encoding="utf-8-sig")["Deck"] if d not in dp.POOLED]
+    named = [d for d in decks["Deck"] if d not in dp.POOLED]
     clash = dp.shared_colours(named, colours.of_deck)
     if clash:
         lines.append("- Decks sharing a fixed colour on the deck trend (the second one dashed): "
@@ -361,44 +375,46 @@ def _status(export, out: Path, label: str, ws: date, we: date, rows: pd.DataFram
     if colours.missing:
         lines.append("- Deck colours missing from docs/deckdb_colours.csv (a palette colour by name was used): "
                      + ", ".join(colours.missing))
-    lines += ["", "## Classification changes since the previous week", "", desc + "."]
-    for title, mv in (("All common lists", moves), (f"Lists from {we.replace(day=1).isoformat()} (this week's lists are new, not in the previous export)", mmoves)):
+    lines += ["", "### Classification changes since the previous week", "", desc + "."]
+    for title, mv in (("All common lists", moves),
+                      (f"Lists from {we.replace(day=1).isoformat()} (this week's lists are new, not in the previous "
+                       "export)", mmoves)):
         if mv is not None:
             lines += ["", f"{title}:", ""] + ([f"- {r.From} → {r.To}: {r.Lists}" for r in mv.itertuples()]
                                               or ["- none"])
-    lines += ["", "## Events of the week (verify on mtgo.com)", "", "| EventID | Date | Players | Lists |",
+    lines += ["", "### Events of the week (verify on mtgo.com)", "", "| EventID | Date | Players | Lists |",
               "|---|---|---|---|"]
     lines += [f"| {r.EventID} | {r.Date} | {r.Event_players} | {r.Lists} |" for r in ev.itertuples()]
-    p = out / "status.md"
-    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return p
+    return lines
 
 
-def _glossary(export, out: Path, with_month: bool) -> Path:
+def _notes(export, out: Path, label: str, status: List[str], notes: Dict[str, str], with_month: bool) -> Path:
+    """notes.md: Status, Files, Speaker notes, Glossary (in this order)."""
+    files = dict(WEEK_FILES)
+    if with_month:
+        files.update(MONTH_FILES)
+    present = {p.name for p in out.iterdir()} | {"data.xlsx", "notes.md"}
+    file_lines = [f"- `{name}` - {text}." for name, text in sorted(files.items(), key=lambda kv: _order(kv[0]))
+                  if name in present]
+    missing = [name for name in files if name not in present]
+    if missing:
+        file_lines += ["", "Not produced this time: " + ", ".join(f"`{name}`" for name in missing) + "."]
+    sheets = {**SHEETS, **(MONTH_SHEETS if with_month else {})}
+    file_lines += ["", "Sheets of `data.xlsx` (after `contents`): " + ", ".join(f"`{s}`" for s in sheets) + "."]
+    mark = dp.MARK or dp.NOTICE
+    speaker = ([f"**{mark}**", ""] if mark else []) + [line for name, text in notes.items()
+                                                       for line in (f"### {name}", "", text, "")]
     g = dict(dm.GLOSSARY + dm.CARD_GLOSSARY)
     terms = list(FOLDER_TERMS) + (list(MONTH_TERMS) + [dc.KIND_LIST] if with_month else [])
-    body = [f"- **{t}** - {g[t]}" for t in terms if t in g] + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY]
-    p = out / "GLOSSARY.md"
-    p.write_text("# Glossary\n\n" f"DeckDB rules `{export.rules_version}`, export `{export.path.name}`, sha256 "
-                 f"`{export.sha256}`. Every CSV of this folder carries `rules_version`, `export_sha256` and "
-                 "`data_version`.\n\n" + "\n".join(body) + "\n", encoding="utf-8")
-    return p
-
-
-def _readme(out: Path, label: str, m_period) -> Path:
-    files = dict(WEEK_FILES)
-    if m_period is not None:
-        files.update(MONTH_FILES)
-    present = {p.name for p in out.iterdir()} | {"README.md"}
-    lines = [f"# Presentation {label}", "",
-             "MTGO Modern Challenge Top 32, input mode deckdb (DeckDB export only). Slide order = file number.", ""]
-    lines += [f"- `{name}` - {text}." for name, text in sorted(files.items(), key=lambda kv: _order(kv[0]))
-              if name in present]
-    missing = [n for n in files if n not in present]
-    if missing:
-        lines += ["", "Not produced this time: " + ", ".join(f"`{n}`" for n in missing) + "."]
-    p = out / "README.md"
-    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    glossary = ([f"DeckDB rules `{export.rules_version}`, export `{export.path.name}`, sha256 `{export.sha256}`. "
+                 "Every data sheet carries `rules_version`, `export_sha256` and `data_version`.", ""]
+                + [f"- **{t}** - {g[t]}" for t in terms if t in g] + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY])
+    body = ([f"# Presentation {label}", "",
+             "MTGO Modern Challenge Top 32, input mode deckdb (DeckDB export only). Slide order = file number.", "",
+             "## Status", ""] + status + ["", "## Files", ""] + file_lines + ["", "## Speaker notes", ""] + speaker
+            + ["## Glossary", ""] + glossary)
+    p = out / "notes.md"
+    p.write_text("\n".join(body) + "\n", encoding="utf-8")
     return p
 
 
@@ -407,8 +423,4 @@ def _order(name: str) -> tuple:
         return (0, name)
     if name.startswith("m0"):
         return (1, name)
-    if name.startswith("data_"):
-        return (2, name)
-    if name.startswith("m_"):
-        return (3, name)
-    return (4, ["status.md", "speaker_notes.md", "GLOSSARY.md", "README.md"].index(name), name)
+    return (2, name)
