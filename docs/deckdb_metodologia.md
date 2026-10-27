@@ -683,3 +683,14 @@ i arkusz `m_deck_results` liczą średni percentyl miejsca i konwersję na lista
 ostatniego dużego zdarzenia formatu (`effective_mtgo`, dziś 2026-05-19) do końca miesiąca materiału (przy niepełnym
 miesiącu do ostatniej daty eksportu), z bazą tego okresu i przedziałem bootstrap po pilotach (K41); tytuł i stopka
 podają okres. Zmiany list (`m02`) zostają porównaniem miesiąca z poprzednim.
+
+**m01 jako wykres odchyleń z pasem istotności (2026-10-27).** Panele „mean place percentile” i „Top 8 conversion”
+pokazują odchylenie talii od bazy wspólnej okresu (oś zerowa pionowo w środku panelu; jednostki „points vs average”
+i „pp vs average”; zakres symetryczny, wspólny dla wierszy panelu). Pas istotności wiersza: od −(CI_high − est) do
++(est − CI_low) z 95% przedziału bootstrap po pilotach, bez symetryzacji i bez wąsów. Kolor słupka z geometrii:
+zielony poza prawą krawędzią pasu, czerwony poza lewą, szary w pasie, bez przedziału (< 10 pilotów, adnotacja „low
+pilot count”) i dla „Rogue & unclassified”. Kolor z geometrii musi być równy fladze `*_CI_excludes_baseline` arkusza,
+inaczej przebieg przerywa się (`DeckdbInputError`). Tabela kontrolna wszystkich wierszy: arkusz `m_results_bands` w
+`data.xlsx`. Po zmianie K41 w DeckDB na korektę wielokrotnych porównań (BH) pas trzeba liczyć z przedziału na poziomie
+1 − T (T = q·k/m) i porównywać z flagą BH, z dopiskiem „band adjusted for multiple comparisons”; dziś DeckDB tej
+flagi nie eksportuje, więc pas jest nieskorygowany.

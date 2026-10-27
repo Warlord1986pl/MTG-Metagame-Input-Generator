@@ -75,6 +75,8 @@ SHEETS = {
 MONTH_SHEETS = {
     "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
                       "pilot-bootstrap intervals (DeckDB K41)",
+    "m_results_bands": "control table of the m01 chart: per deck and measure the value, the deviation from the "
+                       "average, the interval, the band edges, the colour from the geometry and the sheet's flag",
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_TOP_WEEK, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
@@ -321,19 +323,19 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
     res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(frows)))
     pct_base, conv_base = di.percentile_baseline(frows), di.top8_baseline(frows)
     period = f"{fstart.day} {fstart:%b %Y} – {me.day} {me:%b %Y}"
-    w = [dp.results_chart(res, pct_base, conv_base, f"Deck results, {period}{inc}",
-                          dp.footer(fstart, me, frows, "format period" + (f" · {note}" if note else "")),
-                          out / "m01_deck_results.png")]
+    p, bands = dp.results_deviation_chart(res, pct_base, conv_base, f"Deck results, {period}{inc}",
+                                          dp.footer(fstart, me, frows, "format period" + (f" · {note}" if note else "")),
+                                          out / "m01_deck_results.png")
+    w = [p]
     shown = res[res["Deck"] != di.NO_DECK_LABEL].head(dp.TOP_N_RESULTS)
-    hit = [r["Deck"] for _, r in shown.iterrows() if r["Percentile_CI_excludes_baseline"]
-           or r["Conversion_CI_excludes_baseline"]]
+    hit = sorted(set(bands.loc[bands["Colour_geometry"] != "grey", "Deck"]), key=list(shown["Deck"]).index)
     notes = {"m01_deck_results.png": (
         f"The {len(shown)} decks with the most Top 32 lists in the format period, {period}{inc}, counted from the "
-        "last major format change. Mean place percentile shows where a deck's lists finish among the published lists "
-        "(100 = first, 0 = last); Top 8 conversion is the share of its lists that reached the Top 8. Only values "
-        "clearly away from the average are coloured" + (f" (here: {', '.join(hit)})" if hit else " (none here)")
-        + ".")}
-    data = {"m_deck_results": res}
+        "last major format change. Each bar shows how far a deck finishes from the average: mean place percentile "
+        "(where its lists finish among the published lists, 100 = first, 0 = last) and Top 8 conversion (the share of "
+        "its lists that reached the Top 8). The grey band shows how far a deck must be from the average to differ from "
+        "it; only bars beyond it are coloured" + (f" (here: {', '.join(hit)})" if hit else " (none here)") + ".")}
+    data = {"m_deck_results": res, "m_results_bands": bands}
     if cards is not None:
         m1s, m1e = di.previous_month(ms)
         t = dc.change_tables(export, cards, (m1s, m1e), (ms, me))

@@ -479,7 +479,7 @@ def test_presentation_folder_flat_with_month(tmp_path):
     # no card export in this test: no m02_list_changes.png and no m_list_changes sheet (12 files; 13 with cards)
     assert names == week | {"m01_deck_results.png"} and len(names) == 12 <= fo.MAX_FILES
     xl = pd.read_excel(folder / "data.xlsx", sheet_name=None)
-    assert list(xl) == ["contents", *fo.SHEETS, "m_deck_results"]
+    assert list(xl) == ["contents", *fo.SHEETS, "m_deck_results", "m_results_bands"]
     assert xl["contents"]["sheet"].tolist() == list(xl)[1:]
     assert "Rogue & unclassified" in xl["decks"]["Deck"].tolist()
     # K41: the monthly deck results cover the format period (2026-08-03, fe.yaml) up to the end of September
@@ -515,3 +515,21 @@ def test_variant_week_table_sums_match_the_deck(tmp_path):
     assert t.to_dict("records") == [
         {"Deck": "Zoo", "Variant": "Zoo: Phlage", "Lists_Top32": 2, "Lists_Top8": 2, "Trophies": 1},
         {"Deck": "Zoo", "Variant": "Zoo: other", "Lists_Top32": 1, "Lists_Top8": 0, "Trophies": 0}]
+
+
+def test_result_bands_geometry_and_flag():
+    """m01: band -(CI_high - est) .. +(est - CI_low) around 0; colour from the geometry; a flag that disagrees
+    with the geometry stops the run (Broodscale Combo W43: deviation +3.39, right edge +2.28, green)."""
+    import deckdb_presentation as dp
+
+    t = pd.DataFrame([
+        {"Deck": "Broodscale Combo", "v": 53.39, "lo": 51.11, "hi": 55.9, "f": 1},
+        {"Deck": "Prowess", "v": 48.0, "lo": 45.0, "hi": 51.0, "f": 0},
+        {"Deck": "Dredge", "v": 40.0, "lo": float("nan"), "hi": float("nan"), "f": 0}])
+    b = dp.result_bands(t, 50.0, "v", "lo", "hi", "f")
+    assert b.loc[0, "Deviation"] == pytest.approx(3.39) and b.loc[0, "Band_right"] == pytest.approx(2.28)
+    assert b.loc[0, "Band_left"] == pytest.approx(-2.51)  # asymmetric, not symmetrised
+    assert list(b["Colour_geometry"]) == ["green", "grey", "grey"] and b.loc[2, "Note"] == "low pilot count"
+    t.loc[1, "f"] = 1
+    with pytest.raises(di.DeckdbInputError, match="geometrii"):
+        dp.result_bands(t, 50.0, "v", "lo", "hi", "f")

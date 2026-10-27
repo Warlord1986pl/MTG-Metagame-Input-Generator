@@ -477,6 +477,111 @@ def results_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title:
     return _save(fig, path)
 
 
+# --- deck results as deviations from the average with a significance band (m01, 2026-10-27) ---------------
+
+LEGEND_BANDS = ("band = how far a deck must be from the average to differ from it; green above / red below; "
+                "grey = not distinguishable")
+C_BAND = "#eceef1"
+C_GREY_BAR = "#9ca3af"  # a bar inside its band (not distinguishable), darker than the band
+C_ZERO = "#6b7280"
+RESULT_PANELS = (  # (panel title, value, CI low, CI high, flag, unit of the axis, label format)
+    ("mean place percentile", "Mean_place_percentile", "Percentile_CI_low", "Percentile_CI_high",
+     "Percentile_CI_excludes_baseline", "points vs average", lambda v: f"{v:.1f}", lambda b: f"average {b:.1f}"),
+    ("Top 8 conversion", "Top8_conversion_pct", "CI_low_pct", "CI_high_pct", "Conversion_CI_excludes_baseline",
+     "pp vs average", lambda v: f"{v:.1f}%", lambda b: f"average {b:.1f}%"),
+)
+
+
+def result_bands(t: pd.DataFrame, base: float, col: str, lo: str, hi: str, flag: str) -> pd.DataFrame:
+    """Per row: est, deviation = est - base, the band around 0 from -(CI_high - est) to +(est - CI_low) (asymmetric
+    when the interval is), the colour from the geometry (green: the bar ends beyond the right edge, red: beyond the
+    left edge, grey: inside; grey without an interval and on 'Rogue & unclassified') and the sheet's flag. A
+    colour that disagrees with the flag raises DeckdbInputError (no fallback)."""
+    out = []
+    for _, r in t.iterrows():
+        est = float(r[col])
+        dev = est - base
+        has_ci = not (pd.isna(r[lo]) or pd.isna(r[hi]))
+        left = -(float(r[hi]) - est) if has_ci else float("nan")
+        right = est - float(r[lo]) if has_ci else float("nan")
+        if r["Deck"] == di.NO_DECK_LABEL or not has_ci:
+            colour = "grey"
+        else:
+            colour = "green" if dev > right else "red" if dev < left else "grey"
+        fl = int(r[flag])
+        if r["Deck"] != di.NO_DECK_LABEL and (colour != "grey") != bool(fl):
+            raise di.DeckdbInputError(f"m01: kolor z geometrii ({colour}) różny od flagi {flag}={fl} dla {r['Deck']} "
+                                      f"(est {est:.3f}, baza {base:.3f}, CI {r[lo]}..{r[hi]})")
+        out.append({"Deck": r["Deck"], "Measure": col, "Baseline": base, "Est": est, "Deviation": dev,
+                    "CI_low": r[lo], "CI_high": r[hi], "Band_left": left, "Band_right": right,
+                    "Colour_geometry": colour, "Flag_sheet": fl,
+                    "Note": "" if has_ci or r["Deck"] == di.NO_DECK_LABEL else "low pilot count"})
+    return pd.DataFrame(out)
+
+
+def results_deviation_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title: str, foot: str,
+                            path: Path) -> tuple[Path, pd.DataFrame]:
+    """The TOP_N_RESULTS decks with the most lists: lists (bars), then mean place percentile and Top 8 conversion as
+    deviations from the period's common baseline (0 = average, vertical in the middle of the panel, the same
+    symmetric range for every row of a panel), each row with its significance band from the 95% pilot-bootstrap
+    interval (no whiskers); the label is the deck's own value outside the bar or band. Returns (path, the control
+    table of every row and panel)."""
+    t = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
+        TOP_N_RESULTS).reset_index(drop=True)
+    fig = _fig()
+    ax = fig.add_axes([0.25, 0.14, 0.15, 0.62])
+    _hbars(ax, list(t["Deck"]), list(t["Lists"]), [C_BAR] * len(t))
+    ax.set_title("lists", fontsize=FONT["panel"], color=C_TEXT, loc="left")
+    _labels(ax, list(t["Lists"]), [[(f"{v:.0f}", {})] for v in t["Lists"]])
+    colour = {"green": C_UP, "red": C_DOWN, "grey": C_GREY_BAR}
+    control = []
+    for k, (head, col, lo, hi, flag, unit, fmt, avg) in enumerate(RESULT_PANELS):
+        base = pct_base if k == 0 else conv_base
+        b = result_bands(t, base, col, lo, hi, flag)
+        control.append(b)
+        ax = fig.add_axes([0.45 + k * 0.28, 0.14, 0.24, 0.62])
+        y = list(range(len(b)))
+        for i, r in b.iterrows():
+            if not pd.isna(r["Band_left"]):
+                ax.barh(i, r["Band_right"] - r["Band_left"], left=r["Band_left"], height=0.84, color=C_BAND,
+                        zorder=1, linewidth=0)
+            ax.barh(i, r["Deviation"], height=0.5, color=colour[r["Colour_geometry"]], zorder=2)
+        ax.axvline(0, color=C_ZERO, linewidth=1.2, zorder=3)
+        reach = max([abs(v) for v in list(b["Deviation"]) + list(b["Band_left"].dropna())
+                     + list(b["Band_right"].dropna())] + [1e-9])
+        ax.set_xlim(-reach * 1.08, reach * 1.08)
+        ax.set_ylim(len(b) - 0.5, -0.5)
+        ax.set_yticks(y)
+        ax.set_yticklabels([])
+        for side in ("top", "right", "left"):
+            ax.spines[side].set_visible(False)
+        ax.spines["bottom"].set_color("#bbbbbb")
+        ax.tick_params(axis="x", labelsize=FONT["footer"], colors=C_SOFT)
+        ax.tick_params(axis="y", length=0)
+        ax.set_xlabel(unit, fontsize=FONT["footer"], color=C_SOFT)
+        ax.set_title(f"{head}\n{avg(base)}", fontsize=FONT["panel"], color=C_TEXT, loc="left")
+        texts = []
+        for i, r in b.iterrows():  # outside the bar and the band, never on them
+            pos = r["Deviation"] >= 0
+            edges = [r["Deviation"]] + ([r["Band_right"] if pos else r["Band_left"]]
+                                        if not pd.isna(r["Band_left"]) else [])
+            x = max(edges) if pos else min(edges)
+            txt = fmt(r["Est"]) + (f" · {r['Note']}" if r["Note"] else "")
+            texts.append(ax.annotate(txt, xy=(x, i), xytext=(6 if pos else -6, 0), textcoords="offset points",
+                                     ha="left" if pos else "right", va="center", fontsize=FONT["value"],
+                                     color=C_TEXT, annotation_clip=False, zorder=5))
+        for _ in range(40):  # widen the symmetric range until every label is inside the panel
+            fig.canvas.draw()
+            r_ = fig.canvas.get_renderer()
+            box = ax.get_window_extent()
+            if all(box.x0 <= t_.get_window_extent(r_).x0 and t_.get_window_extent(r_).x1 <= box.x1 for t_ in texts):
+                break
+            lim = ax.get_xlim()[1] * 1.08
+            ax.set_xlim(-lim, lim)
+    _frame(fig, title, foot, LEGEND_BANDS)
+    return _save(fig, path), pd.concat(control, ignore_index=True)
+
+
 # --- card layer: list changes (B6) ------------------------------------------------------------------------
 
 def list_changes_chart(tested: pd.DataFrame, mana_only_ids: frozenset, title: str, foot: str, path: Path
