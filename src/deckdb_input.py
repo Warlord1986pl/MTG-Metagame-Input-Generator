@@ -605,6 +605,17 @@ def _event_share_draws(rows: pd.DataFrame, labels: List[str], draws: int, rng: n
     return m[idx].sum(axis=1) / m.sum(axis=1)[idx].sum(axis=1)[:, None] * 100.0
 
 
+TOP_TIE_RULE = ("the ten decks with the most Top 32 lists of the week; a tie on lists is broken by the deck name in "
+                "alphabetical order (A before Z), not by presence or results")
+
+
+def ranked_labels(rows: pd.DataFrame, key: str) -> List[str]:
+    """Labels of *key* (without NO_DECK_LABEL) by lists of *rows* descending, a tie by the label in alphabetical order
+    (TOP_TIE_RULE; the glossary term "top 10 (week)" states the same rule)."""
+    counts = rows.loc[rows[key] != NO_DECK_LABEL, key].value_counts()
+    return sorted(counts.index, key=lambda lab: (-int(counts[lab]), str(lab)))
+
+
 def week_share_table(rows: pd.DataFrame, prev_rows: pd.DataFrame, key: str, key_name: str,
                      top_n: Optional[int] = None, draws: int = CHANGE_DRAWS, seed: int = CHANGE_SEED) -> pd.DataFrame:
     """Week level (K41). Rows: the *top_n* labels by lists of the week (ties by name; all labels when None),
@@ -612,9 +623,8 @@ def week_share_table(rows: pd.DataFrame, prev_rows: pd.DataFrame, key: str, key_
     presence (events with >= 1 list / events of the week), distinct pilots, and the change of share against
     *prev_rows* (the previous week, pooled by the same rows) with a 95% interval: events drawn with
     replacement in each week independently, the same draws for every row."""
-    named = rows.loc[rows[key] != NO_DECK_LABEL, key].value_counts()
-    named = named.sort_index().sort_values(ascending=False, kind="stable")
-    keep = list(named.index if top_n is None else named.index[:top_n])
+    keep = ranked_labels(rows, key)
+    keep = keep if top_n is None else keep[:top_n]
 
     def _grouped(r: pd.DataFrame) -> pd.DataFrame:
         pooled = r[key].isin(keep) | (r[key] == NO_DECK_LABEL)

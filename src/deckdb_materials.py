@@ -69,6 +69,7 @@ M_PERCENTILE = "mean place percentile"
 M_COLOUR_RULE = "results colour rule"
 M_OTHER = di.OTHER_DECKS_LABEL
 M_CHANGE = "change vs previous week"
+M_TOP_WEEK = f"top {di.WEEK_TOP_N} (week)"
 M_CHANGE_CI = "95% CI of the change (event bootstrap)"
 M_WEEK_PILOTS = "pilots (week)"
 M_WEEK_TOP8 = "Top 8 of the week"
@@ -128,6 +129,7 @@ GLOSSARY: List[tuple[str, str]] = [
                  "change the deck's measures."),
     ("Rogue & unclassified", "lists that match no defined deck: original builds (Rogue) and lists close to a known deck that its rules don't cover (unclassified). One row in every material; status Rogue and unassigned apart only in the "
                                "Rogue_unclassified_split sheet (the DeckDB statuses are unchanged)."),
+    (M_TOP_WEEK, f"{di.TOP_TIE_RULE}."),
     (M_OTHER, f"week: every deck outside the top {di.WEEK_TOP_N} of the week by share, pooled into one row (lists and "
               "share summed); the previous week is pooled by the same rows."),
     (M_CHANGE, "share in the week - share in the previous ISO week, in percentage points (pp)."),
@@ -147,7 +149,7 @@ GLOSSARY: List[tuple[str, str]] = [
                    "(DeckDB K41: deck results are monthly material)."),
 ]
 
-WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_OTHER, "Rogue & unclassified", M_CHANGE, M_CHANGE_CI,
+WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_TOP_WEEK, M_OTHER, "Rogue & unclassified", M_CHANGE, M_CHANGE_CI,
               M_WEEK_PILOTS, M_WEEK_TOP8, "variant label", M_NEW_CARD_WEEK, M_PILOTS, M_COVERAGE, "week",
               M_NOT_WEEKLY)
 WEEK_GLOSSARY: List[tuple[str, str]] = [(t, d) for t, d in GLOSSARY if t in WEEK_TERMS]

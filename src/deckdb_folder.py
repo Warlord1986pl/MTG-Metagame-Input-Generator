@@ -75,7 +75,7 @@ MONTH_SHEETS = {
                       "pilot-bootstrap intervals (DeckDB K41)",
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
-FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
+FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_TOP_WEEK, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
                 dm.M_CHANGE_CI, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
                 dm.M_PILOTS, dm.M_COVERAGE, "week", dm.M_NOT_WEEKLY)
 MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_CI, dm.M_COLOUR_RULE, "format period", "month",

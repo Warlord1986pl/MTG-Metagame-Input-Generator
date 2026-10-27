@@ -491,3 +491,13 @@ def test_presentation_folder_flat_with_month(tmp_path):
     assert fo.month_for(date(2026, 11, 1)) == (date(2026, 10, 1), date(2026, 10, 31))  # Sunday 1 Nov: first week
     assert fo.month_for(date(2026, 10, 4)) == (date(2026, 9, 1), date(2026, 9, 30))
     assert fo.month_for(date(2026, 10, 25)) is None
+
+
+def test_top10_tie_broken_by_name():
+    """W43 case: three decks with the same lists at the cut; the tie goes by deck name (glossary 'top 10 (week)')."""
+    import deckdb_materials as dm
+
+    rows = pd.DataFrame({"material_deck": ["Tron"] * 2 + ["Prowess"] * 2 + ["Ruby Storm"] * 2 + ["Zoo"] * 3
+                         + [di.NO_DECK_LABEL] * 5})
+    assert di.ranked_labels(rows, "material_deck") == ["Zoo", "Prowess", "Ruby Storm", "Tron"]
+    assert "alphabetical" in dict(dm.GLOSSARY)[dm.M_TOP_WEEK]
