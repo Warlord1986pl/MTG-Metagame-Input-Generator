@@ -10,8 +10,9 @@ presentation project takes at most 24 attachments; correction to the order of 20
 
 The week is the last complete ISO week ending on or before --as-of. The monthly material (the previous month) joins
 the folder when the week contains the first Sunday of its month; ``month`` forces a month (an incomplete one is
-marked "incomplete month" in titles and footers). Every data sheet carries rules_version, export_sha256 and
-data_version; no chart carries a definition, seed, sha256 or rules version.
+marked "incomplete month" in titles and footers). The deck results of the monthly material cover the format period
+up to the end of the month (DeckDB K41). Every data sheet carries rules_version, export_sha256 and data_version; no
+chart carries a definition, seed, sha256 or rules version.
 """
 
 from __future__ import annotations
@@ -53,8 +54,9 @@ WEEK_FILES = {
                 "changes, event IDs to verify on mtgo.com), Files, Speaker notes, Glossary",
 }
 MONTH_FILES = {
-    "m01_deck_results.png": "the 12 decks with the most lists of the month: lists, mean place percentile, Top 8 "
-                            "conversion; coloured only where the interval excludes the average",
+    "m01_deck_results.png": "the 12 decks with the most lists of the format period up to the end of the month: lists, "
+                            "mean place percentile, Top 8 conversion; coloured only where the interval excludes the "
+                            "average",
     "m02_list_changes.png": "the biggest list changes from the month before to this month (at most 12, mana-only "
                             "lands left out), added or cut",
 }
@@ -69,13 +71,15 @@ SHEETS = {
     "share_history_archetypes": "weekly share per archetype over the trend weeks",
 }
 MONTH_SHEETS = {
-    "m_deck_results": "results of every deck of the month with the pilot-bootstrap intervals",
+    "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
+                      "pilot-bootstrap intervals (DeckDB K41)",
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
                 dm.M_CHANGE_CI, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
                 dm.M_PILOTS, dm.M_COVERAGE, "week", dm.M_NOT_WEEKLY)
-MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_CI, dm.M_COLOUR_RULE, "month", "pilot labels")
+MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_CI, dm.M_COLOUR_RULE, "format period", "month",
+               "pilot labels")
 EXTRA_GLOSSARY = [
     ("top pilot share (week)", "lists of the deck's most frequent pilot this week / the deck's lists this week; marked "
                                "when it is at least 1/3."),
@@ -174,6 +178,10 @@ def build_presentation_folder(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_
     if m_period is not None:
         di.window_rows(export, m_period[0], m_period[1])
         di.window_rows(export, *di.previous_month(m_period[0]))
+        # K41: deck results over the format period, from its start up to the end of the month of the material
+        fstart = di.format_period_start(cfg.format_events_path, m_period[1])[0]
+        di.window_rows(export, fstart, m_period[1])
+        m_period = (*m_period, fstart)
     cards = dc.load_cards(cfg.cards_path, export) if cfg.cards_path is not None else None
     out = folder_dir(outputs_base, ws)
     out.mkdir(parents=True, exist_ok=True)
@@ -300,23 +308,28 @@ def _workbook(export, path: Path, data: Dict[str, pd.DataFrame]) -> Path:
     return path
 
 
-def _month(export, cards, out: Path, ms: date, me: date, complete: bool):
+def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart: date):
     rows = di.window_rows(export, ms, me)
     inc = "" if complete else " (incomplete month)"
     note = "" if complete else "incomplete month"
-    res = di.conversion_table(rows, "material_deck", "Deck", pilots=True)
-    res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(rows)))
-    pct_base, conv_base = di.percentile_baseline(rows), di.top8_baseline(rows)
-    w = [dp.results_chart(res, pct_base, conv_base, f"How the top decks finished in {ms:%B %Y}{inc}",
-                          dp.footer(ms, me, rows, note), out / "m01_deck_results.png")]
+    # K41: deck results over the format period, from its start up to the end of the month of the material
+    frows = di.window_rows(export, fstart, me)
+    res = di.conversion_table(frows, "material_deck", "Deck", pilots=True)
+    res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(frows)))
+    pct_base, conv_base = di.percentile_baseline(frows), di.top8_baseline(frows)
+    period = f"{fstart.day} {fstart:%B %Y} – {me.day} {me:%B %Y}"
+    w = [dp.results_chart(res, pct_base, conv_base, f"How the top decks finish, {period}{inc}",
+                          dp.footer(fstart, me, frows, "format period" + (f" · {note}" if note else "")),
+                          out / "m01_deck_results.png")]
     shown = res[res["Deck"] != di.NO_DECK_LABEL].head(dp.TOP_N_RESULTS)
     hit = [r["Deck"] for _, r in shown.iterrows() if r["Percentile_CI_excludes_baseline"]
            or r["Conversion_CI_excludes_baseline"]]
     notes = {"m01_deck_results.png": (
-        f"The {len(shown)} decks with the most Top 32 lists in {ms:%B %Y}{inc}. Mean place percentile shows where a "
-        "deck's lists finish among the published lists (100 = first, 0 = last); Top 8 conversion is the share of its "
-        "lists that reached the Top 8. Only values clearly away from the average are coloured"
-        + (f" (here: {', '.join(hit)})" if hit else " (none here)") + ".")}
+        f"The {len(shown)} decks with the most Top 32 lists in the format period, {period}{inc}, counted from the "
+        "last major format change. Mean place percentile shows where a deck's lists finish among the published lists "
+        "(100 = first, 0 = last); Top 8 conversion is the share of its lists that reached the Top 8. Only values "
+        "clearly away from the average are coloured" + (f" (here: {', '.join(hit)})" if hit else " (none here)")
+        + ".")}
     data = {"m_deck_results": res}
     if cards is not None:
         m1s, m1e = di.previous_month(ms)
@@ -338,7 +351,8 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool):
             lc["Mana_only_land"] = lc["oracle_id"].isin(mo).astype(int)
         data["m_list_changes"] = lc
     return w, notes, data, (f"{ms.isoformat()} .. {me.isoformat()}" + ("" if complete else " - INCOMPLETE month, "
-                                                                           "test material"))
+                                                                           "test material")
+                            + f"; deck results over the format period {fstart.isoformat()} .. {me.isoformat()}")
 
 
 def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dict, triage, colours,

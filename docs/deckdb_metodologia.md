@@ -677,3 +677,9 @@ kolejności). Przebieg odmawia (`DeckdbInputError`), gdy folder miałby więcej 
 (wcześniej `outputs/deckdb_working/`), starsze katalogi robocze i punkt odniesienia kontroli W42 w
 `outputs/_working/deckdb_robocze/` (wcześniej `outputs/deckdb_robocze/`); na wierzchu `outputs/` zostaje tylko
 `presentation/` z folderami do prezentacji oraz pliki trybu dotychczasowego.
+
+**Poprawka do (k), B6 (2026-10-27): wyniki talii w materiale miesięcznym na okresie formatu.** `m01_deck_results.png`
+i arkusz `m_deck_results` liczą średni percentyl miejsca i konwersję na listach okresu formatu, od daty obowiązywania
+ostatniego dużego zdarzenia formatu (`effective_mtgo`, dziś 2026-05-19) do końca miesiąca materiału (przy niepełnym
+miesiącu do ostatniej daty eksportu), z bazą tego okresu i przedziałem bootstrap po pilotach (K41); tytuł i stopka
+podają okres. Zmiany list (`m02`) zostają porównaniem miesiąca z poprzednim.

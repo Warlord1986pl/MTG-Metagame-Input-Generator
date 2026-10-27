@@ -482,6 +482,8 @@ def test_presentation_folder_flat_with_month(tmp_path):
     assert list(xl) == ["contents", *fo.SHEETS, "m_deck_results"]
     assert xl["contents"]["sheet"].tolist() == list(xl)[1:]
     assert "Rogue & unclassified" in xl["decks"]["Deck"].tolist()
+    # K41: the monthly deck results cover the format period (2026-08-03, fe.yaml) up to the end of September
+    assert int(xl["m_deck_results"]["Lists"].sum()) == 59 * 10
     notes = (folder / "notes.md").read_text(encoding="utf-8")
     heads = [h for h in ("## Status", "## Files", "## Speaker notes", "## Glossary")]
     assert [notes.index(h) for h in heads] == sorted(notes.index(h) for h in heads)

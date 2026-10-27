@@ -278,7 +278,9 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   presentation project takes at most 24 attachments): the 01..09 charts, `data.xlsx` (sheet `contents` first, then one
   sheet per table) and `notes.md` (sections Status, Files, Speaker notes, Glossary); the previous month's `m01`/`m02`
   charts and `m_*` sheets join when the week contains the first Sunday of the month, `--presentation-month YYYY-MM`
-  forces a month (incomplete marked "incomplete month"). Fixed colours: archetypes in `deckdb_presentation.ARCHETYPE_COLOURS`, decks in
+  forces a month (incomplete marked "incomplete month"). The deck results of the monthly material (`m01`,
+  `m_deck_results`) cover the format period from its start (`effective_mtgo`, today 2026-05-19) to the end of the
+  material's month (K41); title and footer give that period. Fixed colours: archetypes in `deckdb_presentation.ARCHETYPE_COLOURS`, decks in
   `docs/deckdb_colours.csv` (16 validated colours; a repeat on one trend chart is dashed and listed in notes.md).
   Run with the project venv (`E:/github/.venv/Scripts/python.exe`; the bare `python` may lack yaml).
 - Layout of `outputs/` (2026-10-27): on top only `presentation/` (the folders for the slides) and the files of the
