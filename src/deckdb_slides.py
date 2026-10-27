@@ -107,8 +107,8 @@ def _style_axis(ax) -> None:
 # --- share bars (week, month) ------------------------------------------------------------------
 
 def bar_rows(tbl: pd.DataFrame, key: str, top_n: int = TOP_N_BARS) -> pd.DataFrame:
-    """Top *top_n* rows by lists (the 'no deck' row never counts as a deck) plus one pooled row for the rest:
-    share = its lists / all lists, conversion = its Top 8 lists / its lists. 'no deck' stays its own row."""
+    """Top *top_n* rows by lists (the 'Rogue & unclassified' row never counts as a deck) plus one pooled row for the rest:
+    share = its lists / all lists, conversion = its Top 8 lists / its lists. 'Rogue & unclassified' stays its own row."""
     t = tbl[[key, "Lists", "Top8_lists"]].copy()
     total = int(t["Lists"].sum())
     no_deck = t[t[key] == di.NO_DECK_LABEL]
@@ -337,7 +337,7 @@ def build_deckdb_slides(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: da
     rows = di.window_rows(export, ws, we)
     label = di.iso_week_label(ws)
     src = _source(export, ws, we, len(rows))
-    notes = _notes(export, (dm.M_SHARE, dm.M_CONVERSION, dm.M_BASELINE, "week", "no deck"),
+    notes = _notes(export, (dm.M_SHARE, dm.M_CONVERSION, dm.M_BASELINE, "week", "Rogue & unclassified"),
                    extra=f"'{OTHER_DECKS}': every deck outside the top {TOP_N_BARS}, pooled (its Top 8 lists / its "
                          "lists). Event presence is not shown on slides (report material only).")
     for key, col, name in (("Deck", "material_deck", "decks"), ("Archetype", "material_archetype", "archetypes")):
@@ -358,7 +358,7 @@ def build_deckdb_slides(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: da
     rows = di.window_rows(export, ms, me)
     mlabel = f"{ms:%Y-%m}" + ("" if complete else " (incomplete)")
     src = _source(export, ms, me, len(rows))
-    mnotes = _notes(export, (dm.M_SHARE, dm.M_CONVERSION, dm.M_BASELINE, "month", "no deck"),
+    mnotes = _notes(export, (dm.M_SHARE, dm.M_CONVERSION, dm.M_BASELINE, "month", "Rogue & unclassified"),
                     extra=f"'{OTHER_DECKS}': every deck outside the top {TOP_N_BARS}, pooled.")
     for key, col, name in (("Deck", "material_deck", "decks"), ("Archetype", "material_archetype", "archetypes")):
         tbl = di.share_table(rows, col, key, trophies=False)

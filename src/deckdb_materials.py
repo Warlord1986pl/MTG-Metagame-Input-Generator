@@ -8,7 +8,7 @@ legacy palette, layout, fonts, colour scales and number formats; no styling code
 Levels, each its own directory under ``<outputs-base>/deckdb_working/WORKING_<as-of>/``:
 
   week_<YYYY-Www>                        weekly set (K41): the last complete ISO week -- share of Challenge
-                                         Top 32 for the top 10 decks + "other decks" + "no deck" and every
+                                         Top 32 for the top 10 decks + "other decks" + "Rogue & unclassified" and every
                                          archetype, change vs the previous week with an event-bootstrap
                                          interval, event presence, pilots, trend over the last N disjoint
                                          ISO weeks, Top 8 of every event, new cards; no deck results
@@ -79,7 +79,7 @@ GLOSSARY: List[tuple[str, str]] = [
               "event_date (UTC); every period is closed on both ends."),
     ("Challenge Top 32", "the published lists of an event: final_rank 1..L, L = min(32, player_count). The population "
                          "of every material is these lists -- not all participants and not the MTGO metagame."),
-    (M_SHARE, "lists of the deck / all lists of the period. Rogue and unassigned lists together form the 'no deck' "
+    (M_SHARE, "lists of the deck / all lists of the period. Rogue and unassigned lists together form the 'Rogue & unclassified' "
               "row. It is not the probability of meeting the deck."),
     (M_PRESENCE, "number of events of the period with at least one list of the deck; also as % of the events."),
     (M_TOP8, "a list with final_rank <= 8. 'Top 8 lists' = their number; 'Top 8 (% of events)' = events with at least "
@@ -97,7 +97,7 @@ GLOSSARY: List[tuple[str, str]] = [
            f"2.5 / 97.5; given only with >= {di.BOOT_MIN_PILOTS} pilots."),
     (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} cell is coloured (red below / blue above the {M_BASELINE}) "
                     f"only when its {M_CI} excludes the baseline; every other cell of those columns is grey, also "
-                    "without an interval and always on the 'no deck' row, which is not a deck (DeckDB K41)."),
+                    "without an interval and always on the 'Rogue & unclassified' row, which is not a deck (DeckDB K41)."),
     (M_CONCENTRATION, f"share of the best pilots of the window in its lists, Top 8 entries and trophies. Threshold = the "
                       f"Top 8 count of the pilot at place ceil({di.TOP_PILOTS_FRAC:.2f} x pilots) by Top 8 entries (at "
                       "least 1); every pilot with at least that many Top 8 entries is in the group, ties are never "
@@ -124,7 +124,8 @@ GLOSSARY: List[tuple[str, str]] = [
     ("variants", "by D2 (DeckDB decisions.md, entry 35): reported in a month with >= 5% of the deck's lists, >= 3 lists "
                  "and >= 2 pilots, only in months with >= 20 lists of the deck; names by K16; a variant does not "
                  "change the deck's measures."),
-    ("no deck", "Rogue + unassigned lists (one row in materials, split only in the No_deck_split sheet)."),
+    ("Rogue & unclassified", "lists that match no defined deck: original builds (Rogue) and lists close to a known deck that its rules don't cover (unclassified). One row in every material; status Rogue and unassigned apart only in the "
+                               "Rogue_unclassified_split sheet (the DeckDB statuses are unchanged)."),
     (M_OTHER, f"week: every deck outside the top {di.WEEK_TOP_N} of the week by share, pooled into one row (lists and "
               "share summed); the previous week is pooled by the same rows."),
     (M_CHANGE, "share in the week - share in the previous ISO week, in percentage points (pp)."),
@@ -136,7 +137,7 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_WEEK_TOP8, "the lists with final_rank <= 8 of every event of the week: place, deck and variant; the winner is "
                   "place 1. No player names, no rates."),
     ("variant label", "the export's variant column (full name by K16); empty for a deck without variants and for the "
-                      "'no deck' row."),
+                      "'Rogue & unclassified' row."),
     (M_NEW_CARD_WEEK, f"a card (deck, zone, oracle_id; basics excluded) whose first list of the deck with it over the "
                       f"whole export falls in the week; reported with >= {dc.MIN_PILOTS_NEW} pilots of the deck playing "
                       "it in the week, otherwise an observation."),
@@ -144,7 +145,7 @@ GLOSSARY: List[tuple[str, str]] = [
                    "(DeckDB K41: deck results are monthly material)."),
 ]
 
-WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_OTHER, "no deck", M_CHANGE, M_CHANGE_CI,
+WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_OTHER, "Rogue & unclassified", M_CHANGE, M_CHANGE_CI,
               M_WEEK_PILOTS, M_WEEK_TOP8, "variant label", M_NEW_CARD_WEEK, M_PILOTS, M_COVERAGE, "week",
               M_NOT_WEEKLY)
 WEEK_GLOSSARY: List[tuple[str, str]] = [(t, d) for t, d in GLOSSARY if t in WEEK_TERMS]
@@ -285,7 +286,7 @@ def _status(export: di.DeckdbExport, level: str, start: date, end: date, rows: p
         ("Events", cov["events"]),
         ("Challenge Top 32 lists", cov["lists"]),
         ("Lists with a deck", int((rows["status"] == di.STATUS_ASSIGNED).sum())),
-        ("Lists without a deck (Rogue + unassigned)", int((rows["status"] != di.STATUS_ASSIGNED).sum())),
+        ("Rogue & unclassified lists (Rogue + unassigned)", int((rows["status"] != di.STATUS_ASSIGNED).sum())),
         ("  of which Rogue", int((rows["status"] == di.STATUS_ROGUE).sum())),
         ("  of which unassigned", int((rows["status"] == di.STATUS_UNASSIGNED).sum())),
         ("Sum of player_count over the events", cov["participants"]),
@@ -450,7 +451,7 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
         (M_NOT_WEEKLY, dict(GLOSSARY)[M_NOT_WEEKLY]),
     ])
     sheets = {"STATUS": status, "Decks": decks, "Archetypes": archs, "Top8": top8, "New_cards": new_cards,
-              "No_deck_split": split, "Events": di.event_table(rows), "Trend_decks": trend["decks"],
+              "Rogue_unclassified_split": split, "Events": di.event_table(rows), "Trend_decks": trend["decks"],
               "Trend_archetypes": trend["archetypes"]}
     csvs = {"decks": decks, "archetypes": archs, "top8": top8, "share_history_weeks": trend["decks"],
             "share_history_weeks_archetypes": trend["archetypes"]}
@@ -460,7 +461,7 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
         extra["new_cards"] = {"cards_sha256": cards.sha256}
     written = _write_level(out, label, export, sheets, csvs, WEEK_GLOSSARY, extra)
     stamp = _stamp(export, "ISO week " + label, ws, we, cov)
-    footer = f"{stamp}\n{_terms(M_SHARE, M_PRESENCE, M_OTHER, 'no deck', 'week')}"
+    footer = f"{stamp}\n{_terms(M_SHARE, M_PRESENCE, M_OTHER, 'Rogue & unclassified', 'week')}"
     for tbl, key, name in ((decks, "Deck", "decks"), (archs, "Archetype", "archetypes")):
         rows_note = (f"top {di.WEEK_TOP_N} by share, {di.OTHER_DECKS_LABEL}, {di.NO_DECK_LABEL}" if key == "Deck"
                      else f"all, {di.NO_DECK_LABEL}")
@@ -520,7 +521,7 @@ def build_month(export: di.DeckdbExport, as_of: date, root: Path, trend_weeks: i
     written = _write_level(out, label, export, {
         "STATUS": status, "Decks": decks, "Archetypes": archs, "Variants": di.variant_table(rows),
         "Results_concentration": concentration,
-        "No_deck_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
+        "Rogue_unclassified_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
         "Trend_decks": trend["decks"], "Trend_archetypes": trend["archetypes"],
     }, {"decks": decks, "archetypes": archs, "finalists": di.finalists_table(rows),
         "results_concentration": concentration, "share_history_weeks": trend["decks"],
@@ -541,7 +542,7 @@ _RESULT_FLAGS = {"Mean_place_percentile": "Percentile_CI_excludes_baseline",
 
 
 def _results_grey(r: pd.Series, col: str) -> bool:
-    """K41: colour only for decks whose interval excludes the baseline; the 'no deck' row is not a deck."""
+    """K41: colour only for decks whose interval excludes the baseline; the 'Rogue & unclassified' row is not a deck."""
     return col in _RESULT_FLAGS and (not int(r[_RESULT_FLAGS[col]]) or di.NO_DECK_LABEL in (r.get("Deck"),
                                                                                            r.get("Archetype")))
 
@@ -559,7 +560,7 @@ def _conversion_cell(r: pd.Series, col: str) -> str:
             text += f" [{r['CI_low_pct']:.0f}-{r['CI_high_pct']:.0f}]"
         return text + (f"\n{r['Pilot_labels']}" if r.get("Pilot_labels") else "")
     if r.get("Deck") == di.NO_DECK_LABEL and col in _PILOT_CHART_COLS:
-        return ""  # pilot measures are not defined for the 'no deck' row (the chart fills them with 0)
+        return ""  # pilot measures are not defined for the 'Rogue & unclassified' row (the chart fills them with 0)
     if col.endswith("_pct"):
         return "" if pd.isna(v) else f"{v:.1f}%"
     return "" if pd.isna(v) else f"{int(v)}"
@@ -633,13 +634,13 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
          f"(expected by chance if no deck differed: {0.05 * with_ci:.1f} each)"),
         (M_COLOUR_RULE, dict(GLOSSARY)[M_COLOUR_RULE]),
         ("Pilot labels", dict(GLOSSARY)["pilot labels"]),
-        ("Pilot measures", "decks only (not archetypes, not the 'no deck' row); Pilots sheet"),
+        ("Pilot measures", "decks only (not archetypes, not the 'Rogue & unclassified' row); Pilots sheet"),
         (M_CONCENTRATION, dict(GLOSSARY)[M_CONCENTRATION]),
     ])
     written = _write_level(out, label, export, {
         "STATUS": status, "Decks": decks[deck_cols], "Archetypes": archs, "Pilots": pilots,
         "Results_concentration": concentration,
-        "No_deck_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
+        "Rogue_unclassified_split": di.no_deck_split(rows, trophies=True), "Events": di.event_table(rows),
     }, {"decks": decks[deck_cols], "archetypes": archs, "pilots": pilots, "finalists": di.finalists_table(rows),
         "results_concentration": concentration}, GLOSSARY)
     stamp = _stamp(export, "format period", start, as_of, cov)
@@ -809,7 +810,7 @@ def present_week(export: di.DeckdbExport, out: Path, ws: date, we: date, rows: p
     ]
     notes["decks_share.png"] = (
         "Share of this week's Challenge Top 32 lists for the ten most played decks, with all other decks pooled and "
-        "'no deck' for lists that fit no deck definition. Each label adds in how many of the week's events the deck "
+        "'Rogue & unclassified' for lists that match no defined deck. Each label adds in how many of the week's events the deck "
         "appeared and the change from last week, in bold green or red only when it is larger than normal "
         f"week-to-week variation ({_highlighted(decks, 'Deck')}).")
     notes["archetypes_share.png"] = (

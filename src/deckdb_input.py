@@ -15,7 +15,7 @@ starts before the first one).
 
 Three time levels (every period closed on both sides by ``event_date``):
 
-  week (ISO, disjoint)   K41: share of the top 10 decks + "other decks" + "no deck" and of every
+  week (ISO, disjoint)   K41: share of the top 10 decks + "other decks" + "Rogue & unclassified" and of every
                          archetype, change vs the previous week (event bootstrap), presence, pilots,
                          Top 8 per event; no result measure of decks
   calendar month         share, presence, Top 8 (lists, % of events), trophies (count), pilot
@@ -41,7 +41,7 @@ Three time levels (every period closed on both sides by ``event_date``):
                            lists and of Top 8 entries, own conversion and conversion without them
   coverage               = lists / sum(player_count) over the period's events
 
-Rogue and unassigned lists are one "no deck" row in materials (``NO_DECK_LABEL``), apart only in
+Rogue and unassigned lists are one "Rogue & unclassified" row in materials (``NO_DECK_LABEL``), apart only in
 the working split. Winrate is not a measure (K36); the Swiss columns are not read. Pilots are the
 export's ``player`` only; ``loginid`` is read only for the MTGO-cache join check and never reaches
 a material.
@@ -61,7 +61,7 @@ import numpy as np
 import pandas as pd
 
 DEFAULT_CONFIG_CSV = Path("docs") / "deckdb_config.csv"
-NO_DECK_LABEL = "no deck"
+NO_DECK_LABEL = "Rogue & unclassified"
 STATUS_ASSIGNED = "assigned"
 STATUS_ROGUE = "rogue"
 STATUS_UNASSIGNED = "unassigned"
@@ -396,7 +396,7 @@ def _pilot_labels(n_pilots: int, lead: pd.Series, lists: int, top8: int, concent
 
 def pilot_summary(rows: pd.DataFrame, key: str, key_name: str) -> pd.DataFrame:
     """Month level, decks: pilots, the most frequent pilot's share of Top 32 lists and Top 8 entries, pilot
-    labels (no result measure). The 'no deck' row has no pilot measures."""
+    labels (no result measure). The 'Rogue & unclassified' row has no pilot measures."""
     out: List[dict] = []
     for label, grp in rows[rows[key] != NO_DECK_LABEL].groupby(key):
         per, lead = _lead_pilot(grp)
@@ -417,7 +417,7 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
     """Format-period level: mean place percentile (main, K41) and Top 8 conversion (auxiliary, K36), both
     with a pilot-bootstrap interval on the same draws, given only with >= BOOT_MIN_PILOTS pilots; the
     *_CI_excludes_baseline flags compare each interval with the period's common baseline. *pilots*: add
-    pilot measures (decks only, never for archetypes or the 'no deck' row)."""
+    pilot measures (decks only, never for archetypes or the 'Rogue & unclassified' row)."""
     rng = np.random.default_rng(seed)
     conv_base, pct_base = top8_baseline(rows), percentile_baseline(rows)
     out: List[dict] = []
@@ -529,7 +529,7 @@ def event_table(rows: pd.DataFrame) -> pd.DataFrame:
         "Date": grp["event_date"].first(),
         "Event_players": grp["player_count"].first(),
         "Lists": grp.size(),
-        "No_deck_lists": grp["status"].apply(lambda s: int((s != STATUS_ASSIGNED).sum())),
+        "Rogue_unclassified_lists": grp["status"].apply(lambda s: int((s != STATUS_ASSIGNED).sum())),
     }).reset_index(drop=True)
     tbl["ISO_week"] = tbl["Date"].map(lambda d: iso_week_label(date.fromisoformat(d)))
     tbl["Month"] = tbl["Date"].str[:7]

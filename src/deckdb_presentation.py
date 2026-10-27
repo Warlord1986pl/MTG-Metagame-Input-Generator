@@ -198,7 +198,7 @@ def _result_colour(value: float, excludes: int, base: float):
 
 
 def results_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title: str, foot: str, path: Path) -> Path:
-    """The TOP_N_RESULTS decks with the most lists ('no deck' is not a deck): lists, mean place percentile, Top 8
+    """The TOP_N_RESULTS decks with the most lists ('Rogue & unclassified' is not a deck): lists, mean place percentile, Top 8
     conversion; a result is coloured only when its interval excludes the average."""
     t = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
         TOP_N_RESULTS)
