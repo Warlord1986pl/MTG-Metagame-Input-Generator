@@ -651,3 +651,16 @@ poprzedni miesiąc trafia do folderu, gdy tydzień zawiera pierwszą niedzielę 
 (porównanie z eksportem tego samego katalogu o najpóźniejszej ostatniej dacie eventu nie późniejszej niż niedziela
 poprzedniego tygodnia: wszystkie wspólne listy i listy od początku miesiąca tygodnia; listy tygodnia są nowe), lista
 ID eventów tygodnia z datami do weryfikacji na mtgo.com.
+
+Przebieg 2026-10-27 (polecenie 2026-10-26 k, punkt B8): eksport `assignments_ded3d7dba99e38d7_2026-10-25.csv`
+(sha256 `31b8ca14…`, reguły `ded3d7dba99e38d7`), karty `cards_ded3d7dba99e38d7_2026-10-25.csv`, triage `complete`;
+`--as-of 2026-10-25 --trend-weeks 12 --presentation-month 2026-10` → `outputs/presentation/2026-W43/` (24 pliki: 9
+wykresów tygodnia, 2 wykresy października jako niepełnego miesiąca, 9 plików danych, status, notatki, słownik,
+README). W43: 12 eventów, 371 list, pokrycie 58,2%, Rogue & unclassified 13 list (Rogue 9, nieprzypisane 4); zmiany
+klasyfikacji wobec eksportu poprzedniego tygodnia (`assignments_ee3ed9fbbbbd6ad6_2026-10-18_dv.csv`): Control →
+Prison 23 i Rogue & unclassified → Prison 11 na wspólnych listach. Każdy wykres obejrzany pod kątem slajdu 16:9;
+poprawione przed zapisem: legenda archetypów nachodząca na podtytuł, powtórzone barwy talii na trendzie (paleta 16
+barw, linia przerywana przy powtórzeniu), Top 8 z 23 wierszami (talie z jedną listą w linii pod wykresem), legenda
+added / cut na długim tytule. Kontrola trybu dotychczasowego W42 (jak w (i)): 83 pliki, 82 identyczne, 1 różny
+(`metagame_input_grouped.xml`, wyłącznie `generated_at`). Testy: 98 przechodzi, 1 nie przechodzi (znany test ligi
+`test_run_league_update_raises_league_blocking_error_on_frozen_week`).
