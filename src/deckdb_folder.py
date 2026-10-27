@@ -317,8 +317,8 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
     res = di.conversion_table(frows, "material_deck", "Deck", pilots=True)
     res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(frows)))
     pct_base, conv_base = di.percentile_baseline(frows), di.top8_baseline(frows)
-    period = f"{fstart.day} {fstart:%B %Y} – {me.day} {me:%B %Y}"
-    w = [dp.results_chart(res, pct_base, conv_base, f"How the top decks finish, {period}{inc}",
+    period = f"{fstart.day} {fstart:%b %Y} – {me.day} {me:%b %Y}"
+    w = [dp.results_chart(res, pct_base, conv_base, f"Deck results, {period}{inc}",
                           dp.footer(fstart, me, frows, "format period" + (f" · {note}" if note else "")),
                           out / "m01_deck_results.png")]
     shown = res[res["Deck"] != di.NO_DECK_LABEL].head(dp.TOP_N_RESULTS)
