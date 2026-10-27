@@ -408,3 +408,76 @@ def test_triage_gate_and_pending_marker(tmp_path):
     status = pd.read_excel(week / "deckdb_WORKING_2026-W42.xlsx", sheet_name="STATUS")
     assert mark in status["Value"].astype(str).tolist()
     assert dm.TRIAGE is None  # the marker does not leak into the next run
+
+
+def _folder_setup(tmp_path):
+    rows = []
+    days = pd.date_range("2026-08-01", "2026-10-18", freq="D")
+    for n, d in enumerate(days):
+        for k in range(10):
+            st = "rogue" if k == 9 else "assigned"
+            rows.append(_row(1000 + n, 10 * n + k, d.date().isoformat(), st,
+                             ["Zoo", "Burn", "Tron"][k % 3] if st == "assigned" else "Rogue",
+                             ["Midrange", "Aggro", "Ramp"][k % 3] if st == "assigned" else "Rogue",
+                             f"p{(n + k) % 13}", k + 1, pc=50))
+    export_csv = _write(tmp_path, rows)
+    fe = tmp_path / "fe.yaml"
+    fe.write_text("events:\n- {key: x, major: true, status: confirmed, effective_mtgo: '2026-08-03'}\n", encoding="utf-8")
+    cfg = tmp_path / "cfg.csv"
+    cfg.write_text(f"key,value\nexport_path,{export_csv.as_posix()}\nformat_events_path,{fe.as_posix()}\n",
+                   encoding="utf-8")
+    return ["--input-mode", "deckdb", "--deckdb-config", str(cfg), "--as-of", "2026-10-18", "--trend-weeks", "4"]
+
+
+def test_pending_notice_runs_without_marks_and_blocking_refuses(tmp_path):
+    """Order of 2026-10-26 k, B1: pending_notice runs (notice in status.md and speaker notes only, no chart mark),
+    pending_blocking is refused without --allow-pending-triage."""
+    import deckdb_presentation as dp
+    import metagame_input_generator as mig
+
+    base = _folder_setup(tmp_path)
+    p = tmp_path / "triage_dv.json"
+    p.write_text(json.dumps({"data_version": "dv", "status": "pending_blocking", "pending_groups": 2,
+                             "waiting": [{"item_key": "k1", "lists_in_week": 5, "days_waiting": 30}]}), encoding="utf-8")
+    with pytest.raises(di.DeckdbInputError, match="pending_blocking"):
+        mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o1")]), log=lambda _m: None)
+    p.write_text(json.dumps({"data_version": "dv", "status": "pending_notice", "pending_groups": 2,
+                             "waiting_share_of_week": 0.012}), encoding="utf-8")
+    seen = []
+    orig = dp.footer
+    dp.footer = lambda *a, **k: seen.append(orig(*a, **k)) or seen[-1]
+    try:
+        mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o2"), "--deckdb-level",
+                                                         "week"]), log=lambda _m: None)
+    finally:
+        dp.footer = orig
+    notice = "2 list group(s) awaiting review, 1.2% of this week's lists, shown as Rogue & unclassified"
+    folder = tmp_path / "o2" / "presentation" / "2026-W42"
+    assert notice in (folder / "status.md").read_text(encoding="utf-8")
+    assert notice in (folder / "speaker_notes.md").read_text(encoding="utf-8")
+    assert seen and not any("triage" in f or "awaiting" in f for f in seen)  # no chart carries it
+    assert dp.MARK == "" and dp.NOTICE == ""
+
+
+def test_presentation_folder_flat_with_month(tmp_path):
+    """Order of 2026-10-26 k, B7: one flat folder outputs/presentation/<year>-W<nn>/ with the numbered charts, the
+    data, status, notes, glossary and README; the month joins on the first week of a month or when forced."""
+    import deckdb_folder as fo
+    import metagame_input_generator as mig
+
+    base = _folder_setup(tmp_path)
+    (tmp_path / "triage_dv.json").write_text(json.dumps({"data_version": "dv", "status": "complete",
+                                                         "pending_groups": 0}), encoding="utf-8")
+    mig.run_deckdb_generation(mig.parse_args(base + ["--outputs-base", str(tmp_path / "o"), "--deckdb-level", "week",
+                                                     "--presentation-month", "2026-09"]), log=lambda _m: None)
+    folder = tmp_path / "o" / "presentation" / "2026-W42"
+    names = {p.name for p in folder.iterdir()}
+    assert not any(p.is_dir() for p in folder.iterdir())
+    week = set(fo.WEEK_FILES)
+    assert week <= names and {"m01_deck_results.png", "m_data_deck_results.csv"} <= names
+    assert "Rogue & unclassified" in pd.read_csv(folder / "data_decks.csv", encoding="utf-8-sig")["Deck"].tolist()
+    readme = (folder / "README.md").read_text(encoding="utf-8")
+    assert all(f"`{n}`" in readme for n in week)
+    assert fo.month_for(date(2026, 11, 1)) == (date(2026, 10, 1), date(2026, 10, 31))  # Sunday 1 Nov: first week
+    assert fo.month_for(date(2026, 10, 4)) == (date(2026, 9, 1), date(2026, 9, 30))
+    assert fo.month_for(date(2026, 10, 25)) is None

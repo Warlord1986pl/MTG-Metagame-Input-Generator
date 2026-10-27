@@ -255,10 +255,20 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   colour only where the interval excludes the baseline, grey otherwise and on "no deck"; trophies,
   pilot measures for decks only), cards. Winrate is gone (K36);
   the expected conversion lives only in `scripts/deckdb_methodology_stats.py` (warns > 1 pp).
-- Triage gate (DeckDB K43, order 2026-10-26 e): deckdb mode refuses to run unless `triage_<data_version>.json`
-  (DeckDB `scripts/weekly_triage.py`) sits next to the assignment export with status `complete` for the export's
-  `data_version`; `--allow-pending-triage` runs anyway and marks every material ("triage pending: <n> list group(s)
-  awaiting decision" in chart footers, STATUS sheet, per-package `status.md`, `presentation/speaker_notes.md`).
+- Triage gate (DeckDB K43 + supplement entry 330, orders 2026-10-26 e and k): `triage_<data_version>.json` (DeckDB
+  `scripts/weekly_triage.py`) must sit next to the assignment export for its `data_version`. Status `complete` and
+  `pending_notice` run (pending_notice: "<N> list group(s) awaiting review, <X>% of this week's lists, shown as Rogue &
+  unclassified" in `status.md` / STATUS / speaker notes only, never on a chart); `pending_blocking` (and the older
+  `pending`) is refused unless `--allow-pending-triage`, which then marks every material ("triage pending: <n> list
+  group(s) awaiting decision" in chart footers, STATUS sheet, `status.md`, speaker notes).
+- Rogue and unassigned lists are one row labelled "Rogue & unclassified" (`di.NO_DECK_LABEL`) in every material.
+- Presentation folder (`deckdb_folder.py`, order 2026-10-26 k, B7; spec `docs/deckdb_metodologia.md` (k)): a run with
+  level `week`/`all` also writes ONE flat folder `outputs/presentation/<year>-W<nn>/` (01..09 charts, `data_*.csv`,
+  `status.md`, `speaker_notes.md`, `GLOSSARY.md`, `README.md`); the previous month's `m01`/`m02` charts and `m_data_*`
+  join when the week contains the first Sunday of the month, `--presentation-month YYYY-MM` forces a month (incomplete
+  marked "incomplete month"). Fixed colours: archetypes in `deckdb_presentation.ARCHETYPE_COLOURS`, decks in
+  `docs/deckdb_colours.csv` (16 validated colours; a repeat on one trend chart is dashed and listed in status.md).
+  Run with the project venv (`E:/github/.venv/Scripts/python.exe`; the bare `python` may lack yaml).
 - Presentation set (`deckdb_presentation.py`, order 2026-10-26 b, spec section (i)): every package also gets
   `presentation/` (week: `decks_share.png`, `archetypes_share.png`, trends; month: trends; format period:
   `deck_results.png`; cards: `list_changes.png` without `mana_only_land` cards -- DeckDB K42 column of

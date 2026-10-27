@@ -604,3 +604,50 @@ Tryb deckdb czyta obok pliku eksportu przypisań plik `triage_<data_version>.jso
 wygenerować materiały przy statusie `pending`; wtedy każdy materiał ma oznaczenie „triage pending: <n> list group(s)
 awaiting decision”: stopki wykresów roboczych (linia wielkimi literami) i prezentacyjnych (dopisek do jedynej linii),
 arkusz STATUS, nowy plik `status.md` w każdym pakiecie i `presentation/speaker_notes.md`.
+
+## (k) Folder prezentacji, statusy triage'u, etykieta i kolory (polecenie 2026-10-26 k, część B)
+
+**Triage (B1, DeckDB K43 uzupełnienie, wpis 330).** Plik triage'u ma status `complete`, `pending_notice` albo
+`pending_blocking` (starszy `pending` traktowany jak `pending_blocking`). Tryb deckdb pracuje przy `complete` i
+`pending_notice`, odmawia przy `pending_blocking` (wypisuje czekające grupy) chyba że z `--allow-pending-triage`; wtedy
+oznaczenia jak w (j). Przy `pending_notice` żaden wykres nie ma oznaczenia; monit „<N> list group(s) awaiting review,
+<X>% of this week's lists, shown as Rogue & unclassified” (X = `waiting_share_of_week` z pliku triage'u) jest tylko w
+`status.md` (także w arkuszu STATUS jako „Triage notice”) i w `speaker_notes.md`.
+
+**Etykieta (B2).** Wiersz list bez talii (Rogue i nieprzypisane razem) nazywa się wszędzie „Rogue & unclassified”
+(`NO_DECK_LABEL`), arkusz rozbicia `Rogue_unclassified_split`, kolumna eventów `Rogue_unclassified_lists`. Słownik:
+„lists that match no defined deck: original builds (Rogue) and lists close to a known deck that its rules don't cover
+(unclassified)”. Statusy eksportu bez zmian.
+
+**Kolory (B3).** Archetypy: Aggro #EF4444, Graveyard #6366F1, Combo #3B82F6, Midrange #F59E0B, Ramp #14B8A6, Control
+#60A5FA, Rogue & unclassified #6B7280. Słupki talii w kolorze archetypu z legendą archetypów. Na trendzie talii każda
+talia ma stały kolor z `docs/deckdb_colours.csv` (16 barw, sprawdzonych walidatorem palety: jasność, nasycenie,
+rozróżnialność sąsiednich par przy zaburzeniach widzenia barw ≥ 9 i przy normalnym ≥ 19; przydział 2026-10-27 według
+liczby list z 2026-08-03 … 2026-10-25). Talia spoza pliku dostaje barwę palety według skrótu nazwy, a `status.md`
+prosi o dopisanie. 16 barw na 42 talie: barwa powtórzona na jednym wykresie trendu rysowana jest linią przerywaną z
+rombem przy podpisie, `status.md` wymienia takie pary (W43: Amulet Titan / Prowess).
+
+**Zasady wykresów prezentacyjnych (B4–B6)** jak w (i), oraz: zmiana wobec poprzedniego tygodnia pogrubiona i
+kolorowa (zielona / czerwona) tylko poza wahaniami; „other decks” nie jest słupkiem, tylko linią pod wykresem
+„other decks: <udział>% of lists across <n> decks”; na Top 8 przy ponad 14 taliach talie z jedną listą w Top 8 i bez
+trofeum są wymienione w linii pod wykresem; trend talii i archetypów z podpisami na końcu linii; macierz tygodnia
+(Top 32 lists, events present, Top 8 lists, events with Top 8, trophies; skala YlGnBu osobna dla kolumny, bez
+konwersji; 12 talii z największą liczbą list i wiersz Rogue & unclassified; archetypy wszystkie); piloci: 10 talii z
+wykresu udziałów, liczba różnych pilotów i udział najczęstszego pilota, oznaczenie przy co najmniej 1/3 list; nowe
+karty jako tabela (talia, karta, piloci, SB tylko dla sideboardu, najwyżej 12, bez kart `mana_only_land`). Wykresy
+miesięczne: wyniki talii (12 talii z największą liczbą list w miesiącu; percentyl i konwersja liczone na liście
+miesiąca z bazą miesiąca i przedziałem bootstrap po pilotach od 10 pilotów) i zmiany list (miesiąc wobec
+poprzedniego, bez kart `mana_only_land`, najwyżej 12, added / cut, etykieta „<talia> · <karta>”).
+
+**Jeden folder (B7, `src/deckdb_folder.py`).** Obok katalogów roboczych (bez zmian) przebieg na poziomie `week` albo
+`all` tworzy płaski folder `outputs/presentation/<rok>-W<nn>/` dla ostatniego pełnego tygodnia ISO do `--as-of`:
+wykresy `01_archetypes_share.png` … `09_new_cards.png`, dane `data_*.csv` (z kolumnami `rules_version`,
+`export_sha256`, `data_version`), `status.md`, `speaker_notes.md`, `GLOSSARY.md`, `README.md`. Ponowny przebieg
+zastępuje pliki folderu. Materiał miesięczny (`m01_deck_results.png`, `m02_list_changes.png`, `m_data_*.csv`) za
+poprzedni miesiąc trafia do folderu, gdy tydzień zawiera pierwszą niedzielę miesiąca (niedziela tygodnia ma dzień
+≤ 7); `--presentation-month YYYY-MM` wymusza miesiąc (niepełny z dopiskiem „incomplete month” w tytule i stopce).
+`status.md`: okno, eventy, listy, pokrycie, Rogue & unclassified (Rogue / nieprzypisane), wersja reguł, sha256 i
+`data_version` eksportu, status triage'u, monit `pending_notice`, zmiany klasyfikacji od poprzedniego tygodnia
+(porównanie z eksportem tego samego katalogu o najpóźniejszej ostatniej dacie eventu nie późniejszej niż niedziela
+poprzedniego tygodnia: wszystkie wspólne listy i listy od początku miesiąca tygodnia; listy tygodnia są nowe), lista
+ID eventów tygodnia z datami do weryfikacji na mtgo.com.

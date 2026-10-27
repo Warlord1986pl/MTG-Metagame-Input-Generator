@@ -1681,6 +1681,16 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--presentation-month",
+        default=None,
+        metavar="YYYY-MM",
+        help=(
+            "tylko z --input-mode deckdb: dołącz do folderu outputs/presentation/<rok>-W<nn>/ materiał miesięczny "
+            "tego miesiąca (niepełny miesiąc z dopiskiem 'incomplete month'); bez flagi materiał miesięczny "
+            "(poprzedni miesiąc) trafia tam, gdy tydzień zawiera pierwszą niedzielę miesiąca"
+        ),
+    )
+    parser.add_argument(
         "--deckdb-slides",
         action="store_true",
         help=(
@@ -1855,6 +1865,14 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         level=getattr(args, "deckdb_level", "all"),
         triage=triage,
     )
+    if getattr(args, "deckdb_level", "all") in ("all", "week"):  # order of 2026-10-26 k, B7: one presentation folder
+        try:
+            from deckdb_folder import build_presentation_folder
+        except ModuleNotFoundError:
+            from .deckdb_folder import build_presentation_folder
+        written += build_presentation_folder(export, cfg, as_of, outputs_base, triage=triage,
+                                             month=getattr(args, "presentation_month", None),
+                                             trend_weeks=int(getattr(args, "trend_weeks", 4)), log=log)
     if getattr(args, "deckdb_slides", False):
         try:
             import deckdb_slides as ds
