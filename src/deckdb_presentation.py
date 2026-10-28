@@ -484,6 +484,17 @@ LEGEND_BANDS = ("band = how far a deck must be from the average to differ from i
 C_BAND = "#eceef1"
 C_GREY_BAR = "#9ca3af"  # a bar inside its band (not distinguishable), darker than the band
 C_ZERO = "#6b7280"
+BAND_COLOURS = {"green": C_UP, "red": C_DOWN, "grey": C_GREY_BAR}  # the bars and the legend swatches of m01
+BAND_LEGEND = (("green", "above average"), ("red", "below average"), ("grey", "not distinguishable"))
+
+
+def _band_legend(fig) -> list:
+    """Swatches of m01 in the colours of its bars (BAND_COLOURS) and of the band; returned for the colour check."""
+    handles = [Patch(facecolor=BAND_COLOURS[c], label=text) for c, text in BAND_LEGEND]
+    handles.append(Patch(facecolor=C_BAND, edgecolor="#bbbbbb", label="band"))
+    fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.015, 0.845), ncol=len(handles),
+               fontsize=FONT["legend"], frameon=False, handlelength=1.2, columnspacing=1.4, borderaxespad=0)
+    return handles
 RESULT_PANELS = (  # (panel title, value, CI low, CI high, flag, unit of the axis, label format)
     ("mean place percentile", "Mean_place_percentile", "Percentile_CI_low", "Percentile_CI_high",
      "Percentile_CI_excludes_baseline", "points vs average", lambda v: f"{v:.1f}", lambda b: f"average {b:.1f}"),
@@ -529,23 +540,25 @@ def results_deviation_chart(decks: pd.DataFrame, pct_base: float, conv_base: flo
     t = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
         TOP_N_RESULTS).reset_index(drop=True)
     fig = _fig()
-    ax = fig.add_axes([0.25, 0.14, 0.15, 0.62])
+    ax = fig.add_axes([0.25, 0.14, 0.15, 0.58])
     _hbars(ax, list(t["Deck"]), list(t["Lists"]), [C_BAR] * len(t))
     ax.set_title("lists", fontsize=FONT["panel"], color=C_TEXT, loc="left")
     _labels(ax, list(t["Lists"]), [[(f"{v:.0f}", {})] for v in t["Lists"]])
-    colour = {"green": C_UP, "red": C_DOWN, "grey": C_GREY_BAR}
+    colour = BAND_COLOURS
     control = []
     for k, (head, col, lo, hi, flag, unit, fmt, avg) in enumerate(RESULT_PANELS):
         base = pct_base if k == 0 else conv_base
+        bar_colours: Dict[str, set] = {}
         b = result_bands(t, base, col, lo, hi, flag)
         control.append(b)
-        ax = fig.add_axes([0.45 + k * 0.28, 0.14, 0.24, 0.62])
+        ax = fig.add_axes([0.45 + k * 0.28, 0.14, 0.24, 0.58])
         y = list(range(len(b)))
         for i, r in b.iterrows():
             if not pd.isna(r["Band_left"]):
                 ax.barh(i, r["Band_right"] - r["Band_left"], left=r["Band_left"], height=0.84, color=C_BAND,
                         zorder=1, linewidth=0)
-            ax.barh(i, r["Deviation"], height=0.5, color=colour[r["Colour_geometry"]], zorder=2)
+            bar = ax.barh(i, r["Deviation"], height=0.5, color=colour[r["Colour_geometry"]], zorder=2)[0]
+            bar_colours.setdefault(r["Colour_geometry"], set()).add(matplotlib.colors.to_hex(bar.get_facecolor()))
         ax.axvline(0, color=C_ZERO, linewidth=1.2, zorder=3)
         reach = max([abs(v) for v in list(b["Deviation"]) + list(b["Band_left"].dropna())
                      + list(b["Band_right"].dropna())] + [1e-9])
@@ -578,6 +591,11 @@ def results_deviation_chart(decks: pd.DataFrame, pct_base: float, conv_base: flo
                 break
             lim = ax.get_xlim()[1] * 1.08
             ax.set_xlim(-lim, lim)
+        legend_hex = {c: matplotlib.colors.to_hex(BAND_COLOURS[c]) for c, _ in BAND_LEGEND}
+        bad = {c: v for c, v in bar_colours.items() if v != {legend_hex[c]}}
+        if bad:  # a bar drawn in a colour other than its legend swatch
+            raise di.DeckdbInputError(f"m01: kolor słupka różny od legendy: {bad} (legenda {legend_hex})")
+    _band_legend(fig)
     _frame(fig, title, foot, LEGEND_BANDS)
     return _save(fig, path), pd.concat(control, ignore_index=True)
 

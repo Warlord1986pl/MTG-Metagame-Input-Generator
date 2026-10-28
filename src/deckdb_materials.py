@@ -98,9 +98,13 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_CI, f"95% interval of the mean place percentile and of the Top 8 conversion: {di.BOOT_DRAWS} draws of the "
            f"deck's pilots with replacement (the same draws for both), all lists of each drawn pilot, percentiles "
            f"2.5 / 97.5; given only with >= {di.BOOT_MIN_PILOTS} pilots."),
-    (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} cell is coloured (red below / blue above the {M_BASELINE}) "
-                    f"only when its {M_CI} excludes the baseline; every other cell of those columns is grey, also "
-                    "without an interval and always on the 'Rogue & unclassified' row, which is not a deck (DeckDB K41)."),
+    (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} result is coloured (red below / green above the "
+                    f"{M_BASELINE}) only when its {M_CI} excludes the baseline; every other result of those measures is "
+                    "grey, also without an interval and always on the 'Rogue & unclassified' row, which is not a deck "
+                    "(DeckDB K41)."),
+    ("results matrix scale (working)", "the working results_matrix_*.png keep the legacy diverging cell scale around "
+                                       "the baseline, as stated in their title; the colour rule above decides which "
+                                       "cells keep a colour."),
     (M_CONCENTRATION, f"share of the best pilots of the window in its lists, Top 8 entries and trophies. Threshold = the "
                       f"Top 8 count of the pilot at place ceil({di.TOP_PILOTS_FRAC:.2f} x pilots) by Top 8 entries (at "
                       "least 1); every pilot with at least that many Top 8 entries is in the group, ties are never "
