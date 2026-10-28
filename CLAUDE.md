@@ -63,8 +63,8 @@ python src/pilot_identity_cli.py merge --primary 2903591 --alias 3263693 \
   deploy, the standard decision cycle when the app log has new decisions, short report; one commit per point.
 - `/poniedzialek` (`.claude/commands/poniedzialek.md`): Monday run over DeckDB and this pipeline: import up to Sunday,
   triage, decisions, `export-assignments` + `export-cards` + triage file from one DB state, then (status `complete` or
-  `pending_notice`) the folder `outputs/presentation/<year>-W<nn>/` with `--as-of <last Sunday>` (monthly material on
-  the first week of a month); stop and list the blocking groups at `pending_blocking`; the legacy W42 control only when
+  `pending_notice`) the folder `outputs/presentation/<year>-W<nn>/` with `--as-of <last Sunday>` (monthly material of
+  month M in the week that contains the first day of M + 1); stop and list the blocking groups at `pending_blocking`; the legacy W42 control only when
   pipeline code changed since the last Monday; short report; one commit per point.
 
 - Ready-made helper scripts (use them, do not rewrite them): pipeline `scripts/legacy_w42_control.py` (legacy W42
@@ -282,7 +282,8 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   level `week`/`all` also writes ONE flat folder `outputs/presentation/<year>-W<nn>/` of at most 13 files (the
   presentation project takes at most 24 attachments): the 01..09 charts, `data.xlsx` (sheet `contents` first, then one
   sheet per table) and `notes.md` (sections Status, Files, Speaker notes, Glossary); the previous month's `m01`/`m02`
-  charts and `m_*` sheets join when the week contains the first Sunday of the month, `--presentation-month YYYY-MM`
+  charts and `m_*` sheets join the ISO week that contains the first day of the next month and end on the last day of
+  the month (October 2026 -> 2026-W44, period up to 2026-10-31; 2026-11-01 only in the weekly sheets), `--presentation-month YYYY-MM`
   forces a month (incomplete marked "incomplete month"). The deck results of the monthly material (`m01`,
   `m_deck_results`) cover the format period from its start (`effective_mtgo`, today 2026-05-19) to the end of the
   material's month (K41); title and footer give that period. Fixed colours: archetypes in `deckdb_presentation.ARCHETYPE_COLOURS`, decks in

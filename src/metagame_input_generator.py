@@ -1687,7 +1687,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help=(
             "tylko z --input-mode deckdb: dołącz do folderu outputs/presentation/<rok>-W<nn>/ materiał miesięczny "
             "tego miesiąca (niepełny miesiąc z dopiskiem 'incomplete month'); bez flagi materiał miesięczny "
-            "(poprzedni miesiąc) trafia tam, gdy tydzień zawiera pierwszą niedzielę miesiąca"
+            "miesiąca M trafia do tygodnia ISO zawierającego pierwszy dzień miesiąca M+1 i kończy się "
+            "ostatnim dniem M"
         ),
     )
     parser.add_argument(

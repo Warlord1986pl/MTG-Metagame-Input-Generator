@@ -738,3 +738,25 @@ Okres 2026-05-19 … 2026-10-25 (eksport `assignments_ded3d7dba99e38d7_2026-10-2
 Moonshadow, Mill, Death's Shadow; T = 0,0147); konwersja 3 (4 z „Rogue & unclassified”), po BH 1 (Death's Shadow;
 T = 0,0029). Broodscale Combo: percentyl 53,39, 95% CI 51,10–55,68, `baseline_rest` 49,64, p 0,003, q 0,051, pas
 50,55–56,12, zielony; konwersja 27,7%, p 0,133, szara.
+
+## (n) Materiał miesięczny w tygodniu zamknięcia miesiąca (zadanie przed 2026-W44, część 4)
+
+Reguła stała: materiał miesięczny za miesiąc M powstaje w paczce tygodnia ISO, który zawiera pierwszy dzień miesiąca
+M+1 (`deckdb_folder.month_for`; październik 2026 → 2026-W44, 2026-10-26 … 2026-11-01). Zastępuje sformułowanie z (k)
+„gdy tydzień zawiera pierwszą niedzielę miesiąca” (dla tygodni ISO oba wybierają ten sam tydzień: niedziela tygodnia
+z pierwszym dniem miesiąca jest pierwszą niedzielą tego miesiąca), ale nazywa wprost miesiąc i jego koniec. Okres
+materiału kończy się ostatnim dniem M także wtedy, gdy tydzień sięga dalej; dni M+1 z tego tygodnia wchodzą tylko do
+materiału tygodniowego. m01, `m_deck_results` i `m_results_bands`: okres formatu od jego początku do ostatniego dnia M;
+m02 i `m_list_changes`: M−1 wobec M, oba pełne, bez oznaczenia „incomplete month”. Arkusze miesięczne mają kolumny
+`Period_start` i `Period_end`. notes.md, Status: „Monthly material: <M-01> .. <ostatni dzień M>, complete month (<n>
+events, <m> lists)” i linia „Deck results (m01): format period … with multiple-comparison correction (BH q = 0.1,
+against the rest of the field)”; speaker notes m01 i m02 zaczynają się od tego okresu. W tygodniach bez zamknięcia
+miesiąca `--presentation-month` dalej dołącza materiał testowy bieżącego miesiąca z oznaczeniem „incomplete month”.
+Kontrole (`check_month_material`, błąd bez fallbacku): koniec pełnego miesiąca = ostatni dzień kalendarzowy;
+`Period_end` trzech arkuszy = koniec materiału; żadna lista okresu formatu po końcu materiału; eventy i listy miesiąca
+= wiersze eksportu z datą M-01 … koniec M liczone wprost na eksporcie; suma list `m_deck_results` = listy okresu.
+
+Sprawdzenie na danych (eksport do 2026-10-25, więc W44 jeszcze nie istnieje): analogiczne zamknięcie września w
+2026-W40 (2026-09-28 … 2026-10-04, `--as-of 2026-10-04`): okres m01 2026-05-19 … 2026-09-30 (7484 listy = eksport),
+m02 2026-08-01 … 2026-09-30, wrzesień 59 eventów i 1884 listy = eksport, arkusze tygodniowe obejmują eventy z
+2026-10-01 … 10-04. Dokładnie W44 sprawdza test syntetyczny `test_month_material_in_the_week_closing_the_month`.

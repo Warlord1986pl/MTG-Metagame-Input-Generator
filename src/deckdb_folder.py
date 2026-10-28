@@ -8,9 +8,9 @@ presentation project takes at most 24 attachments; correction to the order of 20
   data.xlsx  (sheet "contents" first, then one sheet per table, SHEETS / MONTH_SHEETS)
   notes.md   (sections Status, Files, Speaker notes, Glossary)
 
-The week is the last complete ISO week ending on or before --as-of. The monthly material (the previous month) joins
-the folder when the week contains the first Sunday of its month; ``month`` forces a month (an incomplete one is
-marked "incomplete month" in titles and footers). The deck results of the monthly material cover the format period
+The week is the last complete ISO week ending on or before --as-of. The monthly material of month M joins the folder
+of the ISO week that contains the first day of month M + 1 and ends with the last day of M (month_for); ``month``
+forces a month (an incomplete one is marked "incomplete month" in titles and footers). The deck results of the monthly material cover the format period
 up to the end of the month (DeckDB K41). Every data sheet carries rules_version, export_sha256 and data_version; no
 chart carries a definition, seed, sha256 or rules version.
 """
@@ -107,10 +107,42 @@ def folder_dir(outputs_base: Path, week_start: date) -> Path:
 
 
 def month_for(week_end: date) -> Optional[tuple[date, date]]:
-    """The previous month when the week (ending on Sunday *week_end*) contains the first Sunday of its month."""
-    if week_end.day > 7:
+    """Standing rule (order before 2026-W44, part 4): the monthly material of month M is made in the package of the ISO
+    week that contains the first day of month M + 1 (October 2026 -> 2026-W44, 2026-10-26 .. 2026-11-01). Returns
+    (first, last day of M) for the week ending on Sunday *week_end*, None for any other week. The period ends with the
+    last day of M even when the week goes on into M + 1; those days belong to the weekly material only."""
+    first_next = week_end.replace(day=1)
+    if not week_end - timedelta(days=6) <= first_next <= week_end:
         return None
-    return di.previous_month(week_end.replace(day=1))
+    return di.previous_month(first_next)
+
+
+def check_month_material(export: di.DeckdbExport, ms: date, me: date, complete: bool, fstart: date,
+                         data: Dict[str, pd.DataFrame]) -> Dict[str, object]:
+    """Checks of the monthly material (DeckdbInputError, no fallback): a complete month ends on its last calendar day;
+    the end date of m_deck_results, m_results_bands and m_list_changes is the material's end; no list after it is in
+    the format-period rows; the month's events and lists equal the export's rows dated ms .. me (counted directly on
+    the export). Returns the counts for the Status section."""
+    full_end = (ms + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    if complete and me != full_end:
+        raise di.DeckdbInputError(f"materiał miesięczny {ms:%Y-%m}: koniec {me} zamiast {full_end}")
+    for name in ("m_deck_results", "m_results_bands", "m_list_changes"):
+        df = data.get(name)
+        if df is not None and not df.empty and set(df["Period_end"]) != {me.isoformat()}:
+            raise di.DeckdbInputError(f"{name}: data końcowa {sorted(set(df['Period_end']))} zamiast {me}")
+    ev = export.rows["event_date"]
+    in_month = export.rows[(ev >= ms.isoformat()) & (ev <= me.isoformat())]
+    month_rows = di.window_rows(export, ms, me)
+    period_rows = di.window_rows(export, fstart, me)
+    if period_rows["event_date"].max() > me.isoformat():
+        raise di.DeckdbInputError(f"materiał miesięczny: lista z {period_rows['event_date'].max()} po {me}")
+    counts = (int(in_month["event_id"].nunique()), len(in_month))
+    if counts != (int(month_rows["event_id"].nunique()), len(month_rows)):
+        raise di.DeckdbInputError(f"materiał miesięczny {ms:%Y-%m}: eventy/listy {counts} różne od eksportu")
+    res = data["m_deck_results"]
+    if int(res["Lists"].sum()) != len(period_rows):
+        raise di.DeckdbInputError(f"m_deck_results: {int(res['Lists'].sum())} list zamiast {len(period_rows)}")
+    return {"events": counts[0], "lists": counts[1], "period_lists": len(period_rows)}
 
 
 def previous_export(export: di.DeckdbExport, prev_week_end: date) -> Optional[Path]:
@@ -295,7 +327,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     data = {"decks": decks, "archetypes": archs, "top8": top8, "new_cards": nc, "pilots": pilots,
             "share_history_decks": trend_d, "share_history_archetypes": trend_a,
             "variants_week": di.variant_week_table(rows), "weekly_metrics": wm, "monthly_metrics": mm}
-    month_note = ""
+    month_note: List[str] = []
     if m_period is not None:
         mw, mnotes, mdata, month_note = _month(export, cards, out, *m_period)
         w += mw
@@ -345,16 +377,23 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
     frows = di.window_rows(export, fstart, me)
     res = di.conversion_table(frows, "material_deck", "Deck", pilots=True)
     res.insert(1, "Archetype", res["Deck"].map(di.deck_archetype_map(frows)))
+    res.insert(0, "Period_end", me.isoformat())
+    res.insert(0, "Period_start", fstart.isoformat())
     pct_base, conv_base = di.percentile_baseline(frows), di.top8_baseline(frows)
     period = f"{fstart.day} {fstart:%b %Y} – {me.day} {me:%b %Y}"
     p, bands = dp.results_deviation_chart(res, pct_base, conv_base, f"Deck results, {period}{inc}",
                                           dp.footer(fstart, me, frows, "format period" + (f" · {note}" if note else "")),
                                           out / "m01_deck_results.png")
+    bands.insert(0, "Period_end", me.isoformat())
+    bands.insert(0, "Period_start", fstart.isoformat())
     w = [p]
     shown = res[res["Deck"] != di.NO_DECK_LABEL].head(dp.TOP_N_RESULTS)
+    month_line = f"{ms.isoformat()} .. {me.isoformat()}, " + ("complete month" if complete else
+                                                             "incomplete month (test material)")
     hit = sorted(set(bands.loc[bands["Colour_geometry"] != "grey", "Deck"]), key=list(shown["Deck"]).index)
     notes = {"m01_deck_results.png": (
-        f"The {len(shown)} decks with the most Top 32 lists in the format period, {period}{inc}, counted from the "
+        f"Monthly material: {month_line}. The {len(shown)} decks with the most Top 32 lists in the format period, "
+        f"{period}{inc} (up to the end of the month), counted from the "
         "last major format change. Each bar shows how far a deck finishes from the rest of the field (all other "
         "lists): mean place percentile (where its lists finish among the published lists, 100 = first, 0 = last) and "
         "Top 8 conversion (the share of its lists that reached the Top 8). The grey band shows how far a deck must be "
@@ -373,21 +412,26 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
         if p is not None:
             w.append(p)
         notes["m02_list_changes.png"] = (
+            f"Monthly material: {month_line}, compared with {m1s.isoformat()} .. {m1e.isoformat()}. "
             f"The {n_shown} biggest changes in how players build a deck's lists from {m1s:%B} to {ms:%B}{inc}: a card "
             "that more lists of the same deck variant added (green) or cut (red), in percentage points of the deck's "
             f"lists. Lands that only make mana are left out ({dropped}); 'SB' marks a sideboard card."
-            if p is not None else "No list change passed the tests this month.")
+            if p is not None else f"Monthly material: {month_line}. No list change passed the tests this month.")
         lc = tested[tested["Category"] == dc.KIND_LIST].copy() if not tested.empty else tested
         if not lc.empty:
             lc["Mana_only_land"] = lc["oracle_id"].isin(mo).astype(int)
+            lc.insert(0, "Period_end", me.isoformat())
+            lc.insert(0, "Period_start", m1s.isoformat())
         data["m_list_changes"] = lc
-    return w, notes, data, (f"{ms.isoformat()} .. {me.isoformat()}" + ("" if complete else " - INCOMPLETE month, "
-                                                                           "test material")
-                            + f"; deck results over the format period {fstart.isoformat()} .. {me.isoformat()}")
+    n = check_month_material(export, ms, me, complete, fstart, data)
+    results = (f"format period {fstart.isoformat()} .. {me.isoformat()} ({n['period_lists']} lists), with "
+               f"multiple-comparison correction (BH q = {di.BH_Q}, against the rest of the field)")
+    return w, notes, data, [f"Monthly material: {month_line} ({n['events']} events, {n['lists']} lists)",
+                            f"Deck results (m01): {results}"]
 
 
 def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dict, triage, colours,
-            month_note: str, as_of: date, decks: pd.DataFrame) -> List[str]:
+            month_note: List[str], as_of: date, decks: pd.DataFrame) -> List[str]:
     """The lines of the Status section of notes.md."""
     prev_path = previous_export(export, we - timedelta(days=7))
     moves, desc = classification_changes(export, prev_path)
@@ -409,8 +453,8 @@ def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dic
         f"- Export: {export.path.name}, sha256 {export.sha256}",
         f"- data_version: {export.data_version}",
         "- Triage (DeckDB K43): " + (f"{triage.status} ({triage.path.name})" if triage is not None else "not read"),
-        "- Monthly material: " + (month_note or "not included (the week does not contain the first Sunday of the "
-                                               "month)"),
+    ] + ([f"- {line}" for line in month_note] or [
+        "- Monthly material: not included (the week does not contain the first day of a month)"]) + [
     ]
     named = [d for d in decks["Deck"] if d not in dp.POOLED]
     clash = dp.shared_colours(named, colours.of_deck)

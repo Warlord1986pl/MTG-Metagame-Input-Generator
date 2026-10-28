@@ -624,3 +624,37 @@ def test_results_bh_against_rest_and_band(tmp_path):
         lo, hi, b = (t.loc[d, c] for c in ("Percentile_band_low", "Percentile_band_high", "Percentile_baseline_rest"))
         assert bool(b < lo or b > hi) == bool(t.loc[d, "Percentile_BH_rejects"])
     assert t["Conversion_BH_rejects"].sum() == 0  # every list is in the Top 8
+
+
+def test_month_material_in_the_week_closing_the_month(tmp_path):
+    """Order before 2026-W44, part 4: October's monthly material is in 2026-W44 (2026-10-26 .. 2026-11-01), ends on
+    2026-10-31 (the 1 November lists only in the weekly material), complete month, counts equal the export."""
+    import deckdb_folder as fo
+
+    rows = []
+    for n, d in enumerate(pd.date_range("2026-08-01", "2026-11-01", freq="D")):
+        for k in range(10):
+            st = "rogue" if k == 9 else "assigned"
+            rows.append(_row(1000 + n, 10 * n + k, d.date().isoformat(), st,
+                             ["Zoo", "Burn", "Tron"][k % 3] if st == "assigned" else "Rogue",
+                             ["Midrange", "Aggro", "Ramp"][k % 3] if st == "assigned" else "Rogue",
+                             f"p{(n + k) % 13}", k + 1, pc=50))
+    fe = tmp_path / "fe.yaml"
+    fe.write_text("events:\n- {key: x, major: true, status: confirmed, effective_mtgo: '2026-08-03'}\n", encoding="utf-8")
+    exp = di.load_export(_write(tmp_path, rows))
+    cfg = di.DeckdbConfig(exp.path, fe, None)
+    assert fo.month_for(date(2026, 11, 1)) == (date(2026, 10, 1), date(2026, 10, 31))
+    assert fo.month_for(date(2026, 11, 8)) is None and fo.month_for(date(2026, 10, 25)) is None
+    assert fo.month_for(date(2026, 9, 6)) == (date(2026, 8, 1), date(2026, 8, 31))  # 1 Sep is a Tuesday of that week
+    fo.build_presentation_folder(exp, cfg, date(2026, 11, 2), tmp_path / "o", log=lambda _m: None)
+    folder = tmp_path / "o" / "presentation" / "2026-W44"
+    xl = pd.read_excel(folder / "data.xlsx", sheet_name=None)
+    for name in ("m_deck_results", "m_results_bands"):
+        assert set(xl[name]["Period_end"]) == {"2026-10-31"} and set(xl[name]["Period_start"]) == {"2026-08-03"}
+    assert int(xl["m_deck_results"]["Lists"].sum()) == 90 * 10  # 2026-08-03 .. 2026-10-31, no 1 November list
+    assert set(xl["top8"]["Date"]) == {f"2026-10-{d}" for d in range(26, 32)} | {"2026-11-01"}
+    notes = (folder / "notes.md").read_text(encoding="utf-8")
+    assert "- Monthly material: 2026-10-01 .. 2026-10-31, complete month (31 events, 310 lists)" in notes
+    assert "incomplete month" not in notes.split("## Glossary")[0]
+    speaker = notes.split("## Speaker notes")[1].split("## Glossary")[0]
+    assert "Monthly material: 2026-10-01 .. 2026-10-31, complete month" in speaker.split("### m01_deck_results.png")[1]

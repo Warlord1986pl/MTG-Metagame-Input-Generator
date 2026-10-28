@@ -3,6 +3,26 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-28 - Monthly material in the week that closes the month (part 4)
+
+- What: standing rule `month_for`: the monthly material of month M is in the package of the ISO week that contains
+  the first day of M + 1 (October 2026 -> 2026-W44); its period ends on the last day of M even when the week goes on
+  (1 November 2026 only in the weekly sheets). `m_deck_results`, `m_results_bands`, `m_list_changes` carry
+  `Period_start` / `Period_end`. notes.md Status: "Monthly material: <M> .. <end of M>, complete month (<n> events,
+  <m> lists)" and "Deck results (m01): format period ..., with multiple-comparison correction (BH q = 0.1, against the
+  rest of the field)"; speaker notes of m01 and m02 start with the material's period. New checks that stop the run:
+  a complete month ends on its last day, the three sheets end on the material's end, no list after it, the month's
+  events / lists equal the export's rows of those dates, `m_deck_results` lists = lists of the period.
+  `--presentation-month` (incomplete month, test material) unchanged. CLAUDE.md, `/poniedzialek`, `--help` reworded.
+- Why: the rule "the week contains the first Sunday of the month" picked the right week but did not say which month
+  the material covers nor that it ends on the last day of that month; the Status line did not state completeness.
+- Output files: `outputs/presentation/<week>/notes.md` (Status, speaker notes m01 / m02), `data.xlsx` (Period_start /
+  Period_end in m_deck_results, m_results_bands, m_list_changes). Material selection itself unchanged for every week
+  (the two rules choose the same ISO week).
+- Checked on: 2026-W40 closing September (as of 2026-10-04, current export) and a synthetic 2026-W44 test; the real
+  2026-W44 needs the export with data up to 2026-11-01.
+- DeckDB rules version: ded3d7dba99e38d7 (export assignments_ded3d7dba99e38d7_2026-10-25.csv).
+
 ## 2026-10-28 - BH correction of the deck results against the rest of the field (part 3, DeckDB K41 change)
 
 - What: `conversion_table` (format-period deck results) adds per measure (Percentile, Conversion) `baseline_rest`
