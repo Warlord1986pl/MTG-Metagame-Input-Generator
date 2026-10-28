@@ -694,3 +694,23 @@ inaczej przebieg przerywa się (`DeckdbInputError`). Tabela kontrolna wszystkich
 `data.xlsx`. Po zmianie K41 w DeckDB na korektę wielokrotnych porównań (BH) pas trzeba liczyć z przedziału na poziomie
 1 − T (T = q·k/m) i porównywać z flagą BH, z dopiskiem „band adjusted for multiple comparisons”; dziś DeckDB tej
 flagi nie eksportuje, więc pas jest nieskorygowany.
+
+## (l) Pełne dane tygodniowe i miesięczne, tracked decks, korekta BH zmian tygodniowych (polecenie przed 2026-W44, część 2)
+
+Pipeline liczy wszystko dla wszystkich talii; wykresy dalej pokazują top 10; test zmiany tylko w zbiorze tracked
+decks. `data.xlsx` folderu prezentacji ma dwa nowe arkusze, przeliczane od zera z eksportu przy każdym przebiegu
+(nigdy dopisywane): `weekly_metrics` (format długi: tydzień ISO okresu formatu × talia, osobno × archetyp, oba
+z „Rogue & unclassified”; pierwszy tydzień przycięty do początku okresu formatu; talia nieobecna w tygodniu ma 0
+list i udział 0) i `monthly_metrics` (miesiąc kalendarzowy × talia i archetyp; ostatni miesiąc kończy się niedzielą
+tygodnia folderu, `complete_month = 0`, gdy przed końcem miesiąca). Tracked decks tygodnia w: top 10 w ∪ top 10 w−1 ∪
+największa talia (listy w w) każdego archetypu bez talii w tych dwóch top 10, o ile jej udział ≥ 1% w w albo w−1;
+remis zawsze alfabetycznie po nazwie; `tracked_reason` = pierwszy pasujący powód (top10_week, top10_prev,
+largest_in_archetype). Test zmiany: event bootstrap jak dotąd (2000 losowań, ziarno 20261026 dla każdego tygodnia,
+najpierw tydzień bieżący), przedział 2,5/97,5, dwustronne p = 2·min(P(d ≤ 0), P(d ≥ 0)), co najmniej 1/2000; BH q =
+0,1 osobno w rodzinie tracked decks tygodnia i w rodzinie archetypów (wszystkie archetypy i wiersz „Rogue &
+unclassified” z listą w w albo w−1); `change_beyond` = odrzucenie BH. Talie nie-tracked mają puste CI, p, q i
+`change_beyond`. Wiersz „Rogue & unclassified” na wykresie talii bierze test z rodziny archetypów (ta sama
+wielkość, te same losowania); wiersz „other decks” nie jest testowany. Wykresy 01 i 03 pogrubiają zmianę tylko przy
+`change_beyond = 1`; arkusze `decks` i `archetypes` mają `change_beyond` obok `Change_CI_excludes_0`. Kontrole
+(błąd, bez fallbacku): suma list talii i suma po archetypach = listy tygodnia; trophies ≤ top8 ≤ lists,
+events_with_list ≤ week_events; wiersze arkuszy `decks` / `archetypes` / `pilots` identyczne z `weekly_metrics`.

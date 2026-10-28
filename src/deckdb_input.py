@@ -55,7 +55,7 @@ import math
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -658,6 +658,244 @@ def week_share_table(rows: pd.DataFrame, prev_rows: pd.DataFrame, key: str, key_
             "Change_CI_excludes_0": int(lo[j] > 0 or hi[j] < 0),
         })
     return pd.DataFrame(out)
+
+
+# --- full weekly / monthly metrics, tracked decks and the BH-corrected change test (order before 2026-W44, part 2) --
+
+BH_Q = 0.10
+BH_EPS = 1e-12  # float tolerance of the BH comparisons (p lie on the 1 / draws grid)
+TRACK_MIN_SHARE_PCT = 1.0  # largest_in_archetype: share >= 1% in the week or the previous week
+TRACK_TOP10_WEEK, TRACK_TOP10_PREV, TRACK_LARGEST = "top10_week", "top10_prev", "largest_in_archetype"
+TRACK_ARCHETYPE = "archetype"  # every archetype (and the Rogue & unclassified row) with a list in w or w-1
+LEVEL_DECK, LEVEL_ARCHETYPE = "deck", "archetype"
+
+
+def bootstrap_p(diff: np.ndarray) -> np.ndarray:
+    """Two-sided p of every column of *diff* (draws x labels) against 0: 2 x min(P(d <= 0), P(d >= 0)) over the
+    bootstrap distribution, at least 1 / draws, at most 1."""
+    n = diff.shape[0]
+    p = 2.0 * np.minimum((diff <= 0).mean(axis=0), (diff >= 0).mean(axis=0))
+    return np.clip(p, 1.0 / n, 1.0)
+
+
+def bh(p: np.ndarray, q: float = BH_Q) -> tuple[np.ndarray, np.ndarray, float]:
+    """Benjamini-Hochberg over one family: (adjusted q-values, rejections, threshold T = q x k / m). k = the largest
+    rank with p_(k) <= k q / m; a p is rejected exactly when p <= T. With no rejection T = q / m (the level the
+    smallest p would have to reach)."""
+    p = np.asarray(p, dtype=float)
+    m = len(p)
+    if m == 0:
+        return p, p.astype(bool), math.nan
+    order = np.argsort(p, kind="mergesort")
+    ranked = p[order] * m / np.arange(1, m + 1)
+    adj = np.minimum.accumulate(ranked[::-1])[::-1]
+    qv = np.empty(m)
+    qv[order] = np.minimum(adj, 1.0)
+    rejects = qv <= q + BH_EPS
+    k = int(rejects.sum())
+    t = q * max(k, 1) / m
+    if not (np.all(p[rejects] <= t + BH_EPS) and np.all(p[~rejects] > t - BH_EPS)):
+        raise DeckdbInputError(f"BH: odrzucenia (k = {k}) niezgodne z progiem T = {t}")
+    return qv, rejects, t
+
+
+def week_periods(period_start: date, last_week_end: date) -> List[tuple[date, date]]:
+    """Every ISO week of the format period up to the Sunday *last_week_end*, the first one clipped to *period_start*."""
+    if last_week_end.weekday() != 6:
+        raise DeckdbInputError(f"koniec ostatniego tygodnia {last_week_end} nie jest niedzielą")
+    out, ws = [], period_start - timedelta(days=period_start.weekday())
+    while ws <= last_week_end:
+        out.append((max(ws, period_start), ws + timedelta(days=6)))
+        ws += timedelta(days=7)
+    return out
+
+
+def tracked_decks(cur: pd.DataFrame, prev: pd.DataFrame, arch: Dict[str, str]) -> Dict[str, str]:
+    """Tracked decks of week w -> reason: the top 10 of w, the top 10 of w-1, and for every archetype without a deck in
+    those two top 10s its largest deck by lists in w (ties alphabetical) when that deck has a share >= 1% in w or w-1.
+    One reason per deck, in this order."""
+    top_w = ranked_labels(cur, "material_deck")[:WEEK_TOP_N]
+    top_p = ranked_labels(prev, "material_deck")[:WEEK_TOP_N]
+    out = {d: TRACK_TOP10_WEEK for d in top_w}
+    out.update({d: TRACK_TOP10_PREV for d in top_p if d not in out})
+    covered = {arch[d] for d in out}
+    n_cur, n_prev = cur["material_deck"].value_counts(), prev["material_deck"].value_counts()
+    for a in sorted({x for x in arch.values() if x != NO_DECK_LABEL} - covered):
+        decks = sorted((d for d, x in arch.items() if x == a), key=lambda d: (-int(n_cur.get(d, 0)), d))
+        d = decks[0]
+        if (n_cur.get(d, 0) / len(cur) * 100.0 >= TRACK_MIN_SHARE_PCT
+                or n_prev.get(d, 0) / len(prev) * 100.0 >= TRACK_MIN_SHARE_PCT):
+            out[d] = TRACK_LARGEST
+    return out
+
+
+WEEKLY_METRIC_COLUMNS = ["iso_week", "week_from", "week_to", "level", "name", "archetype", "lists", "share_pct",
+                         "events_with_list", "week_events", "top8", "top8_events", "trophies", "pilots",
+                         "top_pilot_share_pct", "concentrated", "prev_week_lists", "prev_share_pct", "change_pp",
+                         "tracked", "tracked_reason", "change_ci_low_pp", "change_ci_high_pp", "change_p",
+                         "change_q_bh", "change_beyond"]
+
+
+def _label_counts(rows: pd.DataFrame, key: str, labels: List[str], top_pilot: bool) -> pd.DataFrame:
+    g = rows.groupby(key)
+    t = pd.DataFrame({
+        "lists": g.size(), "events_with_list": g["event_id"].nunique(), "top8": g["top8"].sum(),
+        "top8_events": rows[rows["top8"] == 1].groupby(key)["event_id"].nunique(), "trophies": g["trophy"].sum(),
+        "pilots": g["player"].nunique(),
+    }).reindex(labels).fillna(0).astype(int)
+    if top_pilot:
+        lead = g["player"].agg(lambda s: int(s.value_counts().iloc[0])).reindex(labels)
+        t["top_pilot_share_pct"] = (lead / t["lists"].where(t["lists"] > 0) * 100.0)
+        t.loc[t.index == NO_DECK_LABEL, "top_pilot_share_pct"] = math.nan  # not a deck
+        t["concentrated"] = (t["top_pilot_share_pct"] >= CONCENTRATION_LISTS * 100.0).astype("Int64").where(
+            t["top_pilot_share_pct"].notna())
+    else:
+        t["top_pilot_share_pct"], t["concentrated"] = math.nan, pd.NA
+    return t
+
+
+def weekly_metrics(export: DeckdbExport, period_start: date, last_week_end: date,
+                   draws: int = CHANGE_DRAWS, seed: int = CHANGE_SEED) -> pd.DataFrame:
+    """Long table, recomputed from the export on every call: every ISO week of the format period x every deck (with
+    'Rogue & unclassified') and, apart, every archetype (with 'Rogue & unclassified') seen in the period; a label
+    absent in a week has 0 lists and share 0. The change test runs only for the tracked decks (tracked_decks) and for
+    the archetypes with a list in w or w-1: event bootstrap as week_share_table (the same seed per week, the current
+    week drawn first), 95% interval, two-sided p (bootstrap_p), BH q = 0.10 separately in the week's family of tracked
+    decks and of archetypes; change_beyond = BH rejection. The first week of the period has no previous week in it:
+    no change, nothing tracked."""
+    weeks = week_periods(period_start, last_week_end)
+    span = window_rows(export, weeks[0][0], weeks[-1][1])
+    arch = deck_archetype_map(span).to_dict()
+    universe = {LEVEL_DECK: ("material_deck", sorted(span["material_deck"].unique())),
+                LEVEL_ARCHETYPE: ("material_archetype", sorted(span["material_archetype"].unique()))}
+    out: List[pd.DataFrame] = []
+    prev_rows: Optional[pd.DataFrame] = None
+    for ws, we in weeks:
+        rows = window_rows(export, ws, we)
+        if rows.empty:
+            raise DeckdbInputError(f"tydzień {iso_week_label(ws)} ({ws}..{we}) bez list: udział nieokreślony")
+        for level, (key, labels) in universe.items():
+            t = _label_counts(rows, key, labels, top_pilot=level == LEVEL_DECK)
+            t["share_pct"] = t["lists"] / len(rows) * 100.0
+            t["week_events"] = int(rows["event_id"].nunique())
+            t["archetype"] = [arch.get(x, x) for x in labels] if level == LEVEL_DECK else labels
+            for col in ("prev_week_lists", "prev_share_pct", "change_pp", "change_ci_low_pp", "change_ci_high_pp",
+                        "change_p", "change_q_bh"):
+                t[col] = math.nan
+            t["tracked"], t["tracked_reason"], t["change_beyond"] = 0, "", pd.NA
+            if prev_rows is not None:
+                n_prev = prev_rows[key].value_counts().reindex(labels).fillna(0).astype(int)
+                t["prev_week_lists"] = n_prev
+                t["prev_share_pct"] = n_prev / len(prev_rows) * 100.0
+                t["change_pp"] = t["share_pct"] - t["prev_share_pct"]
+                if level == LEVEL_DECK:
+                    reasons = tracked_decks(rows, prev_rows, arch)
+                else:
+                    reasons = {x: TRACK_ARCHETYPE for x in labels if t.at[x, "lists"] or n_prev[x]}
+                fam = [x for x in labels if x in reasons]
+                rng = np.random.default_rng(seed)
+                diff = (_event_share_draws(rows.assign(_group=rows[key]), labels, draws, rng)
+                        - _event_share_draws(prev_rows.assign(_group=prev_rows[key]), labels, draws, rng))
+                lo, hi = np.percentile(diff, [2.5, 97.5], axis=0)
+                p = bootstrap_p(diff)
+                j = [labels.index(x) for x in fam]
+                qv, rej, _t = bh(p[j]) if fam else (np.array([]), np.array([], dtype=bool), math.nan)
+                t.loc[fam, "tracked"] = 1
+                t.loc[fam, "tracked_reason"] = [reasons[x] for x in fam]
+                t.loc[fam, "change_ci_low_pp"], t.loc[fam, "change_ci_high_pp"] = lo[j], hi[j]
+                t.loc[fam, "change_p"], t.loc[fam, "change_q_bh"] = p[j], qv
+                t.loc[fam, "change_beyond"] = rej.astype(int)
+            t = t.rename_axis("name").reset_index()
+            t.insert(0, "level", level)
+            t.insert(0, "week_to", we.isoformat())
+            t.insert(0, "week_from", ws.isoformat())
+            t.insert(0, "iso_week", iso_week_label(ws))
+            out.append(t)
+        prev_rows = rows
+    wm = pd.concat(out, ignore_index=True)[WEEKLY_METRIC_COLUMNS]
+    wm["change_beyond"] = wm["change_beyond"].astype("Int64")
+    wm["concentrated"] = wm["concentrated"].astype("Int64")
+    check_weekly_metrics(export, wm)
+    return wm
+
+
+def check_weekly_metrics(export: DeckdbExport, wm: pd.DataFrame) -> None:
+    """Per week and level: the lists sum to the week's lists; per row trophies <= top8 <= lists and events_with_list
+    <= week_events. DeckdbInputError otherwise (no fallback)."""
+    for (week, level), g in wm.groupby(["iso_week", "level"]):
+        n = len(window_rows(export, date.fromisoformat(g["week_from"].iloc[0]), date.fromisoformat(g["week_to"].iloc[0])))
+        if int(g["lists"].sum()) != n:
+            raise DeckdbInputError(f"weekly_metrics {week} {level}: suma list {int(g['lists'].sum())} != {n}")
+    bad = wm[(wm["trophies"] > wm["top8"]) | (wm["top8"] > wm["lists"]) | (wm["events_with_list"] > wm["week_events"])]
+    if not bad.empty:
+        raise DeckdbInputError(f"weekly_metrics: monotoniczność naruszona w {len(bad)} wierszach, np. "
+                               f"{bad.iloc[0][['iso_week', 'level', 'name']].tolist()}")
+
+
+MONTHLY_METRIC_COLUMNS = ["month", "month_from", "month_to", "complete_month", "level", "name", "archetype", "lists",
+                          "share_pct", "events_with_list", "month_events", "top8", "trophies", "pilots",
+                          "top_pilot_share_pct"]
+
+
+def monthly_metrics(export: DeckdbExport, period_start: date, end: date) -> pd.DataFrame:
+    """Calendar month x every deck / archetype of the format period (both with 'Rogue & unclassified'), recomputed
+    from the export: lists, share, events, Top 8, trophies, pilots, top pilot share (decks only). The first month is
+    clipped to *period_start*, the last one to *end* (complete_month = 0 when it ends before the month does)."""
+    span = window_rows(export, period_start, end)
+    arch = deck_archetype_map(span).to_dict()
+    out: List[pd.DataFrame] = []
+    ms = period_start.replace(day=1)
+    while ms <= end:
+        full_end = (ms + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        a, b = max(ms, period_start), min(full_end, end)
+        rows = window_rows(export, a, b)
+        for level, key in ((LEVEL_DECK, "material_deck"), (LEVEL_ARCHETYPE, "material_archetype")):
+            labels = sorted(span[key].unique())
+            t = _label_counts(rows, key, labels, top_pilot=level == LEVEL_DECK).drop(columns=["top8_events",
+                                                                                              "concentrated"])
+            t["share_pct"] = t["lists"] / len(rows) * 100.0
+            t["month_events"] = int(rows["event_id"].nunique())
+            t["archetype"] = [arch.get(x, x) for x in labels] if level == LEVEL_DECK else labels
+            t = t.rename_axis("name").reset_index()
+            t.insert(0, "level", level)
+            t.insert(0, "complete_month", int(b == full_end))
+            t.insert(0, "month_to", b.isoformat())
+            t.insert(0, "month_from", a.isoformat())
+            t.insert(0, "month", f"{ms:%Y-%m}")
+            if int(t["lists"].sum()) != len(rows):
+                raise DeckdbInputError(f"monthly_metrics {ms:%Y-%m} {level}: suma list != {len(rows)}")
+            out.append(t)
+        ms = full_end + timedelta(days=1)
+    return pd.concat(out, ignore_index=True)[MONTHLY_METRIC_COLUMNS]
+
+
+def attach_change_beyond(tbl: pd.DataFrame, wm: pd.DataFrame, week: str, level: str, key_name: str) -> pd.DataFrame:
+    """The sheet *tbl* (week_share_table) with the column change_beyond (BH, weekly_metrics) right after
+    Change_CI_excludes_0. Every named row must equal its weekly_metrics row in lists, share, events, pilots, change
+    and interval, otherwise DeckdbInputError. The 'Rogue & unclassified' row takes the test of the archetype family
+    (the same quantity; decks are tested only when tracked); the pooled 'other decks' row has no test."""
+    w = wm[wm["iso_week"] == week]
+    own = w[w["level"] == level].set_index("name")
+    rogue = w[w["level"] == LEVEL_ARCHETYPE].set_index("name")
+    pairs = [("Lists", "lists"), ("Share_Top32_pct", "share_pct"), ("Events_with_list", "events_with_list"),
+             ("Pilots", "pilots"), ("Change_pp", "change_pp")]
+    beyond = []
+    for _, r in tbl.iterrows():
+        name = r[key_name]
+        if name == OTHER_DECKS_LABEL:
+            beyond.append(pd.NA)
+            continue
+        m = rogue.loc[name] if name == NO_DECK_LABEL else own.loc[name]
+        diffs = [c for c, mc in pairs if not math.isclose(float(r[c]), float(m[mc]), rel_tol=0, abs_tol=1e-9)]
+        if m["tracked"] == 1:
+            diffs += [c for c, mc in (("Change_CI_low_pp", "change_ci_low_pp"), ("Change_CI_high_pp", "change_ci_high_pp"))
+                      if not math.isclose(float(r[c]), float(m[mc]), rel_tol=0, abs_tol=1e-9)]
+        if diffs:
+            raise DeckdbInputError(f"{week} {name}: arkusz tygodnia różny od weekly_metrics w {diffs}")
+        beyond.append(m["change_beyond"])
+    out = tbl.copy()
+    out.insert(out.columns.get_loc("Change_CI_excludes_0") + 1, "change_beyond", pd.array(beyond, dtype="Int64"))
+    return out
 
 
 NO_VARIANT_LABEL = "(no variant)"

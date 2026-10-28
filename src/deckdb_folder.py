@@ -71,6 +71,11 @@ SHEETS = {
     "share_history_archetypes": "weekly share per archetype over the trend weeks",
     "variants_week": "Top 32 lists, Top 8 lists and trophies of the week per variant of every deck with variants "
                      "(a list without a variant: '(no variant)'); the variant sums equal the deck's counts",
+    "weekly_metrics": "every ISO week of the format period x every deck and, apart, every archetype (both with Rogue & "
+                      "unclassified), recomputed from the export: counts, share, change vs the previous week, tracked "
+                      "decks and the BH-corrected change test",
+    "monthly_metrics": "every month of the format period x every deck and archetype: lists, share, events, Top 8, "
+                       "trophies, pilots, top pilot share",
 }
 MONTH_SHEETS = {
     "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
@@ -80,7 +85,7 @@ MONTH_SHEETS = {
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_TOP_WEEK, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
-                dm.M_CHANGE_CI, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
+                dm.M_CHANGE_CI, dm.M_TRACKED, dm.M_CHANGE_BH, dm.M_WEEKLY_METRICS, dm.M_MONTHLY_METRICS, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
                 dm.M_PILOTS, dm.M_COVERAGE, "week", dm.M_NOT_WEEKLY)
 MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_CI, dm.M_COLOUR_RULE, "format period", "month",
                "pilot labels")
@@ -195,22 +200,28 @@ def build_presentation_folder(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_
     dp.MARK = triage.note if triage is not None else ""
     dp.NOTICE = triage.notice if triage is not None else ""
     try:
+        # weekly_metrics / monthly_metrics: the format period of the week, from its start up to the week's Sunday
+        wstart = di.format_period_start(cfg.format_events_path, we)[0]
         return _build(export, cards, out, as_of, weeks[-max(1, trend_weeks):], ps, pe, ws, we, rows, prev, triage,
-                      m_period, log)
+                      m_period, log, wstart)
     finally:
         dp.MARK = dp.NOTICE = ""
 
 
-def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, prev, triage, m_period, log
-           ) -> List[Path]:
+def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, prev, triage, m_period, log,
+           wstart: date) -> List[Path]:
     colours = dp.Colours()
     label = di.iso_week_label(ws)
     cov = di.coverage(rows)
     arch = di.deck_archetype_map(rows).to_dict()
+    wm = di.weekly_metrics(export, wstart, we)
+    mm = di.monthly_metrics(export, wstart, we)
     decks = di.week_share_table(rows, prev, "material_deck", "Deck", top_n=di.WEEK_TOP_N).rename(
         columns={"Labels_in_row": "Decks_in_row"})
     decks.insert(1, "Archetype", decks["Deck"].map(arch).fillna(""))
+    decks = di.attach_change_beyond(decks, wm, label, di.LEVEL_DECK, "Deck")
     archs = di.week_share_table(rows, prev, "material_archetype", "Archetype").drop(columns="Labels_in_row")
+    archs = di.attach_change_beyond(archs, wm, label, di.LEVEL_ARCHETYPE, "Archetype")
     m_decks = di.share_table(rows, "material_deck", "Deck", trophies=True)
     m_archs = di.share_table(rows, "material_archetype", "Archetype", trophies=True)
     trend_d = di.weekly_trend(export, tweeks, "material_deck", "Deck")
@@ -218,6 +229,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     top8 = di.top8_table(rows)
     named = [d for d in decks["Deck"] if d not in dp.POOLED]
     pilots = _pilots(rows, named, arch)
+    _check_pilots(pilots, wm, label)
     if cards is not None:
         nc = dc.new_cards_in_week(export, cards, ws, we)
         mo = cards.mana_only_ids or frozenset()
@@ -234,7 +246,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     w.append(dp.share_chart(archs, "Archetype", "Archetypes this week", foot, out / "01_archetypes_share.png", colours))
     notes["01_archetypes_share.png"] = (
         "Share of this week's Challenge Top 32 lists for every archetype, with the number of events it appeared in and "
-        f"the change from last week; bold green or red marks a change beyond normal week-to-week variation "
+        f"the change from last week; bold green or red marks a change {dm.BEYOND_TEXT} "
         f"({dm._highlighted(archs, 'Archetype')}).")
     trend_arch = [a for a in archs["Archetype"]]
     w.append(dp.trend_chart(trend_a, trend_arch, "Archetype", f"Archetypes over the last {n} weeks", tfoot,
@@ -245,8 +257,8 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     other = decks[decks["Deck"] == di.OTHER_DECKS_LABEL]
     notes["03_decks_share.png"] = (
         "The ten most played decks of the week and Rogue & unclassified (lists that match no defined deck), coloured "
-        "by archetype; each label gives the share, the events with the deck and the change from last week "
-        f"({dm._highlighted(decks, 'Deck')})."
+        "by archetype; each label gives the share, the events with the deck and the change from last week, bold "
+        f"green or red when it is {dm.BEYOND_TEXT} ({dm._highlighted(decks, 'Deck')})."
         + (f" All other decks together are {other.iloc[0]['Share_Top32_pct']:.1f}% of the lists "
            f"({int(other.iloc[0]['Decks_in_row'])} decks)." if not other.empty else ""))
     w.append(dp.trend_chart(trend_d, named, "Deck", f"Top decks over the last {n} weeks", tfoot,
@@ -280,7 +292,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
          "No card appeared in a deck for the first time with at least 2 pilots this week."))
     data = {"decks": decks, "archetypes": archs, "top8": top8, "new_cards": nc, "pilots": pilots,
             "share_history_decks": trend_d, "share_history_archetypes": trend_a,
-            "variants_week": di.variant_week_table(rows)}
+            "variants_week": di.variant_week_table(rows), "weekly_metrics": wm, "monthly_metrics": mm}
     month_note = ""
     if m_period is not None:
         mw, mnotes, mdata, month_note = _month(export, cards, out, *m_period)
@@ -297,6 +309,16 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     for p in w:
         log(f"[deckdb presentation folder] wrote {p}")
     return w
+
+
+def _check_pilots(pilots: pd.DataFrame, wm: pd.DataFrame, week: str) -> None:
+    """The pilots sheet must equal weekly_metrics (deck level) in lists, pilots and top pilot share."""
+    w = wm[(wm["iso_week"] == week) & (wm["level"] == di.LEVEL_DECK)].set_index("name")
+    for r in pilots.itertuples():
+        m = w.loc[r.Deck]
+        if (r.Lists, r.Pilots) != (int(m["lists"]), int(m["pilots"])) or abs(r.Top_pilot_share_pct
+                                                                            - m["top_pilot_share_pct"]) > 1e-9:
+            raise di.DeckdbInputError(f"{week} {r.Deck}: arkusz pilots różny od weekly_metrics")
 
 
 def _workbook(export, path: Path, data: Dict[str, pd.DataFrame]) -> Path:

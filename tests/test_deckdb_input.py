@@ -533,3 +533,72 @@ def test_result_bands_geometry_and_flag():
     t.loc[1, "f"] = 1
     with pytest.raises(di.DeckdbInputError, match="geometrii"):
         dp.result_bands(t, 50.0, "v", "lo", "hi", "f")
+
+
+def test_bh_threshold_and_qvalues():
+    """BH q = 0.10: k = largest rank with p_(k) <= k q / m, T = q k / m, reject exactly p <= T; q-values monotone."""
+    import numpy as np
+
+    p = np.array([0.001, 0.04, 0.03, 0.5, 0.2])
+    q, rej, t = di.bh(p)
+    assert list(rej) == [True, True, True, False, False] and t == pytest.approx(0.1 * 3 / 5)
+    assert q[0] == pytest.approx(0.005) and q[1] == pytest.approx(0.04 * 5 / 3) and q[3] == pytest.approx(0.5)
+    q, rej, t = di.bh(np.array([0.5, 0.9]))
+    assert not rej.any() and t == pytest.approx(0.05)
+    d = np.array([[1.0, -1.0, 0.0], [2.0, 1.0, 0.0], [3.0, -2.0, 0.0], [4.0, 0.5, 0.0]])
+    assert list(di.bootstrap_p(d)) == [pytest.approx(0.25), pytest.approx(1.0), pytest.approx(1.0)]  # floor 1/4
+
+
+def test_tracked_decks_reasons_and_ties():
+    """top 10 of w, then of w-1, then the largest deck of every archetype not in them (ties by name) at >= 1%."""
+    arch = {f"D{i:02d}": "Aggro" for i in range(12)}
+    arch.update({"Tron": "Ramp", "Amulet": "Ramp", "Tiny": "Control", di.NO_DECK_LABEL: di.NO_DECK_LABEL})
+    cur = pd.DataFrame({"material_deck": [f"D{i:02d}" for i in range(10) for _ in range(10)] + ["Tron"] * 2
+                        + ["Amulet"] * 2 + [di.NO_DECK_LABEL] * 5})
+    prev = pd.DataFrame({"material_deck": [f"D{i:02d}" for i in range(1, 11) for _ in range(10)] + ["Tiny"]
+                         + ["D11"] * 3})
+    t = di.tracked_decks(cur, prev, arch)
+    assert all(t[f"D{i:02d}"] == di.TRACK_TOP10_WEEK for i in range(10)) and t["D10"] == di.TRACK_TOP10_PREV
+    assert t["Amulet"] == di.TRACK_LARGEST and "Tron" not in t  # 2 lists each: Amulet by name
+    assert "Tiny" not in t and "D11" not in t  # Tiny: 0% in w, < 1% in w-1; D11: Aggro is covered
+
+
+def test_weekly_metrics_full_grid_sums_and_bh(tmp_path):
+    """Every week x every label of the period (0 when absent), sums equal the week's lists, the first week has no
+    change; the test only on tracked rows; the week sheet agrees with it (attach_change_beyond)."""
+    rows = []
+    for wk, day in enumerate(["2026-10-11", "2026-10-18", "2026-10-25"]):
+        for e in range(4):
+            eid = 100 * wk + e
+            for i in range(8):
+                deck = "A" if (i < 6 if wk == 2 else i < 2) else ("B" if i < 7 else "C")
+                if wk == 0 and deck == "C":
+                    deck = "B"
+                rows.append(_row(eid, eid * 10 + i, day, "assigned", deck, "Aggro" if deck != "C" else "Ramp",
+                                 f"{wk}{e}{i}", i + 1, pc=8))
+    exp = di.load_export(_write(tmp_path, rows))
+    wm = di.weekly_metrics(exp, date(2026, 10, 11), date(2026, 10, 25))
+    assert list(wm["iso_week"].unique()) == ["2026-W41", "2026-W42", "2026-W43"]
+    assert wm["week_from"].iloc[0] == "2026-10-11"  # the first week clipped to the period start
+    assert set(wm["name"]) == {"A", "B", "C", "Aggro", "Ramp"}
+    first = wm[wm["iso_week"] == "2026-W41"]
+    assert first["tracked"].sum() == 0 and first["change_pp"].isna().all()
+    c41 = first[(first["level"] == "deck") & (first["name"] == "C")].iloc[0]
+    assert c41["lists"] == 0 and c41["share_pct"] == 0
+    w43 = wm[wm["iso_week"] == "2026-W43"].set_index(["level", "name"])
+    assert w43.loc[("deck", "A"), "change_pp"] == pytest.approx(50.0)
+    assert w43.loc[("deck", "A"), "change_beyond"] == 1 and w43.loc[("deck", "A"), "change_p"] == pytest.approx(1 / 2000)
+    for lv in ("deck", "archetype"):
+        assert int(wm[(wm["iso_week"] == "2026-W43") & (wm["level"] == lv)]["lists"].sum()) == 32
+    w43_rows, w42_rows = (di.window_rows(exp, date(2026, 10, 19), date(2026, 10, 25)),
+                          di.window_rows(exp, date(2026, 10, 12), date(2026, 10, 18)))
+    sheet = di.week_share_table(w43_rows, w42_rows, "material_deck", "Deck", top_n=di.WEEK_TOP_N)
+    out = di.attach_change_beyond(sheet.rename(columns={"Labels_in_row": "Decks_in_row"}), wm, "2026-W43",
+                                  di.LEVEL_DECK, "Deck")
+    assert list(out.columns).index("change_beyond") == list(out.columns).index("Change_CI_excludes_0") + 1
+    bad = sheet.copy()
+    bad.loc[0, "Change_CI_low_pp"] += 0.5
+    with pytest.raises(di.DeckdbInputError, match="weekly_metrics"):
+        di.attach_change_beyond(bad, wm, "2026-W43", di.LEVEL_DECK, "Deck")
+    mm = di.monthly_metrics(exp, date(2026, 10, 11), date(2026, 10, 25))
+    assert list(mm["month_to"].unique()) == ["2026-10-25"] and mm["complete_month"].eq(0).all()

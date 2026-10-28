@@ -47,7 +47,8 @@ TOP_N_MATRIX = 12
 TOP_N_NEW_CARDS = 12
 CONCENTRATED = 1 / 3  # B5g: decks whose top pilot holds >= 1/3 of the week's lists are marked
 LEGEND_RESULTS = "coloured = different from average; grey = not distinguishable from average"
-LEGEND_CHANGE = "change vs previous week: bold colour = beyond normal week-to-week variation"
+LEGEND_CHANGE = ("change vs previous week: bold colour = beyond normal variation after correction for multiple "
+                 "comparisons")
 
 # B3 (order of 2026-10-26 k): archetype colours; "Rogue & unclassified" grey
 ARCHETYPE_COLOURS = {"Aggro": "#EF4444", "Graveyard": "#6366F1", "Combo": "#3B82F6", "Midrange": "#F59E0B",
@@ -200,7 +201,7 @@ LEGEND_TOP = 0.79  # top of the axes of a chart with an archetype legend row
 def share_chart(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path,
                 colours: Optional[Colours] = None) -> Path:
     """One row per deck (or archetype) and 'Rogue & unclassified' last: bar = share; label '<share>% · <presence>/
-    <events> events · <change>', the change bold and green / red only when its interval excludes 0. 'other decks' is
+    <events> events · <change>', the change bold and green / red only when change_beyond (BH, weekly_metrics) is 1. 'other decks' is
     no bar: one line under the chart, 'other decks: <share>% of lists across <n> decks'. Deck bars take their
     archetype's colour (column Archetype) with an archetype legend; archetype bars their own colour."""
     colours = colours or Colours()
@@ -221,7 +222,7 @@ def share_chart(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path,
     parts = []
     for r in t.itertuples():
         head = f"{r.Share_Top32_pct:.1f}% · {r.Events_with_list}/{r.Week_events} events · "
-        if r.Change_CI_excludes_0:
+        if pd.notna(r.change_beyond) and int(r.change_beyond) == 1:  # BH rejection (weekly_metrics), not the CI alone
             change = {"weight": "bold", "color": C_UP if r.Change_pp > 0 else C_DOWN}
         else:
             change = {"color": C_SOFT}

@@ -76,6 +76,11 @@ M_WEEK_TOP8 = "Top 8 of the week"
 M_NEW_CARD_WEEK = "new card (week)"
 M_CONCENTRATION = "results concentration"
 M_NOT_WEEKLY = "not computed weekly"
+M_TRACKED = "tracked decks"
+M_CHANGE_BH = "weekly change test (BH)"
+M_WEEKLY_METRICS = "weekly_metrics"
+M_MONTHLY_METRICS = "monthly_metrics"
+BEYOND_TEXT = "beyond normal variation after correction for multiple comparisons"
 
 GLOSSARY: List[tuple[str, str]] = [
     ("event", "one Modern Challenge of the DeckDB export (event_id); premier events are not in the export. Date = "
@@ -139,8 +144,30 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_CHANGE, "share in the week - share in the previous ISO week, in percentage points (pp)."),
     (M_CHANGE_CI, f"95% interval of the {M_CHANGE}: {di.CHANGE_DRAWS} draws, the events of each week drawn with "
                   f"replacement independently (all lists of a drawn event), percentiles 2.5 / 97.5, seed "
-                  f"{di.CHANGE_SEED}. A change is emphasised only when the interval excludes 0; the others are shown "
-                  "without emphasis (grey)."),
+                  f"{di.CHANGE_SEED}; computed for the {M_TRACKED} and the archetypes only. It is reported (column "
+                  f"Change_CI_excludes_0) but no longer decides the emphasis: a change is emphasised only when the "
+                  f"{M_CHANGE_BH} rejects it (column change_beyond); the others are shown without emphasis (grey)."),
+    (M_TRACKED, f"the decks whose weekly change is tested in week w: the top {di.WEEK_TOP_N} of w, the top "
+                f"{di.WEEK_TOP_N} of w-1, and for every archetype without a deck in those two top {di.WEEK_TOP_N}s its "
+                f"largest deck by lists in w when that deck has a share >= {di.TRACK_MIN_SHARE_PCT:.0f}% in w or w-1; "
+                "every tie by deck name in alphabetical order. Column tracked_reason: top10_week, top10_prev or "
+                "largest_in_archetype (the first that applies). Every other deck is still counted, never tested. Not "
+                "defined in the first week of the format period (no previous week in it)."),
+    (M_CHANGE_BH, f"two-sided p of the {M_CHANGE} from its event-bootstrap distribution d: p = 2 x min(P(d <= 0), "
+                  f"P(d >= 0)), at least 1/{di.CHANGE_DRAWS}; Benjamini-Hochberg q = {di.BH_Q} separately in the "
+                  f"week's family of {M_TRACKED} and in its family of archetypes (every archetype and the 'Rogue & "
+                  "unclassified' row with a list in w or w-1). change_beyond = 1 when BH rejects: the change is "
+                  f"{BEYOND_TEXT}. The 'Rogue & unclassified' row of the deck chart takes its test from the archetype "
+                  "family (the same quantity); the pooled 'other decks' row is not tested."),
+    (M_WEEKLY_METRICS, "data.xlsx sheet, long format, recomputed from the export on every run (never appended): one row "
+                       "per ISO week of the format period x deck (level deck) and x archetype (level archetype), both "
+                       "with 'Rogue & unclassified'; a label absent in a week has 0 lists and share 0. Counts, share, "
+                       "top pilot share (decks), change vs the previous week, tracked, and for tracked rows the "
+                       "interval, p, BH q and change_beyond; the first week is clipped to the format period start."),
+    (M_MONTHLY_METRICS, "data.xlsx sheet: calendar month of the format period x deck and x archetype, the same scope "
+                        "and recomputation: lists, share, events, Top 8, trophies, pilots, top pilot share (decks); the "
+                        "first month starts at the format period start, the last one ends with the folder's week "
+                        "(complete_month = 0 when that is before the month's end)."),
     (M_WEEK_PILOTS, "distinct values of the anonymous player column with a list of the deck in the week (a count)."),
     (M_WEEK_TOP8, "the lists with final_rank <= 8 of every event of the week: place, deck and variant; the winner is "
                   "place 1. No player names, no rates."),
@@ -154,7 +181,7 @@ GLOSSARY: List[tuple[str, str]] = [
 ]
 
 WEEK_TERMS = ("event", "Challenge Top 32", M_SHARE, M_PRESENCE, M_TOP_WEEK, M_OTHER, "Rogue & unclassified", M_CHANGE, M_CHANGE_CI,
-              M_WEEK_PILOTS, M_WEEK_TOP8, "variant label", M_NEW_CARD_WEEK, M_PILOTS, M_COVERAGE, "week",
+              M_TRACKED, M_CHANGE_BH, M_WEEK_PILOTS, M_WEEK_TOP8, "variant label", M_NEW_CARD_WEEK, M_PILOTS, M_COVERAGE, "week",
               M_NOT_WEEKLY)
 WEEK_GLOSSARY: List[tuple[str, str]] = [(t, d) for t, d in GLOSSARY if t in WEEK_TERMS]
 
@@ -406,7 +433,7 @@ WEEK_BARS = [
     ("Share_Top32_pct", f"{M_SHARE} (%)"),
     ("Event_presence_pct", f"{M_PRESENCE} (% of events)"),
 ]
-CHANGE_LEGEND = (f"{M_CHANGE_CI} excludes 0", "interval includes 0: not told apart from event-to-event variation")
+CHANGE_LEGEND = (BEYOND_TEXT, "not told apart from event-to-event variation after the correction")
 
 
 def _trend_charts(export: di.DeckdbExport, weeks: List[tuple[date, date]], cur_decks: pd.DataFrame,
@@ -430,7 +457,7 @@ def _trend_charts(export: di.DeckdbExport, weeks: List[tuple[date, date]], cur_d
 
 
 def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Path,
-               cards: Optional["dc.CardLayer"] = None) -> List[Path]:
+               cards: Optional["dc.CardLayer"] = None, period_start: Optional[date] = None) -> List[Path]:
     """Weekly materials (DeckDB K41): share, presence, change vs the previous week with an event-bootstrap
     interval, pilots, trend, Top 8 per event, new cards. No result measure of decks."""
     weeks = di.complete_iso_weeks(as_of, max(2, trend_weeks))
@@ -444,6 +471,10 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
     decks.insert(1, "Archetype", decks["Deck"].map(di.deck_archetype_map(rows)).fillna(""))
     archs = di.week_share_table(rows, prev, "material_archetype", "Archetype").drop(columns="Labels_in_row")
     archs.insert(1, "Decks", archs["Archetype"].map(di.archetype_decks(rows)).fillna(0).astype(int))
+    # change_beyond (BH over the tracked decks / archetypes, weekly_metrics of the format period up to the week)
+    wm = di.weekly_metrics(export, period_start if period_start is not None else ps, we)
+    decks = di.attach_change_beyond(decks, wm, label, di.LEVEL_DECK, "Deck")
+    archs = di.attach_change_beyond(archs, wm, label, di.LEVEL_ARCHETYPE, "Archetype")
     top8 = di.top8_table(rows)
     new_cards = dc.new_cards_in_week(export, cards, ws, we) if cards is not None else pd.DataFrame(
         [{"Info": "no card export configured (cards_path)"}])
@@ -452,6 +483,7 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
         split = split[["Status", "Lists", "Share_Top32_pct", "Events_with_list", "Event_presence_pct"]]
     trend_png, trend = _trend_charts(export, weeks[-max(1, trend_weeks):], decks, archs, out, f"week {label}")
     sig_d, sig_a = int(decks["Change_CI_excludes_0"].sum()), int(archs["Change_CI_excludes_0"].sum())
+    bh_d, bh_a = int(decks["change_beyond"].fillna(0).sum()), int(archs["change_beyond"].fillna(0).sum())
     status = _status(export, f"ISO week {label}", ws, we, rows, cov, [
         ("Previous week (change)", f"{di.iso_week_label(ps)}: {ps.isoformat()} .. {pe.isoformat()}, "
                                    f"{prev['event_id'].nunique()} events, {len(prev)} lists"),
@@ -460,6 +492,8 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
         (M_CHANGE_CI, dict(GLOSSARY)[M_CHANGE_CI]),
         ("Changes with an interval excluding 0", f"decks {sig_d} of {len(decks)} rows, archetypes {sig_a} of "
                                                  f"{len(archs)} rows"),
+        (f"Changes {BEYOND_TEXT} (BH)", f"decks {bh_d} of {len(decks)} rows, archetypes {bh_a} of {len(archs)} rows"),
+        (M_CHANGE_BH, dict(GLOSSARY)[M_CHANGE_BH]),
         ("Trend", f"{min(len(weeks), max(1, trend_weeks))} disjoint ISO weeks, the last one {label}"),
         ("New cards", "card export not configured" if cards is None else
          f"{int(new_cards['Reported'].sum()) if not new_cards.empty else 0} reported (>= {dc.MIN_PILOTS_NEW} pilots), "
@@ -493,9 +527,9 @@ def build_week(export: di.DeckdbExport, as_of: date, trend_weeks: int, root: Pat
             f"{key}s, ISO week {label} vs {di.iso_week_label(ps)}: {M_CHANGE} (pp) with {M_CHANGE_CI} ({rows_note}); "
             "label: share this week",
             delta_col="Change_pp", err_cols=("Change_CI_low_pp", "Change_CI_high_pp"),
-            ylabel=f"{M_CHANGE} (pp); coloured = interval excludes 0, grey = it does not",
-            highlight_col="Change_CI_excludes_0", highlight_legend=CHANGE_LEGEND,
-            footer=f"{stamp}\n{_terms(M_CHANGE, M_CHANGE_CI, M_OTHER)}", **_render())
+            ylabel=f"{M_CHANGE} (pp); coloured = {BEYOND_TEXT}, grey = not",
+            highlight_col="change_beyond", highlight_legend=CHANGE_LEGEND,
+            footer=f"{stamp}\n{_terms(M_CHANGE, M_CHANGE_CI, M_CHANGE_BH, M_OTHER)}", **_render())
         if p is not None:
             written.append(p)
     written += present_week(export, out, ws, we, rows, decks, archs, trend, weeks[-max(1, trend_weeks):])
@@ -809,7 +843,7 @@ def _present_trends(export: di.DeckdbExport, weeks: List[tuple[date, date]], tre
 
 
 def _highlighted(tbl: pd.DataFrame, key: str) -> str:
-    hit = tbl[tbl["Change_CI_excludes_0"] == 1]
+    hit = tbl[tbl["change_beyond"].fillna(0) == 1]
     if hit.empty:
         return "this week: none"
     return "this week: " + ", ".join(f"{r[key]} {r['Change_pp']:+.1f} pp" for _, r in hit.iterrows())
@@ -828,8 +862,8 @@ def present_week(export: di.DeckdbExport, out: Path, ws: date, we: date, rows: p
     notes["decks_share.png"] = (
         "Share of this week's Challenge Top 32 lists for the ten most played decks, with all other decks pooled and "
         "'Rogue & unclassified' for lists that match no defined deck. Each label adds in how many of the week's events the deck "
-        "appeared and the change from last week, in bold green or red only when it is larger than normal "
-        f"week-to-week variation ({_highlighted(decks, 'Deck')}).")
+        f"appeared and the change from last week, in bold green or red only when it is {BEYOND_TEXT} "
+        f"({_highlighted(decks, 'Deck')}).")
     notes["archetypes_share.png"] = (
         "The same view for archetypes: share of this week's Top 32 lists, events with the archetype, and the change "
         f"from last week ({_highlighted(archs, 'Archetype')}).")
@@ -922,7 +956,7 @@ def _build(export: di.DeckdbExport, cfg: di.DeckdbConfig, as_of: date, outputs_b
     root = root_dir(outputs_base, as_of)
     written: List[Path] = []
     if weekly:
-        written += build_week(export, as_of, trend_weeks, root, cards)
+        written += build_week(export, as_of, trend_weeks, root, cards, start)
     if monthly:
         written += build_month(export, as_of, root, trend_weeks)
         written += build_format_period(export, start, key, as_of, root)

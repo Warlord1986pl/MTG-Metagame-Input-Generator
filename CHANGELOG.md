@@ -3,6 +3,29 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-28 - Full weekly / monthly data, tracked decks and BH correction of the weekly changes (part 2)
+
+- What: two new sheets in `data.xlsx` of the presentation folder, recomputed from the export on every run:
+  `weekly_metrics` (every ISO week of the format period x every deck and, apart, every archetype, both with Rogue &
+  unclassified; counts, share, top pilot share, change, tracked / tracked_reason, interval, p, BH q, change_beyond)
+  and `monthly_metrics` (month x deck / archetype). Tracked decks of week w = top 10 of w, top 10 of w-1 and the
+  largest deck of every archetype not in them (share >= 1% in w or w-1). The weekly change is tested only for tracked
+  decks and archetypes: event bootstrap as before, two-sided bootstrap p (>= 1/2000), Benjamini-Hochberg q = 0.1
+  separately in the family of tracked decks and of archetypes. Charts 01 and 03 (and the working
+  `change_vs_previous_week_*.png`) emphasise a change only when `change_beyond` = 1; the `decks` / `archetypes` sheets
+  keep `Change_CI_excludes_0` with `change_beyond` next to it. Glossary: "tracked decks", "weekly change test (BH)",
+  "weekly_metrics", "monthly_metrics", updated "95% CI of the change". Checks that stop the run: lists of the decks
+  and of the archetypes sum to the week's lists, trophies <= top8 <= lists, events_with_list <= week_events, the
+  `decks` / `archetypes` / `pilots` rows equal `weekly_metrics`.
+- Why: pipeline computes everything for every deck, charts keep the top 10, and the weekly changes of up to ~19
+  rows per week were each tested at 5% without correction (inconsistent with the BH q = 0.1 of the card layer).
+- Output files: `outputs/presentation/<week>/data.xlsx` (sheets weekly_metrics, monthly_metrics; decks, archetypes:
+  + change_beyond), `01_archetypes_share.png`, `03_decks_share.png`, `notes.md` (speaker notes, subtitle wording,
+  glossary); working `week_*/` sheets, CSVs, STATUS and `change_vs_previous_week_*.png`.
+- W43 effect: decks significant before correction Affinity (+3.9 pp, CI 0.5..7.7) and Prowess (-6.1 pp, CI -9.4..-3.1);
+  after BH only Prowess (q 0.006); Affinity q 0.186, not emphasised any more. Archetypes: none before or after.
+- DeckDB rules version: ded3d7dba99e38d7 (export assignments_ded3d7dba99e38d7_2026-10-25.csv).
+
 ## 2026-10-28 - Glossary: results colour rule says green above the baseline (part 1 of the order before 2026-W44)
 
 - What: the glossary term "results colour rule" (notes.md of the presentation folder, GLOSSARY.md / Glossary sheet of
