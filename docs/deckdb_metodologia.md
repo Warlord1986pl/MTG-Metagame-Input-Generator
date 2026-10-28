@@ -714,3 +714,27 @@ wielkość, te same losowania); wiersz „other decks” nie jest testowany. Wyk
 `change_beyond = 1`; arkusze `decks` i `archetypes` mają `change_beyond` obok `Change_CI_excludes_0`. Kontrole
 (błąd, bez fallbacku): suma list talii i suma po archetypach = listy tygodnia; trophies ≤ top8 ≤ lists,
 events_with_list ≤ week_events; wiersze arkuszy `decks` / `archetypes` / `pilots` identyczne z `weekly_metrics`.
+
+## (m) Korekta BH wyników talii (zmiana K41, DeckDB wpis 331, zadanie przed 2026-W44, część 3)
+
+`deckdb_input.conversion_table` → `results_bh`: dla każdej talii z co najmniej 10 pilotami (bez wiersza „Rogue &
+unclassified”, który nie jest talią) dwustronne p = 2·min(P(est* ≤ b), P(est* ≥ b)), co najmniej 1/2000, z tych samych
+2000 losowań pilotów co 95% przedziały, osobno dla percentyla i konwersji; b = `baseline_rest`, baza pola bez list tej
+talii (percentyl: średnie p pozostałych list; konwersja: Top 8 / listy pozostałych list). BH q = 0,1 osobno w rodzinie
+percentyla i w rodzinie konwersji; `BH_threshold_T` = q·k/m (q/m bez odrzuceń). Pas (`*_band_low`, `*_band_high`) to
+przedział na poziomie 1 − T z tych samych losowań: statystyki pozycyjne x_(j+1) i x_(N−j), j = ⌊N·T/2⌋, dzięki czemu
+`baseline_rest` leży poza pasem dokładnie wtedy, gdy p ≤ T, czyli przy odrzuceniu BH; niezgodność, T < 1/N albo
+losowanie bez wartości przy zdefiniowanej mierze przerywa przebieg. Talia bez testu (mniej niż 10 pilotów, miara
+nieokreślona dla wszystkich jej list albo brak pozostałych list) ma puste p, q, T i pas, `BH_rejects` 0. Kolumny
+`*_CI_excludes_baseline` (95% CI wobec bazy wspólnej, bez korekty) zostają do porównania. m01: odchylenie od
+`baseline_rest` („points / pp vs rest of the field”, w tytule panelu baza wspólna „all”), pas z poziomu 1 − T, legenda
+z próbkami kolorów słupków i „band adjusted for multiple comparisons”; kolor z geometrii musi być równy `BH_rejects`
+(asercja). Ten sam kolor (`BH_rejects`) w roboczych `results_matrix_*.png` i `presentation/deck_results.png`. Zastępuje
+zdanie z (k) „dziś DeckDB tej flagi nie eksportuje”: test liczy pipeline, bo tylko on ma losowania bootstrapu; DeckDB
+zapisuje zmianę w rejestrze decyzji (wpis 331) i w `docs/master_prompt.md`.
+
+Okres 2026-05-19 … 2026-10-25 (eksport `assignments_ded3d7dba99e38d7_2026-10-25.csv`), 34 talie z testem: percentyl
+7 talii z 95% CI poza bazą wspólną (8 z wierszem „Rogue & unclassified”), po BH 5 (Broodscale Combo, Neobrand, Rakdos
+Moonshadow, Mill, Death's Shadow; T = 0,0147); konwersja 3 (4 z „Rogue & unclassified”), po BH 1 (Death's Shadow;
+T = 0,0029). Broodscale Combo: percentyl 53,39, 95% CI 51,10–55,68, `baseline_rest` 49,64, p 0,003, q 0,051, pas
+50,55–56,12, zielony; konwersja 27,7%, p 0,133, szara.

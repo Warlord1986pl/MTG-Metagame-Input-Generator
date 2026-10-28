@@ -77,6 +77,8 @@ M_NEW_CARD_WEEK = "new card (week)"
 M_CONCENTRATION = "results concentration"
 M_NOT_WEEKLY = "not computed weekly"
 M_TRACKED = "tracked decks"
+M_RESULTS_BH = "deck results BH correction"
+M_BASELINE_REST = "baseline_rest"
 M_CHANGE_BH = "weekly change test (BH)"
 M_WEEKLY_METRICS = "weekly_metrics"
 M_MONTHLY_METRICS = "monthly_metrics"
@@ -99,14 +101,26 @@ GLOSSARY: List[tuple[str, str]] = [
     (M_CONVERSION, "Top 32 -> Top 8: Top 8 lists of the deck / lists of the deck (DeckDB K36; an auxiliary result "
                    "measure since K41)."),
     (M_BASELINE, "of the conversion: all Top 8 lists / all lists of the period, measured (not assumed 25%); of the "
-                 "percentile: the mean p of all lists of the period. The colour scales diverge around it."),
+                 "percentile: the mean p of all lists of the period. Shown as the average; the test of a deck uses "
+                 f"its {M_BASELINE_REST}."),
+    (M_BASELINE_REST, "the same baseline computed without the deck's own lists (the rest of the field): mean p of the "
+                      "other lists, Top 8 lists / lists of the other lists. A deck is compared with it, not with an "
+                      "average that contains its own lists; m01 draws the deviation from it."),
     (M_CI, f"95% interval of the mean place percentile and of the Top 8 conversion: {di.BOOT_DRAWS} draws of the "
            f"deck's pilots with replacement (the same draws for both), all lists of each drawn pilot, percentiles "
            f"2.5 / 97.5; given only with >= {di.BOOT_MIN_PILOTS} pilots."),
     (M_COLOUR_RULE, f"a {M_PERCENTILE} or {M_CONVERSION} result is coloured (red below / green above the "
-                    f"{M_BASELINE}) only when its {M_CI} excludes the baseline; every other result of those measures is "
-                    "grey, also without an interval and always on the 'Rogue & unclassified' row, which is not a deck "
-                    "(DeckDB K41)."),
+                    f"{M_BASELINE_REST}) only when the {M_RESULTS_BH} rejects it (column BH_rejects); every other "
+                    "result of those measures is grey, also without an interval and always on the 'Rogue & "
+                    "unclassified' row, which is not a deck (DeckDB K41, change of 2026-10-28). The older columns "
+                    "*_CI_excludes_baseline (95% CI vs the common baseline, no correction) stay for comparison only."),
+    (M_RESULTS_BH, f"for every deck with >= {di.BOOT_MIN_PILOTS} pilots, separately for the {M_PERCENTILE} and the "
+                   f"{M_CONVERSION}: two-sided p = 2 x min(P(est* <= b), P(est* >= b)) over the same {di.BOOT_DRAWS} "
+                   f"pilot draws as the {M_CI}, b = {M_BASELINE_REST}, at least 1/{di.BOOT_DRAWS}; Benjamini-Hochberg "
+                   f"q = {di.BH_Q} in the family of the percentile and, separately, of the conversion; BH_threshold_T "
+                   "= q x k / m (k rejections of m tests; q / m when none). The m01 band is the interval at level 1 - "
+                   "T from the same draws (the 'band adjusted for multiple comparisons'): a bar ends beyond it exactly "
+                   "when BH rejects."),
     ("results matrix scale (working)", "the working results_matrix_*.png keep the legacy diverging cell scale around "
                                        "the baseline, as stated in their title; the colour rule above decides which "
                                        "cells keep a colour."),
@@ -587,12 +601,12 @@ _PILOT_CHART_COLS = {"Pilots_Top8", "Top_pilot_share_Top32_pct", "Top_pilot_shar
 
 
 # result columns of the results matrix -> the flag that lets the cell keep its colour (K41 colour rule)
-_RESULT_FLAGS = {"Mean_place_percentile": "Percentile_CI_excludes_baseline",
-                 "Top8_conversion_pct": "Conversion_CI_excludes_baseline"}
+_RESULT_FLAGS = {"Mean_place_percentile": "Percentile_BH_rejects",
+                 "Top8_conversion_pct": "Conversion_BH_rejects"}
 
 
 def _results_grey(r: pd.Series, col: str) -> bool:
-    """K41: colour only for decks whose interval excludes the baseline; the 'Rogue & unclassified' row is not a deck."""
+    """K41 (BH change of 2026-10-28): colour only for BH rejections; the 'Rogue & unclassified' row is not a deck."""
     return col in _RESULT_FLAGS and (not int(r[_RESULT_FLAGS[col]]) or di.NO_DECK_LABEL in (r.get("Deck"),
                                                                                            r.get("Archetype")))
 
@@ -641,10 +655,19 @@ def _conversion_chart(tbl: pd.DataFrame, key: str, baseline: float, path: Path, 
     return _chart_conversion_matrix(
         tbl, key, path,
         f"{title}\n{M_PERCENTILE} (main, baseline {pct_baseline:.2f}) and {M_CONVERSION} (auxiliary, baseline "
-        f"{baseline:.2f}%): red below / blue above the {M_BASELINE}, coloured only where the {M_CI} excludes it, "
-        "otherwise grey; other columns: own 0..max blue scale",
+        f"{baseline:.2f}%): red below / blue above the {M_BASELINE}, coloured only where BH rejects (vs the rest of "
+        "the field, q = 0.10), otherwise grey; other columns: own 0..max blue scale",
         columns=columns, scales=scales, cell_text=_conversion_cell, top_n=TOP_N_CHART, colorbar_label="",
         footer=footer, grey_cell=_results_grey, **_render(figsize=(4 + 1.6 * len(columns), 9)))
+
+
+def _bh_summary(tbl: pd.DataFrame) -> str:
+    parts = []
+    for m in di.RESULT_MEASURES:
+        t = tbl[f"{m}_BH_threshold_T"].dropna()
+        parts.append(f"{m.lower()} {int(tbl[f'{m}_BH_rejects'].sum())} of {len(t)}, T = {t.iloc[0]:.5f}" if len(t)
+                     else f"{m.lower()} no test")
+    return "; ".join(parts)
 
 
 def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as_of: date, root: Path) -> List[Path]:
@@ -666,7 +689,8 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
     pilots = decks[decks["Deck"] != di.NO_DECK_LABEL][pilot_cols].reset_index(drop=True)
     deck_cols = ["Deck", "Archetype", "Lists", "Mean_place_percentile", "Percentile_CI_low", "Percentile_CI_high",
                  "Percentile_CI_excludes_baseline", "Top8_lists", "Top8_conversion_pct", "CI_low_pct", "CI_high_pct",
-                 "Conversion_CI_excludes_baseline", "CI_info", "Pilot_labels", "Trophies", "Pilots_Top32"]
+                 "Conversion_CI_excludes_baseline", "CI_info", "Pilot_labels", "Trophies", "Pilots_Top32"] + [
+        f"{m}_{c}" for m in di.RESULT_MEASURES for c in di.RESULT_BH_COLUMNS]
     concentration = _concentration_table(rows, f"format period {label}")
     n_excl = {c: int(decks.loc[decks["Deck"] != di.NO_DECK_LABEL, f].sum()) for c, f in (
         ("percentile", "Percentile_CI_excludes_baseline"), ("conversion", "Conversion_CI_excludes_baseline"))}
@@ -679,9 +703,11 @@ def build_format_period(export: di.DeckdbExport, start: date, event_key: str, as
         (f"{M_BASELINE} of the {M_CONVERSION} (Top 8 lists / lists of the period), %", round(baseline, 3)),
         ("  Top 8 lists in the period", int(rows["top8"].sum())),
         ("Result intervals", dict(GLOSSARY)[M_CI] + f" Seed {di.BOOT_SEED}."),
-        (f"Decks with an interval ({di.BOOT_MIN_PILOTS}+ pilots) / excluding the baseline",
+        (f"Decks with an interval ({di.BOOT_MIN_PILOTS}+ pilots) / 95% CI excluding the common baseline (no correction)",
          f"{with_ci}; percentile {n_excl['percentile']}, conversion {n_excl['conversion']} "
          f"(expected by chance if no deck differed: {0.05 * with_ci:.1f} each)"),
+        (f"BH rejections vs the rest of the field (q = {di.BH_Q})", _bh_summary(decks)),
+        (M_RESULTS_BH, dict(GLOSSARY)[M_RESULTS_BH]),
         (M_COLOUR_RULE, dict(GLOSSARY)[M_COLOUR_RULE]),
         ("Pilot labels", dict(GLOSSARY)["pilot labels"]),
         ("Pilot measures", "decks only (not archetypes, not the 'Rogue & unclassified' row); Pilots sheet"),
@@ -888,8 +914,7 @@ def present_format_period(out: Path, start: date, as_of: date, rows: pd.DataFram
                          pres / "deck_results.png")
     shown = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
         dp.TOP_N_RESULTS)
-    hit = [r["Deck"] for _, r in shown.iterrows()
-           if r["Percentile_CI_excludes_baseline"] or r["Conversion_CI_excludes_baseline"]]
+    hit = [r["Deck"] for _, r in shown.iterrows() if r["Percentile_BH_rejects"] or r["Conversion_BH_rejects"]]
     notes = {"deck_results.png": (
         f"The {len(shown)} decks with the most Top 32 lists since {start.isoformat()}. Mean place percentile shows "
         "where a deck's lists finish among the published lists (100 = first, 0 = last, 50 on average); Top 8 "

@@ -55,8 +55,8 @@ WEEK_FILES = {
 }
 MONTH_FILES = {
     "m01_deck_results.png": "the 12 decks with the most lists of the format period up to the end of the month: lists, "
-                            "mean place percentile, Top 8 conversion; coloured only where the interval excludes the "
-                            "average",
+                            "mean place percentile, Top 8 conversion vs the rest of the field; coloured only where the "
+                            "difference survives the correction for multiple comparisons (BH)",
     "m02_list_changes.png": "the biggest list changes from the month before to this month (at most 12, mana-only "
                             "lands left out), added or cut",
 }
@@ -79,16 +79,18 @@ SHEETS = {
 }
 MONTH_SHEETS = {
     "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
-                      "pilot-bootstrap intervals (DeckDB K41)",
+                      "pilot-bootstrap intervals and the BH test against the rest of the field (baseline_rest, p, "
+                      "q_BH, BH_rejects, BH_threshold_T, band at level 1 - T; DeckDB K41)",
     "m_results_bands": "control table of the m01 chart: per deck and measure the value, the deviation from the "
-                       "average, the interval, the band edges, the colour from the geometry and the sheet's flag",
+                       "rest of the field, the band edges (level 1 - T), the colour from the geometry and the sheet's "
+                       "BH_rejects",
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_TOP_WEEK, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
                 dm.M_CHANGE_CI, dm.M_TRACKED, dm.M_CHANGE_BH, dm.M_WEEKLY_METRICS, dm.M_MONTHLY_METRICS, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
                 dm.M_PILOTS, dm.M_COVERAGE, "week", dm.M_NOT_WEEKLY)
-MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_CI, dm.M_COLOUR_RULE, "format period", "month",
-               "pilot labels")
+MONTH_TERMS = (dm.M_PERCENTILE, dm.M_CONVERSION, dm.M_BASELINE, dm.M_BASELINE_REST, dm.M_CI, dm.M_RESULTS_BH,
+               dm.M_COLOUR_RULE, "format period", "month", "pilot labels")
 EXTRA_GLOSSARY = [
     ("top pilot share (week)", "lists of the deck's most frequent pilot this week / the deck's lists this week; marked "
                                "when it is at least 1/3."),
@@ -353,10 +355,12 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
     hit = sorted(set(bands.loc[bands["Colour_geometry"] != "grey", "Deck"]), key=list(shown["Deck"]).index)
     notes = {"m01_deck_results.png": (
         f"The {len(shown)} decks with the most Top 32 lists in the format period, {period}{inc}, counted from the "
-        "last major format change. Each bar shows how far a deck finishes from the average: mean place percentile "
-        "(where its lists finish among the published lists, 100 = first, 0 = last) and Top 8 conversion (the share of "
-        "its lists that reached the Top 8). The grey band shows how far a deck must be from the average to differ from "
-        "it; only bars beyond it are coloured" + (f" (here: {', '.join(hit)})" if hit else " (none here)") + ".")}
+        "last major format change. Each bar shows how far a deck finishes from the rest of the field (all other "
+        "lists): mean place percentile (where its lists finish among the published lists, 100 = first, 0 = last) and "
+        "Top 8 conversion (the share of its lists that reached the Top 8). The grey band shows how far a deck must be "
+        "from the rest of the field to differ from it, adjusted for multiple comparisons (every deck with at least 10 "
+        "pilots is tested, so the band is wider than a single 95% interval); only bars beyond it are coloured"
+        + (f" (here: {', '.join(hit)})" if hit else " (none here)") + ".")}
     data = {"m_deck_results": res, "m_results_bands": bands}
     if cards is not None:
         m1s, m1e = di.previous_month(ms)

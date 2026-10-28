@@ -3,6 +3,26 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-28 - BH correction of the deck results against the rest of the field (part 3, DeckDB K41 change)
+
+- What: `conversion_table` (format-period deck results) adds per measure (Percentile, Conversion) `baseline_rest`
+  (the period's lists without the deck), the two-sided bootstrap `p` (same 2000 pilot draws as the intervals, >=
+  1/2000), `q_BH`, `BH_rejects`, `BH_threshold_T` (= q k / m) and the band at level 1 - T (`band_low`, `band_high`);
+  BH q = 0.1 separately for the percentile and the conversion, family = decks with >= 10 pilots. Colour only for BH
+  rejections (m01, working `results_matrix_*.png`, `presentation/deck_results.png`). m01 draws the deviation from
+  `baseline_rest` with the 1 - T band; geometry colour == `BH_rejects` is asserted; legend "band adjusted for
+  multiple comparisons". `*_CI_excludes_baseline` stay for comparison. Glossary: "results colour rule", "common
+  baseline", new "baseline_rest" and "deck results BH correction". STATUS of the format period gives the BH counts.
+- Why: every deck with >= 10 pilots was tested at 5% without correction, while the card layer uses BH q = 0.1; a
+  deck was compared with a baseline that contains its own lists. DeckDB decision register entry 331 (K41 change).
+- Output files: `outputs/presentation/<week>/m01_deck_results.png`, `data.xlsx` (m_deck_results: 14 new columns;
+  m_results_bands: Baseline = baseline_rest, bands at level 1 - T, Flag_sheet = BH_rejects), `notes.md`; working
+  `format_period_*/` (Decks / Archetypes sheets and CSVs, STATUS, results_matrix_*.png, presentation/deck_results.png).
+- Effect, 2026-05-19 .. 2026-10-25: percentile significant decks 7 before (8 counting the Rogue & unclassified row),
+  5 after BH; conversion 3 before (4 with that row), 1 after. Broodscale Combo stays significant on the percentile
+  (p 0.003, q 0.051).
+- DeckDB rules version: ded3d7dba99e38d7 (export assignments_ded3d7dba99e38d7_2026-10-25.csv).
+
 ## 2026-10-28 - Full weekly / monthly data, tracked decks and BH correction of the weekly changes (part 2)
 
 - What: two new sheets in `data.xlsx` of the presentation folder, recomputed from the export on every run:

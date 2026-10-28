@@ -602,3 +602,25 @@ def test_weekly_metrics_full_grid_sums_and_bh(tmp_path):
         di.attach_change_beyond(bad, wm, "2026-W43", di.LEVEL_DECK, "Deck")
     mm = di.monthly_metrics(exp, date(2026, 10, 11), date(2026, 10, 25))
     assert list(mm["month_to"].unique()) == ["2026-10-25"] and mm["complete_month"].eq(0).all()
+
+
+def test_results_bh_against_rest_and_band(tmp_path):
+    """K41 change of 2026-10-28: p against baseline_rest (the field without the deck) from the same pilot draws, BH
+    q = 0.1 per measure, T = q k / m; the band at level 1 - T holds baseline_rest outside exactly for BH rejections."""
+    rows = []
+    for e in range(20):  # 20 events of 4 lists, every deck 20 pilots: W wins, L last, M / X share 2nd and 3rd
+        mid = 2 if e % 2 else 3
+        for deck, rank in (("W", 1), ("M", mid), ("X", 5 - mid), ("L", 4)):
+            rows.append(_row(e, f"{e}{deck}", "2026-10-01", "assigned", deck, "Aggro", f"{deck}{e}", rank))
+    exp = di.load_export(_write(tmp_path, rows))
+    t = di.conversion_table(exp.rows, "material_deck", "Deck", pilots=True).set_index("Deck")
+    assert t.loc["W", "Percentile_baseline_rest"] == pytest.approx(100 / 3)  # mean of M, X, L: (50 + 50 + 0) / 3
+    assert t.loc["W", "Conversion_baseline_rest"] == pytest.approx(100.0)
+    assert t.loc["W", "Percentile_BH_rejects"] == 1 and t.loc["L", "Percentile_BH_rejects"] == 1
+    assert t.loc["M", "Percentile_BH_rejects"] == 0 and t.loc["M", "Percentile_p"] > 0.1
+    assert t.loc["W", "Percentile_p"] == pytest.approx(1 / di.BOOT_DRAWS)
+    assert t.loc["W", "Percentile_BH_threshold_T"] == pytest.approx(0.1 * 2 / 4)
+    for d in "WMXL":
+        lo, hi, b = (t.loc[d, c] for c in ("Percentile_band_low", "Percentile_band_high", "Percentile_baseline_rest"))
+        assert bool(b < lo or b > hi) == bool(t.loc[d, "Percentile_BH_rejects"])
+    assert t["Conversion_BH_rejects"].sum() == 0  # every list is in the Top 8

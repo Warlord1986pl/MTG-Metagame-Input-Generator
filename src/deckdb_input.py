@@ -378,11 +378,15 @@ def share_table(rows: pd.DataFrame, key: str, key_name: str, trophies: bool) -> 
     return pd.DataFrame(out).sort_values(["Lists", key_name], ascending=[False, True]).reset_index(drop=True)
 
 
+def _ratio_draws(num: np.ndarray, den: np.ndarray, idx: np.ndarray) -> np.ndarray:
+    """sum(num) / sum(den) (%) of every pilot draw of *idx* (draws x pilots)."""
+    with np.errstate(invalid="ignore", divide="ignore"):  # NaN only where no list of a draw has a value
+        return num[idx].sum(axis=1) / den[idx].sum(axis=1) * 100.0
+
+
 def _ratio_interval(num: np.ndarray, den: np.ndarray, idx: np.ndarray) -> tuple[float, float]:
     """Percentile 95% interval of sum(num) / sum(den) (%) over the pilot draws *idx* (draws x pilots)."""
-    with np.errstate(invalid="ignore", divide="ignore"):  # NaN only where no list of a draw has a value
-        vals = num[idx].sum(axis=1) / den[idx].sum(axis=1) * 100.0
-    lo, hi = np.percentile(vals, [2.5, 97.5])
+    lo, hi = np.percentile(_ratio_draws(num, den, idx), [2.5, 97.5])
     return float(lo), float(hi)
 
 
@@ -443,6 +447,7 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
     rng = np.random.default_rng(seed)
     conv_base, pct_base = top8_baseline(rows), percentile_baseline(rows)
     out: List[dict] = []
+    boot: Dict[str, Dict[str, np.ndarray]] = {}  # label -> measure -> the deck's bootstrap draws (BH, below)
     for label, grp in sorted(rows.groupby(key), key=lambda kv: (-len(kv[1]), str(kv[0]))):
         per, lead = _lead_pilot(grp)
         n_pilots = len(per)
@@ -469,6 +474,10 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
             rec["CI_low_pct"], rec["CI_high_pct"] = _ratio_interval(per["top8"].to_numpy(), per["lists"].to_numpy(),
                                                                     idx)
             lo, hi = _ratio_interval(per["p_sum"].to_numpy() / 100.0, per["p_lists"].to_numpy(), idx)
+            if label != NO_DECK_LABEL:
+                boot[label] = {"Conversion": _ratio_draws(per["top8"].to_numpy(), per["lists"].to_numpy(), idx),
+                               "Percentile": _ratio_draws(per["p_sum"].to_numpy() / 100.0,
+                                                          per["p_lists"].to_numpy(), idx)}
             rec["Percentile_CI_low"], rec["Percentile_CI_high"] = lo, hi
             rec["Percentile_CI_excludes_baseline"] = int(lo > pct_base or hi < pct_base)
             rec["Conversion_CI_excludes_baseline"] = int(rec["CI_low_pct"] > conv_base or rec["CI_high_pct"] < conv_base)
@@ -490,8 +499,64 @@ def conversion_table(rows: pd.DataFrame, key: str, key_name: str, pilots: bool,
                 "Without_top_pilot_conversion_pct": rest["top8"].mean() * 100.0 if len(rest) else math.nan,
                 "Top_pilot_tie": int((per["lists"] == lead["lists"]).sum() > 1),
             })
+        rest = rows[rows[key] != label]
+        rec["Percentile_baseline_rest"] = float(rest["place_percentile"].mean()) if len(rest) else math.nan
+        rec["Conversion_baseline_rest"] = float(rest["top8"].sum()) / len(rest) * 100.0 if len(rest) else math.nan
         out.append(rec)
-    return pd.DataFrame(out)
+    return results_bh(pd.DataFrame(out), key_name, boot)
+
+
+RESULT_MEASURES = ("Percentile", "Conversion")
+RESULT_BH_COLUMNS = ("baseline_rest", "p", "q_BH", "BH_rejects", "BH_threshold_T", "band_low", "band_high")
+
+
+def results_bh(tbl: pd.DataFrame, key_name: str, boot: Dict[str, Dict[str, np.ndarray]],
+               q: Optional[float] = None) -> pd.DataFrame:
+    """DeckDB K41 (change of 2026-10-28): per measure, for every label with an interval (>= BOOT_MIN_PILOTS pilots,
+    not 'Rogue & unclassified') the two-sided p of the deck against the field without it (baseline_rest), from the same
+    pilot draws as the 95% interval: p = 2 x min(P(est* <= b), P(est* >= b)), at least 1 / draws; Benjamini-Hochberg
+    q = *q* separately in the family of the percentile and of the conversion; BH_threshold_T = q k / m. The band
+    (band_low, band_high) is the interval at level 1 - T read from the same draws: the order statistics x_(j+1) and
+    x_(N-j), j = floor(N T / 2), so that baseline_rest lies strictly outside it exactly when p <= T, i.e. when BH
+    rejects; a disagreement stops the run (DeckdbInputError), as does a draw without a value for a deck whose measure
+    is defined. Rows without a test (no interval, the measure undefined for every list of the deck, or no other list
+    in the period): p, q, T and the band empty, BH_rejects 0."""
+    q = BH_Q if q is None else q  # defined below with the weekly change test
+    out = tbl.copy()
+    for meas in RESULT_MEASURES:
+        for col in RESULT_BH_COLUMNS[1:]:
+            out[f"{meas}_{col}"] = 0 if col == "BH_rejects" else math.nan
+        # no test when the measure is undefined for the deck (every draw NaN) or there is no rest of the field
+        fam = [lab for i, lab in enumerate(out[key_name]) if lab in boot and not np.isnan(boot[lab][meas]).all()
+               and not math.isnan(out.at[i, f"{meas}_baseline_rest"])]
+        if not fam:
+            continue
+        rows_of = {lab: i for i, lab in enumerate(out[key_name])}
+        base = np.array([out.at[rows_of[lab], f"{meas}_baseline_rest"] for lab in fam])
+        vals = [boot[lab][meas] for lab in fam]
+        if any(np.isnan(v).any() for v in vals):
+            raise DeckdbInputError(f"{meas}: losowanie bootstrapu bez wartości (NaN) dla "
+                                   f"{[lab for lab, v in zip(fam, vals) if np.isnan(v).any()]}")
+        n = len(vals[0])
+        p = np.array([max(2.0 * min(float((v <= b).mean()), float((v >= b).mean())), 1.0 / n)
+                      for v, b in zip(vals, base)])
+        p = np.minimum(p, 1.0)
+        qv, rej, t = bh(p, q)
+        if t < 1.0 / n:
+            raise DeckdbInputError(f"{meas}: próg BH T = {t} mniejszy niż 1/{n}; pas na poziomie 1 - T nieokreślony "
+                                   "przy tej liczbie losowań")
+        j = int(math.floor(n * t / 2.0 + 1e-9))
+        for i, (lab, v, b) in enumerate(zip(fam, vals, base)):
+            srt = np.sort(v)
+            lo, hi = float(srt[j]), float(srt[n - 1 - j])
+            r = rows_of[lab]
+            out.loc[r, [f"{meas}_p", f"{meas}_q_BH", f"{meas}_BH_threshold_T", f"{meas}_band_low",
+                        f"{meas}_band_high"]] = [p[i], qv[i], t, lo, hi]
+            out.loc[r, f"{meas}_BH_rejects"] = int(rej[i])
+            if bool(b < lo or b > hi) != bool(rej[i]):
+                raise DeckdbInputError(f"{meas} {lab}: pas 1 - T ({lo:.4f}..{hi:.4f}) a baseline_rest {b:.4f} "
+                                       f"niezgodne z odrzuceniem BH ({bool(rej[i])}, p {p[i]}, T {t})")
+    return out
 
 
 def archetype_decks(rows: pd.DataFrame) -> pd.Series:

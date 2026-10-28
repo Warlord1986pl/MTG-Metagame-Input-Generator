@@ -457,11 +457,11 @@ def results_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title:
     panels = [("lists", "Lists", [C_BAR] * len(t), lambda v: f"{v:.0f}", None),
               ("mean place percentile", "Mean_place_percentile",
                [_result_colour(v, e, pct_base) for v, e in zip(t["Mean_place_percentile"],
-                                                                t["Percentile_CI_excludes_baseline"])],
+                                                                t["Percentile_BH_rejects"])],
                lambda v: f"{v:.1f}", (pct_base, f"average {pct_base:.0f}")),
               ("Top 8 conversion", "Top8_conversion_pct",
                [_result_colour(v, e, conv_base) for v, e in zip(t["Top8_conversion_pct"],
-                                                                 t["Conversion_CI_excludes_baseline"])],
+                                                                 t["Conversion_BH_rejects"])],
                lambda v: f"{v:.1f}%", (conv_base, f"average {conv_base:.1f}%"))]
     lefts, width = (0.25, 0.505, 0.76), 0.2
     for k, (head, col, colors, fmt, base) in enumerate(panels):
@@ -480,39 +480,45 @@ def results_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title:
 
 # --- deck results as deviations from the average with a significance band (m01, 2026-10-27) ---------------
 
-LEGEND_BANDS = ("band = how far a deck must be from the average to differ from it; green above / red below; "
-                "grey = not distinguishable")
+LEGEND_BANDS = ("band = how far a deck must be from the rest of the field to differ from it, band adjusted for "
+                "multiple comparisons")
 C_BAND = "#eceef1"
 C_GREY_BAR = "#9ca3af"  # a bar inside its band (not distinguishable), darker than the band
 C_ZERO = "#6b7280"
 BAND_COLOURS = {"green": C_UP, "red": C_DOWN, "grey": C_GREY_BAR}  # the bars and the legend swatches of m01
-BAND_LEGEND = (("green", "above average"), ("red", "below average"), ("grey", "not distinguishable"))
+BAND_LEGEND = (("green", "above the rest"), ("red", "below the rest"), ("grey", "not distinguishable"))
 
 
 def _band_legend(fig) -> list:
     """Swatches of m01 in the colours of its bars (BAND_COLOURS) and of the band; returned for the colour check."""
     handles = [Patch(facecolor=BAND_COLOURS[c], label=text) for c, text in BAND_LEGEND]
-    handles.append(Patch(facecolor=C_BAND, edgecolor="#bbbbbb", label="band"))
+    handles.append(Patch(facecolor=C_BAND, edgecolor="#bbbbbb", label="band (adjusted for multiple comparisons)"))
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.015, 0.845), ncol=len(handles),
                fontsize=FONT["legend"], frameon=False, handlelength=1.2, columnspacing=1.4, borderaxespad=0)
     return handles
-RESULT_PANELS = (  # (panel title, value, CI low, CI high, flag, unit of the axis, label format)
-    ("mean place percentile", "Mean_place_percentile", "Percentile_CI_low", "Percentile_CI_high",
-     "Percentile_CI_excludes_baseline", "points vs average", lambda v: f"{v:.1f}", lambda b: f"average {b:.1f}"),
-    ("Top 8 conversion", "Top8_conversion_pct", "CI_low_pct", "CI_high_pct", "Conversion_CI_excludes_baseline",
-     "pp vs average", lambda v: f"{v:.1f}%", lambda b: f"average {b:.1f}%"),
+
+
+RESULT_PANELS = (  # (panel title, value, band low, band high, flag, per-row baseline, axis unit, label formats)
+    ("mean place percentile", "Mean_place_percentile", "Percentile_band_low", "Percentile_band_high",
+     "Percentile_BH_rejects", "Percentile_baseline_rest", "points vs rest of the field", lambda v: f"{v:.1f}",
+     lambda b: f"vs rest of field (all {b:.1f})"),
+    ("Top 8 conversion", "Top8_conversion_pct", "Conversion_band_low", "Conversion_band_high", "Conversion_BH_rejects",
+     "Conversion_baseline_rest", "pp vs rest of the field", lambda v: f"{v:.1f}%",
+     lambda b: f"vs rest of field (all {b:.1f}%)"),
 )
 
 
-def result_bands(t: pd.DataFrame, base: float, col: str, lo: str, hi: str, flag: str) -> pd.DataFrame:
-    """Per row: est, deviation = est - base, the band around 0 from -(CI_high - est) to +(est - CI_low) (asymmetric
-    when the interval is), the colour from the geometry (green: the bar ends beyond the right edge, red: beyond the
-    left edge, grey: inside; grey without an interval and on 'Rogue & unclassified') and the sheet's flag. A
-    colour that disagrees with the flag raises DeckdbInputError (no fallback)."""
+def result_bands(t: pd.DataFrame, base, col: str, lo: str, hi: str, flag: str) -> pd.DataFrame:
+    """Per row: est, deviation = est - base (*base* a number or the name of a per-row column, e.g. baseline_rest),
+    the band around 0 from -(band_high - est) to +(est - band_low) (asymmetric when the interval is), the colour from
+    the geometry (green: the bar ends beyond the right edge, red: beyond the left edge, grey: inside; grey without an
+    interval and on 'Rogue & unclassified') and the sheet's flag (BH_rejects). A colour that disagrees with the flag
+    raises DeckdbInputError (no fallback)."""
     out = []
     for _, r in t.iterrows():
         est = float(r[col])
-        dev = est - base
+        b_row = float(r[base]) if isinstance(base, str) else float(base)
+        dev = est - b_row
         has_ci = not (pd.isna(r[lo]) or pd.isna(r[hi]))
         left = -(float(r[hi]) - est) if has_ci else float("nan")
         right = est - float(r[lo]) if has_ci else float("nan")
@@ -523,8 +529,8 @@ def result_bands(t: pd.DataFrame, base: float, col: str, lo: str, hi: str, flag:
         fl = int(r[flag])
         if r["Deck"] != di.NO_DECK_LABEL and (colour != "grey") != bool(fl):
             raise di.DeckdbInputError(f"m01: kolor z geometrii ({colour}) różny od flagi {flag}={fl} dla {r['Deck']} "
-                                      f"(est {est:.3f}, baza {base:.3f}, CI {r[lo]}..{r[hi]})")
-        out.append({"Deck": r["Deck"], "Measure": col, "Baseline": base, "Est": est, "Deviation": dev,
+                                      f"(est {est:.3f}, baza {b_row:.3f}, CI {r[lo]}..{r[hi]})")
+        out.append({"Deck": r["Deck"], "Measure": col, "Baseline": b_row, "Est": est, "Deviation": dev,
                     "CI_low": r[lo], "CI_high": r[hi], "Band_left": left, "Band_right": right,
                     "Colour_geometry": colour, "Flag_sheet": fl,
                     "Note": "" if has_ci or r["Deck"] == di.NO_DECK_LABEL else "low pilot count"})
@@ -534,10 +540,11 @@ def result_bands(t: pd.DataFrame, base: float, col: str, lo: str, hi: str, flag:
 def results_deviation_chart(decks: pd.DataFrame, pct_base: float, conv_base: float, title: str, foot: str,
                             path: Path) -> tuple[Path, pd.DataFrame]:
     """The TOP_N_RESULTS decks with the most lists: lists (bars), then mean place percentile and Top 8 conversion as
-    deviations from the period's common baseline (0 = average, vertical in the middle of the panel, the same
-    symmetric range for every row of a panel), each row with its significance band from the 95% pilot-bootstrap
-    interval (no whiskers); the label is the deck's own value outside the bar or band. Returns (path, the control
-    table of every row and panel)."""
+    deviations from the rest of the field (baseline_rest: the period's lists without the deck; 0 vertical in the
+    middle of the panel, the same symmetric range for every row of a panel), each row with its significance band from
+    the pilot-bootstrap interval at level 1 - T of the BH correction (DeckDB K41, change of 2026-10-28; no whiskers);
+    the colour must equal BH_rejects. The label is the deck's own value outside the bar or band. Returns (path, the
+    control table of every row and panel)."""
     t = decks[decks["Deck"] != di.NO_DECK_LABEL].sort_values(["Lists", "Deck"], ascending=[False, True]).head(
         TOP_N_RESULTS).reset_index(drop=True)
     fig = _fig()
@@ -547,10 +554,10 @@ def results_deviation_chart(decks: pd.DataFrame, pct_base: float, conv_base: flo
     _labels(ax, list(t["Lists"]), [[(f"{v:.0f}", {})] for v in t["Lists"]])
     colour = BAND_COLOURS
     control = []
-    for k, (head, col, lo, hi, flag, unit, fmt, avg) in enumerate(RESULT_PANELS):
+    for k, (head, col, lo, hi, flag, base_col, unit, fmt, avg) in enumerate(RESULT_PANELS):
         base = pct_base if k == 0 else conv_base
         bar_colours: Dict[str, set] = {}
-        b = result_bands(t, base, col, lo, hi, flag)
+        b = result_bands(t, base_col, col, lo, hi, flag)
         control.append(b)
         ax = fig.add_axes([0.45 + k * 0.28, 0.14, 0.24, 0.58])
         y = list(range(len(b)))
