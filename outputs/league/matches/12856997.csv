@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856997,2026-10-26,C32,Challenge,QF,Bradykiesling13,2026932,justFeather,2446403,2,0,Eldrazi Tron,Eldrazi Ramp
+12856997,2026-10-26,C32,Challenge,QF,416FrowningTable,2397690,_Shikamaru_,3332226,2,0,Broodscale Combo,Domain Zoo
+12856997,2026-10-26,C32,Challenge,QF,Tree42o,875470,Venom01,3535587,2,0,Affinity,Eldrazi Ramp
+12856997,2026-10-26,C32,Challenge,QF,caquaa,221272,niuwaid001,2372533,2,1,Eldrazi Ramp,Living End
+12856997,2026-10-26,C32,Challenge,SF,416FrowningTable,2397690,Tree42o,875470,2,1,Broodscale Combo,Affinity
+12856997,2026-10-26,C32,Challenge,SF,Bradykiesling13,2026932,caquaa,221272,2,0,Eldrazi Tron,Eldrazi Ramp
+12856997,2026-10-26,C32,Challenge,F,Bradykiesling13,2026932,416FrowningTable,2397690,2,0,Eldrazi Tron,Broodscale Combo
