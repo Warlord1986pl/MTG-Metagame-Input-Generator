@@ -393,7 +393,7 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
     hit = sorted(set(bands.loc[bands["Colour_geometry"] != "grey", "Deck"]), key=list(shown["Deck"]).index)
     notes = {"m01_deck_results.png": (
         f"Monthly material: {month_line}. The {len(shown)} decks with the most Top 32 lists in the format period, "
-        f"{period}{inc} (up to the end of the month), counted from the "
+        f"{period}{inc or " (up to the end of the month)"}, counted from the "
         "last major format change. Each bar shows how far a deck finishes from the rest of the field (all other "
         "lists): mean place percentile (where its lists finish among the published lists, 100 = first, 0 = last) and "
         "Top 8 conversion (the share of its lists that reached the Top 8). The grey band shows how far a deck must be "
