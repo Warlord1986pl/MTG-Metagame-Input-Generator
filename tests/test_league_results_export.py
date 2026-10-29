@@ -158,6 +158,83 @@ def test_rank_change_anchor_is_daily_and_freezes_on_season_close() -> None:
     assert rank_change_anchor(date(2026, 8, 31), coverage_end=date(2026, 8, 31)) == date(2026, 8, 30)
 
 
+def test_open_season_prevrank_uses_snapshot_not_the_always_stale_live_filter() -> None:
+    """Regression for the real bug found live 2026-09-15: with a daily rank_change_anchor
+    (as_of - 1 day) and mtgo.com's real ingestion lag of 2-8 days (see find_late_arrivals), the
+    newest EventDate ever on disk for an open season is routinely already older than `anchor`, so
+    the live "EventDate < anchor" filter used to select every ingested event -- identical to
+    `current` -- making PrevRank == Rank for literally everyone, every single day. Confirmed live:
+    two consecutive published rebuilds (2026-09-14, 2026-09-15) showed movement: "same" for
+    450/450 then 464/464 Autumn 2026 pilots, while that exact same rebuild's snapshot-based DPoints
+    showed real nonzero deltas for 75 pilots -- proof the underlying data plainly changed and only
+    PrevRank failed to see it.
+
+    This test reproduces the exact shape of that bug with a synthetic, 2-day-lagged single event
+    (EventDate before `anchor` the same way real lagged data always is) and asserts the acceptance
+    bar directly: WITHOUT a snapshot, PrevRank == Rank for every pilot (the old, now-documented
+    fallback -- not itself wrong, since there is nothing else to compare against); WITH the same
+    weekly-snapshot base DELTA_COLS already used, PrevRank must differ from Rank for pilots whose
+    snapshot rank actually differs -- i.e. real movement must be visible again.
+    """
+    import shutil
+    import tempfile
+
+    import league_engine as le
+
+    tmp = Path(tempfile.mkdtemp(prefix="rankchange_snapshot_test_"))
+    try:
+        results_dir = tmp / "results"
+        results_dir.mkdir()
+        snapshot_dir = tmp / "snapshots"
+
+        season_start, season_end = date(2026, 9, 1), date(2026, 11, 30)
+        as_of = date(2026, 9, 15)  # anchor = 2026-09-14
+
+        # A single event dated 2026-09-13 -- two real days before `as_of`, one day before `anchor`
+        # -- exactly the lag shape find_late_arrivals already documents as routine, and the shape
+        # that made the old live filter always see prev == current.
+        event = pd.DataFrame([
+            {"EventID": "e1", "EventDate": "2026-09-13", "Tier": "C32", "EventClass": "Challenge",
+             "Pilot": "Alice", "LoginID": "111", "Place": 1, "Deck": "", "DeckGuess": "",
+             "LeaguePoints": 5, "SwissRank": 1, "SwissPoints": 8, "OMWP": 0, "GWP": 0, "OGWP": 0},
+            {"EventID": "e1", "EventDate": "2026-09-13", "Tier": "C32", "EventClass": "Challenge",
+             "Pilot": "Bob", "LoginID": "222", "Place": 2, "Deck": "", "DeckGuess": "",
+             "LeaguePoints": 4, "SwissRank": 2, "SwissPoints": 7, "OMWP": 0, "GWP": 0, "OGWP": 0},
+        ])
+        event.to_csv(results_dir / "e1.csv", index=False)
+
+        # Last week's frozen snapshot: Bob was ahead of Alice then -- a real prior standings
+        # capture, not a re-filter of the same (lagged) data current_ranked is built from.
+        last_week = pd.DataFrame([
+            {"Rank": 1, "Pilot": "Bob", "LoginID": "222", "Points": 9, "PremierPoints": 0,
+             "Wins": 1, "Top2": 2, "Top4": 2, "Top8": 2, "Top16": 2, "Starts": 2},
+            {"Rank": 2, "Pilot": "Alice", "LoginID": "111", "Points": 3, "PremierPoints": 0,
+             "Wins": 0, "Top2": 0, "Top4": 1, "Top8": 1, "Top16": 1, "Starts": 1},
+        ])
+        le.write_weekly_snapshot(snapshot_dir, "Autumn 2026", date(2026, 9, 7), last_week, today=date(2026, 9, 7))
+
+        without_snapshot = le.build_season_table(results_dir, season_start, season_end, as_of=as_of)
+        alice_ns = without_snapshot[without_snapshot["LoginID"] == "111"].iloc[0]
+        bob_ns = without_snapshot[without_snapshot["LoginID"] == "222"].iloc[0]
+        assert int(alice_ns["PrevRank"]) == int(alice_ns["Rank"]), (
+            "documented fallback: no snapshot -> live filter -> prev==current for this lag shape"
+        )
+        assert int(bob_ns["PrevRank"]) == int(bob_ns["Rank"])
+
+        with_snapshot = le.build_season_table(
+            results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
+        )
+        alice = with_snapshot[with_snapshot["LoginID"] == "111"].iloc[0]
+        bob = with_snapshot[with_snapshot["LoginID"] == "222"].iloc[0]
+        assert int(alice["Rank"]) == 1 and int(bob["Rank"]) == 2, "Alice won e1, must rank 1st now"
+        assert int(alice["PrevRank"]) == 2, f"Alice's PrevRank must come from last week's snapshot (2), got {alice['PrevRank']}"
+        assert int(bob["PrevRank"]) == 1, f"Bob's PrevRank must come from last week's snapshot (1), got {bob['PrevRank']}"
+        assert int(alice["RankChange"]) == 1, "Alice moved up one place week-over-week"
+        assert int(bob["RankChange"]) == -1, "Bob moved down one place week-over-week"
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def test_weekly_window_start_used_by_late_arrivals_unchanged() -> None:
     """find_late_arrivals still needs a genuine weekly bucket -- confirms it kept the old
     Wednesday-anchored math after rank_change_anchor itself moved to a daily baseline."""
@@ -328,3 +405,45 @@ def test_independent_reproduction_of_published_baseline_rank() -> None:
         f"independent reproduction disagreed with the published baseline for "
         f"{len(mismatches)}/{len(my_rank_by_lid)} pilots: {mismatches[:10]}"
     )
+
+
+def test_manifest_carries_sha256_of_the_written_csv_and_output_is_stable() -> None:
+    """The site downloads the results CSV as ?v=<results_csv_sha256> so a CDN can never pair a
+    stale CSV with a fresh table; the hash must be of the exact bytes written. Two exports of the
+    same input must also produce byte-identical CSVs (and so the same hash)."""
+    import hashlib
+    import json
+    import shutil
+    import tempfile
+
+    from league_results_export import export_results_and_manifest
+
+    league_dir = REPO_ROOT / "outputs" / "league"
+    if not (league_dir / "results").exists() or not (league_dir / "season_config.csv").exists():
+        print("  (no league data on disk -- nothing to verify yet)")
+        return
+
+    hashes = []
+    for _run in range(2):
+        tmp = Path(tempfile.mkdtemp(prefix="results_sha_"))
+        log_copy = tmp / "ingestion_log.csv"
+        if (league_dir / "ingestion_log.csv").exists():
+            shutil.copyfile(league_dir / "ingestion_log.csv", log_copy)
+        export_results_and_manifest(
+            results_dir=league_dir / "results",
+            season_config_csv=league_dir / "season_config.csv",
+            docs_data_dir=tmp / "data",
+            format_name="modern",
+            ingestion_log_path=log_copy,
+            season_registry_path=tmp / "pilot_league_seasons.csv",
+            as_of=date(2026, 9, 24),
+        )
+        run_hashes = {}
+        for manifest_path in sorted((tmp / "data").glob("pilot_league_results_*_manifest.json")):
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            csv_path = manifest_path.with_name(manifest_path.name.replace("_manifest.json", ".csv"))
+            actual = hashlib.sha256(csv_path.read_bytes()).hexdigest()
+            assert manifest["results_csv_sha256"] == actual, manifest_path.name
+            run_hashes[csv_path.name] = actual
+        hashes.append(run_hashes)
+    assert hashes[0] == hashes[1], "results CSV bytes differ between two exports of the same input"

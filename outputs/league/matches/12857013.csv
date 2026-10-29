@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857013,2026-10-27,C32,Challenge,QF,Boucha,844369,GLSwadow,3438702,2,0,Amulet Titan,Tron
+12857013,2026-10-27,C32,Challenge,QF,reidq7,3155916,KadettiKersantti,3344298,2,1,Amulet Titan,Broodscale Combo
+12857013,2026-10-27,C32,Challenge,QF,sioutis_kk,3499660,BvV,3387111,2,1,Affinity,Dimir Midrange
+12857013,2026-10-27,C32,Challenge,QF,Tetsubou,1700365,Odin2015,3306092,2,0,Broodscale Combo,Eldrazi Tron
+12857013,2026-10-27,C32,Challenge,SF,Boucha,844369,sioutis_kk,3499660,2,0,Amulet Titan,Affinity
+12857013,2026-10-27,C32,Challenge,SF,reidq7,3155916,Tetsubou,1700365,2,1,Amulet Titan,Broodscale Combo
+12857013,2026-10-27,C32,Challenge,F,reidq7,3155916,Boucha,844369,2,1,Amulet Titan,Amulet Titan

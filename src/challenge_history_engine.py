@@ -97,9 +97,14 @@ def _clean_history_df_before_write(df: pd.DataFrame) -> pd.DataFrame:
     a numeric-looking string column drifting to float64 and coming back out as "12345.0" instead
     of "12345"). Always call right before to_csv() for any of the history files.
     """
-    if "EventID" in df.columns:
+    # 2026-10-29: the same drift hit LoginID and PlayerCount (3548 local rows of 2026-07-13 .. 09-27 were
+    # written as "1942357.0" / "83.0" by the W39 recompute of 2026-09-28, while the base and the bot's copy
+    # keep "1942357" / "83"), found when merging origin/main.
+    cols = [c for c in ("EventID", "LoginID", "PlayerCount") if c in df.columns]
+    if cols:
         df = df.copy()
-        df["EventID"] = df["EventID"].astype(str).str.replace(r"\.0$", "", regex=True)
+        for c in cols:
+            df[c] = df[c].astype(str).str.replace(r"^(\d+)\.0$", r"\1", regex=True)
     return df
 
 
@@ -273,6 +278,23 @@ def sync_challenge_history_window(
             emit(
                 f"[challenge-history] {len(missing_ids)} previously-persisted event(s) in this window "
                 f"are missing from the freshly fetched registry, left untouched: {missing_ids}"
+            )
+
+    # An EventID is one event: if a fresh event is already persisted OUTSIDE this window (under
+    # another EventDate), writing it again would duplicate every row of it -- 12855474 (C64,
+    # 2026-10-03) was listed by mtgo.com as 2026-10-05 and got written twice, doubling its league
+    # points. Refuse before touching the file; challenge_mtgo_source._reconcile_event_date should
+    # already have dropped such an event, so reaching this is a bug worth a human look.
+    if not existing.empty:
+        kept = existing[~to_drop] if dropped else existing
+        kept_ids = kept["EventID"].astype(str).str.strip()
+        clashing = sorted((fresh_event_ids & set(kept_ids)) - {""})
+        if clashing:
+            dates = {eid: sorted(set(kept.loc[kept_ids == eid, "EventDate"].astype(str))) for eid in clashing}
+            raise ValueError(
+                f"[challenge-history] refusing to sync {format_name} {start_date.isoformat()}.."
+                f"{end_date.isoformat()} into {history_csv}: event(s) already persisted under another "
+                f"EventDate would be duplicated: {dates}"
             )
 
     # Preserve any already-resolved (EventID, Pilot) -> (Deck, Archetype) from the rows about to be

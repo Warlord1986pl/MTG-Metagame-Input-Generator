@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856622,2026-10-20,C16,Challenge,QF,Attomium,1778538,kanister,1205292,2,1,Broodscale Combo,RG
+12856622,2026-10-20,C16,Challenge,QF,SFDK,3509735,virp13,3525848,2,1,Boros Burn,Dimir Murktide
+12856622,2026-10-20,C16,Challenge,QF,RespectTheCat,2788118,GigaChadSigmaMale,3085636,2,0,Jeskai Energy,Goryo's Vengeance
+12856622,2026-10-20,C16,Challenge,QF,DiamondAtog,3087909,klien7,2564773,2,1,Goryo's Vengeance,Domain Zoo
+12856622,2026-10-20,C16,Challenge,SF,SFDK,3509735,RespectTheCat,2788118,2,1,Boros Burn,Jeskai Energy
+12856622,2026-10-20,C16,Challenge,SF,DiamondAtog,3087909,Attomium,1778538,2,1,Goryo's Vengeance,Broodscale Combo
+12856622,2026-10-20,C16,Challenge,F,SFDK,3509735,DiamondAtog,3087909,2,1,Boros Burn,Goryo's Vengeance

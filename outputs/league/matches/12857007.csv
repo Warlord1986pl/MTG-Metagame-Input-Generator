@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857007,2026-10-27,C16,Challenge,QF,kanister,1205292,Attomium,1778538,2,0,Amulet Titan,Broodscale Combo
+12857007,2026-10-27,C16,Challenge,QF,sedotwc,3535709,fradev1988,1838473,2,1,Prowess,Rakdos Midrange
+12857007,2026-10-27,C16,Challenge,QF,Maede,2855160,Fatone,1182549,2,1,Devoted Combo,Ruby Storm
+12857007,2026-10-27,C16,Challenge,QF,JPA93,1181017,Antarctica,1163110,2,0,Neobrand,Eldrazi Tron
+12857007,2026-10-27,C16,Challenge,SF,sedotwc,3535709,JPA93,1181017,2,1,Prowess,Neobrand
+12857007,2026-10-27,C16,Challenge,SF,kanister,1205292,Maede,2855160,2,1,Amulet Titan,Devoted Combo
+12857007,2026-10-27,C16,Challenge,F,kanister,1205292,sedotwc,3535709,2,0,Amulet Titan,Prowess

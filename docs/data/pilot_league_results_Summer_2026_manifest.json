@@ -1,7 +1,7 @@
 {
   "LateArrivals": [],
   "RankChangeAnchor": "2026-08-30",
-  "as_of": "2026-09-14",
+  "as_of": "2026-10-29",
   "events": [
     {
       "date": "2026-07-13",
@@ -553,10 +553,11 @@
   "events_challenge": 87,
   "events_premier": 4,
   "events_total": 91,
-  "generated_at": "2026-09-14T08:22:38Z",
+  "generated_at": "2026-10-29T15:49:20Z",
   "pilots_scoring": 646,
   "pilots_total": 1033,
   "points_total": 2945,
+  "results_csv_sha256": "3b5ff1143606902687367d91fb75183db9ad87d1b3d0fb7239705380dfa1fd86",
   "season": "Summer 2026",
   "season_end": "2026-08-31",
   "season_start": "2026-06-01",

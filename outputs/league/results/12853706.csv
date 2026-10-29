@@ -18,7 +18,7 @@ EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoint
 12853706,2026-09-07,C64,Challenge,ejk,1952341,17,Prowess,,0,17,15,0.53741,0.64706,0.50002
 12853706,2026-09-07,C64,Challenge,Lightspirit,3222070,18,Eldrazi Ramp,,0,18,15,0.53401,0.62500,0.52271
 12853706,2026-09-07,C64,Challenge,Arcbound_Papi,2137107,19,Affinity,,0,19,15,0.52381,0.73333,0.49505
-12853706,2026-09-07,C64,Challenge,gpowerone,274550,20,Golgari Basking Broodscale Combo,,0,20,15,0.50680,0.62500,0.49914
+12853706,2026-09-07,C64,Challenge,gpowerone,274550,20,Broodscale Combo,,0,20,15,0.50680,0.62500,0.49914
 12853706,2026-09-07,C64,Challenge,quinniac,2261440,21,Burn,,0,21,15,0.49932,0.63158,0.48069
 12853706,2026-09-07,C64,Challenge,jakobpablo,2856109,22,Broodscale Combo,,0,22,15,0.49320,0.75000,0.48254
 12853706,2026-09-07,C64,Challenge,DreamsOfAshiok,2486183,23,Tron,,0,23,15,0.46939,0.68750,0.44918

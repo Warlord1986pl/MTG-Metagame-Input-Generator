@@ -3185,13 +3185,19 @@ class StudioWindow(QMainWindow):
 
         if assignment_map and history_csv.exists():
             try:
-                df = pd.read_csv(history_csv)
+                # dtype=str + utf-8-sig like every other history writer: a plain read_csv turned blank
+                # LoginIDs into NaN and every LoginID / PlayerCount into "1942357.0" (2026-10-29)
+                df = pd.read_csv(history_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
                 if "Deck" in df.columns and "Archetype" in df.columns:
                     def _remap(row):
                         key = str(row["Deck"] or "").strip().lower()
                         return assignment_map.get(key, row["Archetype"])
                     df["Archetype"] = df.apply(_remap, axis=1)
-                    df.to_csv(history_csv, index=False)
+                    try:
+                        from challenge_history_engine import _clean_history_df_before_write
+                    except ModuleNotFoundError:
+                        from .challenge_history_engine import _clean_history_df_before_write
+                    _clean_history_df_before_write(df).to_csv(history_csv, index=False, encoding="utf-8-sig")
             except Exception as err:
                 self._append_stats_log(f"[WARN] Could not patch challenge history CSV in place: {err}")
 

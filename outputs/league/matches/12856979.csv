@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856979,2026-10-24,C32,Challenge,QF,PharmD_MTG,2832530,almostomniscient,2563273,2,1,Jeskai Energy,Mono-Black Midrange
+12856979,2026-10-24,C32,Challenge,QF,Mistakenn,2129541,1sNabOs,2643572,2,1,Amulet Titan,Selesnya Midrange
+12856979,2026-10-24,C32,Challenge,QF,Urthstrype,702030,TheWitchKling,2938795,2,1,Broodscale Combo,Rakdos Midrange
+12856979,2026-10-24,C32,Challenge,QF,BienTech,3160934,MeninooNey,3263693,2,1,Esper Blink,Living End
+12856979,2026-10-24,C32,Challenge,SF,Mistakenn,2129541,PharmD_MTG,2832530,2,0,Amulet Titan,Jeskai Energy
+12856979,2026-10-24,C32,Challenge,SF,Urthstrype,702030,BienTech,3160934,2,1,Broodscale Combo,Esper Blink
+12856979,2026-10-24,C32,Challenge,F,Urthstrype,702030,Mistakenn,2129541,2,0,Broodscale Combo,Amulet Titan

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12856886,2026-10-19,C64,Challenge,QF,harlouuk,1239343,_Falcon_,2498069,2,0,Amulet Titan,Rakdos Midrange
+12856886,2026-10-19,C64,Challenge,QF,Sorathrix,2705240,pedronavaja,3540949,2,0,Boros Energy,Broodscale Combo
+12856886,2026-10-19,C64,Challenge,QF,nahuel10,1942357,jamerson,1440008,2,0,Azorius Control,Boros Energy
+12856886,2026-10-19,C64,Challenge,QF,ShikiXYZ,1188705,Nuserdog,2702142,2,0,Azorius Control,Ruby Storm
+12856886,2026-10-19,C64,Challenge,SF,nahuel10,1942357,ShikiXYZ,1188705,2,1,Azorius Control,Azorius Control
+12856886,2026-10-19,C64,Challenge,SF,harlouuk,1239343,Sorathrix,2705240,2,1,Amulet Titan,Boros Energy
+12856886,2026-10-19,C64,Challenge,F,nahuel10,1942357,harlouuk,1239343,2,0,Azorius Control,Amulet Titan

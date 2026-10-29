@@ -28,6 +28,7 @@ writing this (see this repo's session notes, not repeated here):
 """
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
@@ -515,6 +516,12 @@ def export_results_and_manifest(
         export_out = export_df.copy()
         export_out["Placement"] = export_out["Placement"].astype(int)
         _write_csv_lf(export_out[RESULTS_EXPORT_COLS], csv_path)
+        # Content hash of the exact bytes just written. The site appends it to the CSV's download
+        # URL (?v=<sha>), so every distinct results file gets a distinct URL. Cytrus sits behind
+        # Cloudflare, which caches *.csv at the edge (but not *.json): on 2026-09-24 the edge kept
+        # serving the 2026-09-17 results CSV next to a fresh season JSON, so a standings download
+        # and a results download from the same page described different sets of events.
+        manifest["results_csv_sha256"] = hashlib.sha256(csv_path.read_bytes()).hexdigest()
         _write_json(manifest, manifest_path)
         emit(f"{season_name}: {len(export_df)} row(s) -> {csv_path.name} + {manifest_path.name}")
 

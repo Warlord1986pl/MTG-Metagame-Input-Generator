@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857259,2026-10-26,C32,Challenge,QF,makaaaa,3154401,Misplacedginger,736792,2,1,Boros Energy,Rakdos Midrange
+12857259,2026-10-26,C32,Challenge,QF,_Shikamaru_,3332226,sioutis_kk,3499660,2,1,Broodscale Combo,Affinity
+12857259,2026-10-26,C32,Challenge,QF,Dioferreira,1950164,Mistakenn,2129541,2,1,Esper Blink,Amulet Titan
+12857259,2026-10-26,C32,Challenge,QF,JPA93,1181017,hugofreitas1,1997683,2,0,Grixis Reanimator,Ruby Storm
+12857259,2026-10-26,C32,Challenge,SF,JPA93,1181017,_Shikamaru_,3332226,2,0,Grixis Reanimator,Broodscale Combo
+12857259,2026-10-26,C32,Challenge,SF,Dioferreira,1950164,makaaaa,3154401,2,0,Esper Blink,Boros Energy
+12857259,2026-10-26,C32,Challenge,F,Dioferreira,1950164,JPA93,1181017,2,0,Esper Blink,Grixis Reanimator

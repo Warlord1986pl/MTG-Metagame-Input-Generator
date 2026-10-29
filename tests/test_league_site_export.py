@@ -157,6 +157,39 @@ def test_bracket_matches_use_the_same_resolved_deck_as_the_results_table() -> No
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
+def test_later_season_rename_does_not_rewrite_closed_season() -> None:
+    """LoginID 2111039 played Summer 2026 as "Jetpool" and Autumn 2026 (12854500) as
+    "Overman220". Autumn must show Overman220 with Jetpool as a prior name; Summer (closed) must
+    keep Jetpool with no prior names -- a later season's rename never rewrites a closed season."""
+    tmp_dir = Path(tempfile.mkdtemp(prefix="site_export_rename_scope_"))
+    try:
+        results_dir = tmp_dir / "results"
+        results_dir.mkdir()
+
+        def event(event_id, day, pilot):
+            pd.DataFrame([{
+                "EventID": event_id, "EventDate": day, "Tier": "C16", "EventClass": "Challenge",
+                "Pilot": pilot, "LoginID": "2111039", "Place": 13, "Deck": "Affinity", "DeckGuess": "",
+                "LeaguePoints": 1, "SwissRank": "", "SwissPoints": "", "OMWP": "", "GWP": "", "OGWP": "",
+            }], columns=LEAGUE_RESULTS_COLS).to_csv(results_dir / f"{event_id}.csv", index=False, encoding="utf-8-sig")
+
+        event("12851658", "2026-08-15", "Jetpool")
+        event("12854500", "2026-09-19", "Overman220")
+
+        summer, _ = build_season_site_data(
+            results_dir, "Summer 2026", date(2026, 6, 1), date(2026, 8, 31), as_of=date(2026, 9, 24),
+        )
+        autumn, _ = build_season_site_data(
+            results_dir, "Autumn 2026", date(2026, 9, 1), date(2026, 11, 30), as_of=date(2026, 9, 24),
+        )
+        s_row = next(p for p in summer["pilots"] if p["loginId"] == "2111039")
+        a_row = next(p for p in autumn["pilots"] if p["loginId"] == "2111039")
+        assert (s_row["name"], s_row["priorNames"]) == ("Jetpool", []), s_row
+        assert (a_row["name"], a_row["priorNames"]) == ("Overman220", ["Jetpool"]), a_row
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_deck_guess_wins_over_last_played_deck()
     print("OK: test_deck_guess_wins_over_last_played_deck")
@@ -164,3 +197,5 @@ if __name__ == "__main__":
     print("OK: test_falls_back_to_last_played_deck_when_deck_guess_blank")
     test_bracket_matches_use_the_same_resolved_deck_as_the_results_table()
     print("OK: test_bracket_matches_use_the_same_resolved_deck_as_the_results_table")
+    test_later_season_rename_does_not_rewrite_closed_season()
+    print("OK: test_later_season_rename_does_not_rewrite_closed_season")

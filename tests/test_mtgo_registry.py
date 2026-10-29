@@ -162,6 +162,29 @@ def test_premier_modern_only() -> None:
     )
 
 
+def test_rc_qualifier_is_premier() -> None:
+    """Regression: mtgo.com's first `modern-rc-qualifier` (12854476, 2026-09-19) was not in
+    PREMIER_SUFFIXES, so build_mtgo_registry raised ChallengeSourceError and stalled every Mikrus
+    history-sync from 2026-09-21 onward. It must classify as premier, alongside the existing
+    `rc-super-qualifier`, without disturbing a same-page challenge link.
+    """
+    html = (
+        '<a href="/decklist/modern-rc-qualifier-2026-09-1912854476" class="decklists-link">'
+        '<a href="/decklist/modern-challenge-32-2026-09-1912854470" class="decklists-link">'
+    )
+    original = challenge_mtgo_source._fetch_month_page_with_content_check
+    challenge_mtgo_source._fetch_month_page_with_content_check = lambda *a, **k: html
+    try:
+        registry = build_mtgo_registry("Modern", date(2026, 9, 19), date(2026, 9, 19))
+    finally:
+        challenge_mtgo_source._fetch_month_page_with_content_check = original
+
+    by_id = {r.event_id: r for r in registry}
+    assert by_id["12854476"].kind == "premier", by_id["12854476"]
+    assert by_id["12854476"].slug == "modern-rc-qualifier"
+    assert by_id["12854470"].kind == "challenge" and by_id["12854470"].size == 32
+
+
 @pytest.mark.live
 def test_live_current_month_not_truncated() -> None:
     """The one test allowed to touch the real network: fetches the CURRENT month from mtgo.com and
@@ -187,4 +210,6 @@ if __name__ == "__main__":
     print("OK: test_same_day_pair")
     test_premier_modern_only()
     print("OK: test_premier_modern_only")
+    test_rc_qualifier_is_premier()
+    print("OK: test_rc_qualifier_is_premier")
     print("All offline mtgo registry tests passed. (test_live_current_month_not_truncated skipped -- run via `pytest -m live`.)")

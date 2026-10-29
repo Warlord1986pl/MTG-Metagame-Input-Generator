@@ -113,8 +113,9 @@ def _pilot_key(login_id: str, name: str) -> str:
 
 
 def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
-    """One entry per identity across the FULL results history on disk (not season-scoped -- a
-    rename can predate the season being rendered), keyed by the same id _pilot_key produces:
+    """One entry per identity across the results rows passed in (not season-scoped -- a rename can
+    predate the season being rendered; build_season_site_data also calls this on rows up to the
+    season's end only, for priorNames), keyed by the same id _pilot_key produces:
     {"current": Pilot value of the row with the latest EventDate, "prior": [other distinct Pilot
     values, oldest first]}.
 
@@ -244,13 +245,30 @@ def build_season_site_data(
     season_end: date,
     as_of: date,
     matches_dir: Optional[Path] = None,
+    snapshot_dir: Optional[Path] = None,
 ) -> tuple:
     """Returns (season_doc, pilots_doc) for one season -- pure computation, no file I/O, so it can
     be unit-tested and diffed without touching disk.
+
+    *snapshot_dir* (new 2026-09-15): passed straight through to build_season_table so the site's
+    own PrevRank/movement uses the same weekly-snapshot baseline as the CSV export instead of the
+    open-season live filter that was silently always reporting zero movement -- see
+    build_season_table's own docstring. Left None (as before) only by a caller with no
+    outputs/league/snapshots to offer, which now also means that caller's PrevRank falls back to
+    the live filter rather than being wrong in a new way.
     """
-    table = build_season_table(results_dir, season_start, season_end, as_of=as_of)
+    table = build_season_table(
+        results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
+    )
     all_results = load_all_league_results(results_dir)
+    # Bracket opponents are labelled with each identity's newest name across all seasons (as
+    # before). priorNames uses only names known by the end of THIS season: a later season's rename
+    # (first case: LoginID 2111039, "Jetpool" in Summer 2026, "Overman220" on mtgo.com from
+    # 12854500 in Autumn 2026) shows up as a prior name in that later season and never rewrites a
+    # closed season's files.
     names = _name_history(all_results)
+    history_dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
+    names_to_season_end = _name_history(all_results[(history_dates <= season_end).fillna(False)])
 
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     season_mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)
@@ -274,7 +292,7 @@ def build_season_site_data(
         login_id = str(row.get("LoginID", "")).strip()
         name = str(row.get("Pilot", "")).strip()
         key = _pilot_key(login_id, name)
-        hist = names.get(key, {"current": name, "prior": []})
+        hist = names_to_season_end.get(key, {"current": name, "prior": []})
         # login_id here is already the canonical pilot_id (build_season_table/aggregate_pilot_table
         # resolve it). `name` may be a pilot_profile.csv display_name override, which can differ
         # from hist["current"] (the raw account's own truly-latest name) -- so hist["current"] must
@@ -455,6 +473,7 @@ def export_league_site(
 
     results_dir = league_dir / "results"
     matches_dir = league_dir / "matches"
+    snapshot_dir = league_dir / "snapshots"
     config_csv = league_dir / "season_config.csv"
     if not config_csv.exists():
         _write_json({"currentSeason": None, "seasons": []}, docs_data_dir / "seasons.json")
@@ -484,6 +503,7 @@ def export_league_site(
 
         season_doc, pilots_doc = build_season_site_data(
             results_dir, season, s_start, s_end, as_of=as_of, matches_dir=matches_dir,
+            snapshot_dir=snapshot_dir,
         )
         _write_json(season_doc, docs_data_dir / f"season_{slug}.json")
         _write_json(pilots_doc, docs_data_dir / f"pilots_{slug}.json")

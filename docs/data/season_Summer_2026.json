@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-19",
+  "asOf": "2026-10-29",
   "pilotCount": 1032,
   "pilots": [
     {
@@ -6173,7 +6173,6 @@
       "premierPoints": 0,
       "prevRank": 328,
       "priorNames": [
-        "onlybrews",
         "Moe12"
       ],
       "profileHidden": false,
@@ -6589,9 +6588,7 @@
       "points": 2,
       "premierPoints": 0,
       "prevRank": 349,
-      "priorNames": [
-        "_Elfkid_"
-      ],
+      "priorNames": [],
       "profileHidden": false,
       "rank": 366,
       "starts": 1,

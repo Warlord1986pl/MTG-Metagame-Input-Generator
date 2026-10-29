@@ -3,6 +3,31 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-29 - Merge of origin/main (VPS bot data + PRs #6-#16) into the local main
+
+- What: local main (75 commits since 2026-09-14: deckdb mode, card rules, runner, build/) and origin/main (61 commits:
+  daily `mikrus: sync` data of the VPS bot up to 2026-10-27 and PRs #6-#16) merged; 129 conflicts. Code: the only
+  conflict, `src/challenge_mtgo_source.py`, takes origin's structure (MTGGoldfish rows joined to mtgo.com by Place,
+  never a row without LoginID, quarantine, MTGGoldfish grace period, no durable cache of a blob without final_rank,
+  an event lost to an earlier window is an ERROR) with the local Broodscale / Moonshadow card rule inside
+  `ingest_labeled_event`. Data: history CSVs keep the local deck labels (card rules, WBG -> Devoted Combo, review
+  decisions) and take Pilot (first capture by the bot: 2 rows), LoginID and PlayerCount (integer text) from origin;
+  the bot's 523 rows of 2026-10-19 .. 10-27 are added and relabelled with the local rules (Broodscale 58, Moonshadow
+  50, WBG -> Devoted Combo 9 after check-alias SAFE, median 0.871). League results / matches: rows from origin, deck
+  columns from the merged history (every row matched; also fixes 92 + 47 local rows that lagged behind the local
+  history); RC Super Qualifier 12855444 (2026-10-03, missing on origin) kept. Season tables, site JSON and the
+  results export rebuilt from scratch (invariants and validate_league pass). History writers: LoginID and PlayerCount
+  go through `_clean_history_df_before_write` like EventID; the GUI archetype patch reads the history as text (its
+  plain `read_csv` was the source of "1942357.0").
+- Why: the two lines of work had diverged since 2026-09-14; the bot keeps writing to origin/main daily.
+- Output files: `outputs/challenge_history_modern.csv`, `outputs/premier_history_modern.csv`, the card-rule ledgers,
+  `outputs/league/` (results, matches, pilot_league_Autumn_2026.csv, ingestion_log.csv), `docs/data/` (season,
+  pilots, results export, manifests). Summer 2026 unchanged in substance (91 events, 1032 pilots, 2945 points); Autumn
+  2026: 108 events, 1049 pilots, 3441 points = origin's 3379 + the 62 points of the RC Super Qualifier, every other
+  pilot's points identical. Deckdb materials unchanged (W43 equal to `outputs/_working/reference/2026-W43/`).
+- Tests: 163 passed.
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-29 - Runner: build/ under version control, source of the Rogue & unclassified alarm thresholds
 
 - What: the scripts of `build/` (analysis.py, build_deck.js, gen_dossier.py, build_docs.py, qa.py,

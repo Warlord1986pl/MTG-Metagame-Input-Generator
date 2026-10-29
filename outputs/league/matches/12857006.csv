@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857006,2026-10-27,C32,Challenge,QF,ETBJezus,3040474,MisterTwin,3190187,2,1,Dimir Midrange,Boros Energy
+12857006,2026-10-27,C32,Challenge,QF,MAFS,2121091,komattaman,2690217,2,1,Tron,Rakdos Midrange
+12857006,2026-10-27,C32,Challenge,QF,FakeShaver,280670,xfile,2449332,2,0,Belcher,Broodscale Combo
+12857006,2026-10-27,C32,Challenge,QF,justFeather,2446403,Bradykiesling13,2026932,2,0,Broodscale Combo,Eldrazi Tron
+12857006,2026-10-27,C32,Challenge,SF,justFeather,2446403,ETBJezus,3040474,2,0,Broodscale Combo,Dimir Midrange
+12857006,2026-10-27,C32,Challenge,SF,FakeShaver,280670,MAFS,2121091,2,1,Belcher,Tron
+12857006,2026-10-27,C32,Challenge,F,justFeather,2446403,FakeShaver,280670,2,1,Broodscale Combo,Belcher
