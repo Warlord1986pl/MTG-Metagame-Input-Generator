@@ -3,6 +3,38 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-29 - Week runner ("one click") and the Friday triage check
+
+- What: `metagame_week.py` / `metagame_week.bat` (root): stage DATA = preflight (Python and packages of both
+  interpreters, network, git state of both repos, commits, DeckDB rules version; uncommitted `docs/deckdb_config.csv`
+  stops), DeckDB `backfill-raw` + `import --raw-window` + derived columns for the ISO week (every failure of the
+  backfill report and every import refusal stops, also at exit code 0), `weekly_triage.py` (`pending_blocking` stops
+  with the groups), `export-assignments` / `export-cards` (an existing file of the same name must have the same
+  sha256), check of the week's Modern Challenge ids against the monthly pages of mtgo.com/decklists both ways (own
+  parser, snapshots `mtgo_snapshot_<YYYY-MM>.html`, neighbours, 1 day off = warning, more = stop, cut pages retried),
+  pipeline in input mode deckdb with a working copy of the committed config and its own `--outputs-base`, flat folder
+  `weekly/<week>/` with `run_report.md`, one row per run in `weekly/runs.csv`; `--test-monthly` = test monthly
+  material of the running incomplete month. Stage BUILD runs the scripts of `build/` (from the Claude project,
+  unchanged) in the order of `build/README_workflow.md` with `weekly/<week>/out/` as working directory; any FAIL of
+  `qa.py` stops; sha256 of every `build/` file in the report. `triage_check.py` / `triage_check.bat`: import of the
+  running week up to today, triage, `weekly/<week>/triage_check_<date>.md` (groups with examples and common cards,
+  Rogue & unclassified share and change, flag > 5% or > 2 pp), Windows toast, exit 0 / 1 / 2 / 3;
+  `docs/triage_check_task.xml` for the Task Scheduler (Friday 18:00, not installed automatically). Code in
+  `src/weekly_runner/` (`deckdb_probe.py` runs read-only under the DeckDB interpreter). Pipeline: new option
+  `--deckdb-cache-dir` (deckdb mode; default unchanged). `scripts/compare_week_folders.py`. Docs `docs/runner.md`,
+  `docs/runner_plan.md`; tests `tests/test_weekly_runner.py` (20).
+- Why: the weekly folder without Claude Code, with every manual decision either automated (import window,
+  failures, derived columns, config) or turned into a stop with an instruction (triage, exports, mtgo.com check).
+- Output files: new `weekly/<week>/` (outside git); `outputs/presentation/` is no longer written by the weekly flow
+  and stays the archive of the published folders. No change of any material: `weekly/2026-W43/` equals
+  `outputs/_working/reference/2026-W43/` made with the same pipeline command (PNG and notes.md byte for byte,
+  data.xlsx sheet by sheet).
+- Checked on: 2026-W43 (12 / 12 ids, neighbours 12856599 and 12856997 outside), 2026-W40 (September and October
+  pages; September monthly material 59 events, 1884 lists, m01 7484 lists as in part 4), build W43 with the content
+  files of the Claude project (qa.py without FAIL), triage check W43 as of 2026-10-23 (complete = triage file of the
+  week).
+- DeckDB rules version: ded3d7dba99e38d7 (export assignments_ded3d7dba99e38d7_2026-10-25.csv, sha256 d6a107ec).
+
 ## 2026-10-28 - Monthly material in the week that closes the month (part 4)
 
 - What: standing rule `month_for`: the monthly material of month M is in the package of the ISO week that contains

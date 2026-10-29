@@ -42,6 +42,18 @@ run_gui.bat
 
 The PowerShell scripts default to `E:/github/.venv/Scripts/python.exe` and fall back to `python` on PATH.
 
+### Week runner and Friday triage check (no Claude Code needed)
+
+```bat
+metagame_week.bat                                  rem stage DATA, last complete ISO week -> weekly/<week>/
+metagame_week.bat --week 2026-W44 --stage all      rem + build/ scripts (Claude project, never edited here)
+triage_check.bat                                   rem Friday alarm: exit 0 complete, 1 notice, 2 blocking, 3 error
+```
+
+Everything (stages, stop codes, Task Scheduler XML, validator junction for `qa.py`) is in `docs/runner.md`; code in
+`src/weekly_runner/`. The runner never commits and never writes `docs/decisions.md`; `outputs/presentation/` is the
+archive of published folders and is not written by it.
+
 ### Pilot identity CLI
 
 ```sh

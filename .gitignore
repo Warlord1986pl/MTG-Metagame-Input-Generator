@@ -86,3 +86,6 @@ backups/
 # backups/ rule above, but named explicitly since these specifically document the account-rename
 # mechanism (see CLAUDE.md) and should stay excluded even if that blanket rule is ever narrowed.
 backups/history/*.bak
+
+# runner tygodnia (metagame_week.py): foldery tygodni, snapshoty mtgo.com, runs.csv
+weekly/

@@ -1,0 +1,5 @@
+key,value
+deckdb_dir,E:/github/DeckDB
+deckdb_python,C:/Python/python.exe
+pipeline_python,E:/github/.venv/Scripts/python.exe
+trend_weeks,12

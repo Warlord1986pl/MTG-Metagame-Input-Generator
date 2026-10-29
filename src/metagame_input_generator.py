@@ -1692,6 +1692,16 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--deckdb-cache-dir",
+        default=None,
+        metavar="DIR",
+        help=(
+            "tylko z --input-mode deckdb: katalog JSON mtgo.com dla pokrycia w materiałach roboczych "
+            "(domyślnie <outputs-base>/cache/mtgo_json/<format>); runner tygodnia podaje outputs/cache przy "
+            "własnym --outputs-base"
+        ),
+    )
+    parser.add_argument(
         "--deckdb-slides",
         action="store_true",
         help=(
@@ -1854,7 +1864,10 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         outputs_base = Path(args.outputs_base)
     else:
         outputs_base = Path(args.history_output_dir).parent
-    cache_dir = outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name)
+    cache_dir = (Path(args.deckdb_cache_dir) if getattr(args, "deckdb_cache_dir", None)
+                 else outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name))
+    if getattr(args, "deckdb_cache_dir", None) and not cache_dir.is_dir():
+        raise di.DeckdbInputError(f"--deckdb-cache-dir {cache_dir} nie istnieje")
     written = build_deckdb_materials(
         export,
         cfg,
