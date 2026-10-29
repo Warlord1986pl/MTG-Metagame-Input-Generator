@@ -3,6 +3,20 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-29 - Runner: build/ under version control, source of the Rogue & unclassified alarm thresholds
+
+- What: the scripts of `build/` (analysis.py, build_deck.js, gen_dossier.py, build_docs.py, qa.py,
+  README_workflow.md, sha256 as in the package of 2026-10-29) are committed, so every version the runner reports is in
+  the history; the package files (PRZECZYTAJ.md, SHA256SUMS.txt, runner_paczka_w43.zip) removed from the repo root;
+  the test rows of 2026-10-29 removed from `weekly/runs.csv` (header kept). `docs/runner.md` and
+  `src/weekly_runner/triage_check.py`: the thresholds of the Friday alarm (Rogue & unclassified > 5% of the lists or
+  a rise > 2 pp) come from the master prompt of the metagame analysis, part 2, test 8 (was: "order of 2026-10-29").
+  `docs/runner.md`: the junction `E:\mnt\skills\public\pptx` stays until a `qa.py` with a validator path parameter
+  (`--validator` or `PPTX_VALIDATE`) arrives; then the runner passes the local pptx skill and the junction goes.
+- Why: Karol's decisions after the runner report.
+- Output files: none of the materials; `weekly/runs.csv` (outside git).
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-29 - Week runner ("one click") and the Friday triage check
 
 - What: `metagame_week.py` / `metagame_week.bat` (root): stage DATA = preflight (Python and packages of both

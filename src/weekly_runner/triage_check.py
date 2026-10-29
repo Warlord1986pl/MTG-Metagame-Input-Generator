@@ -16,7 +16,7 @@ from .common import REPO, Stop, backfill_and_import, check_network, iso_label, l
 
 EXIT = {"complete": 0, "pending_notice": 1, "pending_blocking": 2}
 EXIT_ERROR = 3
-# Alarm thresholds of the Rogue & unclassified share (order of 2026-10-29; not written in DeckDB's master prompt)
+# Alarm thresholds of the Rogue & unclassified share (master prompt of the metagame analysis, part 2, test 8)
 ROGUE_SHARE_FLAG = 0.05
 ROGUE_RISE_FLAG_PP = 2.0
 TITLE = "MTG triage check"

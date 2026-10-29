@@ -109,7 +109,7 @@ New-Item -ItemType Junction -Path E:\mnt\skills\public\pptx -Target "<katalog sk
 ```
 
 (`<katalog skilla pptx>` = folder `pptx` w `C:\Users\kmalo\.claude\skills\synced\...`; usunięcie: `rmdir
-E:\mnt\skills\public\pptx`). Bez walidatora etap zatrzymuje się w preflighcie. `markitdown` jest opcjonalny
+E:\mnt\skills\public\pptx`). Bez walidatora etap zatrzymuje się w preflighcie. Junction jest tymczasowy: gdy przyjdzie wersja `qa.py` z parametrem ścieżki walidatora (`--validator` albo zmienna `PPTX_VALIDATE`), runner poda jej ścieżkę lokalnego skilla pptx, a junction zostanie usunięty. `markitdown` jest opcjonalny
 (`qa.py` czyta wtedy tekst przez `python-pptx`).
 
 **Podmiana skryptów w `build/`:** skopiuj nowe pliki z projektu Claude do `build/` (nadpisanie), uruchom
@@ -142,7 +142,7 @@ reguły przed poniedziałkowym runnerem.
 3. Raport `weekly/<tydzień>/triage_check_<data>.md`: status; grupy do rozstrzygnięcia (listy, listy w tygodniu, udział
    w listach tygodnia, 2 przykłady `event_id / decktournamentid`, karty wspólne grupy); udział „Rogue &
    unclassified” w tygodniu do dziś i zmiana wobec poprzedniego pełnego tygodnia; flaga przy udziale > 5% albo
-   wzroście > 2 pp. Progi pochodzą z polecenia z 2026-10-29; master prompt DeckDB ich nie zawiera.
+   wzroście > 2 pp. Progi pochodzą z master promptu analizy metagame (projekt Claude), część 2, test 8.
 4. Powiadomienie Windows: `triage complete, nothing to do` albo `triage <status>: <n> group(s) awaiting decision`;
    przy błędzie `triage check error (code 3): ...`.
 5. Kod wyjścia: 0 `complete`, 1 `pending_notice`, 2 `pending_blocking`, 3 błąd (także brak sieci i każdy
