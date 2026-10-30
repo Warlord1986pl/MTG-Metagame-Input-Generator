@@ -3,6 +3,27 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-30 - Merge of the bot's sync of 2026-10-28; main safe for the VPS `git pull`
+
+- What: origin/main 79f1a59 (`mikrus: sync modern through 2026-10-28`, events 12857015 and 12857018, 64 rows) merged
+  the same way as the merge of 2026-10-29: Broodscale 10, Moonshadow 6, WBG -> Devoted Combo 2 (check-alias against
+  the 151 Devoted Combo lists of 2026-09-01 .. 10-28: SAFE, median 0.958), league deck columns from the history,
+  season tables / site / results export rebuilt (invariants and validate_league pass). Autumn 2026: 110 events, 1057
+  pilots, 3503 points = origin's 3441 + the 62 points of the RC Super Qualifier 12855444. For the hourly
+  `git pull -q` of the VPS (root crontab, collector `history-sync` / `league-rebuild` / `push`), which keeps three
+  kinds of local changes: `outputs/league/season_config.csv` (Autumn 2026 upserted, never committed) and the two
+  `docs/data/pilot_league_results_*_manifest.json` (`generated_at`) stay at origin's version, and
+  `outputs/league/snapshots/*.csv` are no longer tracked here (`git rm --cached`; the files stay on disk) because the
+  VPS has its own, untracked snapshots w36 .. w44 of the same names -- a tracked or modified copy of any of those
+  paths makes `git pull` refuse and stops the whole collector chain (checked on a test repository). Every collector
+  import binds to the merged signatures; no new third-party package is imported by the modules it loads.
+- Why: Karol's decision to merge after checking the bot (2026-10-30).
+- Output files: history CSVs, card-rule ledgers, `outputs/league/` (results, matches, pilot_league_Autumn_2026.csv,
+  ingestion_log.csv), `docs/data/` (season, pilots, results export).
+- Open: the VPS snapshots (irreplaceable per `.gitignore`) live only on the VPS disk; the collector's push should
+  commit them and `season_config.csv` (repo Meta-Challange-2.0_Mikrus, not changed here).
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-29 - Merge of origin/main (VPS bot data + PRs #6-#16) into the local main
 
 - What: local main (75 commits since 2026-09-14: deckdb mode, card rules, runner, build/) and origin/main (61 commits:
