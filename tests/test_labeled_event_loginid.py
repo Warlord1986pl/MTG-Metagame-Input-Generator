@@ -24,7 +24,7 @@ from challenge_mtgo_source import MtgoRegistryEvent, build_challenge_dataset  # 
 
 EVENT_ID = "12854500"
 DAY = "2026-09-19"
-MTGO_ROSTER = [("3298193", "bubblywubblytubbler"), ("2045296", "JV_7777"), ("2569009", "TrueHero"), ("2111039", "Overman220")]
+MTGO_ROSTER = [("3298193", "bubblywubblytubbler"), ("900000309", "JV_7777"), ("900000435", "TrueHero"), ("900000331", "Overman220")]
 
 
 @contextmanager
@@ -73,7 +73,7 @@ def _run(goldfish_pilots, roster=MTGO_ROSTER):
 def test_renamed_account_keeps_mtgo_loginid() -> None:
     dataset, logs = _run(["bubblywubblytubbler", "JV_7777", "TrueHero", "Jetpool"])
     rows = {r.place: r for r in dataset.event_rows[EVENT_ID]}
-    assert rows[4].loginid == "2111039", rows[4]
+    assert rows[4].loginid == "900000331", rows[4]
     assert rows[4].pilot == "Overman220", rows[4]
     assert all(r.loginid for r in rows.values())
     assert [s.event_id for s in dataset.skipped_events] == []

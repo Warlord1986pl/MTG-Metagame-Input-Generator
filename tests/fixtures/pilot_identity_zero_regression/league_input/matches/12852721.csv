@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12852721,2026-08-20,C64,Challenge,QF,thodoris17,2119308,selesneal,1618758,2,1,Esper Blink,Devoted Combo
-12852721,2026-08-20,C64,Challenge,QF,Rashek,2702005,ShowTime_,949859,2,1,Boros Energy,Domain Zoo
-12852721,2026-08-20,C64,Challenge,QF,bananadisaster,3442638,X_Why_Z,2937193,2,0,Prowess,Ruby Storm
-12852721,2026-08-20,C64,Challenge,QF,Lightspirit,3222070,lunaloveee,2886236,2,1,Eldrazi Ramp,Goryo's Vengeance
-12852721,2026-08-20,C64,Challenge,SF,bananadisaster,3442638,thodoris17,2119308,2,1,Prowess,Esper Blink
-12852721,2026-08-20,C64,Challenge,SF,Rashek,2702005,Lightspirit,3222070,2,1,Boros Energy,Eldrazi Ramp
-12852721,2026-08-20,C64,Challenge,F,bananadisaster,3442638,Rashek,2702005,2,0,Prowess,Boros Energy
+12852721,2026-08-20,C64,Challenge,QF,thodoris17,900000334,selesneal,900000220,2,1,Esper Blink,Devoted Combo
+12852721,2026-08-20,C64,Challenge,QF,Rashek,900000498,ShowTime_,900000101,2,1,Boros Energy,Domain Zoo
+12852721,2026-08-20,C64,Challenge,QF,bananadisaster,900000936,X_Why_Z,900000653,2,0,Prowess,Ruby Storm
+12852721,2026-08-20,C64,Challenge,QF,Lightspirit,900000842,lunaloveee,900000609,2,1,Eldrazi Ramp,Goryo's Vengeance
+12852721,2026-08-20,C64,Challenge,SF,bananadisaster,900000936,thodoris17,900000334,2,1,Prowess,Esper Blink
+12852721,2026-08-20,C64,Challenge,SF,Rashek,900000498,Lightspirit,900000842,2,1,Boros Energy,Eldrazi Ramp
+12852721,2026-08-20,C64,Challenge,F,bananadisaster,900000936,Rashek,900000498,2,0,Prowess,Boros Energy

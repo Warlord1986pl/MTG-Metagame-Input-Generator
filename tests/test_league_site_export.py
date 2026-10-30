@@ -169,7 +169,7 @@ def test_later_season_rename_does_not_rewrite_closed_season() -> None:
         def event(event_id, day, pilot):
             pd.DataFrame([{
                 "EventID": event_id, "EventDate": day, "Tier": "C16", "EventClass": "Challenge",
-                "Pilot": pilot, "LoginID": "2111039", "Place": 13, "Deck": "Affinity", "DeckGuess": "",
+                "Pilot": pilot, "LoginID": "900000331", "Place": 13, "Deck": "Affinity", "DeckGuess": "",
                 "LeaguePoints": 1, "SwissRank": "", "SwissPoints": "", "OMWP": "", "GWP": "", "OGWP": "",
             }], columns=LEAGUE_RESULTS_COLS).to_csv(results_dir / f"{event_id}.csv", index=False, encoding="utf-8-sig")
 
@@ -182,8 +182,8 @@ def test_later_season_rename_does_not_rewrite_closed_season() -> None:
         autumn, _ = build_season_site_data(
             results_dir, "Autumn 2026", date(2026, 9, 1), date(2026, 11, 30), as_of=date(2026, 9, 24),
         )
-        s_row = next(p for p in summer["pilots"] if p["loginId"] == "2111039")
-        a_row = next(p for p in autumn["pilots"] if p["loginId"] == "2111039")
+        s_row = next(p for p in summer["pilots"] if p["loginId"] == "900000331")
+        a_row = next(p for p in autumn["pilots"] if p["loginId"] == "900000331")
         assert (s_row["name"], s_row["priorNames"]) == ("Jetpool", []), s_row
         assert (a_row["name"], a_row["priorNames"]) == ("Overman220", ["Jetpool"]), a_row
     finally:

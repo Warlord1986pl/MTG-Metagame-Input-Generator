@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12849509,2026-08-05,C32,Challenge,QF,ResponsiblyStupid,3050181,jvidarte,2651868,2,1,Mono-Green Eldrazi,Prowess
-12849509,2026-08-05,C32,Challenge,QF,selesneal,1618758,ShadowTitan1,2130633,2,1,Devoted Combo,Domain Zoo
-12849509,2026-08-05,C32,Challenge,QF,KurumimBagoRosa,3472098,ipadkid,3560747,2,0,Eldrazi Tron,Dimir Midrange
-12849509,2026-08-05,C32,Challenge,QF,PhyrexianSwarm,3553954,nahuel10,1942357,2,1,Broodscale Combo,Prowess
-12849509,2026-08-05,C32,Challenge,SF,selesneal,1618758,ResponsiblyStupid,3050181,2,0,Devoted Combo,Mono-Green Eldrazi
-12849509,2026-08-05,C32,Challenge,SF,PhyrexianSwarm,3553954,KurumimBagoRosa,3472098,2,1,Broodscale Combo,Eldrazi Tron
-12849509,2026-08-05,C32,Challenge,F,PhyrexianSwarm,3553954,selesneal,1618758,2,0,Broodscale Combo,Devoted Combo
+12849509,2026-08-05,C32,Challenge,QF,ResponsiblyStupid,900000726,jvidarte,900000463,2,1,Mono-Green Eldrazi,Prowess
+12849509,2026-08-05,C32,Challenge,QF,selesneal,900000220,ShadowTitan1,900000337,2,1,Devoted Combo,Domain Zoo
+12849509,2026-08-05,C32,Challenge,QF,KurumimBagoRosa,900000953,ipadkid,900001015,2,0,Eldrazi Tron,Dimir Midrange
+12849509,2026-08-05,C32,Challenge,QF,PhyrexianSwarm,900001008,nahuel10,900000276,2,1,Broodscale Combo,Prowess
+12849509,2026-08-05,C32,Challenge,SF,selesneal,900000220,ResponsiblyStupid,900000726,2,0,Devoted Combo,Mono-Green Eldrazi
+12849509,2026-08-05,C32,Challenge,SF,PhyrexianSwarm,900001008,KurumimBagoRosa,900000953,2,1,Broodscale Combo,Eldrazi Tron
+12849509,2026-08-05,C32,Challenge,F,PhyrexianSwarm,900001008,selesneal,900000220,2,0,Broodscale Combo,Devoted Combo

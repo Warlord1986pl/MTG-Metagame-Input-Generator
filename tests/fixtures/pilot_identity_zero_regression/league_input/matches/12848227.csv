@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12848227,2026-07-27,C64,Challenge,QF,Cachorrowo,2720911,MC_amp2267,2729232,2,1,Amulet Titan,Mono-Green Eldrazi
-12848227,2026-07-27,C64,Challenge,QF,marceliiine,2911879,derlumberzack,1126781,2,0,Goryo's Vengeance,BRG
-12848227,2026-07-27,C64,Challenge,QF,eclipse4343,2714224,oinkmage22,2858193,2,1,UW Control,Dimir Midrange
-12848227,2026-07-27,C64,Challenge,QF,reidq7,3155916,PhyrexianSwarm,3553954,2,1,Amulet Titan,Yawgmoth
-12848227,2026-07-27,C64,Challenge,SF,marceliiine,2911879,reidq7,3155916,2,1,Goryo's Vengeance,Amulet Titan
-12848227,2026-07-27,C64,Challenge,SF,eclipse4343,2714224,Cachorrowo,2720911,2,0,UW Control,Amulet Titan
-12848227,2026-07-27,C64,Challenge,F,eclipse4343,2714224,marceliiine,2911879,2,1,UW Control,Goryo's Vengeance
+12848227,2026-07-27,C64,Challenge,QF,Cachorrowo,900000519,MC_amp2267,900000527,2,1,Amulet Titan,Mono-Green Eldrazi
+12848227,2026-07-27,C64,Challenge,QF,marceliiine,900000632,derlumberzack,900000149,2,0,Goryo's Vengeance,BRG
+12848227,2026-07-27,C64,Challenge,QF,eclipse4343,900000513,oinkmage22,900000591,2,1,UW Control,Dimir Midrange
+12848227,2026-07-27,C64,Challenge,QF,reidq7,900000811,PhyrexianSwarm,900001008,2,1,Amulet Titan,Yawgmoth
+12848227,2026-07-27,C64,Challenge,SF,marceliiine,900000632,reidq7,900000811,2,1,Goryo's Vengeance,Amulet Titan
+12848227,2026-07-27,C64,Challenge,SF,eclipse4343,900000513,Cachorrowo,900000519,2,0,UW Control,Amulet Titan
+12848227,2026-07-27,C64,Challenge,F,eclipse4343,900000513,marceliiine,900000632,2,1,UW Control,Goryo's Vengeance

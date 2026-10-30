@@ -34,11 +34,11 @@ history and could otherwise get treated as established fact later:
    `league_input/`, with **zero** other differences. Fixed by adding a blanket
    `tests/fixtures/**/*.csv` / `**/*.json` rule to `.gitattributes` and renormalizing.
    **An earlier hypothesis floated for this same failure -- that the pilot count drops by one
-   because of the MeninoNey/MeninooNey (loginid 3263693) identity merge -- was wrong** and should
+   because of the MeninoNey/MeninooNey (loginid 900000864) identity merge -- was wrong** and should
    not be relied on if it resurfaces: this test runs `build_season_table`/`export_league_site`
    inside `_isolated_identity()` (see `test_pilot_identity.py`), which points `identity.py` at an
    empty temp directory, so `data/pilot_identity.csv` and any merge recorded in it cannot affect
-   this test's output at all. Loginid 3263693 (as "MeninooNey") is present in this fixture both
+   this test's output at all. Loginid 900000864 (as "MeninooNey") is present in this fixture both
    before and after the 2026-09-01 regeneration, at the same row count (921).
 2. **An unrelated, expected schema change:** the same session that fixed (1) also added weekly
    snapshot delta columns (`PrevPoints`, `DPoints`, ... through `PrevPremierPoints`) to

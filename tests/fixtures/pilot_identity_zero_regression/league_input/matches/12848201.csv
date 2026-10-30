@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12848201,2026-07-25,C32,Challenge,QF,HelpfulHobo,2063678,felider,2322146,2,1,Broodscale Combo,Goryo's Vengeance
-12848201,2026-07-25,C32,Challenge,QF,Polikasoll,2237473,MegaSwampert,2675769,2,0,Ruby Storm,Ruby Storm
-12848201,2026-07-25,C32,Challenge,QF,yolad,3342362,imthekiing,639998,2,1,Grixis Reanimator,Eldrazi Tron
-12848201,2026-07-25,C32,Challenge,QF,ganache1127,2905437,Kritik,2707200,2,1,Jeskai Energy,Land Destruction
-12848201,2026-07-25,C32,Challenge,SF,Polikasoll,2237473,yolad,3342362,2,1,Ruby Storm,Grixis Reanimator
-12848201,2026-07-25,C32,Challenge,SF,HelpfulHobo,2063678,ganache1127,2905437,2,1,Broodscale Combo,Jeskai Energy
-12848201,2026-07-25,C32,Challenge,F,HelpfulHobo,2063678,Polikasoll,2237473,2,1,Broodscale Combo,Ruby Storm
+12848201,2026-07-25,C32,Challenge,QF,HelpfulHobo,900000313,felider,900000389,2,1,Broodscale Combo,Goryo's Vengeance
+12848201,2026-07-25,C32,Challenge,QF,Polikasoll,900000359,MegaSwampert,900000476,2,0,Ruby Storm,Ruby Storm
+12848201,2026-07-25,C32,Challenge,QF,yolad,900000892,imthekiing,900000057,2,1,Grixis Reanimator,Eldrazi Tron
+12848201,2026-07-25,C32,Challenge,QF,ganache1127,900000625,Kritik,900000505,2,1,Jeskai Energy,Land Destruction
+12848201,2026-07-25,C32,Challenge,SF,Polikasoll,900000359,yolad,900000892,2,1,Ruby Storm,Grixis Reanimator
+12848201,2026-07-25,C32,Challenge,SF,HelpfulHobo,900000313,ganache1127,900000625,2,1,Broodscale Combo,Jeskai Energy
+12848201,2026-07-25,C32,Challenge,F,HelpfulHobo,900000313,Polikasoll,900000359,2,1,Broodscale Combo,Ruby Storm

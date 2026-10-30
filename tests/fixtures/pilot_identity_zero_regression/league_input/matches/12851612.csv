@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12851612,2026-08-11,C64,Challenge,QF,toothymtg,3087786,SuperCow12653,2064081,2,1,Prowess,Prowess
-12851612,2026-08-11,C64,Challenge,QF,MeninoNey,2903591,HouseOfManaMTG,2669359,2,0,Living End,Devoted Combo
-12851612,2026-08-11,C64,Challenge,QF,reidq7,3155916,HoldTheElle,976841,2,1,Amulet Titan,Goryo's Vengeance
-12851612,2026-08-11,C64,Challenge,QF,Rvng,649380,Craig_Long123,3364560,2,1,Goryo's Vengeance,Mono-Black Midrange
-12851612,2026-08-11,C64,Challenge,SF,Rvng,649380,toothymtg,3087786,2,1,Goryo's Vengeance,Prowess
-12851612,2026-08-11,C64,Challenge,SF,reidq7,3155916,MeninoNey,2903591,2,1,Amulet Titan,Living End
-12851612,2026-08-11,C64,Challenge,F,reidq7,3155916,Rvng,649380,2,0,Amulet Titan,Goryo's Vengeance
+12851612,2026-08-11,C64,Challenge,QF,toothymtg,900000748,SuperCow12653,900000314,2,1,Prowess,Prowess
+12851612,2026-08-11,C64,Challenge,QF,MeninoNey,900000622,HouseOfManaMTG,900000473,2,0,Living End,Devoted Combo
+12851612,2026-08-11,C64,Challenge,QF,reidq7,900000811,HoldTheElle,900000106,2,1,Amulet Titan,Goryo's Vengeance
+12851612,2026-08-11,C64,Challenge,QF,Rvng,900000059,Craig_Long123,900000907,2,1,Goryo's Vengeance,Mono-Black Midrange
+12851612,2026-08-11,C64,Challenge,SF,Rvng,900000059,toothymtg,900000748,2,1,Goryo's Vengeance,Prowess
+12851612,2026-08-11,C64,Challenge,SF,reidq7,900000811,MeninoNey,900000622,2,1,Amulet Titan,Living End
+12851612,2026-08-11,C64,Challenge,F,reidq7,900000811,Rvng,900000059,2,0,Amulet Titan,Goryo's Vengeance

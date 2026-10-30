@@ -26,7 +26,7 @@ from challenge_history_engine import HISTORY_COLS, sync_challenge_history_window
 from challenge_mtgo_source import MtgoRegistryEvent, build_challenge_dataset  # noqa: E402
 
 EVENT_ID = "12855474"
-ROSTER = [("2397690", "416FrowningTable"), ("2522150", "Slasher21"), ("3082695", "SureThing"), ("3155916", "reidq7")]
+ROSTER = [("900000400", "416FrowningTable"), ("900000424", "Slasher21"), ("3082695", "SureThing"), ("900000811", "reidq7")]
 
 
 @contextmanager
@@ -89,7 +89,7 @@ def _run(listed_date: str, real_date: str, window, history_csv=None):
 
 
 def test_already_persisted_event_listed_later_is_dropped() -> None:
-    history = _write_history([_history_row(EVENT_ID, "2026-10-03", 1, "416FrowningTable", "2397690")])
+    history = _write_history([_history_row(EVENT_ID, "2026-10-03", 1, "416FrowningTable", "900000400")])
     dataset, logs = _run("2026-10-05", "2026-10-03", (date(2026, 10, 5), date(2026, 10, 5)), history)
     assert dataset.challenge_events == []
     assert EVENT_ID not in dataset.event_rows

@@ -3,6 +3,17 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-30 - Test fixtures: synthetic LoginIDs
+
+- What: every real MTGO LoginID in `tests/` replaced by a synthetic one (900000000 + rank in numeric order, one mapping
+  for all files, 1026 ids): 6181 CSV cells (`LoginID`, `WinnerLoginID`, `LoserLoginID`, `loginid`, `pilot_id`), 4720
+  JSON values / keys (`id:<n>`, login fields), 2 mentions in fixture READMEs, 33 quoted literals in `tests/*.py` plus the
+  unquoted occurrences in `test_repair_missing_loginids.py` and `test_identity_location.py`. Pilot names unchanged
+  (not in scope). Event ids in the saved mtgo.com listing HTML are not LoginIDs and stay.
+- Why: privacy decision of 2026-10-30 (point 3c).
+- Output files: none; 166 tests pass, including the zero-regression identity test against its expected outputs.
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-30 - Privacy: pilot_identity.csv and pilot_merge_log.csv out of the public repo
 
 - What: the two files (which MTGO accounts belong to one person, and why) are removed from `data/` and read from a

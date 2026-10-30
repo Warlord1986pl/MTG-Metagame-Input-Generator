@@ -29,9 +29,9 @@ def _setup(with_blob: bool = True) -> Path:
     )
     if with_blob:
         blob = {
-            "decklists": [{"loginid": "2198387", "player": "svessesvv"}, {"loginid": "2111039", "player": "Overman220"}],
+            "decklists": [{"loginid": "2198387", "player": "svessesvv"}, {"loginid": "900000331", "player": "Overman220"}],
             "final_rank": [{"loginid": str(1000 + i), "rank": str(i)} for i in range(1, 12)]
-            + [{"loginid": "2198387", "rank": "12"}, {"loginid": "2111039", "rank": "13"}],
+            + [{"loginid": "2198387", "rank": "12"}, {"loginid": "900000331", "rank": "13"}],
         }
         (cache / "12854500.json").write_text(json.dumps(blob), encoding="utf-8")
     return outputs
@@ -48,7 +48,7 @@ def test_apply_takes_login_id_and_name_from_the_source() -> None:
     outputs = _setup()
     assert repair.main(["--outputs", str(outputs), "--apply"]) == 0
     after = (outputs / "challenge_history_modern.csv").read_bytes()
-    expected = b"\xef\xbb\xbf" + (HEADER + LEGACY + GOOD + BROKEN.replace("Jetpool,\n", "Overman220,2111039\n")).encode("utf-8")
+    expected = b"\xef\xbb\xbf" + (HEADER + LEGACY + GOOD + BROKEN.replace("Jetpool,\n", "Overman220,900000331\n")).encode("utf-8")
     assert after == expected, after
     # Idempotent: a second run finds nothing to do.
     assert repair.main(["--outputs", str(outputs), "--apply"]) == 0

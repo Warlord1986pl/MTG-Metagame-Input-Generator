@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12851705,2026-08-18,C64,Challenge,QF,Marxelo,277034,KajuRoers,3549579,2,0,Devoted Combo,Broodscale Combo
-12851705,2026-08-18,C64,Challenge,QF,NathanOfTheGiltLeaf,2968680,Nowayh,2714019,2,1,Devoted Combo,Devoted Combo
-12851705,2026-08-18,C64,Challenge,QF,ipadkid,3560747,Martin_Dominguez,1755256,2,1,Dimir Midrange,Goryo's Vengeance
-12851705,2026-08-18,C64,Challenge,QF,HouseOfManaMTG,2669359,nahuel10,1942357,2,0,Mono-Green Eldrazi,Prowess
-12851705,2026-08-18,C64,Challenge,SF,ipadkid,3560747,NathanOfTheGiltLeaf,2968680,2,0,Dimir Midrange,Devoted Combo
-12851705,2026-08-18,C64,Challenge,SF,HouseOfManaMTG,2669359,Marxelo,277034,2,1,Mono-Green Eldrazi,Devoted Combo
-12851705,2026-08-18,C64,Challenge,F,HouseOfManaMTG,2669359,ipadkid,3560747,2,1,Mono-Green Eldrazi,Dimir Midrange
+12851705,2026-08-18,C64,Challenge,QF,Marxelo,900000016,KajuRoers,900001003,2,0,Devoted Combo,Broodscale Combo
+12851705,2026-08-18,C64,Challenge,QF,NathanOfTheGiltLeaf,900000674,Nowayh,900000512,2,1,Devoted Combo,Devoted Combo
+12851705,2026-08-18,C64,Challenge,QF,ipadkid,900001015,Martin_Dominguez,900000244,2,1,Dimir Midrange,Goryo's Vengeance
+12851705,2026-08-18,C64,Challenge,QF,HouseOfManaMTG,900000473,nahuel10,900000276,2,0,Mono-Green Eldrazi,Prowess
+12851705,2026-08-18,C64,Challenge,SF,ipadkid,900001015,NathanOfTheGiltLeaf,900000674,2,0,Dimir Midrange,Devoted Combo
+12851705,2026-08-18,C64,Challenge,SF,HouseOfManaMTG,900000473,Marxelo,900000016,2,1,Mono-Green Eldrazi,Devoted Combo
+12851705,2026-08-18,C64,Challenge,F,HouseOfManaMTG,900000473,ipadkid,900001015,2,1,Mono-Green Eldrazi,Dimir Midrange

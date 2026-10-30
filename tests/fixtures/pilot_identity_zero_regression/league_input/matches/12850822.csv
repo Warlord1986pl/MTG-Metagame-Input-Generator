@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12850822,2026-08-08,C64,Challenge,QF,cgouldner,1387059,MeninoNey,2903591,2,1,Jeskai Energy,Living End
-12850822,2026-08-08,C64,Challenge,QF,YungDingo,2928451,vinnyrussian123,2024035,2,1,Devoted Combo,Goryo's Vengeance
-12850822,2026-08-08,C64,Challenge,QF,nahuel10,1942357,renatoaraujo,864036,2,0,Prowess,Broodscale Combo
-12850822,2026-08-08,C64,Challenge,QF,Sam_Lewin,2092528,SuperCow12653,2064081,2,1,Yawgmoth,Prowess
-12850822,2026-08-08,C64,Challenge,SF,nahuel10,1942357,Sam_Lewin,2092528,2,1,Prowess,Yawgmoth
-12850822,2026-08-08,C64,Challenge,SF,cgouldner,1387059,YungDingo,2928451,2,0,Jeskai Energy,Devoted Combo
-12850822,2026-08-08,C64,Challenge,F,nahuel10,1942357,cgouldner,1387059,2,0,Prowess,Jeskai Energy
+12850822,2026-08-08,C64,Challenge,QF,cgouldner,900000197,MeninoNey,900000622,2,1,Jeskai Energy,Living End
+12850822,2026-08-08,C64,Challenge,QF,YungDingo,900000648,vinnyrussian123,900000302,2,1,Devoted Combo,Goryo's Vengeance
+12850822,2026-08-08,C64,Challenge,QF,nahuel10,900000276,renatoaraujo,900000088,2,0,Prowess,Broodscale Combo
+12850822,2026-08-08,C64,Challenge,QF,Sam_Lewin,900000324,SuperCow12653,900000314,2,1,Yawgmoth,Prowess
+12850822,2026-08-08,C64,Challenge,SF,nahuel10,900000276,Sam_Lewin,900000324,2,1,Prowess,Yawgmoth
+12850822,2026-08-08,C64,Challenge,SF,cgouldner,900000197,YungDingo,900000648,2,0,Jeskai Energy,Devoted Combo
+12850822,2026-08-08,C64,Challenge,F,nahuel10,900000276,cgouldner,900000197,2,0,Prowess,Jeskai Energy

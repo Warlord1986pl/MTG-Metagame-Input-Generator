@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12847674,2026-07-16,C64,Challenge,QF,MeninoNey,2903591,ybai34,3533340,2,0,Living End,Boros Burn
-12847674,2026-07-16,C64,Challenge,QF,Rvng,649380,Czechito,2191917,2,0,Goryo's Vengeance,Prowess
-12847674,2026-07-16,C64,Challenge,QF,Selfeisek,2042214,JPA93,1181017,2,0,Mono-Black Midrange,Neobrand
-12847674,2026-07-16,C64,Challenge,QF,Pleyboy,2822464,Danielpena397,2768684,2,1,Domain Zoo,Affinity
-12847674,2026-07-16,C64,Challenge,SF,Pleyboy,2822464,Selfeisek,2042214,2,0,Domain Zoo,Mono-Black Midrange
-12847674,2026-07-16,C64,Challenge,SF,Rvng,649380,MeninoNey,2903591,2,1,Goryo's Vengeance,Living End
-12847674,2026-07-16,C64,Challenge,F,Pleyboy,2822464,Rvng,649380,2,0,Domain Zoo,Goryo's Vengeance
+12847674,2026-07-16,C64,Challenge,QF,MeninoNey,900000622,ybai34,900000990,2,0,Living End,Boros Burn
+12847674,2026-07-16,C64,Challenge,QF,Rvng,900000059,Czechito,900000348,2,0,Goryo's Vengeance,Prowess
+12847674,2026-07-16,C64,Challenge,QF,Selfeisek,900000306,JPA93,900000161,2,0,Mono-Black Midrange,Neobrand
+12847674,2026-07-16,C64,Challenge,QF,Pleyboy,900000574,Danielpena397,900000545,2,1,Domain Zoo,Affinity
+12847674,2026-07-16,C64,Challenge,SF,Pleyboy,900000574,Selfeisek,900000306,2,0,Domain Zoo,Mono-Black Midrange
+12847674,2026-07-16,C64,Challenge,SF,Rvng,900000059,MeninoNey,900000622,2,1,Goryo's Vengeance,Living End
+12847674,2026-07-16,C64,Challenge,F,Pleyboy,900000574,Rvng,900000059,2,0,Domain Zoo,Goryo's Vengeance

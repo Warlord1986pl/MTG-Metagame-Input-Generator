@@ -1,8 +1,8 @@
 EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
-12851623,2026-08-12,C96,Challenge,QF,MeninoNey,2903591,kthanakit26,2122697,2,1,Living End,Land Destruction
-12851623,2026-08-12,C96,Challenge,QF,Alico,2640770,ShikiXYZ,1188705,2,1,Prowess,Land Destruction
-12851623,2026-08-12,C96,Challenge,QF,_theMoonSage_,2001341,Aced5,10594,2,1,Devoted Combo,Boros Energy
-12851623,2026-08-12,C96,Challenge,QF,ipadkid,3560747,Rashek,2702005,2,0,Grixis Midrange,Boros Energy
-12851623,2026-08-12,C96,Challenge,SF,MeninoNey,2903591,Alico,2640770,2,0,Living End,Prowess
-12851623,2026-08-12,C96,Challenge,SF,_theMoonSage_,2001341,ipadkid,3560747,2,1,Devoted Combo,Grixis Midrange
-12851623,2026-08-12,C96,Challenge,F,_theMoonSage_,2001341,MeninoNey,2903591,2,1,Devoted Combo,Living End
+12851623,2026-08-12,C96,Challenge,QF,MeninoNey,900000622,kthanakit26,900000335,2,1,Living End,Land Destruction
+12851623,2026-08-12,C96,Challenge,QF,Alico,900000457,ShikiXYZ,900000166,2,1,Prowess,Land Destruction
+12851623,2026-08-12,C96,Challenge,QF,_theMoonSage_,900000296,Aced5,900000004,2,1,Devoted Combo,Boros Energy
+12851623,2026-08-12,C96,Challenge,QF,ipadkid,900001015,Rashek,900000498,2,0,Grixis Midrange,Boros Energy
+12851623,2026-08-12,C96,Challenge,SF,MeninoNey,900000622,Alico,900000457,2,0,Living End,Prowess
+12851623,2026-08-12,C96,Challenge,SF,_theMoonSage_,900000296,ipadkid,900001015,2,1,Devoted Combo,Grixis Midrange
+12851623,2026-08-12,C96,Challenge,F,_theMoonSage_,900000296,MeninoNey,900000622,2,1,Devoted Combo,Living End

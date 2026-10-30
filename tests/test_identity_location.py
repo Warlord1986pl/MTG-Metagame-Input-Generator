@@ -38,9 +38,9 @@ def test_configured_directory_must_exist_and_hold_the_files(fresh, monkeypatch):
 def test_location_file_for_cron(fresh):
     d = fresh / "private"
     d.mkdir()
-    (d / "pilot_identity.csv").write_text("loginid,pilot_id,role\n3263693,2903591,alias\n", encoding="utf-8")
+    (d / "pilot_identity.csv").write_text("loginid,pilot_id,role\n900000864,900000622,alias\n", encoding="utf-8")
     (d / "pilot_merge_log.csv").write_text("timestamp,action,pilot_id,loginid\n", encoding="utf-8")
     identity.PRIVATE_DIR_FILE.write_text(f"{d}\n", encoding="utf-8")
-    assert identity.resolve("3263693") == "2903591"
+    assert identity.resolve("900000864") == "900000622"
     assert identity.merge_log_csv_path() == d / "pilot_merge_log.csv"
     assert identity.profile_csv_path() == identity.DEFAULT_DATA_DIR / "pilot_profile.csv"

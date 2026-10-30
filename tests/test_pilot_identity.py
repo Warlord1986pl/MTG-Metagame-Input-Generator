@@ -61,10 +61,10 @@ def test_missing_file_resolves_to_self() -> None:
     with _isolated_identity() as tmp_dir:
         assert not (tmp_dir / "pilot_identity.csv").exists()
         assert identity.load_identity() == {}
-        assert identity.resolve("2903591") == "2903591"
+        assert identity.resolve("900000622") == "900000622"
         assert identity.resolve("") == "", "blank loginid must stay blank, not become '' -> something"
-        assert identity.profile("2903591") is None
-        assert identity.display_name("2903591", fallback="RawName") == "RawName"
+        assert identity.profile("900000622") is None
+        assert identity.display_name("900000622", fallback="RawName") == "RawName"
 
 
 # --------------------------------------------------------------------------------------------
@@ -74,24 +74,24 @@ def test_missing_file_resolves_to_self() -> None:
 def test_primary_alias_resolution_collapses_identity_key() -> None:
     with _isolated_identity() as tmp_dir:
         identity.write_identity_rows([
-            {"loginid": "2903591", "pilot_id": "2903591", "role": "primary",
+            {"loginid": "900000622", "pilot_id": "900000622", "role": "primary",
              "added_on": "2026-08-26", "source": "test", "evidence": "test", "note": ""},
-            {"loginid": "3263693", "pilot_id": "2903591", "role": "alias",
+            {"loginid": "900000864", "pilot_id": "900000622", "role": "alias",
              "added_on": "2026-08-26", "source": "test", "evidence": "test", "note": ""},
         ], backup=False)
 
-        assert identity.resolve("3263693") == "2903591"
-        assert identity.resolve("2903591") == "2903591"
+        assert identity.resolve("900000864") == "900000622"
+        assert identity.resolve("900000622") == "900000622"
 
         # The two _identity_key definitions (league_engine, challenge_history_engine) are the
         # choke point every downstream table groups by -- both must collapse the alias.
-        key_primary_league = league_identity_key("2903591", "MeninoNey")
-        key_alias_league = league_identity_key("3263693", "MeninooNey")
-        assert key_primary_league == key_alias_league == "id:2903591"
+        key_primary_league = league_identity_key("900000622", "MeninoNey")
+        key_alias_league = league_identity_key("900000864", "MeninooNey")
+        assert key_primary_league == key_alias_league == "id:900000622"
 
-        key_primary_challenge = challenge_identity_key("2903591", "MeninoNey")
-        key_alias_challenge = challenge_identity_key("3263693", "MeninooNey")
-        assert key_primary_challenge == key_alias_challenge == "id:2903591"
+        key_primary_challenge = challenge_identity_key("900000622", "MeninoNey")
+        key_alias_challenge = challenge_identity_key("900000864", "MeninooNey")
+        assert key_primary_challenge == key_alias_challenge == "id:900000622"
 
 
 # --------------------------------------------------------------------------------------------
