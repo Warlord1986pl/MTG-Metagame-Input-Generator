@@ -3,6 +3,28 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-30 - Deck "Moonshadow" with colour variants (DeckDB entry 332); deck rename register
+
+- What: DeckDB rules 1e0f7f3c023d574b (entry 332): "Rakdos Moonshadow" is now the deck "Moonshadow" (id
+  rakdos-moonshadow unchanged) with colour variants Rakdos, Dimir, Grixis, Mono-Black, Golgari, Jund and "other";
+  exports `assignments_1e0f7f3c023d574b_2026-10-29.csv` / `cards_1e0f7f3c023d574b_2026-10-29.csv` in
+  `docs/deckdb_config.csv`. New `docs/deckdb_renames.csv` (old,new,rules_version,decision) and
+  `deckdb_folder.load_renames()`: "Classification changes since the previous week" compares the previous export's deck
+  names through it, so a rename is one Status line "renamed: Rakdos Moonshadow -> Moonshadow (N lists)" and the moves
+  below are counted after the renames; a missing table, a blank name, a double rename or a chain is a DeckdbInputError.
+  `docs/deckdb_colours.csv`: the same colour (#3d5afe) under the name "Moonshadow", so the trend line keeps its colour.
+  Tests `tests/test_deckdb_renames.py`.
+- Why: Karol's decision of 2026-10-30 (W44 triage group 1 is Moonshadow in another colour).
+- Output files: from the next folder on, deck "Moonshadow" in every material, its variants in `variants_week`, the
+  renamed line in `notes.md`. Checked on W43 regenerated with the new export (outputs/_working/moonshadow_check/):
+  list counts of all 69 ISO weeks unchanged; the moves equal the simulation of the accepted report (24 lists up to
+  2026-10-25: 22 into Moonshadow, 1 Rakdos Moonshadow -> Rogue by K35, plus Dimir / Mono-Black Midrange); W43
+  Moonshadow 54 = the 54 Rakdos Moonshadow lists, none moved in; variants_week Rakdos Moonshadow 54 / Top 8 15 /
+  trophies 3 = the deck row; no Death's Shadow or Birthing Ritual list moved. W43 notes.md: "renamed: Rakdos Moonshadow
+  -> Moonshadow (89 lists)" (the common lists with the export of 2026-10-18); the moves section still lists the 24
+  moves of earlier weeks (all common lists), none of them a W43 list.
+- DeckDB rules version: 1e0f7f3c023d574b (was ded3d7dba99e38d7).
+
 ## 2026-10-30 - Test fixtures: synthetic LoginIDs
 
 - What: every real MTGO LoginID in `tests/` replaced by a synthetic one (900000000 + rank in numeric order, one mapping

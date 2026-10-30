@@ -35,6 +35,31 @@ except ModuleNotFoundError:
     from . import deckdb_presentation as dp
 
 FOLDER_NAME = "presentation"
+# 2026-10-30 (DeckDB entry 332): deck renames of the DeckDB rules, old,new,rules_version,decision. The classification
+# changes compare the previous export's deck names through this table, so a rename is one "renamed" line in notes.md
+# Status and never a move of every list of the deck. The file is required (an empty table is fine).
+RENAMES_CSV = Path("docs") / "deckdb_renames.csv"
+
+
+def load_renames(path: Path = RENAMES_CSV) -> Dict[str, str]:
+    """old deck name -> new deck name. Missing file, a blank name, a name renamed twice, a chain or a cycle (old name
+    also a new name) is a DeckdbInputError."""
+    if not Path(path).exists():
+        raise di.DeckdbInputError(f"brak {path} (rejestr zmian nazw talii)")
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    if list(df.columns[:2]) != ["old", "new"]:
+        raise di.DeckdbInputError(f"{path}: kolumny {list(df.columns)}, oczekiwane old,new,...")
+    out: Dict[str, str] = {}
+    for old, new in zip(df["old"].str.strip(), df["new"].str.strip()):
+        if not old or not new or old == new:
+            raise di.DeckdbInputError(f"{path}: niepoprawny wiersz {old!r} -> {new!r}")
+        if old in out:
+            raise di.DeckdbInputError(f"{path}: {old!r} przemianowana dwa razy")
+        out[old] = new
+    chained = sorted(set(out) & set(out.values()))
+    if chained:
+        raise di.DeckdbInputError(f"{path}: łańcuch albo cykl zmian nazw: {chained}")
+    return out
 WEEK_FILES = {
     "01_archetypes_share.png": "share of this week's Top 32 lists per archetype, with presence and change vs last week",
     "02_archetypes_trend.png": "weekly share of every archetype over the last 12 ISO weeks",
@@ -161,25 +186,33 @@ def previous_export(export: di.DeckdbExport, prev_week_end: date) -> Optional[Pa
     return best[1] if best else None
 
 
-def classification_changes(export: di.DeckdbExport, prev_path: Optional[Path], since: Optional[date] = None
-                           ) -> tuple[Optional[pd.DataFrame], str]:
-    """(moves old deck -> new deck over the lists of both exports [from *since*], description of the comparison)."""
+def classification_changes(export: di.DeckdbExport, prev_path: Optional[Path], since: Optional[date] = None,
+                           renames: Optional[Dict[str, str]] = None
+                           ) -> tuple[Optional[pd.DataFrame], str, Optional[pd.DataFrame]]:
+    """(moves old deck -> new deck over the lists of both exports [from *since*], description of the comparison,
+    renames applied: Old, New, Lists). The previous export's deck names go through *renames* first, so a renamed deck
+    is not a move; Lists counts the common lists that carry the old name before and the new one now."""
     if prev_path is None:
-        return None, "no earlier export in the export directory"
+        return None, "no earlier export in the export directory", None
+    renames = renames or {}
     old = pd.read_csv(prev_path, dtype=str, keep_default_na=False)
     old["event_id"], old["decktournamentid"] = old["event_id"].map(di._norm_id), old["decktournamentid"].map(di._norm_id)
-    old["old"] = old["deck"].where(old["status"] == di.STATUS_ASSIGNED, di.NO_DECK_LABEL)
+    old["raw"] = old["deck"].where(old["status"] == di.STATUS_ASSIGNED, di.NO_DECK_LABEL)
+    old["old"] = old["raw"].map(lambda d: renames.get(d, d))
     cur = export.rows[["event_id", "decktournamentid", "event_date", "material_deck"]]
-    m = cur.merge(old[["event_id", "decktournamentid", "old"]], on=["event_id", "decktournamentid"])
+    m = cur.merge(old[["event_id", "decktournamentid", "raw", "old"]], on=["event_id", "decktournamentid"])
     if since is not None:
         m = m[m["event_date"] >= since.isoformat()]
+    ren = m[(m["raw"] != m["old"]) & (m["old"] == m["material_deck"])]
+    renamed = (ren.groupby(["raw", "old"]).size().reset_index(name="Lists").rename(columns={"raw": "Old", "old": "New"})
+               .sort_values(["Lists", "Old"], ascending=[False, True]).reset_index(drop=True))
     ch = m[m["old"] != m["material_deck"]]
     moves = ch.groupby(["old", "material_deck"]).size().reset_index(name="Lists").rename(
         columns={"old": "From", "material_deck": "To"}).sort_values(["Lists", "From"], ascending=[False, True])
     rv = str(old["rules_version"].iloc[0]) if len(old) else "?"
     return moves.reset_index(drop=True), (f"{prev_path.name} (rules {rv}, last event {old['event_date'].max()}) vs "
                                          f"{export.path.name} (rules {export.rules_version}): {len(m)} common lists, "
-                                         f"{len(ch)} changed deck")
+                                         f"{len(ch)} changed deck"), renamed
 
 
 def _stamp(df: pd.DataFrame, export: di.DeckdbExport) -> pd.DataFrame:
@@ -434,9 +467,10 @@ def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dic
             month_note: List[str], as_of: date, decks: pd.DataFrame) -> List[str]:
     """The lines of the Status section of notes.md."""
     prev_path = previous_export(export, we - timedelta(days=7))
-    moves, desc = classification_changes(export, prev_path)
+    renames = load_renames()
+    moves, desc, renamed = classification_changes(export, prev_path, renames=renames)
     # this week's lists are new (not in the previous week's export): the month of the week instead
-    mmoves, _ = classification_changes(export, prev_path, we.replace(day=1)) if prev_path is not None else (None, "")
+    mmoves = classification_changes(export, prev_path, we.replace(day=1), renames)[0] if prev_path is not None else None
     ev = di.event_table(rows)
     lines = []
     top = (triage.note or triage.notice) if triage is not None else ""
@@ -465,6 +499,9 @@ def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dic
         lines.append("- Deck colours missing from docs/deckdb_colours.csv (a palette colour by name was used): "
                      + ", ".join(colours.missing))
     lines += ["", "### Classification changes since the previous week", "", desc + "."]
+    if renamed is not None and len(renamed):
+        lines += [""] + [f"- renamed: {r.Old} -> {r.New} ({r.Lists} lists)" for r in renamed.itertuples()]
+        lines += ["", "Moves below are counted after the renames (docs/deckdb_renames.csv)."]
     for title, mv in (("All common lists", moves),
                       (f"Lists from {we.replace(day=1).isoformat()} (this week's lists are new, not in the previous "
                        "export)", mmoves)):
