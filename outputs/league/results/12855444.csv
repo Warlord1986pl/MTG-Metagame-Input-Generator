@@ -1,33 +1,33 @@
 EventID,EventDate,Tier,EventClass,Pilot,LoginID,Place,Deck,DeckGuess,LeaguePoints,SwissRank,SwissPoints,OMWP,GWP,OGWP
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,rossjsg,1951138,1,Azorius Control,,10,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,caquaa,221272,2,Broodscale Combo,,8,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Jack-Z,3155889,3,Broodscale Combo,,6,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,BressD1,1940271,4,Prowess,,6,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Redman1034,3363119,5,Devoted Combo,,4,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,duke12,6062,6,Izzet Murktide,,4,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,LucasG1ggs,750888,7,Broodscale Combo,,4,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,HuUeBR,2981401,8,Broodscale Combo,,4,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,bayjen_,2909055,9,Prowess,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,zarbo,1825047,10,Boros Energy,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Rashek,2702005,11,Boros Energy,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,MissTrigger,1390771,12,Domain Zoo,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,cs2376jr,3436229,13,Prowess,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,McWinSauce,803141,14,Rakdos Midrange,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,ItsSwiftyTime,2847686,15,Affinity,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,MayoDominaria,1112102,16,Jeskai Energy,,2,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Mattatoio,3349386,17,Broodscale Combo,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Rudokant,2685092,18,Devoted Combo,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,ElbegastSC,3401877,19,Azorius Control,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Sordyrrum,1342523,20,Goryo's Vengeance,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,ipadbro1,3562840,21,Esper Reanimator,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Smallforest,2651001,22,Affinity,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,SupremX,3497161,23,Rakdos Midrange,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,caronte1991,2265267,24,Prowess,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,ilGianB1,2358671,25,Broodscale Combo,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,ShowTime_,949859,26,Domain Zoo,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Tree42o,875470,27,Affinity,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,CBJr,2062531,28,Ruby Storm,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,FynnOfBlood,2799885,29,Eldrazi Tron,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Doc_B,2124086,30,Ruby Storm,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Cachorrowo,2720911,31,Ruby Storm,,0,,,,,
-12855444,2026-10-03,modern-rc-super-qualifier,Premier,Mistakenn,2129541,32,Amulet Titan,,0,,,,,
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,rossjsg,1951138,1,Azorius Control,,10,1,24,0.65895,0.68000,0.59750
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,caquaa,221272,2,Broodscale Combo,,8,3,24,0.64475,0.72727,0.57337
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Jack-Z,3155889,3,Broodscale Combo,,6,5,24,0.62222,0.66667,0.57886
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,BressD1,1940271,4,Prowess,,6,7,24,0.58488,0.80952,0.52063
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Redman1034,3363119,5,Devoted Combo,,4,2,24,0.65432,0.72727,0.56937
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,duke12,6062,6,Izzet Murktide,,4,4,24,0.64074,0.69565,0.56309
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,LucasG1ggs,750888,7,Broodscale Combo,,4,6,24,0.60935,0.80952,0.55194
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,HuUeBR,2981401,8,Broodscale Combo,,4,8,21,0.70371,0.68182,0.61679
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,bayjen_,2909055,9,Prowess,,2,9,21,0.69312,0.66667,0.59487
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,zarbo,1825047,10,Boros Energy,,2,10,21,0.65803,0.62500,0.60233
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Rashek,2702005,11,Boros Energy,,2,11,21,0.62646,0.61538,0.57160
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,MissTrigger,1390771,12,Domain Zoo,,2,12,21,0.62192,0.65217,0.57211
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,cs2376jr,3436229,13,Prowess,,2,13,21,0.61852,0.60000,0.57865
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,McWinSauce,803141,14,Rakdos Midrange,,2,14,21,0.60393,0.71429,0.54851
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,ItsSwiftyTime,2847686,15,Affinity,,2,15,21,0.59753,0.66667,0.56759
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,MayoDominaria,1112102,16,Jeskai Energy,,2,16,21,0.59383,0.62500,0.55205
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Mattatoio,3349386,17,Broodscale Combo,,0,17,21,0.58818,0.65217,0.55069
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Rudokant,2685092,18,Devoted Combo,,0,18,21,0.58501,0.63636,0.54912
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,ElbegastSC,3401877,19,Azorius Control,,0,19,21,0.58232,0.66667,0.52437
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Sordyrrum,1342523,20,Goryo's Vengeance,,0,20,21,0.58025,0.63636,0.54091
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,ipadbro1,3562840,21,Esper Reanimator,,0,21,21,0.56790,0.60870,0.56114
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Smallforest,2651001,22,Affinity,,0,22,21,0.55908,0.72727,0.51384
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,SupremX,3497161,23,Rakdos Midrange,,0,23,21,0.55679,0.66667,0.51715
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,caronte1991,2265267,24,Prowess,,0,24,21,0.54815,0.65217,0.54815
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,ilGianB1,2358671,25,Broodscale Combo,,0,25,21,0.54674,0.62500,0.53442
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,ShowTime_,949859,26,Domain Zoo,,0,26,21,0.54321,0.69565,0.50595
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Tree42o,875470,27,Affinity,,0,27,21,0.52593,0.68182,0.48053
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,CBJr,2062531,28,Ruby Storm,,0,28,21,0.48148,0.71429,0.46561
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,FynnOfBlood,2799885,29,Eldrazi Tron,,0,29,21,0.47531,0.63636,0.46861
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Doc_B,2124086,30,Ruby Storm,,0,30,18,0.66667,0.68182,0.59913
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Cachorrowo,2720911,31,Ruby Storm,,0,31,18,0.66050,0.61905,0.58719
+12855444,2026-10-03,modern-rc-super-qualifier,Premier,Mistakenn,2129541,32,Amulet Titan,,0,32,18,0.64991,0.54167,0.59616
