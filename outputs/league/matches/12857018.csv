@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857018,2026-10-28,C32,Challenge,QF,Nuserdog,2702142,Rack,2811873,2,1,Ruby Storm,Yawgmoth
+12857018,2026-10-28,C32,Challenge,QF,Walker735,2638611,hugofreitas1,1997683,2,1,Jeskai Energy,Ruby Storm
+12857018,2026-10-28,C32,Challenge,QF,komattaman,2690217,Bigandhard,3047937,2,1,Rakdos Aggro,Ruby Storm
+12857018,2026-10-28,C32,Challenge,QF,xfile,2449332,ETBJezus,3040474,2,0,Boros Energy,Dimir Midrange
+12857018,2026-10-28,C32,Challenge,SF,Nuserdog,2702142,Walker735,2638611,2,0,Ruby Storm,Jeskai Energy
+12857018,2026-10-28,C32,Challenge,SF,xfile,2449332,komattaman,2690217,2,0,Boros Energy,Rakdos Aggro
+12857018,2026-10-28,C32,Challenge,F,Nuserdog,2702142,xfile,2449332,2,1,Ruby Storm,Boros Energy

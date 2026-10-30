@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857015,2026-10-28,C32,Challenge,QF,toutoune10,1402299,justFeather,2446403,2,1,Broodscale Combo,Eldrazi Ramp
+12857015,2026-10-28,C32,Challenge,QF,Nekrohero,2742703,JMAK2000,1850082,2,0,Sam Combo,Mono-Green Tron
+12857015,2026-10-28,C32,Challenge,QF,Bails76,3023463,Craigpuncher,3511452,2,0,Jeskai Energy,Boros Energy
+12857015,2026-10-28,C32,Challenge,QF,Zoza,3170981,Dioferreira,1950164,2,1,G,Esper Blink
+12857015,2026-10-28,C32,Challenge,SF,toutoune10,1402299,Bails76,3023463,2,0,Broodscale Combo,Jeskai Energy
+12857015,2026-10-28,C32,Challenge,SF,Nekrohero,2742703,Zoza,3170981,2,0,Sam Combo,G
+12857015,2026-10-28,C32,Challenge,F,Nekrohero,2742703,toutoune10,1402299,2,1,Sam Combo,Broodscale Combo
