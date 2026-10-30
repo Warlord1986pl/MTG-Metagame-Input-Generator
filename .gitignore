@@ -89,3 +89,6 @@ backups/history/*.bak
 
 # runner tygodnia (metagame_week.py): foldery tygodni, snapshoty mtgo.com, runs.csv
 weekly/
+
+# private pilot identity directory of this machine (src/identity.py, 2026-10-30)
+.pilot_identity_dir

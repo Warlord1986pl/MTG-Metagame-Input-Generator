@@ -3,6 +3,22 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-30 - Privacy: pilot_identity.csv and pilot_merge_log.csv out of the public repo
+
+- What: the two files (which MTGO accounts belong to one person, and why) are removed from `data/` and read from a
+  private directory: `$PILOT_IDENTITY_DIR` or the first line of the gitignored `.pilot_identity_dir`
+  (`src/identity.py`: `private_data_dir()`, `identity_csv_path()`, `merge_log_csv_path()`). Not configured, a missing
+  directory or a missing file is an `IdentityLocationError` -- a silently empty overlay would un-merge every recorded
+  identity on the league site. Explicit paths (`set_data_dir`, CLI `--data-dir`, tests) keep "missing file = no
+  overlay". `pilot_profile.csv` stays in `data/`. `pilot_identity_cli.py`: `--data-dir` optional, prints where the
+  merge log is and that the private copies must be committed / copied to the VPS. Tests: `tests/conftest.py` (empty
+  overlay unless `$PILOT_IDENTITY_DIR` is set; 163 passed with the empty and with the real overlay before),
+  `tests/test_identity_location.py`. This machine: `E:/github/DeckDB/pilot_identity/` (private DeckDB repo,
+  5c0ea58); VPS: `/root/pilot_identity/`.
+- Why: Karol's privacy decision of 2026-10-30 (point 3a); the merge log names the source of each merge.
+- Output files: none -- season tables with the new location are identical to the ones from `data/` (MeninoNey 56).
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-30 - Backup of the VPS-only league files: variant A of docs/backup_plan.md
 
 - What: the collector (repo Meta-Challange-2.0_Mikrus) now commits `outputs/league/snapshots/*.csv` and

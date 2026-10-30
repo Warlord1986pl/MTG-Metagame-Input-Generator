@@ -214,9 +214,8 @@ def merge_command(args: argparse.Namespace) -> int:
     outputs_base = Path(args.outputs_base)
     league_dir = outputs_base / "league"
     docs_data_dir = Path(args.docs_dir) / "data"
-    data_dir = Path(args.data_dir)
-    real_identity_path = data_dir / "pilot_identity.csv"
-    real_profile_path = data_dir / "pilot_profile.csv"
+    real_identity_path = pilot_identity.identity_csv_path()
+    real_profile_path = pilot_identity.profile_csv_path()
     challenge_hist_csv, premier_hist_csv = _history_paths(outputs_base, args.format_name)
 
     primary = str(args.primary).strip()
@@ -412,7 +411,9 @@ def merge_command(args: argparse.Namespace) -> int:
         f"data/pilot_profile.csv: {len(pilot_identity.read_profile_rows())} row(s)"
         + (f" (backup: {profile_backup})" if profile_backup else "")
     )
-    print(f"data/pilot_merge_log.csv: {len(pilot_identity.read_merge_log_rows())} row(s)")
+    print(f"{pilot_identity.merge_log_csv_path()}: {len(pilot_identity.read_merge_log_rows())} row(s)")
+    print("Private identity files changed: commit them in their private repo and copy pilot_identity.csv and "
+          "pilot_merge_log.csv to the VPS identity directory (docs/runner.md is not involved; see CLAUDE.md).")
     return 0
 
 
@@ -499,7 +500,10 @@ def main(argv=None) -> int:
     parser.add_argument("--format", dest="format_name", default="Modern")
     parser.add_argument("--outputs-base", default=str(REPO_ROOT / "outputs"))
     parser.add_argument("--docs-dir", default=str(REPO_ROOT / "docs"))
-    parser.add_argument("--data-dir", default=str(REPO_ROOT / "data"))
+    parser.add_argument("--data-dir", default=None,
+                        help="all three identity files from this directory (tests); default: pilot_identity.csv and "
+                             "pilot_merge_log.csv from the private directory ($PILOT_IDENTITY_DIR or .pilot_identity_dir), "
+                             "pilot_profile.csv from data/")
 
     subparsers = parser.add_subparsers(dest="command")
     merge_parser = subparsers.add_parser("merge", help="Merge one or more alias loginids into a primary pilot identity.")
@@ -524,7 +528,8 @@ def main(argv=None) -> int:
     merge_parser.add_argument("--apply", action="store_true")
 
     args = parser.parse_args(argv)
-    pilot_identity.set_data_dir(Path(args.data_dir))
+    if args.data_dir:
+        pilot_identity.set_data_dir(Path(args.data_dir))
 
     if args.show:
         return show_command(args)

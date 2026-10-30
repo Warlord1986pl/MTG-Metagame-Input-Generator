@@ -1,7 +1,7 @@
 """Pilot identity overlay: resolves a set of MTGO loginids that belong to the same person to one
 canonical `pilot_id`, without ever touching event files or the mtgo.com JSON cache.
 
-This is a pure overlay on top of `data/pilot_identity.csv` (loginid -> pilot_id) and
+This is a pure overlay on top of `pilot_identity.csv` (loginid -> pilot_id) and
 `data/pilot_profile.csv` (pilot_id -> display name / consent-gated X handle / hidden flag). Neither
 file is required to exist -- a loginid absent from pilot_identity.csv resolves to itself, and a
 pilot_id absent from pilot_profile.csv has no profile overrides -- so this module can be imported
@@ -24,6 +24,7 @@ all_names().
 from __future__ import annotations
 
 import csv
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -31,6 +32,40 @@ from typing import Dict, Iterable, List, Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DATA_DIR = REPO_ROOT / "data"
+# 2026-10-30 (privacy): pilot_identity.csv (which accounts belong to one person) and pilot_merge_log.csv (why) are no
+# longer in the public repo. They live in a private directory named by $PILOT_IDENTITY_DIR or, for cron jobs that get
+# no environment, by the first line of the gitignored file <repo>/.pilot_identity_dir. Not configured, or a file
+# missing there, is an error (IdentityLocationError): a silently empty overlay would un-merge every recorded identity
+# on the league site. pilot_profile.csv stays in data/. Paths set explicitly (set_data_dir, set_*_csv_path: the CLI's
+# --data-dir and the tests) keep the old "missing file = no overlay" behaviour.
+PRIVATE_DIR_ENV = "PILOT_IDENTITY_DIR"
+PRIVATE_DIR_FILE = REPO_ROOT / ".pilot_identity_dir"
+
+
+class IdentityLocationError(RuntimeError):
+    """The private identity directory is not configured, or a required file is missing there."""
+
+
+def private_data_dir() -> Path:
+    raw, source = os.environ.get(PRIVATE_DIR_ENV, "").strip(), f"${PRIVATE_DIR_ENV}"
+    if not raw and PRIVATE_DIR_FILE.exists():
+        lines = PRIVATE_DIR_FILE.read_text(encoding="utf-8-sig").splitlines()
+        raw, source = (lines[0].strip() if lines else ""), str(PRIVATE_DIR_FILE)
+    if not raw:
+        raise IdentityLocationError(
+            f"pilot identity directory not configured: set ${PRIVATE_DIR_ENV} or write its path into {PRIVATE_DIR_FILE}")
+    path = Path(raw)
+    if not path.is_dir():
+        raise IdentityLocationError(f"pilot identity directory {path} (from {source}) does not exist")
+    return path
+
+
+def _private_file(name: str) -> Path:
+    path = private_data_dir() / name
+    if not path.exists():
+        raise IdentityLocationError(f"{path} is missing (pilot identity directory from ${PRIVATE_DIR_ENV} / "
+                                    f"{PRIVATE_DIR_FILE.name})")
+    return path
 
 IDENTITY_COLS: List[str] = [
     "loginid", "pilot_id", "role", "added_on", "source", "evidence",
@@ -51,9 +86,21 @@ MERGE_LOG_COLS: List[str] = ["timestamp", "action", "pilot_id", "loginid", "sour
 # Mutable module-level path + cache so pilot_identity_cli.py can point this module at a temp file to
 # compute an "after a candidate merge" state using the real production code path (league_engine/
 # challenge_history_engine unchanged), then restore the real path. See set_identity_csv_path().
-_identity_csv_path: Path = DEFAULT_DATA_DIR / "pilot_identity.csv"
+_identity_csv_path: Optional[Path] = None  # None = <private dir>/pilot_identity.csv, required
 _profile_csv_path: Path = DEFAULT_DATA_DIR / "pilot_profile.csv"
-_merge_log_csv_path: Path = DEFAULT_DATA_DIR / "pilot_merge_log.csv"
+_merge_log_csv_path: Optional[Path] = None  # None = <private dir>/pilot_merge_log.csv, required
+
+
+def identity_csv_path() -> Path:
+    return _identity_csv_path if _identity_csv_path is not None else _private_file("pilot_identity.csv")
+
+
+def profile_csv_path() -> Path:
+    return _profile_csv_path
+
+
+def merge_log_csv_path() -> Path:
+    return _merge_log_csv_path if _merge_log_csv_path is not None else _private_file("pilot_merge_log.csv")
 
 _identity_cache: Optional[Dict[str, str]] = None
 _profile_cache: Optional[Dict[str, dict]] = None
@@ -136,7 +183,7 @@ def reset_cache() -> None:
 # --------------------------------------------------------------------------------------------
 
 def read_identity_rows(path: Optional[Path] = None) -> List[Dict[str, str]]:
-    return _read_rows(path or _identity_csv_path, IDENTITY_COLS)
+    return _read_rows(path or identity_csv_path(), IDENTITY_COLS)
 
 
 def read_profile_rows(path: Optional[Path] = None) -> List[Dict[str, str]]:
@@ -144,7 +191,7 @@ def read_profile_rows(path: Optional[Path] = None) -> List[Dict[str, str]]:
 
 
 def read_merge_log_rows(path: Optional[Path] = None) -> List[Dict[str, str]]:
-    return _read_rows(path or _merge_log_csv_path, MERGE_LOG_COLS)
+    return _read_rows(path or merge_log_csv_path(), MERGE_LOG_COLS)
 
 
 def load_identity() -> Dict[str, str]:
@@ -284,7 +331,7 @@ def validate_identity_rows(rows: List[Dict[str, str]]) -> List[str]:
 # --------------------------------------------------------------------------------------------
 
 def write_identity_rows(rows: List[Dict[str, str]], path: Optional[Path] = None, backup: bool = True) -> Optional[Path]:
-    target = path or _identity_csv_path
+    target = path or identity_csv_path()
     backup_path = _backup_if_exists(target) if backup else None
     _write_rows(target, IDENTITY_COLS, rows)
     reset_cache()
@@ -302,7 +349,7 @@ def write_profile_rows(rows: List[Dict[str, str]], path: Optional[Path] = None, 
 def append_merge_log_rows(rows: List[Dict[str, str]], path: Optional[Path] = None, backup: bool = True) -> Optional[Path]:
     """Append-only: existing rows are preserved, *rows* is appended after them. Still backed up
     before the write, same as the other two files."""
-    target = path or _merge_log_csv_path
+    target = path or merge_log_csv_path()
     backup_path = _backup_if_exists(target) if backup else None
     existing = read_merge_log_rows(target)
     _write_rows(target, MERGE_LOG_COLS, existing + rows)
