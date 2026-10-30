@@ -1,6 +1,8 @@
 # Kopia zapasowa danych, które istnieją tylko na VPS (plan, bez wdrożenia)
 
-Stan na 2026-10-30. Dotyczy repo kolektora `Meta-Challange-2.0_Mikrus` (serwer VPS mikrus, cron roota co godzinę o :15:
+Stan na 2026-10-30. **Wdrożony wariant A** (2026-10-30, po sprawdzeniu kolumn: migawki to `LoginID, Rank, Points,
+PremierPoints, Wins, Top2, Top4, Top8, Top16, Starts`, `season_config.csv` to nazwy i daty sezonów; wszystko już
+publikowane przez stronę). Dotyczy repo kolektora `Meta-Challange-2.0_Mikrus` (serwer VPS mikrus, cron roota co godzinę o :15:
 `history-sync`, `league-rebuild`, `push`). Ten dokument jest tylko planem; nic nie zostało zmienione ani na serwerze,
 ani w repo kolektora.
 

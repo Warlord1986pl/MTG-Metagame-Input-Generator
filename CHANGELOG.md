@@ -3,6 +3,18 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-10-30 - Backup of the VPS-only league files: variant A of docs/backup_plan.md
+
+- What: the collector (repo Meta-Challange-2.0_Mikrus) now commits `outputs/league/snapshots/*.csv` and
+  `outputs/league/season_config.csv` with its hourly push (`ALLOWED_PUSH_GLOBS`, test `tests/test_push_globs.py`).
+  Columns checked before: snapshots are `LoginID, Rank, Points, PremierPoints, Wins, Top2, Top4, Top8, Top16, Starts`,
+  the season registry is season names and dates -- all already published by the league site. The 8 locally computed,
+  untracked snapshots of this machine were moved to `outputs/_working/snapshots_local_2026-10-30/` so that the local
+  `git pull` does not refuse the bot's snapshot files.
+- Why: the snapshots (the RankChange baseline) and the Autumn 2026 row of the registry existed only on the VPS disk.
+- Output files: none here; from the next bot run on, `outputs/league/snapshots/` and `season_config.csv` in main.
+- DeckDB rules version: ded3d7dba99e38d7 (unchanged).
+
 ## 2026-10-30 - Merge of the bot's sync of 2026-10-28; main safe for the VPS `git pull`
 
 - What: origin/main 79f1a59 (`mikrus: sync modern through 2026-10-28`, events 12857015 and 12857018, 64 rows) merged
