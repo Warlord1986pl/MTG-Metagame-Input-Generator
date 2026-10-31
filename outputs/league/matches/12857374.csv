@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857374,2026-10-29,C32,Challenge,QF,Attomium,1778538,Azzay0,1699326,2,1,Broodscale Combo,Affinity
+12857374,2026-10-29,C32,Challenge,QF,MeninoNey,2903591,Thunus,3076886,2,0,Living End,Devoted Combo
+12857374,2026-10-29,C32,Challenge,QF,_Shikamaru_,3332226,MisterTwin,3190187,2,1,Ruby Storm,Boros Energy
+12857374,2026-10-29,C32,Challenge,QF,MarcoIa,3056350,Mistakenn,2129541,2,0,Rakdos Midrange,Amulet Titan
+12857374,2026-10-29,C32,Challenge,SF,_Shikamaru_,3332226,MeninoNey,2903591,2,0,Ruby Storm,Living End
+12857374,2026-10-29,C32,Challenge,SF,Attomium,1778538,MarcoIa,3056350,2,0,Broodscale Combo,Rakdos Midrange
+12857374,2026-10-29,C32,Challenge,F,_Shikamaru_,3332226,Attomium,1778538,2,0,Ruby Storm,Broodscale Combo
