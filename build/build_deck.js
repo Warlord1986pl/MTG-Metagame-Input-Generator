@@ -64,7 +64,7 @@ const half=(x)=>Math.floor(x+0.5);
 const FMT={
   pp:(x)=>(x<0?MINUS:'+')+Math.abs(x).toFixed(1)+' pp',
   pct:(x)=>half(x)+'%', n:(x)=>String(half(x)), f1:(x)=>Number(x).toFixed(1),
-  var:(x)=>x?'beyond normal variation':'within normal variation', raw:(x)=>String(x)};
+  var:(x)=>x===null?'not tested':(x?'beyond normal variation':'within normal variation'), raw:(x)=>String(x)};
 function pair(arr,k1,k2,name){ const [a,b]=name.split('|'); return arr.find(r=>r[k1]===a&&r[k2]===b); }
 function lookup(p,name,field){
   let row;
@@ -75,20 +75,21 @@ function lookup(p,name,field){
   else if(p==='c') row=pair(S.new_cards,'deck','card',name);
   else if(p==='l') row=pair(S.list_changes,'deck','card',name);
   else if(p==='w') return field==='lists'?S.all_week[name]:undefined;
-  return row?row[field]:undefined;
+  return row&&(field in row)?row[field]:undefined;
 }
 const TOK=/\{(pp|pct|n|f1|var|raw):([a-z])\.(?:([^{}]+?)\.)?([\w-]+)\}/g;
 function R(t){
   if(Array.isArray(t)) return t.map(R);
   if(typeof t!=='string') return t;
   return t.replace(TOK,(m,f,p,name,field)=>{ const v=lookup(p,name,field);
-    if(v===undefined||v===null) throw new Error('nierozwiazane odwolanie: '+m); return FMT[f](v); });
+    if(v===undefined||(v===null&&f!=='var')) throw new Error('nierozwiazane odwolanie: '+m); return FMT[f](v); });
 }
 const NAMED={BAR:BAR,AMB:AMB,GREEN:GREEN,RED:RED,GREY:GREY,TXT:TXT,SUB:SUB,MUT:MUT};
 const col=(c)=>NAMED[c]||C[c]||c;
 
 const WEEK=process.argv[2]; if(!WEEK) throw new Error('podaj numer tygodnia: node build_deck.js 43');
 const T=JSON.parse(fs.readFileSync('deck_w'+WEEK+'.json','utf8'));
+// var: null = zmiana nietestowana (talia spoza tracked decks) -> 'not tested'
 const CFG=T.cfg; const N=S.events;
 const notes=fs.readFileSync('notes.md','utf8');
 function spk(file){ const m=notes.match(new RegExp('### '+file.replace('.','\\.')+'\\n\\n([^#]+)')); return m?m[1].trim():''; }

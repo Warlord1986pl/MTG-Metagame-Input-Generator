@@ -22,7 +22,8 @@ Zwraca kod 1, jesli ktorykolwiek test nie przeszedl.
 """
 import argparse, glob, os, re, subprocess, sys, zipfile
 
-VALIDATE = '/mnt/skills/public/pptx/scripts/office/validate.py'
+VALIDATE_DEFAULT = '/mnt/skills/public/pptx/scripts/office/validate.py'
+VALIDATE = VALIDATE_DEFAULT  # nadpisywane przez --validator albo zmienna PPTX_VALIDATE
 FORBIDDEN = []          # np. ['WBG'] po reklasyfikacji          # np. ['WBG'] po reklasyfikacji, sprawdzane tylko w PPTX
 
 
@@ -99,8 +100,9 @@ SAFE = re.compile(r'(within|inside) (normal|weekly)|within variation|not support
 
 def check_md_rules(src, week, events, res):
     import json
-    st = json.load(open(os.path.join(src, 'stats.json')))
-    flat = [r['deck'] for r in st['decks'] if not r['sig']] + [r['arch'] for r in st['archetypes'] if not r['sig']]
+    st = json.load(open(os.path.join(src, 'stats.json'), encoding='utf-8'))
+    # zmiana bez flagi po korekcie BH (sig 0) albo nietestowana (sig None): slowa trendu = UWAGA
+    flat = [r['deck'] for r in st['decks'] if r['sig'] != 1] + [r['arch'] for r in st['archetypes'] if r['sig'] != 1]
     for base in ['dossier', 'reddit', 'youtube', 'x']:
         p = os.path.join(src, '%s_w%s.md' % (base, week))
         if not os.path.exists(p): continue
@@ -126,7 +128,12 @@ def main():
     ap.add_argument('--events', type=int, required=True)
     ap.add_argument('--dir', default='/mnt/user-data/outputs')
     ap.add_argument('--src', default='.', help='katalog roboczy z plikami md')
+    ap.add_argument('--validator', default=None, help='sciezka do validate.py skilla pptx (albo zmienna PPTX_VALIDATE)')
     a = ap.parse_args()
+    global VALIDATE
+    VALIDATE = a.validator or os.environ.get('PPTX_VALIDATE') or VALIDATE_DEFAULT
+    if not os.path.isfile(VALIDATE):
+        print('FAIL brak validate.py: %s (podaj --validator albo PPTX_VALIDATE)' % VALIDATE); sys.exit(1)
     w = a.week
     res = []
     check_pptx(os.path.join(a.dir, 'modern_metagame_w%s.pptx' % w), a.events, res)

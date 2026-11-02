@@ -19,7 +19,7 @@ RU = 'Rogue & unclassified'
 
 
 def parse_notes(path):
-    t = open(path, encoding='utf8').read()
+    t = open(path, encoding='utf-8').read()
     g = lambda pat: re.search(pat, t).group(1)
     st = dict(
         week=g(r'ISO (\d{4}-W\d{2})'),
@@ -128,30 +128,68 @@ def main():
         V = X['variants_week']; vs = V.groupby('Deck')[['Lists_Top32', 'Lists_Top8', 'Trophies']].sum()
         badv = [d for d in vs.index if (vs.Lists_Top32[d], vs.Lists_Top8[d], vs.Trophies[d]) != (int(HW.Lists.get(d, -1)), int(t8.get(d, 0)), int(tr.get(d, 0)))]
         chk(not badv, 'variants_week: sumy wariantow = talia (Top 32, Top 8, trofea) dla %d talii%s' % (len(vs), '' if not badv else ': %s' % badv))
-    sig = D[D.Change_CI_excludes_0 == 1].Deck.tolist() + ['archetyp ' + x for x in A[A.Change_CI_excludes_0 == 1].Archetype]
-    R.append('INFO zmiany poza wahaniami: %s' % (', '.join(sig) or 'brak'))
+    # weekly_metrics: pelne dane tygodnia, tracked decks i korekta BH (od 2026-W44)
+    WM = X.get('weekly_metrics')
+    chk(WM is not None, 'arkusz weekly_metrics obecny')
+    if WM is None:
+        print('\n'.join(R)); print('WALIDACJA NIE PRZESZLA, stats.json nie zapisany'); sys.exit(1)
+    WW = WM[WM.iso_week == S['week']]
+    WD = WW[WW.level == 'deck'].set_index('name'); WA = WW[WW.level == 'archetype'].set_index('name')
+    chk(int(WD.lists.sum()) == S['lists'] and int(WA.lists.sum()) == S['lists'],
+        'weekly_metrics %s: suma list talii i archetypow = %d' % (S['week'], S['lists']))
+    diff = [r.Deck for r in top.itertuples() if r.Deck not in WD.index or
+            (int(WD.lists[r.Deck]), int(WD.events_with_list[r.Deck]), round(WD.change_pp[r.Deck], 2)) != (int(r.Lists), int(r.Events_with_list), round(r.Change_pp, 2))]
+    chk(not diff, 'weekly_metrics = arkusz decks dla top 10%s' % ('' if not diff else ': %s' % diff))
+    stray = WD[(WD.tracked != 1) & WD.change_beyond.notna()].index.tolist()
+    chk(not stray, 'change_beyond tylko dla tracked decks%s' % ('' if not stray else ': %s' % stray))
+    mono = WD[(WD.trophies > WD.top8) | (WD.top8 > WD.lists) | (WD.events_with_list > WD.week_events)].index.tolist()
+    chk(not mono, 'weekly_metrics: monotonicznosc trofea <= Top 8 <= listy, obecnosc <= eventy%s' % ('' if not mono else ': %s' % mono))
+    R.append('INFO tracked decks (%d): %s' % (int((WD.tracked == 1).sum()), ', '.join(WD[WD.tracked == 1].index)))
+    sig = WD[WD.change_beyond == 1].index.tolist() + ['archetyp ' + x for x in WA[WA.change_beyond == 1].index]
+    R.append('INFO zmiany poza wahaniami po korekcie BH: %s' % (', '.join(sig) or 'brak'))
+    pre = D[(D.Change_CI_excludes_0 == 1) & (D.change_beyond != 1)].Deck.tolist()
+    if pre: R.append('INFO istotne tylko przed korekta BH (opisywane jako w granicach wahan): %s' % ', '.join(pre))
 
     print('\n'.join(R))
     if not ok:
         print('WALIDACJA NIE PRZESZLA, stats.json nie zapisany'); sys.exit(1)
 
     P = X['pilots'].set_index('Deck'); NC = X['new_cards']
+    def beyond(v):
+        return None if v != v or v is None else int(v)   # NaN -> None: zmiana nietestowana
+    top10 = top.Deck.tolist()
     rows = []
-    for r in D.itertuples():
-        rows.append(dict(deck=r.Deck, arch=r.Archetype if isinstance(r.Archetype, str) else '',
-                         lists=int(r.Lists), share=round(r.Share_Top32_pct, 2), ev=int(r.Events_with_list),
-                         pilots=int(r.Pilots), change=round(r.Change_pp, 2), sig=int(r.Change_CI_excludes_0),
-                         ci=[round(r.Change_CI_low_pp, 1), round(r.Change_CI_high_pp, 1)],
-                         prev_lists=int(r.Prev_week_lists), n_decks=int(r.Decks_in_row),
-                         top8=int(t8.get(r.Deck, 0)), troph=int(tr.get(r.Deck, 0)),
-                         top8_events=int(T[T.Deck == r.Deck].EventID.nunique()),
-                         top_pilot_share=round(P.Top_pilot_share_pct.get(r.Deck, float('nan')), 1) if r.Deck in P.index else None,
-                         concentrated=int(P.Concentrated.get(r.Deck, 0)) if r.Deck in P.index else 0))
-    arch = [dict(arch=r.Archetype, lists=int(r.Lists), pilots=int(r.Pilots), share=round(r.Share_Top32_pct, 2), ev=int(r.Events_with_list),
-                 change=round(r.Change_pp, 2), sig=int(r.Change_CI_excludes_0),
-                 top8=int((T.Archetype == r.Archetype).sum()), troph=int(((T.Archetype == r.Archetype) & (T.Winner == 1)).sum()),
-                 top_deck=(top[top.Archetype == r.Archetype].sort_values('Lists', ascending=False).Deck.head(1).tolist() or [''])[0])
-            for r in A.itertuples()]
+    for name, r in WD.iterrows():
+        rows.append(dict(deck=name, arch=r.archetype, lists=int(r.lists), share=round(r.share_pct, 2), ev=int(r.events_with_list),
+                         pilots=int(r.pilots), change=round(r.change_pp, 2), sig=beyond(r.change_beyond), tracked=int(r.tracked == 1),
+                         tracked_reason=r.tracked_reason if isinstance(r.tracked_reason, str) else '',
+                         ci=[round(r.change_ci_low_pp, 1), round(r.change_ci_high_pp, 1)] if r.change_ci_low_pp == r.change_ci_low_pp else None,
+                         q=round(r.change_q_bh, 3) if r.change_q_bh == r.change_q_bh else None,
+                         prev_lists=int(r.prev_week_lists), n_decks=1, top10=int(name in top10),
+                         top8=int(r.top8), troph=int(r.trophies), top8_events=int(r.top8_events),
+                         top_pilot_share=round(r.top_pilot_share_pct, 1) if r.top_pilot_share_pct == r.top_pilot_share_pct else None,
+                         concentrated=int(r.concentrated == 1)))
+    o = D[D.Deck == 'other decks'].iloc[0]
+    rows.append(dict(deck='other decks', arch='', lists=int(o.Lists), share=round(o.Share_Top32_pct, 2), ev=int(o.Events_with_list),
+                     pilots=int(o.Pilots), change=round(o.Change_pp, 2), sig=None, tracked=0, tracked_reason='', ci=None, q=None,
+                     prev_lists=int(o.Prev_week_lists), n_decks=int(o.Decks_in_row), top10=0, top8=0, troph=0, top8_events=0,
+                     top_pilot_share=None, concentrated=0))
+    arch = [dict(arch=name, lists=int(r.lists), pilots=int(r.pilots), share=round(r.share_pct, 2), ev=int(r.events_with_list),
+                 change=round(r.change_pp, 2), sig=beyond(r.change_beyond), top8=int(r.top8), troph=int(r.trophies),
+                 top_deck=(top[top.Archetype == name].sort_values('Lists', ascending=False).Deck.head(1).tolist() or [''])[0])
+            for name, r in WA.iterrows()]
+    # wyniki talii (material miesieczny), z korekta BH
+    res = []
+    if 'm_deck_results' in X:
+        MR = X['m_deck_results']
+        g = lambda r, c: (None if r[c] != r[c] else (round(float(r[c]), 3) if isinstance(r[c], float) else r[c])) if c in MR.columns else None
+        for _, r in MR.iterrows():
+            res.append({k: g(r, c) for k, c in [('deck', 'Deck'), ('arch', 'Archetype'), ('lists', 'Lists'), ('period_start', 'Period_start'),
+                        ('period_end', 'Period_end'), ('pct', 'Mean_place_percentile'), ('pct_lo', 'Percentile_CI_low'), ('pct_hi', 'Percentile_CI_high'),
+                        ('pct_base', 'Percentile_baseline_rest'), ('pct_q', 'Percentile_q_BH'), ('pct_bh', 'Percentile_BH_rejects'),
+                        ('conv', 'Top8_conversion_pct'), ('conv_lo', 'CI_low_pct'), ('conv_hi', 'CI_high_pct'), ('conv_base', 'Conversion_baseline_rest'),
+                        ('conv_q', 'Conversion_q_BH'), ('conv_bh', 'Conversion_BH_rejects'), ('pilots', 'Pilots_Top32'), ('labels', 'Pilot_labels'),
+                        ('top_pilot_share', 'Top_pilot_share_Top32_pct'), ('troph', 'Trophies')]})
     winners = [dict(event=int(r.EventID), date=str(r.Date)[:10], deck=r.Deck,
                     variant=r.Variant if isinstance(r.Variant, str) else '', arch=r.Archetype)
                for r in T[T.Winner == 1].sort_values(['Date', 'EventID']).itertuples()]
@@ -170,11 +208,11 @@ def main():
         lc = [dict(deck=r.Deck, card=r.Card, zone=r.Zone, p1=round(r.Presence_1_pct), p2=round(r.Presence_2_pct),
                    change=round(r.Within_variants_pp, 1), ci=[round(r.Within_CI_low_pp, 1), round(r.Within_CI_high_pp, 1)],
                    pilots_deck=int(r.Deck_pilots_2), pilots_card=int(r.Pilots_with_card_2)) for r in M.head(12).itertuples()]
-    S.update(week_num=a.week, variants=variants, list_changes=lc, list_changes_all=lc_all, prev_week=prev, decks=rows, archetypes=arch, winners=winners, top8=top8,
+    S.update(week_num=a.week, deck_results=res, top10=top10, variants=variants, list_changes=lc, list_changes_all=lc_all, prev_week=prev, decks=rows, archetypes=arch, winners=winners, top8=top8,
              new_cards=newc, history=hist, all_week=HW.Lists.astype(int).to_dict(),
              top8_variants=T.groupby(['Deck', 'Variant']).size().reset_index().values.tolist(),
              validation=R)
-    json.dump(S, open(os.path.join(a.out, 'stats.json'), 'w'), ensure_ascii=False, indent=1, default=str)
+    json.dump(S, open(os.path.join(a.out, 'stats.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1, default=str)
     print('zapisane: stats.json w %s' % a.out)
 
 

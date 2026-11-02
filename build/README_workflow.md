@@ -32,7 +32,7 @@ python3 analysis.py --week 44 --src src --out .   # FAIL = stop, stats.json nie 
 NODE_PATH=$(npm root -g) node build_deck.js 44
 python3 gen_dossier.py 44
 python3 build_docs.py --week 44 --src . --png . --out /mnt/user-data/outputs
-python3 qa.py --week 44 --events <liczba z raportu> --src .
+python3 qa.py --week 44 --events <liczba z raportu> --src . --validator <sciezka do validate.py>   # albo zmienna PPTX_VALIDATE
 ```
 
 ## Odwolania do danych
@@ -64,3 +64,15 @@ tygodni. W zwykly tydzien: `qa.py`, podglad slajdow ze zmienionym szablonem i sl
 z przypisaniem talia -> archetyp, w dossier pierwsze strony i zmienione sekcje. Reszta
 kontrola tekstowa. W podsumowaniu w czacie zawsze pada, co bylo ogladane, a co
 sprawdzone tekstem.
+
+## Od 2026-W44: tracked decks, korekta BH, regula blokow
+
+- Flaga zmiany tygodniowej (`sig` w stats.json) pochodzi z `change_beyond` w weekly_metrics, czyli po korekcie BH
+  w rodzinie tracked decks. `sig = null` oznacza talie spoza tracked decks: zmiana nietestowana, `{var:...}` daje
+  "not tested", a naglowek bloku "Weekly change: not tested".
+- gen_dossier.py sprawdza regule wyboru talii z czesci 6A promptu (top 10, remis na granicy, talia dla archetypu
+  bez talii, tracked deck ze zmiana poza wahaniami, Zoo zawsze) i przerywa build przy brakujacym albo nadmiarowym
+  bloku. Talia z blokiem spoza tracked decks musi miec jako pierwszy rownowaznik formule:
+  "low-volume deck: too little data for reliable weekly results, described as part of its archetype".
+- Wszystkie skrypty zapisuja i czytaja pliki tekstowe w UTF-8 (Windows: bez trybu UTF-8 w runnerze).
+- qa.py: sciezka walidatora z --validator albo PPTX_VALIDATE; brak pliku = FAIL.
