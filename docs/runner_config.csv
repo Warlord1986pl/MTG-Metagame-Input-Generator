@@ -3,3 +3,4 @@ deckdb_dir,E:/github/DeckDB
 deckdb_python,C:/Python/python.exe
 pipeline_python,E:/github/.venv/Scripts/python.exe
 trend_weeks,12
+pptx_validator,C:/Users/kmalo/.claude/skills/synced/21cd0f74-a1de-41b0-aa7f-c35e0e2040b9_31c8bbc6-b27b-4189-ac4e-2df4713133c4/pptx/scripts/office/validate.py

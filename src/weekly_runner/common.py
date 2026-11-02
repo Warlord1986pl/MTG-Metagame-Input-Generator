@@ -15,7 +15,7 @@ from typing import Dict, List, Optional
 
 REPO = Path(__file__).resolve().parents[2]
 RUNNER_CONFIG = REPO / "docs" / "runner_config.csv"
-CONFIG_KEYS = ("deckdb_dir", "deckdb_python", "pipeline_python", "trend_weeks")
+CONFIG_KEYS = ("deckdb_dir", "deckdb_python", "pipeline_python", "trend_weeks", "pptx_validator")
 PROBE = Path(__file__).resolve().parent / "deckdb_probe.py"
 
 # exit codes of metagame_week.py (docs/runner.md lists them with what to do)

@@ -254,7 +254,8 @@ class WeekRun:
                  ("gen_dossier.py", [py, build / "gen_dossier.py", n], None),
                  ("build_docs.py", [py, build / "build_docs.py", "--week", n, "--src", ".", "--png", ".", "--out", "."],
                   None),
-                 ("qa.py", [py, build / "qa.py", "--week", n, "--events", events, "--src", ".", "--dir", "."], None)]
+                 ("qa.py", [py, build / "qa.py", "--week", n, "--events", events, "--src", ".", "--dir", ".",
+                            "--validator", self.cfg["pptx_validator"]], None)]
         log = self.work / "logs" / "build.log"
         for name, cmd, env in steps:
             self.log.run(f"build: {name}", self._build_step, name, cmd, out, log, env)
@@ -279,13 +280,12 @@ class WeekRun:
                 versions[pkg] = md.version(pkg)
             except md.PackageNotFoundError:
                 raise Stop(EXIT_BUILD, f"brak pakietu {pkg} (pip install {pkg})") from None
-        # qa.py calls the pptx validator by the absolute path of the Claude project; on Windows "/mnt/..." resolves
-        # on the drive of the working directory
-        validator = (Path(self.dir.drive + "/") / "mnt" / "skills" / "public" / "pptx" / "scripts" / "office"
-                     / "validate.py")
-        if not validator.exists():
-            raise Stop(EXIT_BUILD, f"brak {validator} (walidator pptx wywoływany przez qa.py): załóż junction do "
-                                   "skilla pptx, docs/runner.md, sekcja 'Etap BUILD'")
+        # qa.py gets the pptx validator of the local pptx skill by --validator (docs/runner_config.csv, pptx_validator)
+        validator = Path(self.cfg["pptx_validator"])
+        if not validator.is_file():
+            raise Stop(EXIT_BUILD, f"brak {validator} (walidator pptx dla qa.py --validator): popraw pptx_validator w "
+                                   "docs/runner_config.csv, docs/runner.md, sekcja 'Etap BUILD'")
+        versions["pptx_validator"] = str(validator)
         self.facts["build_versions"] = versions
         return {"node": node, **env}
 

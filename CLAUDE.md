@@ -50,7 +50,7 @@ metagame_week.bat --week 2026-W44 --stage all      rem + build/ scripts (Claude 
 triage_check.bat                                   rem Friday alarm: exit 0 complete, 1 notice, 2 blocking, 3 error
 ```
 
-Everything (stages, stop codes, Task Scheduler XML, validator junction for `qa.py`) is in `docs/runner.md`; code in
+Everything (stages, stop codes, Task Scheduler XML, pptx validator path for `qa.py --validator`) is in `docs/runner.md`; code in
 `src/weekly_runner/`. The runner never commits and never writes `docs/decisions.md`; `outputs/presentation/` is the
 archive of published folders and is not written by it.
 

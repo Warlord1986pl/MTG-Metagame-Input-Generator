@@ -99,17 +99,12 @@ npm install -g pptxgenjs
 E:\github\.venv\Scripts\python.exe -m pip install python-docx python-pptx pillow defusedxml lxml
 ```
 
-`qa.py` wywołuje walidator pptx ścieżką `/mnt/skills/public/pptx/scripts/office/validate.py` (środowisko projektu
-Claude). Na Windows ta ścieżka oznacza `E:\mnt\...` (dysk katalogu roboczego). Walidator to skrypt skilla pptx
-Claude, zsynchronizowany lokalnie; jednorazowo (PowerShell):
-
-```
-New-Item -ItemType Directory -Force E:\mnt\skills\public
-New-Item -ItemType Junction -Path E:\mnt\skills\public\pptx -Target "<katalog skilla pptx>"
-```
-
-(`<katalog skilla pptx>` = folder `pptx` w `C:\Users\kmalo\.claude\skills\synced\...`; usunięcie: `rmdir
-E:\mnt\skills\public\pptx`). Bez walidatora etap zatrzymuje się w preflighcie. Junction jest tymczasowy: gdy przyjdzie wersja `qa.py` z parametrem ścieżki walidatora (`--validator` albo zmienna `PPTX_VALIDATE`), runner poda jej ścieżkę lokalnego skilla pptx, a junction zostanie usunięty. `markitdown` jest opcjonalny
+`qa.py` dostaje walidator pptx parametrem `--validator <ścieżka do validate.py>`; runner podaje ścieżkę z klucza
+`pptx_validator` w `docs/runner_config.csv` (skrypt `scripts/office/validate.py` lokalnie zsynchronizowanego skilla
+pptx Claude, `C:\Users\kmalo\.claude\skills\synced\...\pptx`). Brak pliku = stop w preflighcie etapu (kod 10);
+`qa.py` bez walidatora daje `FAIL brak validate.py`. Junction `E:\mnt\skills\public\pptx` z wersji sprzed
+build_w44 jest usunięty (2026-11-02) i niepotrzebny. Po nowej synchronizacji skilla (inny folder) popraw
+`pptx_validator`. `markitdown` jest opcjonalny
 (`qa.py` czyta wtedy tekst przez `python-pptx`).
 
 **Podmiana skryptów w `build/`:** skopiuj nowe pliki z projektu Claude do `build/` (nadpisanie), uruchom

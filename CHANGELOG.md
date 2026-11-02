@@ -3,6 +3,19 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-02 - Week runner: build_w44 scripts, qa.py --validator, no junction
+
+- What: `build/` replaced by the build_w44 version (sha256 of the 6 files checked against the order of 2026-11-02).
+  The BUILD stage passes `--validator <path>` to `build/qa.py`; the path is the new required key `pptx_validator` of
+  `docs/runner_config.csv` (validate.py of the locally synced pptx skill), checked in the stage preflight (missing file
+  = stop 10) and named in the report's versions. The junction `E:\mnt\skills\public\pptx` (and the empty `E:\mnt`) is
+  removed; `docs/runner.md` and CLAUDE.md updated.
+- Why: order of 2026-11-02, points 1-2 (qa.py accepts --validator / PPTX_VALIDATE since build_w44).
+- Checks: qa.py with --validator: "OK validate.py"; without it: "FAIL brak validate.py". BUILD on weekly/2026-W43
+  (old content layout) stops in gen_dossier.py with "regula wyboru talii: brak bloku dla ['Ruby Storm', 'Tron']", exit
+  10, as expected.
+- Output files changed: none of the materials; `outputs/_working/runner/<week>/` report and logs only.
+
 ## 2026-11-02 - notes.md: the "renamed" line names the lists it counts
 
 - What: the Status line now reads "renamed: <old> -> <new> (N lists, counted over the lists common with the previous
