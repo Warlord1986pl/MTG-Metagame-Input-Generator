@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857394,2026-10-31,C32,Challenge,QF,BENTO_,3458153,therock988,494270,2,0,Neobrand,Prowess
+12857394,2026-10-31,C32,Challenge,QF,AwesomPossum,2923148,wraaith,2911801,2,0,Yawgmoth,Rakdos Midrange
+12857394,2026-10-31,C32,Challenge,QF,O_danielakos,1017550,Misplacedginger,736792,2,0,Prowess,Boros Energy
+12857394,2026-10-31,C32,Challenge,QF,jessy_samek,922706,_Logic_,2164854,2,1,Rakdos Midrange,Sam Combo
+12857394,2026-10-31,C32,Challenge,SF,O_danielakos,1017550,AwesomPossum,2923148,2,0,Prowess,Yawgmoth
+12857394,2026-10-31,C32,Challenge,SF,jessy_samek,922706,BENTO_,3458153,2,1,Rakdos Midrange,Neobrand
+12857394,2026-10-31,C32,Challenge,F,O_danielakos,1017550,jessy_samek,922706,2,0,Prowess,Rakdos Midrange

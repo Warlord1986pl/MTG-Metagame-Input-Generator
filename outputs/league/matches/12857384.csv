@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857384,2026-10-30,C32,Challenge,QF,Fransadness,3143623,Walker735,2638611,2,1,Broodscale Combo,Jeskai Energy
+12857384,2026-10-30,C32,Challenge,QF,aspiringspike,1042649,Azzay0,1699326,2,0,Selesnya Midrange,Affinity
+12857384,2026-10-30,C32,Challenge,QF,kePs,1984508,eneges,2249628,2,0,Mono-Green Hardened Scales,Dimir Midrange
+12857384,2026-10-30,C32,Challenge,QF,MeninoNey,2903591,-=Alfa=-,685719,2,1,Living End,Land Destruction
+12857384,2026-10-30,C32,Challenge,SF,aspiringspike,1042649,kePs,1984508,2,1,Selesnya Midrange,Mono-Green Hardened Scales
+12857384,2026-10-30,C32,Challenge,SF,MeninoNey,2903591,Fransadness,3143623,2,1,Living End,Broodscale Combo
+12857384,2026-10-30,C32,Challenge,F,aspiringspike,1042649,MeninoNey,2903591,2,1,Selesnya Midrange,Living End

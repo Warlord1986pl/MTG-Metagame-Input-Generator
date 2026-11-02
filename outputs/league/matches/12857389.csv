@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857389,2026-10-31,C32,Challenge,QF,ChewDawg,3106208,xfile,2449332,2,0,Broodscale Combo,Broodscale Combo
+12857389,2026-10-31,C32,Challenge,QF,eclipse4343,2714224,caquaa,221272,2,0,Azorius Control,Broodscale Combo
+12857389,2026-10-31,C32,Challenge,QF,N0000000B,3480517,ETBJezus,3040474,2,1,Ruby Storm,Dimir Midrange
+12857389,2026-10-31,C32,Challenge,QF,komattaman,2690217,MAFS,2121091,2,1,Rakdos Midrange,Tron
+12857389,2026-10-31,C32,Challenge,SF,ChewDawg,3106208,N0000000B,3480517,2,1,Broodscale Combo,Ruby Storm
+12857389,2026-10-31,C32,Challenge,SF,komattaman,2690217,eclipse4343,2714224,2,1,Rakdos Midrange,Azorius Control
+12857389,2026-10-31,C32,Challenge,F,ChewDawg,3106208,komattaman,2690217,2,0,Broodscale Combo,Rakdos Midrange

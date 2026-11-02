@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857390,2026-10-31,C16,Challenge,QF,sioutis_kk,3499660,Suechtler,962368,2,0,Affinity,WUR
+12857390,2026-10-31,C16,Challenge,QF,musasabi,1210536,HAKUmtg7gLmn,2812421,2,1,Affinity,Broodscale Combo
+12857390,2026-10-31,C16,Challenge,QF,oosunq,1155358,SpecterTurtle,2714690,2,0,Azorius Control,Broodscale Combo
+12857390,2026-10-31,C16,Challenge,QF,nahuel10,1942357,Serosocram,3477626,2,0,Azorius Control,Esper Reanimator
+12857390,2026-10-31,C16,Challenge,SF,nahuel10,1942357,musasabi,1210536,2,1,Azorius Control,Affinity
+12857390,2026-10-31,C16,Challenge,SF,sioutis_kk,3499660,oosunq,1155358,2,0,Affinity,Azorius Control
+12857390,2026-10-31,C16,Challenge,F,nahuel10,1942357,sioutis_kk,3499660,2,0,Azorius Control,Affinity
