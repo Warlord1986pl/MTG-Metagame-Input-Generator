@@ -500,7 +500,9 @@ def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dic
                      + ", ".join(colours.missing))
     lines += ["", "### Classification changes since the previous week", "", desc + "."]
     if renamed is not None and len(renamed):
-        lines += [""] + [f"- renamed: {r.Old} -> {r.New} ({r.Lists} lists)" for r in renamed.itertuples()]
+        lines += [""] + [f"- renamed: {r.Old} -> {r.New} ({r.Lists} lists, counted over the lists common with the "
+                         f"previous export {prev_path.name}; lists newer than that export are not counted)"
+                         for r in renamed.itertuples()]
         lines += ["", "Moves below are counted after the renames (docs/deckdb_renames.csv)."]
     for title, mv in (("All common lists", moves),
                       (f"Lists from {we.replace(day=1).isoformat()} (this week's lists are new, not in the previous "

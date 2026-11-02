@@ -3,6 +3,16 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-02 - notes.md: the "renamed" line names the lists it counts
+
+- What: the Status line now reads "renamed: <old> -> <new> (N lists, counted over the lists common with the previous
+  export <file>; lists newer than that export are not counted)" (`deckdb_folder._status`).
+- Why: order of 2026-11-02, point 5. W43 showed 89 lists, the control of 2026-10-30 143: the line counts the lists
+  common with the previous export of the week (`assignments_*_2026-10-18.csv`, lists up to 2026-10-18), the control
+  compared the 2026-10-25 and 2026-10-29 exports (lists up to 2026-10-25); 143 = 89 + the 54 W43 lists of the deck.
+- Output files changed: `outputs/presentation/<week>/notes.md` (text of the line only, no number changes).
+- Checked on: DeckDB rules 1e0f7f3c023d574b.
+
 ## 2026-10-30 - Deck "Moonshadow" with colour variants (DeckDB entry 332); deck rename register
 
 - What: DeckDB rules 1e0f7f3c023d574b (entry 332): "Rakdos Moonshadow" is now the deck "Moonshadow" (id
