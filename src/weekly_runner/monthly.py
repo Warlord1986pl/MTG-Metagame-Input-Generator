@@ -264,9 +264,15 @@ def check_month_measures(c: Checks, xl: Dict[str, pd.DataFrame], ex: pd.DataFram
     if not bad.empty:
         c.fail(f"monthly_metrics: monotoniczność naruszona w {len(bad)} wierszach, np. "
                f"{bad.iloc[0][['month', 'level', 'name']].tolist()}")
-    beyond = pd.to_numeric(mm["change_beyond"], errors="coerce")
-    if (beyond.notna() & (mm["tracked"] != 1)).any() or (beyond.isna() & (mm["tracked"] == 1)).any():
-        c.fail("monthly_metrics: change_beyond poza tracked albo tracked bez testu")
+    flags = {col: pd.to_numeric(mm[col], errors="coerce")
+             for col in ("change_beyond", "change_beyond_event", "change_beyond_pilot")}
+    for col, beyond in flags.items():
+        if (beyond.notna() & (mm["tracked"] != 1)).any() or (beyond.isna() & (mm["tracked"] == 1)).any():
+            c.fail(f"monthly_metrics: {col} poza tracked albo tracked bez testu")
+    tr = mm["tracked"] == 1
+    both = (flags["change_beyond_event"][tr] == 1) & (flags["change_beyond_pilot"][tr] == 1)
+    if ((flags["change_beyond"][tr] == 1) != both).any():
+        c.fail("monthly_metrics: change_beyond różny od change_beyond_event AND change_beyond_pilot")
     t8 = xl["top8_month"].copy()
     t8["Winner"] = pd.to_numeric(t8["Winner"]).astype(int)
     ms, me = month_bounds(month)
@@ -281,14 +287,18 @@ def check_month_measures(c: Checks, xl: Dict[str, pd.DataFrame], ex: pd.DataFram
     cur = mm[mm["month"] == month]
     c.ok(f"monthly_metrics i historie miesięczne: {first} .. {month} (bez maja 2026); suma list talii i archetypów = "
          f"eksport w każdym miesiącu ({int(cur[cur['level'] == 'deck']['lists'].sum())} list w {month}); trophies <= "
-         "top8 <= lists, events_with_list <= month_events; change_beyond tylko przy tracked; top8_month: "
+         "top8 <= lists, events_with_list <= month_events; change_beyond tylko przy tracked i = event AND pilot; "
+         "top8_month: "
          f"{len(per)} eventów x 8 list Top 8, {int(t8['Winner'].sum())} trofeów = eventy miesiąca")
     deck = cur[cur["level"] == "deck"]
     c.facts["tracked"] = [(r["name"], r["tracked_reason"], int(pd.to_numeric(r["change_beyond"])),
-                           float(pd.to_numeric(r["change_pp"]))) for _, r in deck[deck["tracked"] == 1].iterrows()]
+                           float(pd.to_numeric(r["change_pp"])), int(pd.to_numeric(r["change_beyond_event"])),
+                           int(pd.to_numeric(r["change_beyond_pilot"])))
+                          for _, r in deck[deck["tracked"] == 1].iterrows()]
     arch = cur[(cur["level"] == "archetype") & (cur["tracked"] == 1)]
     c.facts["archetype_tests"] = [(r["name"], int(pd.to_numeric(r["change_beyond"])),
-                                   float(pd.to_numeric(r["change_pp"]))) for _, r in arch.iterrows()]
+                                   float(pd.to_numeric(r["change_pp"])), int(pd.to_numeric(r["change_beyond_event"])),
+                                   int(pd.to_numeric(r["change_beyond_pilot"]))) for _, r in arch.iterrows()]
 
 
 def check_charts(c: Checks, folder: Path, xl: Dict[str, pd.DataFrame], month: str, drawn_path: Optional[Path]) -> None:
@@ -354,10 +364,13 @@ def report(month: str, ok: bool, stop: Optional[Stop], facts: dict, checks: Chec
     if "charts" in cf:
         out += [f"- Wykresy: {', '.join(cf['charts'])}"]
     if "tracked" in cf:
-        out += ["- Tracked decks miesiąca (powód; zmiana vs poprzedni miesiąc; poza wahaniami po BH): "
-                + "; ".join(f"{d} ({why}; {ch:+.1f} pp; {'tak' if b else 'nie'})" for d, why, b, ch in cf["tracked"])]
-        out += ["- Archetypy (zmiana; poza wahaniami po BH): "
-                + "; ".join(f"{a} ({ch:+.1f} pp; {'tak' if b else 'nie'})" for a, b, ch in cf["archetype_tests"])]
+        yn = lambda v: "tak" if v else "nie"  # noqa: E731
+        out += ["- Tracked decks miesiąca (powód; zmiana vs poprzedni miesiąc; poza wahaniami po BH: obie metody / "
+                "event / pilot): " + "; ".join(f"{d} ({why}; {ch:+.1f} pp; {yn(b)} / {yn(be)} / {yn(bp)})"
+                                               for d, why, b, ch, be, bp in cf["tracked"])]
+        out += ["- Archetypy (zmiana; poza wahaniami po BH: obie / event / pilot): "
+                + "; ".join(f"{a} ({ch:+.1f} pp; {yn(b)} / {yn(be)} / {yn(bp)})"
+                            for a, b, ch, be, bp in cf["archetype_tests"])]
     if "trophies" in cf:
         out += ["- Trofea na talię: " + ", ".join(f"{d} {n}" for d, n in sorted(cf["trophies"].items(),
                                                                                 key=lambda kv: (-kv[1], kv[0])))]

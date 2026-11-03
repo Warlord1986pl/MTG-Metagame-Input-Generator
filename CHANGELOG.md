@@ -3,6 +3,29 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-03 - Month-on-month change test: rule of both methods (event and pilot bootstrap)
+
+- What: monthly_metrics of the monthly package tests every change twice: the event bootstrap (columns renamed to
+  change_ci_low_event_pp, change_ci_high_event_pp, change_p_event, change_q_bh_event, change_beyond_event) and a pilot
+  bootstrap (new `deckdb_input.pilot_share_draws`: the pilots of each month drawn independently with all their lists,
+  2000 draws, the same seed, BH q = 0.1 in the same families; columns change_ci_low_pilot_pp, change_ci_high_pilot_pp,
+  change_p_pilot, change_q_bh_pilot, change_beyond_pilot). change_beyond = change_beyond_event AND change_beyond_pilot
+  is the one flag of m03 / m05 (subtitle "bold colour = beyond normal variation in both event and pilot bootstrap,
+  after correction for multiple comparisons") and of the chart assertions; the pipeline and the runner check the AND
+  rule. Glossary "monthly change test (BH)" and `docs/monthly_package_rules.md` (README_metagame_info.md): the rule,
+  why (lists depend through shared events and returning pilots; both methods as a cautious stand-in for a two-way
+  bootstrap), and the note on a deck with pilot concentration (top pilot >= 1/3 of the lists) in either month; m05's
+  speaker note names such decks. `scripts/monthly_sensitivity.py` uses the production pilot bootstrap, reads the
+  *_event columns, checks its pilot result against the package's *_pilot columns and has a week mode (report only).
+- Why: methodological decision of 2026-11-03 after `docs/reports/monthly_2026-10_sensitivity.md` (event bootstrap
+  alone: 10 of 14 tracked decks and 4 of 7 archetypes beyond normal variation in October).
+- Output files changed: `monthly/2026-10/` rebuilt (`--month 2026-10 --force`): change_beyond = 1 exactly for
+  Moonshadow, Prison, Amulet Titan, Zoo, Blink, Goryo's Vengeance, Land Destruction, Prowess and the archetype Aggro
+  (Affinity, Broodscale Combo, Devoted Combo, Graveyard, Midrange, Rogue & unclassified no longer bold). Weekly
+  materials unchanged (W44 re-rendered identical). New report `docs/reports/weekly_sensitivity_W43_W44.md` (weeks,
+  report only).
+- Checked on: DeckDB rules 9534f600135ceece.
+
 ## 2026-11-03 - Monthly package: full set of monthly charts and measures (m03-m14)
 
 - What: `monthly/<YYYY-MM>/` gets m03-m14 (archetype / deck share with change vs the previous month, monthly trends,

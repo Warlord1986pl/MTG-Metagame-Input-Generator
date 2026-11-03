@@ -172,12 +172,19 @@ PACKAGE_GLOSSARY = [
                               "Column tracked_reason: top10_month, top10_prev_month or largest_in_archetype (the first "
                               "that applies). Every other deck is counted, never tested; describe it with its two "
                               "levels and 'not tested'."),
-    ("monthly change test (BH)", "change of share vs the previous month (pp), 95% interval and two-sided p from an event "
-                                 "bootstrap (2000 draws, the events of each month drawn independently, the seed of the "
-                                 "weekly test); Benjamini-Hochberg q = 0.1 separately in the month's family of tracked "
-                                 "decks and in its family of archetypes (with 'Rogue & unclassified'). change_beyond = "
-                                 "1: beyond normal variation after the correction; any other change is within normal "
-                                 "variation. The first month of monthly_metrics has no previous month: no test."),
+    ("monthly change test (BH)", "change of share vs the previous month (pp), tested twice: an event bootstrap (*_event: "
+                                 "the events of each month drawn independently) and a pilot bootstrap (*_pilot: the "
+                                 "pilots of each month drawn independently with all their lists of the month); each "
+                                 "2000 draws with the seed of the weekly test, 95% interval, two-sided p, "
+                                 "Benjamini-Hochberg q = 0.1 separately in the month's family of tracked decks and in its "
+                                 "family of archetypes (with 'Rogue & unclassified'). change_beyond = 1 only when both "
+                                 "methods reject (rule of both methods, decision of 2026-11-03): the lists of a month "
+                                 "depend on each other through shared events and through pilots who play many events "
+                                 "with the same deck, and requiring both is a cautious stand-in for a two-way "
+                                 "bootstrap. Any other change is within normal variation. For a deck with pilot "
+                                 "concentration (top pilot >= 1/3 of its lists) in either month the change is described "
+                                 "with a note on that pilot. The first month of monthly_metrics has no previous month: "
+                                 "no test."),
     ("weeks in month", "the ISO weeks that meet the month, counted only on the days of the month; a week crossing the "
                        "month boundary is marked (*, Partial = 1). Weekly levels without a test: not a trend inside "
                        "the month."),
@@ -854,11 +861,10 @@ def _package_sheets(export, cards, mrows: pd.DataFrame, ms: date, me: date, mont
     }
 
 
-LEGEND_MONTH_CHANGE_ARCH = ("change vs previous month: bold colour = beyond normal variation after correction for "
-                            "multiple comparisons (archetype family)")
+LEGEND_MONTH_CHANGE_ARCH = ("bold colour = beyond normal variation in both event and pilot bootstrap, after correction "
+                            "for multiple comparisons")
 TOP8_MONTH_ROWS = 15  # m10: bars for the 15 decks with the most Top 8 lists, the rest named under the chart
-LEGEND_MONTH_CHANGE = ("change vs previous month: bold colour = beyond normal variation after correction for multiple "
-                       "comparisons (tracked decks)")
+LEGEND_MONTH_CHANGE = LEGEND_MONTH_CHANGE_ARCH  # m03 and m05: the rule of both methods (decision of 2026-11-03)
 
 
 def _package_charts(export, out: Path, data: Dict[str, pd.DataFrame], month: str, ms: date, me: date, months,
@@ -878,8 +884,9 @@ def _package_charts(export, out: Path, data: Dict[str, pd.DataFrame], month: str
                             colours, legend=LEGEND_MONTH_CHANGE_ARCH))
     notes["m03_archetypes_share.png"] = (
         f"Share of {name}'s Challenge Top 32 lists for every archetype, with the number of events it appeared in and "
-        "the change from the previous month; bold green or red marks a change beyond normal variation after the "
-        "correction for multiple comparisons" + _beyond_text(arch_t, "Archetype") + ".")
+        "the change from the previous month; bold green or red marks a change beyond normal variation in both the event "
+        "and the pilot bootstrap after the correction for multiple comparisons" + _beyond_text(arch_t, "Archetype")
+        + ".")
     arch_order = list(dp.DRAWN["m03_archetypes_share.png"]["rows"][i]["label"]
                       for i in range(len(dp.DRAWN["m03_archetypes_share.png"]["rows"])))
     w.append(dp.trend_chart(mc.trend_input(data["share_history_months_archetypes"], "Archetype"), arch_order,
@@ -895,7 +902,8 @@ def _package_charts(export, out: Path, data: Dict[str, pd.DataFrame], month: str
     notes["m05_decks_share.png"] = (
         f"The ten most played decks of {name} and Rogue & unclassified, coloured by archetype; each label gives the "
         "share, the events with the deck and the change from the previous month, bold green or red only for a tracked "
-        "deck whose change is beyond normal variation after the correction" + _beyond_text(deck_t, "Deck") + "."
+        "deck whose change is beyond normal variation in both the event and the pilot bootstrap after the correction"
+        + _beyond_text(deck_t, "Deck") + "." + _concentration_text(mm, month, deck_t)
         + (f" All other decks together are {other.iloc[0]['Share_Top32_pct']:.1f}% of the lists "
            f"({int(other.iloc[0]['Decks_in_row'])} decks)." if not other.empty else ""))
     top = mc.top_decks(mm, month)
@@ -973,4 +981,19 @@ def _beyond_text(t: pd.DataFrame, key: str) -> str:
     hit = [f"{r[key]} {dp._pp(r['Change_pp'])}" for _, r in t.iterrows()
            if pd.notna(r["change_beyond"]) and int(r["change_beyond"]) == 1]
     return f" ({', '.join(hit)})" if hit else " (none this month)"
+
+
+def _concentration_text(mm: pd.DataFrame, month: str, deck_t: pd.DataFrame) -> str:
+    """The rule of both methods: a shown deck whose top pilot holds >= 1/3 of its lists in the month or the month
+    before is named, so its change is described with a note on that pilot."""
+    prev = f"{date.fromisoformat(f'{month}-01') - timedelta(days=1):%Y-%m}"
+    t = mm[(mm["level"] == di.LEVEL_DECK) & (mm["month"].astype(str).isin([month, prev]))]
+    hit = []
+    for d in deck_t["Deck"]:
+        s = t.loc[t["name"] == d, ["month", "top_pilot_share_pct"]]
+        conc = s[pd.to_numeric(s["top_pilot_share_pct"]) >= di.CONCENTRATION_LISTS * 100.0]
+        if len(conc):
+            hit.append(f"{d} ({', '.join(f'{m}: {v:.0f}%' for m, v in zip(conc['month'], conc['top_pilot_share_pct']))})")
+    return (" Top pilot holds at least a third of the lists in this or the previous month: " + ", ".join(hit)
+            + "; describe their change with a note on that pilot." if hit else "")
 

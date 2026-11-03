@@ -140,6 +140,14 @@ def test_closing_week_makes_week_folder_and_monthly_package(w44):
     assert set(octd.loc[octd["tracked"] == 1, "tracked_reason"]) <= {"top10_month", "top10_prev_month",
                                                                      "largest_in_archetype"}
     assert octd.loc[octd["tracked"] == 0, "change_beyond"].isna().all()
+    # rule of both methods (decision of 2026-11-03): change_beyond = event AND pilot, both tested on every tracked row
+    tr = mm[mm["tracked"] == 1]
+    for m in ("event", "pilot"):
+        for col in (f"change_ci_low_{m}_pp", f"change_ci_high_{m}_pp", f"change_p_{m}", f"change_q_bh_{m}",
+                    f"change_beyond_{m}"):
+            assert tr[col].notna().all() and mm.loc[mm["tracked"] == 0, col].isna().all()
+    assert ((tr["change_beyond"] == 1) == ((tr["change_beyond_event"] == 1) & (tr["change_beyond_pilot"] == 1))).all()
+    assert "change_q_bh" not in mm.columns and "change_ci_low_pp" not in mm.columns
     t8 = xl["top8_month"]
     assert len(t8) == 31 * 8 and int(t8["Winner"].sum()) == 31 and "player" not in " ".join(t8.columns).lower()
     wim = xl["weeks_in_month"]
@@ -337,6 +345,16 @@ def test_charts_and_sheets_mismatch_stops(w44, tmp_path):
     rewrite(d, "top8_month", lambda df: df.iloc[1:])
     with pytest.raises(Stop, match="top8_month"):
         mo.check_package(d, *args, drawn_path=path)
+    d = tmp_path / "and_rule"
+    shutil.copytree(src, d)
+
+    def flip(df):
+        i = df.index[df["tracked"] == 1][0]
+        df.loc[i, "change_beyond"] = 1 - int(df.loc[i, "change_beyond"])
+        return df
+    rewrite(d, "monthly_metrics", flip)
+    with pytest.raises(Stop, match="change_beyond"):
+        mo.check_package(d, *args, drawn_path=path)
     d = tmp_path / "may"
     shutil.copytree(src, d)
     rewrite(d, "share_history_months_decks", lambda df: pd.concat([df.iloc[:1].assign(Month="2026-05"), df]))
@@ -365,6 +383,16 @@ def test_monthly_measures_rules(tmp_path):
     mm = di.monthly_metrics_tested(exp, months)
     octd = mm[(mm["month"] == "2026-10") & (mm["level"] == "deck")].set_index("name")
     assert set(octd["tracked_reason"]) == {"top10_month"} and octd["change_beyond"].notna().all()
+    # the pilot bootstrap is the one of scripts/monthly_sensitivity.py: same draws as calling it directly
+    sep_rows = di.window_rows(exp, date(2026, 9, 1), date(2026, 9, 30))
+    cur_rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 31))
+    labels = sorted(octd.index)
+    import numpy as np
+    rng = np.random.default_rng(di.CHANGE_SEED)
+    diff = (di.pilot_share_draws(cur_rows, "material_deck", labels, di.CHANGE_DRAWS, rng)
+            - di.pilot_share_draws(sep_rows, "material_deck", labels, di.CHANGE_DRAWS, rng))
+    assert np.allclose(np.percentile(diff, 2.5, axis=0), octd.loc[labels, "change_ci_low_pilot_pp"].to_numpy(float))
+    assert (octd["change_beyond"] == (octd["change_beyond_event"] & octd["change_beyond_pilot"])).all()
     assert mm.loc[mm["month"] == "2026-09", "change_beyond"].isna().all()
     oct_rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 31))
     pm = di.pilots_month(oct_rows, ["A", "D"], {"A": "Aggro", "D": "Control"}).set_index("Deck")

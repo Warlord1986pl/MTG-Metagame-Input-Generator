@@ -1079,8 +1079,21 @@ TRACK_TOP10_MONTH, TRACK_TOP10_PREV_MONTH = "top10_month", "top10_prev_month"
 MONTHLY_TESTED_COLUMNS = ["month", "month_from", "month_to", "complete_month", "level", "name", "archetype", "lists",
                           "share_pct", "events_with_list", "month_events", "top8", "top8_events", "trophies", "pilots",
                           "top_pilot_share_pct", "concentrated", "prev_month_lists", "prev_share_pct", "change_pp",
-                          "tracked", "tracked_reason", "change_ci_low_pp", "change_ci_high_pp", "change_p",
-                          "change_q_bh", "change_beyond"]
+                          "tracked", "tracked_reason", "change_ci_low_event_pp", "change_ci_high_event_pp",
+                          "change_p_event", "change_q_bh_event", "change_beyond_event", "change_ci_low_pilot_pp",
+                          "change_ci_high_pilot_pp", "change_p_pilot", "change_q_bh_pilot", "change_beyond_pilot",
+                          "change_beyond"]
+TEST_METHODS = ("event", "pilot")  # decision of 2026-11-03: change_beyond = beyond in both bootstraps
+
+
+def pilot_share_draws(rows: pd.DataFrame, key: str, labels: List[str], draws: int,
+                      rng: np.random.Generator) -> np.ndarray:
+    """draws x labels shares (%) of the period's lists, drawing its pilots with replacement (as many as it has), each
+    with all their lists of the period (scripts/monthly_sensitivity.py, report of 2026-11-03)."""
+    pilots = sorted(rows["player"].unique())
+    m = pd.crosstab(rows["player"], rows[key]).reindex(index=pilots, columns=labels, fill_value=0).to_numpy(float)
+    idx = rng.integers(0, len(pilots), size=(draws, len(pilots)))
+    return m[idx].sum(axis=1) / m.sum(axis=1)[idx].sum(axis=1)[:, None] * 100.0
 
 
 def month_end(ms: date) -> date:
@@ -1129,9 +1142,12 @@ def monthly_metrics_tested(export: DeckdbExport, months: List[tuple[date, date]]
     'Rogue & unclassified') and, apart, every archetype of those months; a label absent in a month has 0 lists. Change
     vs the previous month of the table (none for the first month): tracked decks of month M = the top 10 of M, the top
     10 of M-1 and the largest deck of every archetype without a deck in those top 10s with a share >= 1% in M or M-1
-    (tracked_decks); archetypes (and 'Rogue & unclassified') with a list in M or M-1. Event bootstrap as the weekly test
-    (CHANGE_DRAWS draws, CHANGE_SEED, the events of each month drawn independently, M first), 95% interval, two-sided
-    p, BH q = 0.1 separately for the tracked decks and for the archetypes; change_beyond = BH rejection. Decks outside
+    (tracked_decks); archetypes (and 'Rogue & unclassified') with a list in M or M-1. Two bootstraps of the change, each
+    CHANGE_DRAWS draws from its own generator seeded with CHANGE_SEED, the two months drawn independently, M first:
+    events (*_event, as the weekly test) and pilots with all their lists of the month (*_pilot, pilot_share_draws). Each:
+    95% interval, two-sided p, BH q = 0.1 separately for the tracked decks and for the archetypes. change_beyond =
+    change_beyond_event AND change_beyond_pilot (decision of 2026-11-03: lists depend on each other through shared
+    events and through returning pilots; requiring both is a cautious stand-in for a two-way bootstrap). Decks outside
     the tracked decks: test columns empty."""
     span = window_rows(export, months[0][0], months[-1][1])
     arch = deck_archetype_map(span).to_dict()
@@ -1155,9 +1171,11 @@ def monthly_metrics_tested(export: DeckdbExport, months: List[tuple[date, date]]
             t["share_pct"] = t["lists"] / len(rows) * 100.0
             t["month_events"] = int(rows["event_id"].nunique())
             t["archetype"] = [arch.get(x, x) for x in labels] if level == LEVEL_DECK else labels
-            for col in ("prev_month_lists", "prev_share_pct", "change_pp", "change_ci_low_pp", "change_ci_high_pp",
-                        "change_p", "change_q_bh"):
+            for col in ("prev_month_lists", "prev_share_pct", "change_pp") + tuple(
+                    f"{c}_{m}" for m in TEST_METHODS for c in ("change_ci_low", "change_ci_high")):
                 t[col] = math.nan
+            for m in TEST_METHODS:
+                t[f"change_p_{m}"], t[f"change_q_bh_{m}"], t[f"change_beyond_{m}"] = math.nan, math.nan, pd.NA
             t["tracked"], t["tracked_reason"], t["change_beyond"] = 0, "", pd.NA
             if prev_rows is not None:
                 n_prev = prev_rows[key].value_counts().reindex(labels).fillna(0).astype(int)
@@ -1169,18 +1187,26 @@ def monthly_metrics_tested(export: DeckdbExport, months: List[tuple[date, date]]
                 else:
                     reasons = {x: TRACK_ARCHETYPE for x in labels if t.at[x, "lists"] or n_prev[x]}
                 fam = [x for x in labels if x in reasons]
-                rng = np.random.default_rng(seed)
-                diff = (_event_share_draws(rows.assign(_group=rows[key]), labels, draws, rng)
-                        - _event_share_draws(prev_rows.assign(_group=prev_rows[key]), labels, draws, rng))
-                lo, hi = np.percentile(diff, [2.5, 97.5], axis=0)
-                p = bootstrap_p(diff)
                 j = [labels.index(x) for x in fam]
-                qv, rej, _t = bh(p[j]) if fam else (np.array([]), np.array([], dtype=bool), math.nan)
                 t.loc[fam, "tracked"] = 1
                 t.loc[fam, "tracked_reason"] = [reasons[x] for x in fam]
-                t.loc[fam, "change_ci_low_pp"], t.loc[fam, "change_ci_high_pp"] = lo[j], hi[j]
-                t.loc[fam, "change_p"], t.loc[fam, "change_q_bh"] = p[j], qv
-                t.loc[fam, "change_beyond"] = rej.astype(int)
+                both = np.ones(len(fam), dtype=bool)
+                for m in TEST_METHODS:
+                    rng = np.random.default_rng(seed)
+                    if m == "event":
+                        diff = (_event_share_draws(rows.assign(_group=rows[key]), labels, draws, rng)
+                                - _event_share_draws(prev_rows.assign(_group=prev_rows[key]), labels, draws, rng))
+                    else:
+                        diff = (pilot_share_draws(rows, key, labels, draws, rng)
+                                - pilot_share_draws(prev_rows, key, labels, draws, rng))
+                    lo, hi = np.percentile(diff, [2.5, 97.5], axis=0)
+                    p = bootstrap_p(diff)
+                    qv, rej, _t = bh(p[j]) if fam else (np.array([]), np.array([], dtype=bool), math.nan)
+                    t.loc[fam, f"change_ci_low_{m}_pp"], t.loc[fam, f"change_ci_high_{m}_pp"] = lo[j], hi[j]
+                    t.loc[fam, f"change_p_{m}"], t.loc[fam, f"change_q_bh_{m}"] = p[j], qv
+                    t.loc[fam, f"change_beyond_{m}"] = rej.astype(int)
+                    both &= rej
+                t.loc[fam, "change_beyond"] = both.astype(int)
             t = t.rename_axis("name").reset_index()
             t.insert(0, "level", level)
             t.insert(0, "complete_month", 1)
@@ -1190,7 +1216,8 @@ def monthly_metrics_tested(export: DeckdbExport, months: List[tuple[date, date]]
             out.append(t)
         prev_rows = rows
     mm = pd.concat(out, ignore_index=True)[MONTHLY_TESTED_COLUMNS]
-    mm["change_beyond"] = mm["change_beyond"].astype("Int64")
+    for col in ("change_beyond", "change_beyond_event", "change_beyond_pilot"):
+        mm[col] = mm[col].astype("Int64")
     mm["concentrated"] = mm["concentrated"].astype("Int64")
     check_monthly_metrics_tested(export, mm)
     return mm
@@ -1209,8 +1236,12 @@ def check_monthly_metrics_tested(export: DeckdbExport, mm: pd.DataFrame) -> None
     if not bad.empty:
         raise DeckdbInputError(f"monthly_metrics: monotoniczność naruszona w {len(bad)} wierszach, np. "
                                f"{bad.iloc[0][['month', 'level', 'name']].tolist()}")
-    if (mm["change_beyond"].notna() != (mm["tracked"] == 1)).any():
-        raise DeckdbInputError("monthly_metrics: change_beyond poza tracked albo brak testu przy tracked")
+    for col in ("change_beyond", "change_beyond_event", "change_beyond_pilot"):
+        if (mm[col].notna() != (mm["tracked"] == 1)).any():
+            raise DeckdbInputError(f"monthly_metrics: {col} poza tracked albo brak testu przy tracked")
+    tested = mm[mm["tracked"] == 1]
+    if (tested["change_beyond"] != (tested["change_beyond_event"] & tested["change_beyond_pilot"])).any():
+        raise DeckdbInputError("monthly_metrics: change_beyond różny od change_beyond_event AND change_beyond_pilot")
 
 
 def monthly_trend(export: DeckdbExport, months: List[tuple[date, date]], key: str, key_name: str) -> pd.DataFrame:
