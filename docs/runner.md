@@ -4,7 +4,7 @@ Dwa skrypty w katalogu głównym repo, uruchamiane bez Claude Code:
 
 | skrypt | kiedy | co robi |
 |---|---|---|
-| `metagame_week.bat` / `metagame_week.py` | poniedziałek | import tygodnia do DeckDB, triage, eksporty, weryfikacja z mtgo.com, materiały tygodnia w `weekly/<tydzień>/`, opcjonalnie build prezentacji i dokumentów |
+| `metagame_week.bat` / `metagame_week.py` | poniedziałek | import tygodnia do DeckDB, triage, eksporty, weryfikacja z mtgo.com, materiały tygodnia w `weekly/<tydzień>/`, w tygodniu zamknięcia miesiąca także paczka miesięczna `monthly/<RRRR-MM>/`, opcjonalnie build prezentacji i dokumentów |
 | `triage_check.bat` / `triage_check.py` | piątek 18:00 | import bieżącego tygodnia do dziś, triage DeckDB, raport i powiadomienie Windows; niczego nie eksportuje |
 
 Zasada obu: każdy błąd zatrzymuje przebieg z komunikatem `STOP [kod]: ...` i niezerowym kodem wyjścia. Nie ma
@@ -22,6 +22,8 @@ metagame_week.bat --week 2026-W44
 metagame_week.bat --week 2026-W44 --stage build
 metagame_week.bat --week 2026-W44 --stage all --force
 E:\github\.venv\Scripts\python.exe metagame_week.py --week 2026-W43 --test-monthly --force
+metagame_week.bat --month 2026-10
+metagame_week.bat --month 2026-10 --force
 ```
 
 | argument | znaczenie |
@@ -29,7 +31,8 @@ E:\github\.venv\Scripts\python.exe metagame_week.py --week 2026-W43 --test-month
 | `--week RRRR-Wnn` | tydzień ISO; domyślnie ostatni zakończony; tydzień niezakończony = stop |
 | `--stage data\|build\|all` | domyślnie `data`; `all` = DATA, potem BUILD |
 | `--force` | zastępuje materiały istniejącego folderu tygodnia (stare pliki znikają dopiero po udanym pipeline'ie); bez niego folder z materiałami = stop. Pliki treści (`deck_w<N>.json` itd.) i `triage_check_*.md` nie liczą się jako materiały i nigdy nie są usuwane |
-| `--test-monthly` | testowy materiał miesięczny za bieżący, niepełny miesiąc tygodnia (`incomplete month`, dawne `--presentation-month`); w tygodniu zamykającym miesiąc = stop, bo ma już prawdziwy materiał miesięczny |
+| `--test-monthly` | testowy materiał miesięczny za bieżący, niepełny miesiąc tygodnia (`incomplete month`, dawne `--presentation-month`); w tygodniu zamykającym miesiąc = stop, bo ma już prawdziwy materiał miesięczny. Zostaje tylko w folderze tygodnia: `monthly/` wtedy nie powstaje |
+| `--month RRRR-MM` | tylko paczka miesięczna `monthly/<RRRR-MM>/` za pełny miesiąc, bez etapu tygodniowego (sekcja „Paczka miesięczna”); nie łączy się z `--week`, `--stage build/all` ani `--test-monthly`; istniejący folder bez `--force` = stop |
 
 Ścieżki są w `docs/runner_config.csv` (`deckdb_dir`, `deckdb_python`, `pipeline_python`, `trend_weeks` = 12).
 
@@ -62,6 +65,8 @@ E:\github\.venv\Scripts\python.exe metagame_week.py --week 2026-W43 --test-month
    (miesiąc M w tygodniu ISO z 1. dniem M+1). `outputs/presentation/` (archiwum opublikowanych folderów) nie jest
    ruszany.
 7. **Folder** `weekly/<tydzień>/` (płaski): `data.xlsx`, `notes.md`, PNG, `mtgo_snapshot_*.html`, `run_report.md`.
+8. **Paczka miesięczna** (tylko w tygodniu zamknięcia miesiąca, przed krokiem 6 zmiany reguł DeckDB miesiąca, w kroku
+   6 ten sam przebieg pipeline'u): `monthly/<RRRR-MM>/`, sekcja „Paczka miesięczna” niżej.
 
 `run_report.md`: tydzień i okno, commity obu repo i configu, wersja reguł, sha256 eksportów, eventy i listy,
 tabela weryfikacji (ID / plik / mtgo.com / daty / rozmiar), sąsiedzi, triage, materiał miesięczny, ostrzeżenia,
@@ -111,12 +116,72 @@ build_w44 jest usunięty (2026-11-02) i niepotrzebny. Po nowej synchronizacji sk
 `metagame_week.bat --week <tydzień> --stage build` i porównaj sha256 w sekcji „Skrypty build/” raportu z wersją w
 projekcie. Claude Code nie edytuje plików w `build/`; zmiany logiki przychodzą z projektu Claude.
 
+## Paczka miesięczna
+
+Paczka dla miesięcznego artykułu na metagame.info (polecenie 2026-11-03). Powstaje na dwa sposoby, tym samym kodem
+(`deckdb_folder.build_monthly_package` + `src/weekly_runner/monthly.py`):
+
+- **w tygodniu zamknięcia miesiąca** (reguła `month_for` z eb0df0b: tydzień ISO zawierający 1. dzień kolejnego
+  miesiąca; W44 -> `monthly/2026-10/`): ten sam przebieg etapu DATA, ten sam eksport i ten sam stan bazy co
+  `weekly/<tydzień>/`; w pozostałych tygodniach `monthly/` nie powstaje;
+- **osobno**: `metagame_week.bat --month 2026-10` (preflight, triage, eksport z bieżącego stanu bazy, zmiany reguł,
+  pipeline z `--deckdb-level none`, paczka; bez importu, weryfikacji mtgo.com i folderu tygodnia). Po poprawce reguł w
+  trakcie miesiąca albo do odtworzenia miesiąca, jeśli tydzień zamknięcia już przeszedł. Miesiąc niezakończony albo
+  eksport bez ostatniego dnia miesiąca = stop.
+
+Istniejący `monthly/<RRRR-MM>/` z plikami bez `--force` = stop (2), także w przebiegu tygodnia. Paczka jest składana i
+sprawdzana w `outputs/_working/runner/<tydzień albo month_RRRR-MM>/monthly_stage/`; folder docelowy jest zastępowany
+dopiero po przejściu wszystkich kontroli.
+
+Zawartość (płaski folder):
+
+| plik | treść |
+|---|---|
+| `data.xlsx` | `contents`, `m_deck_results`, `m_results_bands`, `m_list_changes`, `monthly_metrics` (okres formatu do ostatniego dnia miesiąca), `variants_month` (Deck, Variant, Lists, Top8, Trophies miesiąca; suma wariantów = talia); każdy arkusz z `rules_version`, `export_sha256`, `data_version` |
+| `m01_deck_results.png`, `m02_list_changes.png` | te same wykresy co w folderze tygodnia (m02 nie powstaje, gdy żadna zmiana list nie przeszła testów) |
+| `notes.md` | Status (miesiąc i jego okres, okres formatu do ostatniego dnia miesiąca, eventy i listy miesiąca i okresu formatu, pokrycie uczestników miesiąca, wersja reguł, sha256, `complete month`, triage, zmiany klasyfikacji od poprzedniego miesięcznego eksportu z linią `renamed`), DeckDB rule changes this month, Files, Speaker notes (tylko m01 i m02), Glossary (pełny) |
+| `README_metagame_info.md` | `docs/monthly_package_rules.md` (zasady danych dla projektu metagame.info) z nagłówkiem: data wygenerowania, commit repo, wersja reguł DeckDB |
+| `run_report_monthly.md` | wersje i commity, eksporty, triage (status z tego przebiegu), liczba talii w `m_deck_results` z testem i odrzucenia BH obu miar, kontrole, czasy kroków, komenda pipeline'u |
+
+**Poprzedni miesięczny eksport** (zmiany klasyfikacji): eksport przypisań z katalogu eksportów z ostatnim eventem
+najpóźniej w niedzielę tygodnia zamknięcia poprzedniego miesiąca (dla października: 2026-10-04). Brak takiego pliku
+(październik: najstarszy eksport kończy się 2026-10-18) = linia „none” zamiast przeniesień.
+
+**DeckDB rule changes this month** (`src/weekly_runner/rule_changes.py`): wpisy `docs/decisions.md` DeckDB z datą
+decyzji w miesiącu, których przedmiot (tabela „Przedmioty wpisów”) to talia (`deck:`, `decks:`) albo priorytety
+(`priorities:`), i których commit (ten, który dodał wpis do `docs/decisions.md`) zmienił w `rules/registry.yaml` tę
+talię (nowa talia, nazwa, archetyp, sygnatura = każdy klucz definicji poza nazwą / archetypem / wariantami / źródłami
+/ decyzjami / cechami, warianty, usunięcie) albo priorytety. O tym, czy wpis zmienia talię, decydują dane rejestru,
+nie słowa wpisu: odrzucona sygnatura, „wariant D” (bez zmian), pozycja kolejki czy zamrożenie nie trafiają na listę.
+Wpisy zastosowane w jednej partii (`apply-decisions`) z tą samą zmianą tej samej talii są jedną linią („48-52”), bo
+commit ich nie rozróżnia. Liczba list = listy miesiąca w tej talii teraz (bieżący eksport); talia usunięta ma 0. Bez
+nazw graczy. Ograniczenie: zmiana rejestru zrobiona w innym commicie niż wpis nie jest widoczna.
+
+**Kontrole** (rozjazd = stop 11, bez fallbacku), na plikach paczki wobec pliku eksportu:
+
+1. pliki i arkusze jak wyżej; każdy arkusz ma `rules_version`, `export_sha256` i `data_version` eksportu;
+2. `Period_end` arkuszy `m_*` = ostatni dzień miesiąca; suma `Lists` w `m_deck_results` = listy eksportu od
+   `Period_start` do ostatniego dnia miesiąca; `monthly_metrics` kończy się ostatnim dniem miesiąca, miesiąc ma
+   `complete_month = 1` (żadnej listy z kolejnego miesiąca);
+3. `notes.md`: linie `Month`, `Monthly material` (eventy, listy) i okresu formatu równe liczbom z eksportu dla dat;
+4. w tygodniu zamknięcia: arkusze `m_*` identyczne z arkuszami folderu tygodnia (komórka po komórce), m01 / m02
+   identyczne bajtowo;
+5. `variants_month`: talie z wariantami = talie z wariantami w eksporcie miesiąca; suma wariantów = listy, Top 8 i
+   trofea talii z eksportu;
+6. m01: kolor słupka (`Colour_geometry` w `m_results_bands`) = `Flag_sheet` = `*_BH_rejects` talii w `m_deck_results`
+   (asercja jak w b5c848c / 81b2556), talie wykresu = talie z największą liczbą list;
+7. `README_metagame_info.md` obecny i identyczny z `docs/monthly_package_rules.md` poza czterema liniami nagłówka.
+
+Testy: `E:\github\.venv\Scripts\python.exe -m pytest tests/test_monthly_package.py` (przebieg syntetyczny W44 z
+oboma folderami, W45 tylko z tygodniowym, `--month 2026-10` odtwarza paczkę W44 arkusz po arkuszu i PNG bajtowo,
+kontrole zatrzymują przy rozjeździe).
+
 ## Komunikaty błędów
 
 | kod | etap | przykład komunikatu | co zrobić |
 |---|---|---|---|
 | 1 | dowolny | `nieoczekiwany błąd` + traceback | błąd kodu runnera: zgłoś z `run_report_STOP.md` |
-| 2 | argumenty | `nie jest tygodniem ISO`, `nie jest zakończony`, `już zawiera materiały ... użyj --force`, `--test-monthly: tydzień ... zawiera` | popraw `--week`; `--force`, jeśli folder ma być zastąpiony |
+| 2 | argumenty | `nie jest tygodniem ISO`, `nie jest zakończony`, `już zawiera materiały ... użyj --force`, `folder monthly/... już istnieje`, `--test-monthly: tydzień ... zawiera`, `--month nie łączy się` | popraw `--week` / `--month`; `--force`, jeśli folder ma być zastąpiony |
 | 3 | preflight | `brak pakietu`, `brak ... (docs/runner_config.csv)`, `brak dostępu do sieci`, `docs/deckdb_config.csv ma niezacommitowane zmiany` | doinstaluj pakiet / popraw ścieżkę / sprawdź sieć / zacommituj albo cofnij config |
 | 4 | import | `backfill-raw: nieudane pobrania` z listą ID; `import: odrzucone eventy lub odmowy zapisu` | pobrania: uruchom ponownie później (mtgo.com bywa niedostępne); odmowy: rozstrzygnij w DeckDB (`data/quarantine`), runner nie nadpisuje |
 | 5 | triage | `pending_blocking, N grup(a) ... X% z M list` z listą grup | rozstrzygnij grupy w aplikacji przeglądu DeckDB, zastosuj decyzje (cykl `/tydzien`), uruchom runner ponownie |
@@ -124,6 +189,7 @@ projekcie. Claude Code nie edytuje plików w `build/`; zmiany logiki przychodzą
 | 7 | mtgo.com | `brak w eksporcie: <ID>`, `brak na mtgo.com: <ID>`, `data różna o więcej niż 1 dzień`, `brak linków ... (zmiana struktury strony?)`, `po 4 próbach` | brak w eksporcie: sprawdź import (event mógł wystartować po listingu, uruchom ponownie); nadmiarowy: sprawdź event na mtgo.com; struktura strony: obejrzyj `mtgo_snapshot_*.html` w `outputs/_working/runner/<tydzień>/snapshots/` |
 | 8 | pipeline | `pipeline (input mode deckdb): kod wyjścia 2` z końcem logu | błąd danych w pipeline'ie (np. `DeckdbInputError`): log w `logs/pipeline.log` |
 | 9 | folder | `kopia ... różni się`, `ma podkatalogi` | błąd dysku albo zmiana pipeline'u: zgłoś |
+| 11 | paczka miesięczna | `kontrola paczki miesięcznej: ...` (np. `notes.md: miesiąc ...`, `m01 <talia>: kolor ...`, `README_metagame_info.md różny`), `nie znaleziono commitu, który dodał wpis` | rozjazd danych albo zmiana kodu: raport `run_report_monthly_STOP.md` w `outputs/_working/runner/...`; folder `monthly/` zostaje bez zmian |
 | 10 | build | `brak skryptów buildu`, `brak plików treści`, `pptxgenjs niedostępny`, `brak ... validate.py`, `build/<skrypt>: kod wyjścia`, `qa.py: N FAIL` | wgraj brakujące pliki / wymagania jednorazowe wyżej; FAIL: popraw treść tygodnia |
 
 ## Piątkowy alarm triage'u
@@ -163,8 +229,11 @@ Ostatni wynik zadania (kolumna „Wynik ostatniego uruchomienia”) to kod wyjś
 
 - `weekly/<tydzień>/`: materiały tygodnia (poza gitem, `.gitignore`), pliki treści, `out/` z buildu,
   `triage_check_*.md`;
-- `weekly/runs.csv`: data, tydzień, etap, status (`OK` / `STOP <kod>`), sha256 eksportu, wersja reguł, eventy, listy,
-  status triage'u (stop z kodem 2 nie jest zapisywany);
+- `monthly/<RRRR-MM>/`: paczka miesięczna (poza gitem, `.gitignore`);
+- `weekly/runs.csv`: data, tydzień (przy `--month`: miesiąc), etap (`data` / `build` / `all` / `month`), status
+  (`OK` / `STOP <kod>`), sha256 eksportu, wersja reguł, eventy, listy (tygodnia; przy `--month` miesiąca), status
+  triage'u, `monthly_folder` (ścieżka paczki albo pusta; plik bez tej kolumny dostaje ją przy następnym przebiegu)
+  (stop z kodem 2 nie jest zapisywany);
 - `outputs/_working/runner/<tydzień>/`: logi, raport `backfill-raw`, kopia configu, eksporty tymczasowe, snapshoty,
   wyjście pipeline'u;
 - `outputs/_working/reference/<tydzień>/`: wzorzec do porównań (kontrola runnera),

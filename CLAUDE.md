@@ -47,11 +47,16 @@ The PowerShell scripts default to `E:/github/.venv/Scripts/python.exe` and fall 
 ```bat
 metagame_week.bat                                  rem stage DATA, last complete ISO week -> weekly/<week>/
 metagame_week.bat --week 2026-W44 --stage all      rem + build/ scripts (Claude project, never edited here)
+metagame_week.bat --month 2026-10                  rem monthly package monthly/2026-10/ only (no week stage)
 triage_check.bat                                   rem Friday alarm: exit 0 complete, 1 notice, 2 blocking, 3 error
 ```
 
 Everything (stages, stop codes, Task Scheduler XML, pptx validator path for `qa.py --validator`) is in `docs/runner.md`; code in
-`src/weekly_runner/`. The runner never commits and never writes `docs/decisions.md`; `outputs/presentation/` is the
+`src/weekly_runner/`. In the week closing a month (ISO week with the 1st of the next month) the same DATA run also
+writes `monthly/<YYYY-MM>/` (gitignored) for the metagame.info article: m01/m02, `data.xlsx` (m_* sheets identical
+to the week folder's, monthly_metrics, variants_month), `notes.md` (incl. "DeckDB rule changes this month" from the
+DeckDB registry diff of each decisions.md entry), `README_metagame_info.md` (= `docs/monthly_package_rules.md` +
+header), `run_report_monthly.md`; checks stop with code 11. The runner never commits and never writes `docs/decisions.md`; `outputs/presentation/` is the
 archive of published folders and is not written by it.
 
 ### Pilot identity CLI

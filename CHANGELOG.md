@@ -3,6 +3,26 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-03 - Monthly package monthly/<YYYY-MM>/ for metagame.info
+
+- What: the week runner's DATA stage writes, in the week closing a month (rule `month_for` of eb0df0b), a second flat
+  folder `monthly/<YYYY-MM>/` from the same pipeline run, export and database state as `weekly/<week>/`: `data.xlsx`
+  (contents, m_deck_results, m_results_bands, m_list_changes, monthly_metrics, new variants_month), m01 / m02,
+  `notes.md` (Status with month, format period, events / lists of both, coverage, rules version, sha256, "complete
+  month", classification changes since the previous monthly export; new section "DeckDB rule changes this month";
+  Files; Speaker notes m01 / m02 only; full Glossary), `README_metagame_info.md` (new `docs/monthly_package_rules.md`
+  with a header: generated, pipeline commit, DeckDB rules version) and `run_report_monthly.md`. `metagame_week.py
+  --month YYYY-MM` rebuilds one month with the same code (no week stage; existing folder without `--force` = stop).
+  Pipeline: `--monthly-package`, `--monthly-rule-changes`, `--deckdb-level none`
+  (`deckdb_folder.build_monthly_package`). Runner: `src/weekly_runner/monthly.py` (checks, README, report) and
+  `rule_changes.py` (deck-changing DeckDB entries of the month from the registry diff of the commit that recorded each
+  entry). Checks (stop 11): stamps, end date = last day of the month and no list of the next month, notes.md counts =
+  export, m_* sheets and m01 / m02 identical to the week folder's, variant sums = deck, m01 colour = BH flags, README
+  = rules file below its header. `weekly/runs.csv` gets the column `monthly_folder` (old files migrated), `monthly/` in
+  `.gitignore`. Tests `tests/test_monthly_package.py`; `docs/runner.md` section "Paczka miesięczna".
+- Why: order of 2026-11-03 (monthly package for the metagame.info project), points 1-8.
+- Output files changed: new `monthly/<YYYY-MM>/`; the week folder is unchanged in content.
+
 ## 2026-11-02 - Week runner: build_w44 scripts, qa.py --validator, no junction
 
 - What: `build/` replaced by the build_w44 version (sha256 of the 6 files checked against the order of 2026-11-02).

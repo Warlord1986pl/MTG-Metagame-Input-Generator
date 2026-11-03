@@ -19,30 +19,57 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
-from . import mtgo_check
-from .common import (EXIT_ARGS, EXIT_BUILD, EXIT_EXPORT, EXIT_FOLDER, EXIT_IMPORT, EXIT_PIPELINE, EXIT_PREFLIGHT,
-                     EXIT_TRIAGE, EXIT_UNEXPECTED, REPO, StepLog, Stop, backfill_and_import, check_network, git_out,
-                     git_state, iso_label, last_complete_week, load_runner_config, parse_week, probe, run, sha256)
+from . import monthly as mo
+from . import mtgo_check, rule_changes
+from .common import (EXIT_ARGS, EXIT_BUILD, EXIT_EXPORT, EXIT_FOLDER, EXIT_IMPORT, EXIT_MONTHLY, EXIT_PIPELINE,
+                     EXIT_PREFLIGHT, EXIT_TRIAGE, EXIT_UNEXPECTED, REPO, StepLog, Stop, backfill_and_import,
+                     check_network, git_out, git_state, iso_label, last_complete_week, load_runner_config, parse_week,
+                     probe, run, sha256)
 
 PIPELINE_PACKAGES = ("pandas", "numpy", "matplotlib", "openpyxl", "PyYAML", "requests")
 DATA_OUTPUTS = ("data.xlsx", "notes.md", "run_report.md")  # plus *.png and mtgo_snapshot_*.html
 BUILD_SCRIPTS = ("analysis.py", "build_deck.js", "gen_dossier.py", "build_docs.py", "qa.py", "README_workflow.md")
 CONTENT_FILES = ("deck_w{n}.json", "dossier_w{n}.src.md", "reddit_w{n}.md", "youtube_w{n}.md", "x_w{n}.md")
 CONFIG_REL = "docs/deckdb_config.csv"
-RUNS_COLUMNS = ("data", "tydzien", "etap", "status", "sha256_eksportu", "wersja_regul", "eventy", "listy", "triage")
+RUNS_COLUMNS = ("data", "tydzien", "etap", "status", "sha256_eksportu", "wersja_regul", "eventy", "listy", "triage",
+                "monthly_folder")
 
 
 class WeekRun:
-    def __init__(self, week: str, weekly_root: Path, force: bool, test_monthly: bool, today: date):
-        self.week = week
-        self.mon, self.sun = parse_week(week)
-        self.dir = weekly_root / week
+    """One run of the runner: the week *week* (stage DATA / BUILD; in the week closing a month also the monthly
+    package monthly/<YYYY-MM>/), or with *month* only the monthly package of that month (metagame_week.py --month)."""
+
+    def __init__(self, week: Optional[str], weekly_root: Path, force: bool, test_monthly: bool, today: date,
+                 monthly_root: Optional[Path] = None, month: Optional[str] = None, work_root: Optional[Path] = None):
+        self.month_only = month is not None
+        if self.month_only:
+            self.week = month
+            self.mon, self.sun = mo.month_bounds(month)
+            self.dir = None
+            self.month = month
+        else:
+            self.week = week
+            self.mon, self.sun = parse_week(week)
+            self.dir = weekly_root / week
+            # the week that contains the first day of a month makes the monthly package of the month before
+            self.month = None if test_monthly else mo.closing_month(self.sun)
         self.weekly_root = weekly_root
-        self.work = REPO / "outputs" / "_working" / "runner" / week
+        self.monthly_root = monthly_root or REPO / "monthly"
+        self.work = (work_root or REPO / "outputs" / "_working" / "runner") / (
+            f"month_{month}" if self.month_only else week)
+        self.cache_dir = REPO / "outputs" / "cache" / "mtgo_json" / "modern"
         self.force, self.test_monthly, self.today = force, test_monthly, today
         self.log = StepLog()
         self.facts: Dict[str, object] = {}
         self.cfg: Dict[str, str] = {}
+
+    @property
+    def monthly_dir(self) -> Optional[Path]:
+        return self.monthly_root / self.month if self.month else None
+
+    def monthly_outputs(self) -> List[Path]:
+        d = self.monthly_dir
+        return sorted(p for p in d.iterdir() if p.is_file()) if d is not None and d.exists() else []
 
     # --- DATA ---------------------------------------------------------------------------------------------------
 
@@ -52,7 +79,21 @@ class WeekRun:
         return sorted(p for p in self.dir.iterdir() if p.is_file() and (
             p.name in DATA_OUTPUTS or p.suffix == ".png" or p.name.startswith("mtgo_snapshot_")))
 
+    def check_monthly_folder(self) -> None:
+        existing = self.monthly_outputs()
+        if existing and not self.force:
+            raise Stop(EXIT_ARGS, f"folder {self.monthly_dir} już istnieje ({len(existing)} plików, np. "
+                                  f"{existing[0].name}); użyj --force, aby go zastąpić")
+
+    def check_args_month(self) -> None:
+        if self.sun >= self.today:
+            raise Stop(EXIT_ARGS, f"miesiąc {self.month} ({self.mon} .. {self.sun}) nie jest zakończony (dziś "
+                                  f"{self.today}); paczka miesięczna tylko za pełny miesiąc")
+        self.check_monthly_folder()
+
     def check_args(self) -> None:
+        if self.month:
+            self.check_monthly_folder()
         if self.sun >= self.today:
             raise Stop(EXIT_ARGS, f"tydzień {self.week} ({self.mon} .. {self.sun}) nie jest zakończony "
                                   f"(dziś {self.today}); runner pracuje na zakończonych tygodniach ISO")
@@ -110,7 +151,7 @@ class WeekRun:
         state = json.loads(Path(res["triage_json"]).read_text(encoding="utf-8"))
         self.facts["triage"] = state
         self.facts["triage_path"] = res["triage_json"]
-        if state["last_challenge"] > self.sun.isoformat():
+        if state["last_challenge"] > self.sun.isoformat() and not self.month_only:
             self.log.warn(f"baza ma już Challenge do {state['last_challenge']}: triage opisuje stan bazy (tydzień "
                           f"{state['week']['iso_week']}), nie tydzień {self.week}")
         if state["status"] == "pending_blocking":
@@ -174,12 +215,22 @@ class WeekRun:
             self.log.warn(w)
         self.facts["mtgo"] = v
 
+    def rule_changes(self) -> None:
+        """The deck-changing DeckDB entries of the month (weekly_runner/rule_changes.py) for notes.md."""
+        rows = rule_changes.month_rule_changes(Path(self.cfg["deckdb_dir"]), *mo.month_bounds(self.month))
+        self.facts["rule_changes_csv"] = rule_changes.write_csv(rows, self.work / f"rule_changes_{self.month}.csv")
+        self.facts["rule_changes"] = len(rows)
+
+    def config_text(self) -> str:
+        return git_out(REPO, "show", f"{self.facts['config_commit']}:{CONFIG_REL}")
+
     def pipeline(self) -> None:
-        cfg_text = git_out(REPO, "show", f"{self.facts['config_commit']}:{CONFIG_REL}")
+        cfg_text = self.config_text()
         cfg = {r["key"]: r["value"] for r in csv.DictReader(io.StringIO(cfg_text))}
         cfg["export_path"] = self.facts["export"]["assignments"].as_posix()  # the week's parameters, nothing else
         cfg["cards_path"] = self.facts["export"]["cards"].as_posix()
         cfg_path = self.work / "deckdb_config.csv"
+        self.work.mkdir(parents=True, exist_ok=True)
         with cfg_path.open("w", encoding="utf-8", newline="") as f:
             w = csv.writer(f, lineterminator="\n")
             w.writerow(["key", "value"])
@@ -189,10 +240,22 @@ class WeekRun:
             shutil.rmtree(base)
         cmd = [self.cfg["pipeline_python"], REPO / "src" / "metagame_input_generator.py", "--input-mode", "deckdb",
                "--as-of", self.sun.isoformat(), "--trend-weeks", self.cfg["trend_weeks"], "--deckdb-config", cfg_path,
-               "--outputs-base", base, "--deckdb-cache-dir", REPO / "outputs" / "cache" / "mtgo_json" / "modern"]
+               "--outputs-base", base, "--deckdb-cache-dir", self.cache_dir]
         if self.test_monthly:
             cmd += ["--presentation-month", self.sun.strftime("%Y-%m")]
+        if self.month_only:
+            cmd += ["--deckdb-level", "none"]
+        if self.month:  # the same pipeline run, the same export: week folder and monthly package together
+            cmd += ["--monthly-package", self.month, "--monthly-rule-changes", self.facts["rule_changes_csv"]]
         run(cmd, REPO, self.work / "logs" / "pipeline.log", EXIT_PIPELINE, "pipeline (input mode deckdb)")
+        self.facts["pipeline_cmd"] = " ".join(str(c) for c in cmd)
+        if self.month:
+            msrc = base / "monthly" / self.month
+            if not (msrc / "data.xlsx").exists() or not (msrc / "notes.md").exists():
+                raise Stop(EXIT_PIPELINE, f"pipeline nie zapisał pakietu miesięcznego {msrc} (data.xlsx, notes.md)")
+            self.facts["monthly_src"] = msrc
+        if self.month_only:
+            return
         src = base / "presentation" / self.week
         if not (src / "data.xlsx").exists() or not (src / "notes.md").exists():
             raise Stop(EXIT_PIPELINE, f"pipeline nie zapisał folderu {src} (data.xlsx, notes.md)")
@@ -216,6 +279,39 @@ class WeekRun:
         if bad:
             raise Stop(EXIT_FOLDER, f"kopia do {self.dir} różni się od {src}: {bad}")
         self.facts["files"] = [p.name for p in files]
+
+    def monthly_folder(self) -> None:
+        """monthly/<YYYY-MM>/: the pipeline's package + README_metagame_info.md, assembled and checked in the work
+        directory first (docs/runner.md, checks of the monthly package); the folder is replaced only when every check
+        passes. In the week closing the month the m_* sheets and m01/m02 must equal the week folder's."""
+        src: Path = self.facts["monthly_src"]
+        if any(p.is_dir() for p in src.iterdir()):
+            raise Stop(EXIT_MONTHLY, f"{src} ma podkatalogi; pakiet miesięczny jest płaski")
+        stage = self.work / "monthly_stage" / self.month
+        if stage.exists():
+            shutil.rmtree(stage)
+        stage.mkdir(parents=True)
+        for p in sorted(src.iterdir()):
+            shutil.copy2(p, stage / p.name)
+        mo.write_readme(stage, datetime.now(), self.facts["pipeline_commit"], self.facts["rules_version"],
+                        mo.rules_path())
+        checks = mo.Checks()
+        self.facts["monthly_checks"] = checks
+        mo.check_package(stage, self.month, self.facts["export"]["assignments"], self.facts["rules_version"],
+                         self.facts["export_sha"]["assignments"], self.facts["data_version"], mo.rules_path(),
+                         week_folder=None if self.month_only else self.dir, checks=checks)
+        dest = self.monthly_dir
+        dest.mkdir(parents=True, exist_ok=True)
+        for p in self.monthly_outputs():  # --force (checked at the start)
+            p.unlink()
+        staged = sorted(stage.iterdir())
+        for p in staged:
+            shutil.copy2(p, dest / p.name)
+        bad = [p.name for p in staged if sha256(p) != sha256(dest / p.name)]
+        if bad:
+            raise Stop(EXIT_MONTHLY, f"kopia do {dest} różni się od {stage}: {bad}")
+        self.facts["monthly_folder"] = dest
+        self.facts["monthly_files"] = [p.name for p in staged]
 
     # --- BUILD --------------------------------------------------------------------------------------------------
 
@@ -349,11 +445,14 @@ def report(r: WeekRun, stage: str, stop: Optional[Stop]) -> str:
         t = f["triage"]
         out += [f"- Triage: {t['status']}, {t['pending_groups']} grup czekających "
                 f"({t['waiting_share_of_week']:.1%} list {t['week']['iso_week']}); plik `{Path(f['triage_path']).name}`"]
-    if "pipeline_cmd" in f:
-        monthly = f["monthly"] or ""
+    if "pipeline_cmd" in f and not r.month_only:
+        monthly = f.get("monthly") or ""
         out += ["- Materiał miesięczny: " + ("brak (tydzień nie zawiera pierwszego dnia miesiąca)"
                                              if not monthly or monthly.startswith("not included")
                                              else f"tak, {monthly} (z notes.md)")]
+    if r.month and not r.month_only:
+        out += ["- Paczka miesięczna: " + (f"`{f['monthly_folder']}` (raport `{mo.REPORT_NAME}` w folderze)"
+                                          if "monthly_folder" in f else f"{r.monthly_dir} nie powstała")]
     if "mtgo" in f:
         v = f["mtgo"]
         out += ["", "## Weryfikacja mtgo.com", "",
@@ -392,11 +491,28 @@ def report(r: WeekRun, stage: str, stop: Optional[Stop]) -> str:
     return "\n".join(out) + "\n"
 
 
+def _migrate_runs(path: Path) -> None:
+    """runs.csv written before the column monthly_folder: add it (empty) to the header and every row."""
+    with path.open(encoding="utf-8", newline="") as fh:
+        rows = list(csv.reader(fh))
+    if not rows or tuple(rows[0]) == RUNS_COLUMNS:
+        return
+    if tuple(rows[0]) != RUNS_COLUMNS[:-1]:
+        raise Stop(EXIT_FOLDER, f"{path}: nagłówek {rows[0]}, oczekiwany {list(RUNS_COLUMNS)}")
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(RUNS_COLUMNS)
+        w.writerows(row + [""] for row in rows[1:])
+
+
 def append_run(r: WeekRun, stage: str, stop: Optional[Stop]) -> None:
     path = r.weekly_root / "runs.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     new = not path.exists()
+    if not new:
+        _migrate_runs(path)
     f = r.facts
+    folder = f.get("monthly_folder")
     with path.open("a", encoding="utf-8", newline="") as fh:
         w = csv.writer(fh, lineterminator="\n")
         if new:
@@ -404,37 +520,79 @@ def append_run(r: WeekRun, stage: str, stop: Optional[Stop]) -> None:
         w.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), r.week, stage,
                     "OK" if stop is None else f"STOP {stop.code}", (f.get("export_sha") or {}).get("assignments", ""),
                     f.get("rules_version", ""), f.get("events", ""), f.get("lists", ""),
-                    (f.get("triage") or {}).get("status", "")])
+                    (f.get("triage") or {}).get("status", ""), Path(folder).as_posix() if folder else ""])
+
+
+def write_monthly_report(r: WeekRun, stop: Optional[Stop]) -> Optional[Path]:
+    """run_report_monthly.md in monthly/<YYYY-MM>/ when the package was made, otherwise
+    run_report_monthly_STOP.md in the work directory; None when the run has no monthly package or stopped before
+    the package was started (the week's report says why)."""
+    f = r.facts
+    if not r.month or ("rule_changes_csv" not in f and not r.month_only):
+        return None
+    ok = stop is None and "monthly_folder" in f
+    text = mo.report(r.month, ok, stop, f, f.get("monthly_checks") or mo.Checks(), r.log.steps,
+                     f.get("versions") or {}, f.get("triage"),
+                     "metagame_week.py --month" if r.month_only else f"przebieg tygodnia {r.week}")
+    dest = (r.monthly_dir / mo.REPORT_NAME) if ok else (r.work / "run_report_monthly_STOP.md")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(text, encoding="utf-8")
+    return dest
 
 
 def main(argv: Optional[List[str]] = None, today: Optional[date] = None) -> int:
     today = today or date.today()
     ap = argparse.ArgumentParser(prog="metagame_week.py", description="Runner tygodnia (docs/runner.md)")
     ap.add_argument("--week", default=None, help="RRRR-Wnn, domyślnie ostatni zakończony tydzień ISO")
+    ap.add_argument("--month", default=None, metavar="RRRR-MM",
+                    help="tylko paczka miesięczna monthly/<RRRR-MM>/ za pełny miesiąc (bez etapu tygodniowego)")
     ap.add_argument("--stage", choices=["data", "build", "all"], default="data")
-    ap.add_argument("--force", action="store_true", help="zastąp materiały istniejącego folderu tygodnia")
+    ap.add_argument("--force", action="store_true",
+                    help="zastąp materiały istniejącego folderu tygodnia / pakietu miesięcznego")
     ap.add_argument("--test-monthly", action="store_true",
                     help="testowy materiał miesięczny za bieżący, niepełny miesiąc ('incomplete month')")
     ap.add_argument("--weekly-root", default=str(REPO / "weekly"), help=argparse.SUPPRESS)  # tests
+    ap.add_argument("--monthly-root", default=str(REPO / "monthly"), help=argparse.SUPPRESS)  # tests
     a = ap.parse_args(argv)
-    week = a.week or last_complete_week(today)
+    if a.month and (a.week or a.stage != "data" or a.test_monthly):
+        print(f"STOP [{EXIT_ARGS}]: --month nie łączy się z --week, --stage build/all ani --test-monthly",
+              file=sys.stderr)
+        return EXIT_ARGS
+    week = None if a.month else (a.week or last_complete_week(today)).upper()
     try:
-        r = WeekRun(week.upper(), Path(a.weekly_root), a.force, a.test_monthly, today)
+        r = WeekRun(week, Path(a.weekly_root), a.force, a.test_monthly, today, Path(a.monthly_root), a.month)
     except Stop as e:
         print(f"STOP [{e.code}]: {e.message}", file=sys.stderr)
         return e.code
+    return execute(r, "month" if a.month else a.stage)
+
+
+def execute(r: WeekRun, stage: str) -> int:
+    """The steps of *stage* (data / build / all, or month for --month), the reports and the row of runs.csv."""
     stop: Optional[Stop] = None
     try:
-        if a.stage in ("data", "all"):
+        if stage == "month":
+            r.log.run("argumenty i folder", r.check_args_month)
+            r.log.run("preflight", r.preflight)
+            r.log.run("triage (DeckDB)", r.triage)
+            r.log.run("eksport (DeckDB)", r.export)
+            r.log.run("zmiany reguł DeckDB miesiąca", r.rule_changes)
+            r.log.run("pipeline", r.pipeline)
+            r.log.run("pakiet miesięczny", r.monthly_folder)
+        if stage in ("data", "all"):
             r.log.run("argumenty i folder", r.check_args)
             r.log.run("preflight", r.preflight)
             r.log.run("pobranie i import (DeckDB)", r.import_lists)
             r.log.run("triage (DeckDB)", r.triage)
             r.log.run("eksport (DeckDB)", r.export)
             r.log.run("weryfikacja mtgo.com", r.verify_mtgo)
+            if r.month:
+                r.log.run("zmiany reguł DeckDB miesiąca", r.rule_changes)
             r.log.run("pipeline", r.pipeline)
             r.log.run("folder tygodnia", r.folder)
-        if a.stage in ("build", "all"):
+            if r.month:
+                r.log.run("pakiet miesięczny", r.monthly_folder)
+        if stage in ("build", "all"):
             if not r.cfg:
                 r.cfg = load_runner_config()
             r.log.run("build", r.build)
@@ -446,20 +604,26 @@ def main(argv: Optional[List[str]] = None, today: Optional[date] = None) -> int:
 
         stop = Stop(EXIT_UNEXPECTED, "nieoczekiwany błąd\n" + traceback.format_exc())
         print(f"\nSTOP [{stop.code}]: {stop.message}", file=sys.stderr)
-    text = report(r, a.stage, stop)
-    if stop is not None:
-        dest = r.work / "run_report_STOP.md"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(text, encoding="utf-8")
-    elif a.stage == "build":  # the DATA report stays; the build section is appended to it
-        dest = r.dir / "run_report.md"
-        body = text.split("\n", 1)[1]
-        with dest.open("a", encoding="utf-8") as fh:
-            fh.write(f"\n# Etap BUILD ({datetime.now().strftime('%Y-%m-%d %H:%M')})\n{body}")
+    monthly_report = write_monthly_report(r, stop) if stage in ("data", "all", "month") else None
+    dest: Optional[Path] = None
+    if stage == "month":
+        dest = monthly_report
     else:
-        dest = r.dir / "run_report.md"
-        dest.write_text(text, encoding="utf-8")
+        text = report(r, stage, stop)
+        if stop is not None:
+            dest = r.work / "run_report_STOP.md"
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(text, encoding="utf-8")
+        elif stage == "build":  # the DATA report stays; the build section is appended to it
+            dest = r.dir / "run_report.md"
+            body = text.split("\n", 1)[1]
+            with dest.open("a", encoding="utf-8") as fh:
+                fh.write(f"\n# Etap BUILD ({datetime.now().strftime('%Y-%m-%d %H:%M')})\n{body}")
+        else:
+            dest = r.dir / "run_report.md"
+            dest.write_text(text, encoding="utf-8")
     if stop is None or stop.code != EXIT_ARGS:
-        append_run(r, a.stage, stop)
-    print(f"\nRaport: {dest}")
+        append_run(r, stage, stop)
+    print(f"\nRaport: {dest}" + (f"\nRaport paczki miesięcznej: {monthly_report}"
+                                  if monthly_report and stage != "month" else ""))
     return 0 if stop is None else stop.code

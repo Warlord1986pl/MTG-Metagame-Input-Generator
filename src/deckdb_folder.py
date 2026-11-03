@@ -111,6 +111,25 @@ MONTH_SHEETS = {
                        "BH_rejects",
     "m_list_changes": "every reported list change of the month vs the month before (mana-only lands flagged)",
 }
+# The monthly package for metagame.info (order of 2026-11-03): monthly/<YYYY-MM>/ next to the week folder of the week
+# closing month M (month_for), from the same export; or alone (metagame_week.py --month). Flat; README_metagame_info.md
+# and run_report_monthly.md are added by the runner.
+MONTHLY_ROOT = "monthly"
+PACKAGE_SHEETS = ("m_deck_results", "m_results_bands", "m_list_changes", "monthly_metrics", "variants_month")
+PACKAGE_EXTRA_SHEETS = {
+    "variants_month": "Top 32 lists, Top 8 lists and trophies of the month per variant of every deck with variants (a "
+                      "list without a variant: '(no variant)'); the variant sums equal the deck's counts",
+}
+PACKAGE_FILES = {
+    **MONTH_FILES,
+    "data.xlsx": "every table of the package, one sheet each; the first sheet 'contents' lists them",
+    "notes.md": "Status (month, periods, events, lists, coverage, rules version, export sha256, triage, classification "
+                "changes since the previous monthly export), DeckDB rule changes this month, Files, Speaker notes (m01, "
+                "m02), Glossary",
+    "README_metagame_info.md": "rules of use of the package for the metagame.info article (docs/monthly_package_rules.md "
+                               "with a header: generated, pipeline commit, DeckDB rules version)",
+    "run_report_monthly.md": "runner report: versions and commits, checks of the package, triage, step times",
+}
 FOLDER_TERMS = ("event", "Challenge Top 32", dm.M_SHARE, dm.M_PRESENCE, dm.M_TOP_WEEK, dm.M_OTHER, di.NO_DECK_LABEL, dm.M_CHANGE,
                 dm.M_CHANGE_CI, dm.M_TRACKED, dm.M_CHANGE_BH, dm.M_WEEKLY_METRICS, dm.M_MONTHLY_METRICS, dm.M_WEEK_PILOTS, dm.M_WEEK_TOP8, dm.M_TROPHY, "variant label", dm.M_NEW_CARD_WEEK,
                 dm.M_PILOTS, dm.M_COVERAGE, "week", dm.M_NOT_WEEKLY)
@@ -391,7 +410,7 @@ def _check_pilots(pilots: pd.DataFrame, wm: pd.DataFrame, week: str) -> None:
 def _workbook(export, path: Path, data: Dict[str, pd.DataFrame]) -> Path:
     """data.xlsx: the sheet 'contents' (sheet, one sentence on what it holds) first, then one sheet per table, each
     with rules_version, export_sha256 and data_version."""
-    desc = {**SHEETS, **MONTH_SHEETS}
+    desc = {**SHEETS, **MONTH_SHEETS, **PACKAGE_EXTRA_SHEETS}
     contents = pd.DataFrame([{"sheet": name, "contents": desc[name] + "."} for name in data],
                             columns=["sheet", "contents"])
     with pd.ExcelWriter(path, engine="openpyxl") as xw:
@@ -552,3 +571,179 @@ def _order(name: str) -> tuple:
     if name.startswith("m0"):
         return (1, name)
     return (2, name)
+
+
+# --- monthly package (monthly/<YYYY-MM>/) -----------------------------------------------------------------------------
+
+def month_bounds(month: str) -> tuple[date, date]:
+    try:
+        ms = date.fromisoformat(f"{month}-01")
+    except ValueError:
+        raise di.DeckdbInputError(f"miesiąc {month!r}: oczekiwany format RRRR-MM") from None
+    return ms, (ms + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+
+def closing_sunday(month_first: date) -> date:
+    """Sunday of the ISO week that contains *month_first*: the week whose folder holds the monthly material of the
+    month before (month_for)."""
+    return month_first + timedelta(days=6 - month_first.weekday())
+
+
+def variants_month(rows: pd.DataFrame) -> pd.DataFrame:
+    """variants_month: Deck, Variant, Lists, Top8, Trophies of the month (variant_week_table on the month's rows; it
+    refuses variant sums that differ from the deck)."""
+    return di.variant_week_table(rows).rename(columns={"Lists_Top32": "Lists", "Lists_Top8": "Top8"})
+
+
+RULE_CHANGE_COLUMNS = ["entries", "date", "deck_ids", "decks", "change"]
+
+
+def read_rule_changes(path: Path) -> pd.DataFrame:
+    """The runner's CSV of the deck-changing DeckDB entries of the month (weekly_runner/rule_changes.py)."""
+    if not Path(path).exists():
+        raise di.DeckdbInputError(f"brak pliku zmian reguł DeckDB miesiąca: {path}")
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    if list(df.columns) != RULE_CHANGE_COLUMNS:
+        raise di.DeckdbInputError(f"{path}: kolumny {list(df.columns)}, oczekiwane {RULE_CHANGE_COLUMNS}")
+    return df
+
+
+RULE_CHANGE_KINDS = ("new deck", "renamed", "signature changed", "variants changed", "archetype", "priority",
+                     "removed")
+
+
+def rule_change_lines(changes: pd.DataFrame, month_rows: pd.DataFrame, ms: date, me: date) -> List[str]:
+    """One line per deck-changing DeckDB entry (or batch of entries) of the month: entry, date, what changed, lists of
+    the month that are in the deck(s) now (this export). No player names."""
+    if changes.empty:
+        return [f"No DeckDB entry dated {ms.isoformat()} .. {me.isoformat()} changed a deck or the deck priorities."]
+    counts = month_rows["material_deck"].value_counts()
+    kinds = {k: int(sum(ch.count(k) for ch in changes["change"])) for k in RULE_CHANGE_KINDS}
+    head = ", ".join(f"{k}: {v}" for k, v in kinds.items() if v)
+    out = [f"{len(changes)} line(s) from DeckDB docs/decisions.md dated {ms.isoformat()} .. {me.isoformat()} whose "
+           f"commit changed a deck or the deck priorities in rules/registry.yaml ({head}). Lists = lists of the month "
+           "in the deck now (this export); a deck that no longer exists has 0. Entries applied in one batch with the "
+           "same change are one line.", ""]
+    for r in changes.itertuples():
+        decks = [d for d in r.decks.split(";") if d]
+        lists = ", ".join(f"{d} {int(counts.get(d, 0))}" for d in decks)
+        label = "entries" if ("," in r.entries or "-" in r.entries) else "entry"
+        out.append(f"- {label} {r.entries}, {r.date}: {r.change}; lists of the month: {lists}")
+    return out
+
+
+def build_monthly_package(export: di.DeckdbExport, cfg: di.DeckdbConfig, month: str, outputs_base: Path,
+                          rule_changes: Path, triage: Optional[di.TriageState] = None,
+                          log: Callable[[str], None] = print) -> List[Path]:
+    """monthly/<YYYY-MM>/ of a complete month: m01/m02 and the m_* sheets made by the same code as in the week folder
+    (_month), plus monthly_metrics (format period up to the end of the month) and variants_month, and notes.md.
+    Refuses a month the export does not cover to its last day and a run without the card export (m02,
+    m_list_changes)."""
+    ms, me = month_bounds(month)
+    if export.last_event_date < me.isoformat():
+        raise di.DeckdbInputError(f"pakiet miesięczny {month}: eksport kończy się {export.last_event_date}, przed końcem "
+                                  f"miesiąca {me} (pakiet tylko za pełny miesiąc)")
+    if cfg.cards_path is None:
+        raise di.DeckdbInputError("pakiet miesięczny: brak cards_path (m02_list_changes, m_list_changes)")
+    di.window_rows(export, ms, me)
+    di.window_rows(export, *di.previous_month(ms))
+    fstart = di.format_period_start(cfg.format_events_path, me)[0]
+    di.window_rows(export, fstart, me)
+    changes = read_rule_changes(rule_changes)
+    cards = dc.load_cards(cfg.cards_path, export)
+    out = outputs_base / MONTHLY_ROOT / month
+    out.mkdir(parents=True, exist_ok=True)
+    for p in out.iterdir():
+        if p.is_file():
+            p.unlink()
+    dp.MARK = triage.note if triage is not None else ""
+    dp.NOTICE = triage.notice if triage is not None else ""
+    try:
+        w, notes, mdata, month_note = _month(export, cards, out, ms, me, True, fstart)
+        mrows = di.window_rows(export, ms, me)
+        data = {name: mdata[name] for name in PACKAGE_SHEETS if name in mdata}
+        data["monthly_metrics"] = di.monthly_metrics(export, fstart, me)
+        data["variants_month"] = variants_month(mrows)
+        w.append(_workbook(export, out / "data.xlsx", data))
+        status = _package_status(export, ms, me, fstart, mrows, triage, month_note)
+        w.append(_package_notes(export, out, month, status, rule_change_lines(changes, mrows, ms, me), notes,
+                                list(data)))
+    finally:
+        dp.MARK = dp.NOTICE = ""
+    for p in w:
+        log(f"[deckdb monthly package] wrote {p}")
+    return w
+
+
+def _package_status(export, ms: date, me: date, fstart: date, mrows: pd.DataFrame, triage,
+                    month_note: List[str]) -> List[str]:
+    cov = di.coverage(mrows)
+    frows = di.window_rows(export, fstart, me)
+    sunday = closing_sunday(ms)
+    prev_path = previous_export(export, sunday)
+    renames = load_renames()
+    moves, desc, renamed = classification_changes(export, prev_path, renames=renames)
+    mmoves = classification_changes(export, prev_path, ms, renames)[0] if prev_path is not None else None
+    top = (triage.note or triage.notice) if triage is not None else ""
+    lines = [f"**{top}**", ""] if top else []
+    lines += [
+        f"- Month: {ms:%Y-%m}, {ms.isoformat()} .. {me.isoformat()}, complete month",
+        f"- {month_note[0]}",
+        f"- Format period (deck results, m01): {fstart.isoformat()} .. {me.isoformat()}; events "
+        f"{int(frows['event_id'].nunique())}, Challenge Top 32 lists {len(frows)}",
+        f"- Participant coverage of the month: {cov['coverage_pct']:.1f}% ({cov['lists']} lists / "
+        f"{cov['participants']} players summed over the events)",
+        f"- {di.NO_DECK_LABEL} in the month: {int((mrows['status'] != di.STATUS_ASSIGNED).sum())} lists",
+        f"- DeckDB rules version: {export.rules_version}",
+        f"- Export: {export.path.name}, sha256 {export.sha256}",
+        f"- data_version: {export.data_version}",
+        "- Triage (DeckDB K43): " + (f"{triage.status} ({triage.path.name})" if triage is not None else "not read"),
+        f"- {month_note[1]}",
+        "", "### Classification changes since the previous monthly export", "",
+        (f"Previous monthly export: the export of the week closing {di.previous_month(ms)[0]:%Y-%m} (the latest "
+         f"export with its last event on or before {sunday.isoformat()}): " if prev_path is not None else
+         f"Previous monthly export: none (no assignment export with its last event on or before {sunday.isoformat()} "
+         "in the export directory); ") + desc + "."]
+    if prev_path is not None:
+        if renamed is not None and len(renamed):
+            lines += [""] + [f"- renamed: {r.Old} -> {r.New} ({r.Lists} lists, counted over the lists common with the "
+                             f"previous monthly export {prev_path.name}; lists newer than that export are not counted)"
+                             for r in renamed.itertuples()]
+            lines += ["", "Moves below are counted after the renames (docs/deckdb_renames.csv)."]
+        else:
+            lines += ["", "- renamed: none"]
+    for title, mv in (("All common lists", moves), (f"Lists of {ms:%Y-%m} common with that export", mmoves)):
+        if mv is not None:
+            lines += ["", f"{title}:", ""] + ([f"- {r.From} → {r.To}: {r.Lists}" for r in mv.itertuples()]
+                                              or ["- none"])
+    return lines
+
+
+def _package_notes(export, out: Path, month: str, status: List[str], rule_lines: List[str],
+                   notes: Dict[str, str], sheets: List[str]) -> Path:
+    """notes.md of the package: Status, DeckDB rule changes this month, Files, Speaker notes (m01, m02 only), Glossary
+    (every term)."""
+    present = {p.name for p in out.iterdir()} | {"data.xlsx", "notes.md", "README_metagame_info.md",
+                                                 "run_report_monthly.md"}
+    file_lines = [f"- `{name}` - {text}." for name, text in PACKAGE_FILES.items() if name in present]
+    missing = [name for name in PACKAGE_FILES if name not in present]
+    if missing:
+        file_lines += ["", "Not produced this time: " + ", ".join(f"`{name}`" for name in missing) + "."]
+    file_lines += ["", "Sheets of `data.xlsx` (after `contents`): " + ", ".join(f"`{s}`" for s in sheets) + "."]
+    mark = dp.MARK or dp.NOTICE
+    speaker = ([f"**{mark}**", ""] if mark else []) + [
+        line for name in ("m01_deck_results.png", "m02_list_changes.png") if name in notes
+        for line in (f"### {name}", "", notes[name], "")]
+    glossary = ([f"DeckDB rules `{export.rules_version}`, export `{export.path.name}`, sha256 `{export.sha256}`. "
+                 "Every data sheet carries `rules_version`, `export_sha256` and `data_version`.", ""]
+                + [f"- **{t}** - {d}" for t, d in dm.GLOSSARY + dm.CARD_GLOSSARY]
+                + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY])
+    body = ([f"# Monthly package {month}", "",
+             "MTGO Modern Challenge Top 32, input mode deckdb (DeckDB export only). Material for the monthly "
+             "metagame.info article; the rules of use are in `README_metagame_info.md`.", "",
+             "## Status", ""] + status + ["", "## DeckDB rule changes this month", ""] + rule_lines
+            + ["", "## Files", ""] + file_lines + ["", "## Speaker notes", ""] + speaker + ["## Glossary", ""]
+            + glossary)
+    p = out / "notes.md"
+    p.write_text("\n".join(body) + "\n", encoding="utf-8")
+    return p

@@ -21,6 +21,7 @@ PROBE = Path(__file__).resolve().parent / "deckdb_probe.py"
 # exit codes of metagame_week.py (docs/runner.md lists them with what to do)
 EXIT_ARGS, EXIT_PREFLIGHT, EXIT_IMPORT, EXIT_TRIAGE, EXIT_EXPORT, EXIT_MTGO, EXIT_PIPELINE, EXIT_FOLDER, EXIT_BUILD = (
     2, 3, 4, 5, 6, 7, 8, 9, 10)
+EXIT_MONTHLY = 11  # the monthly package monthly/<YYYY-MM>/ (DeckDB rule changes, copy, checks of docs/runner.md)
 EXIT_UNEXPECTED = 1  # an unexpected exception (traceback in the report)
 
 

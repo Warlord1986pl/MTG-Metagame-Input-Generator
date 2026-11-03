@@ -1664,12 +1664,29 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--deckdb-level",
-        choices=["all", "week", "month"],
+        choices=["all", "week", "month", "none"],
         default="all",
         help=(
             "tylko z --input-mode deckdb: week = materiały tygodniowe (week_<YYYY-Www>, bez wyników talii, K41); "
-            "month = materiały miesięczne (month_*, format_period_* z wynikami talii, cards_*); all = oba"
+            "month = materiały miesięczne (month_*, format_period_* z wynikami talii, cards_*); all = oba; "
+            "none = bez materiałów roboczych i folderu tygodnia (tylko --monthly-package)"
         ),
+    )
+    parser.add_argument(
+        "--monthly-package",
+        default=None,
+        metavar="YYYY-MM",
+        help=(
+            "tylko z --input-mode deckdb: dodatkowo pakiet miesięczny <outputs-base>/monthly/<RRRR-MM>/ za pełny "
+            "miesiąc (m01, m02, data.xlsx z arkuszami m_*, monthly_metrics, variants_month, notes.md); wymaga "
+            "--monthly-rule-changes i cards_path"
+        ),
+    )
+    parser.add_argument(
+        "--monthly-rule-changes",
+        default=None,
+        metavar="CSV",
+        help="z --monthly-package: CSV zmian reguł DeckDB miesiąca (runner, weekly_runner/rule_changes.py)",
     )
     parser.add_argument(
         "--allow-pending-triage",
@@ -1868,7 +1885,13 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
                  else outputs_base / "cache" / "mtgo_json" / _format_slug_for_url(args.format_name))
     if getattr(args, "deckdb_cache_dir", None) and not cache_dir.is_dir():
         raise di.DeckdbInputError(f"--deckdb-cache-dir {cache_dir} nie istnieje")
-    written = build_deckdb_materials(
+    level = getattr(args, "deckdb_level", "all")
+    monthly = getattr(args, "monthly_package", None)
+    if monthly and not getattr(args, "monthly_rule_changes", None):
+        raise di.DeckdbInputError("--monthly-package wymaga --monthly-rule-changes (CSV zmian reguł DeckDB miesiąca)")
+    if level == "none" and not monthly:
+        raise di.DeckdbInputError("--deckdb-level none tylko z --monthly-package")
+    written = [] if level == "none" else build_deckdb_materials(
         export,
         cfg,
         as_of,
@@ -1876,10 +1899,17 @@ def run_deckdb_generation(args: argparse.Namespace, log=print) -> List[Path]:
         trend_weeks=int(getattr(args, "trend_weeks", 4)),
         cache_dir=cache_dir,
         log=log,
-        level=getattr(args, "deckdb_level", "all"),
+        level=level,
         triage=triage,
     )
-    if getattr(args, "deckdb_level", "all") in ("all", "week"):  # order of 2026-10-26 k, B7: one presentation folder
+    if monthly:  # order of 2026-11-03: the monthly package monthly/<YYYY-MM>/, same export, same code as the week's m_*
+        try:
+            from deckdb_folder import build_monthly_package
+        except ModuleNotFoundError:
+            from .deckdb_folder import build_monthly_package
+        written += build_monthly_package(export, cfg, monthly, outputs_base, Path(args.monthly_rule_changes),
+                                         triage=triage, log=log)
+    if level in ("all", "week"):  # order of 2026-10-26 k, B7: one presentation folder
         try:
             from deckdb_folder import build_presentation_folder
         except ModuleNotFoundError:
