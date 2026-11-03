@@ -3,6 +3,33 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-03 - Monthly package: full set of monthly charts and measures (m03-m14)
+
+- What: `monthly/<YYYY-MM>/` gets m03-m14 (archetype / deck share with change vs the previous month, monthly trends,
+  weeks in month, month matrices, Top 8 and trophies, trophy timeline, pilots, new cards, variants) and the sheets
+  top8_month, new_cards_month, pilots_month, share_history_months_decks / _archetypes, weeks_in_month; monthly_metrics
+  of the package is now the tested long table (`di.monthly_metrics_tested`: full months from the first full month of
+  the format period, June 2026, May left out; concentrated = top pilot >= 1/3 of the lists or >= 1/2 of the Top 8
+  entries; tracked decks of the month = top 10 of M ∪ top 10 of M-1 ∪ largest deck of every uncovered archetype with
+  >= 1% in M or M-1; event bootstrap 2000 draws, the weekly seed, BH q = 0.1 separately for tracked decks and
+  archetypes; first test July vs June). Every chart is drawn only from the package's sheets
+  (`src/deckdb_month_checks.py`) and records what it drew from its matplotlib artists (`deckdb_presentation.DRAWN`);
+  the pipeline checks the record right away and the runner again on the files (`<month>.charts.json` next to the
+  package) together with the sheet checks of point 6 (stop 11, folder untouched). notes.md: Files and Speaker notes
+  m03-m14, glossary terms "tracked decks (month)", "monthly change test (BH)", "weeks in month", "trophy timeline",
+  "monthly_metrics (monthly package)", one Status line on the start of the monthly trends vs the format period of
+  m01. `docs/monthly_package_rules.md`: paragraph on month-to-month changes (beyond normal variation only after BH in
+  the tracked-deck family; untested decks as two levels with "not tested"; m07 levels without a test) and the content
+  sentence updated to m01-m14 and the new sheets.
+- Weekly materials unchanged: the shared chart functions got optional parameters (legend / subtitle / period / tick
+  / row cap) whose defaults are the weekly ones; W44 re-rendered from the same export is identical to
+  `weekly/2026-W44/` (PNG, notes.md, data.xlsx). m01 / m02 unchanged.
+- Resolution: 1920 x 1080 px at 144 dpi like the weekly charts (the order's "dpi 200" would give 2667 x 1500 px for the
+  same frame).
+- Why: order of 2026-11-03 b (monthly package: full set of monthly charts and measures).
+- Output files changed: `monthly/<YYYY-MM>/` (new charts and sheets, notes.md, README_metagame_info.md).
+- Checked on: DeckDB rules 9534f600135ceece (monthly/2026-10/ rebuilt with --month 2026-10 --force).
+
 ## 2026-11-03 - Monthly package monthly/<YYYY-MM>/ for metagame.info
 
 - What: the week runner's DATA stage writes, in the week closing a month (rule `month_for` of eb0df0b), a second flat

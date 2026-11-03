@@ -17,6 +17,7 @@ chart carries a definition, seed, sha256 or rules version.
 
 from __future__ import annotations
 
+import json
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
@@ -27,11 +28,13 @@ try:
     import deckdb_cards as dc
     import deckdb_input as di
     import deckdb_materials as dm
+    import deckdb_month_checks as mc
     import deckdb_presentation as dp
 except ModuleNotFoundError:
     from . import deckdb_cards as dc
     from . import deckdb_input as di
     from . import deckdb_materials as dm
+    from . import deckdb_month_checks as mc
     from . import deckdb_presentation as dp
 
 FOLDER_NAME = "presentation"
@@ -115,13 +118,79 @@ MONTH_SHEETS = {
 # closing month M (month_for), from the same export; or alone (metagame_week.py --month). Flat; README_metagame_info.md
 # and run_report_monthly.md are added by the runner.
 MONTHLY_ROOT = "monthly"
-PACKAGE_SHEETS = ("m_deck_results", "m_results_bands", "m_list_changes", "monthly_metrics", "variants_month")
+PACKAGE_SHEETS = ("m_deck_results", "m_results_bands", "m_list_changes", "monthly_metrics", "variants_month",
+                  "top8_month", "new_cards_month", "pilots_month", "share_history_months_decks",
+                  "share_history_months_archetypes", "weeks_in_month")
 PACKAGE_EXTRA_SHEETS = {
     "variants_month": "Top 32 lists, Top 8 lists and trophies of the month per variant of every deck with variants (a "
                       "list without a variant: '(no variant)'); the variant sums equal the deck's counts",
 }
+PACKAGE_SHEET_TEXT = {  # contents of the package's data.xlsx (the week folder keeps its own texts)
+    **PACKAGE_EXTRA_SHEETS,
+    "monthly_metrics": "every full month of the format period from its first full month up to this month x every deck "
+                       "and archetype: lists, share, events, Top 8, Top 8 events, trophies, pilots, top pilot share, "
+                       "concentration, change vs the previous month with the tracked decks and the BH-corrected "
+                       "event-bootstrap test",
+    "top8_month": "the eight Top 8 lists of every event of the month: event, date, place, deck, variant, archetype, "
+                  "winner; no players",
+    "new_cards_month": "every card whose first list of the deck in the whole export falls in the month (reported: >= 2 "
+                       "pilots this month), mana-only lands flagged",
+    "pilots_month": "the ten decks of the month: lists, Top 8 lists, distinct pilots, the top pilot's lists and Top 8 "
+                    "lists with their shares, concentration",
+    "share_history_months_decks": "share of Challenge Top 32 per full month and deck, from the first full month of the "
+                                  "format period",
+    "share_history_months_archetypes": "share of Challenge Top 32 per full month and archetype, from the first full "
+                                       "month of the format period",
+    "weeks_in_month": "share per ISO week inside the month and deck, an ISO week crossing the month boundary counted "
+                      "on the days of the month only (Partial = 1); weekly levels, no test",
+}
+MONTH_CHART_FILES = {
+    "m03_archetypes_share.png": "share of the month's Top 32 lists per archetype, with presence and change vs the "
+                                "previous month",
+    "m04_archetypes_trend.png": "share of every archetype month by month, from the first full month of the format period",
+    "m05_decks_share.png": "share of the ten most played decks of the month and of Rogue & unclassified, with presence "
+                           "and change vs the previous month; other decks in one line under the chart",
+    "m06_decks_trend.png": "share of the month's ten most played decks month by month (fixed deck colours)",
+    "m07_weeks_in_month.png": "share of the month's ten most played decks week by week inside the month (weekly levels, "
+                              "no test)",
+    "m08_month_matrix_decks.png": "counts of the month per deck: Top 32 lists, events present, Top 8 lists, events with "
+                                  "a Top 8 list, trophies",
+    "m09_month_matrix_archetypes.png": "the same counts per archetype",
+    "m10_top8_trophies.png": "Top 8 lists and trophies of the month per deck",
+    "m11_trophy_timeline.png": "every event of the month in date order with its winning deck (archetype colour, variant "
+                               "in the label); trophies per deck under the chart",
+    "m12_pilots.png": "distinct pilots and the top pilot's share for the month's ten most played decks, concentration "
+                      "marked",
+    "m13_new_cards.png": "cards appearing in a deck for the first time this month, played by at least 2 pilots this month "
+                         "(mana-only lands left out)",
+    "m14_variants.png": "variants of the decks with the most lists of the month: Top 32 and Top 8 lists per variant",
+}
+PACKAGE_GLOSSARY = [
+    ("tracked decks (month)", "the decks whose change vs the previous month is tested in month M: the top 10 of M, the "
+                              "top 10 of M-1, and for every archetype without a deck in those two top 10s its largest "
+                              "deck by lists in M when that deck has a share >= 1% in M or M-1; ties by deck name. "
+                              "Column tracked_reason: top10_month, top10_prev_month or largest_in_archetype (the first "
+                              "that applies). Every other deck is counted, never tested; describe it with its two "
+                              "levels and 'not tested'."),
+    ("monthly change test (BH)", "change of share vs the previous month (pp), 95% interval and two-sided p from an event "
+                                 "bootstrap (2000 draws, the events of each month drawn independently, the seed of the "
+                                 "weekly test); Benjamini-Hochberg q = 0.1 separately in the month's family of tracked "
+                                 "decks and in its family of archetypes (with 'Rogue & unclassified'). change_beyond = "
+                                 "1: beyond normal variation after the correction; any other change is within normal "
+                                 "variation. The first month of monthly_metrics has no previous month: no test."),
+    ("weeks in month", "the ISO weeks that meet the month, counted only on the days of the month; a week crossing the "
+                       "month boundary is marked (*, Partial = 1). Weekly levels without a test: not a trend inside "
+                       "the month."),
+    ("trophy timeline", "every event of the month in date order with the deck (variant when the list has one) of its "
+                        "winner; one dot per event, never a player name."),
+    ("monthly_metrics (monthly package)", "the package's sheet: every full month from the first full month of the format "
+                                          "period (June 2026 for the period from 2026-05-19) up to the package's month x "
+                                          "deck and x archetype; concentrated = the top pilot holds >= 1/3 of the deck's "
+                                          "lists or >= 1/2 of its Top 8 entries (as 'pilot labels')."),
+]
 PACKAGE_FILES = {
     **MONTH_FILES,
+    **MONTH_CHART_FILES,
     "data.xlsx": "every table of the package, one sheet each; the first sheet 'contents' lists them",
     "notes.md": "Status (month, periods, events, lists, coverage, rules version, export sha256, triage, classification "
                 "changes since the previous monthly export), DeckDB rule changes this month, Files, Speaker notes (m01, "
@@ -407,10 +476,10 @@ def _check_pilots(pilots: pd.DataFrame, wm: pd.DataFrame, week: str) -> None:
             raise di.DeckdbInputError(f"{week} {r.Deck}: arkusz pilots różny od weekly_metrics")
 
 
-def _workbook(export, path: Path, data: Dict[str, pd.DataFrame]) -> Path:
+def _workbook(export, path: Path, data: Dict[str, pd.DataFrame], texts: Optional[Dict[str, str]] = None) -> Path:
     """data.xlsx: the sheet 'contents' (sheet, one sentence on what it holds) first, then one sheet per table, each
     with rules_version, export_sha256 and data_version."""
-    desc = {**SHEETS, **MONTH_SHEETS, **PACKAGE_EXTRA_SHEETS}
+    desc = {**SHEETS, **MONTH_SHEETS, **PACKAGE_EXTRA_SHEETS, **(texts or {})}
     contents = pd.DataFrame([{"sheet": name, "contents": desc[name] + "."} for name in data],
                             columns=["sheet", "contents"])
     with pd.ExcelWriter(path, engine="openpyxl") as xw:
@@ -662,10 +731,26 @@ def build_monthly_package(export: di.DeckdbExport, cfg: di.DeckdbConfig, month: 
         w, notes, mdata, month_note = _month(export, cards, out, ms, me, True, fstart)
         mrows = di.window_rows(export, ms, me)
         data = {name: mdata[name] for name in PACKAGE_SHEETS if name in mdata}
-        data["monthly_metrics"] = di.monthly_metrics(export, fstart, me)
-        data["variants_month"] = variants_month(mrows)
-        w.append(_workbook(export, out / "data.xlsx", data))
+        months = di.full_months(fstart, ms)
+        data.update(_package_sheets(export, cards, mrows, ms, me, months))
+        colours = dp.Colours()
+        dp.DRAWN.clear()
+        mw, mnotes = _package_charts(export, out, data, month, ms, me, months, mrows, colours)
+        w += mw
+        notes.update(mnotes)
+        try:  # every chart m03-m14 against the sheet it was drawn from (the runner repeats it on the files)
+            mc.check_month_charts(dp.DRAWN, data, month, colours)
+        except mc.ChartMismatch as e:
+            raise di.DeckdbInputError(f"pakiet miesięczny {month}: wykres niezgodny z arkuszem: {e}") from None
+        drawn = outputs_base / MONTHLY_ROOT / f"{month}.charts.json"
+        drawn.write_text(json.dumps({k: dp.DRAWN[k] for k in mc.MONTH_CHARTS}, ensure_ascii=False, indent=1),
+                         encoding="utf-8")
+        w.append(_workbook(export, out / "data.xlsx", data, PACKAGE_SHEET_TEXT))
         status = _package_status(export, ms, me, fstart, mrows, triage, month_note)
+        status.insert(status.index(f"- {month_note[1]}") + 1,
+                      f"- Monthly trends (m04, m06) and monthly_metrics start with {months[0][0]:%B %Y}, the first full "
+                      f"month of the format period; the deck results (m01) count the format period from "
+                      f"{fstart.isoformat()}.")
         w.append(_package_notes(export, out, month, status, rule_change_lines(changes, mrows, ms, me), notes,
                                 list(data)))
     finally:
@@ -732,12 +817,12 @@ def _package_notes(export, out: Path, month: str, status: List[str], rule_lines:
     file_lines += ["", "Sheets of `data.xlsx` (after `contents`): " + ", ".join(f"`{s}`" for s in sheets) + "."]
     mark = dp.MARK or dp.NOTICE
     speaker = ([f"**{mark}**", ""] if mark else []) + [
-        line for name in ("m01_deck_results.png", "m02_list_changes.png") if name in notes
+        line for name in ("m01_deck_results.png", "m02_list_changes.png", *mc.MONTH_CHARTS) if name in notes
         for line in (f"### {name}", "", notes[name], "")]
     glossary = ([f"DeckDB rules `{export.rules_version}`, export `{export.path.name}`, sha256 `{export.sha256}`. "
                  "Every data sheet carries `rules_version`, `export_sha256` and `data_version`.", ""]
                 + [f"- **{t}** - {d}" for t, d in dm.GLOSSARY + dm.CARD_GLOSSARY]
-                + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY])
+                + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY + PACKAGE_GLOSSARY])
     body = ([f"# Monthly package {month}", "",
              "MTGO Modern Challenge Top 32, input mode deckdb (DeckDB export only). Material for the monthly "
              "metagame.info article; the rules of use are in `README_metagame_info.md`.", "",
@@ -747,3 +832,145 @@ def _package_notes(export, out: Path, month: str, status: List[str], rule_lines:
     p = out / "notes.md"
     p.write_text("\n".join(body) + "\n", encoding="utf-8")
     return p
+
+
+def _package_sheets(export, cards, mrows: pd.DataFrame, ms: date, me: date, months) -> Dict[str, pd.DataFrame]:
+    """The sheets of the monthly package besides m_*: monthly_metrics (tested), variants_month, top8_month,
+    new_cards_month, pilots_month, share_history_months_*, weeks_in_month."""
+    mm = di.monthly_metrics_tested(export, months)
+    top = mc.top_decks(mm, f"{ms:%Y-%m}")
+    nc = dc.new_cards_in_week(export, cards, ms, me)
+    nc["Mana_only_land"] = nc["oracle_id"].isin(cards.mana_only_ids or frozenset()).astype(int)
+    t8 = di.top8_table(mrows)[["EventID", "Date", "Place", "Deck", "Variant", "Archetype", "Winner"]]
+    return {
+        "monthly_metrics": mm,
+        "variants_month": variants_month(mrows),
+        "top8_month": t8,
+        "new_cards_month": nc,
+        "pilots_month": di.pilots_month(mrows, top, di.deck_archetype_map(mrows).to_dict()),
+        "share_history_months_decks": di.monthly_trend(export, months, "material_deck", "Deck"),
+        "share_history_months_archetypes": di.monthly_trend(export, months, "material_archetype", "Archetype"),
+        "weeks_in_month": di.weeks_in_month(export, ms, me),
+    }
+
+
+LEGEND_MONTH_CHANGE_ARCH = ("change vs previous month: bold colour = beyond normal variation after correction for "
+                            "multiple comparisons (archetype family)")
+TOP8_MONTH_ROWS = 15  # m10: bars for the 15 decks with the most Top 8 lists, the rest named under the chart
+LEGEND_MONTH_CHANGE = ("change vs previous month: bold colour = beyond normal variation after correction for multiple "
+                       "comparisons (tracked decks)")
+
+
+def _package_charts(export, out: Path, data: Dict[str, pd.DataFrame], month: str, ms: date, me: date, months,
+                    mrows: pd.DataFrame, colours: dp.Colours) -> tuple[List[Path], Dict[str, str]]:
+    """m03-m14, every one drawn only from the sheets in *data* (deckdb_month_checks.*_input)."""
+    mm = data["monthly_metrics"]
+    name = f"{ms:%B %Y}"
+    foot = dp.footer(ms, me, mrows)
+    tfoot = dp.footer(months[0][0], me, di.window_rows(export, months[0][0], me))
+    mtick = lambda m: date.fromisoformat(f"{m}-01").strftime("%b")  # noqa: E731
+    msub = (f"full months {months[0][0]:%B %Y} – {name} (from the first full month of the format period; May 2026 is "
+            "partial and left out)")
+    w: List[Path] = []
+    notes: Dict[str, str] = {}
+    arch_t = mc.share_input(mm, month, di.LEVEL_ARCHETYPE)
+    w.append(dp.share_chart(arch_t, "Archetype", f"Archetypes in {name}", foot, out / "m03_archetypes_share.png",
+                            colours, legend=LEGEND_MONTH_CHANGE_ARCH))
+    notes["m03_archetypes_share.png"] = (
+        f"Share of {name}'s Challenge Top 32 lists for every archetype, with the number of events it appeared in and "
+        "the change from the previous month; bold green or red marks a change beyond normal variation after the "
+        "correction for multiple comparisons" + _beyond_text(arch_t, "Archetype") + ".")
+    arch_order = list(dp.DRAWN["m03_archetypes_share.png"]["rows"][i]["label"]
+                      for i in range(len(dp.DRAWN["m03_archetypes_share.png"]["rows"])))
+    w.append(dp.trend_chart(mc.trend_input(data["share_history_months_archetypes"], "Archetype"), arch_order,
+                            "Archetype", "Archetypes month by month", tfoot, out / "m04_archetypes_trend.png",
+                            colours.of_archetype, period="Period", tick=mtick, subtitle=msub))
+    notes["m04_archetypes_trend.png"] = (
+        f"Monthly share of every archetype from {months[0][0]:%B %Y} to {name}. Only the change from the previous "
+        "month is tested (m03); read longer movements as levels, not as a tested trend.")
+    deck_t = mc.share_input(mm, month, di.LEVEL_DECK)
+    w.append(dp.share_chart(deck_t, "Deck", f"Most played decks in {name}", foot, out / "m05_decks_share.png", colours,
+                            legend=LEGEND_MONTH_CHANGE))
+    other = deck_t[deck_t["Deck"] == di.OTHER_DECKS_LABEL]
+    notes["m05_decks_share.png"] = (
+        f"The ten most played decks of {name} and Rogue & unclassified, coloured by archetype; each label gives the "
+        "share, the events with the deck and the change from the previous month, bold green or red only for a tracked "
+        "deck whose change is beyond normal variation after the correction" + _beyond_text(deck_t, "Deck") + "."
+        + (f" All other decks together are {other.iloc[0]['Share_Top32_pct']:.1f}% of the lists "
+           f"({int(other.iloc[0]['Decks_in_row'])} decks)." if not other.empty else ""))
+    top = mc.top_decks(mm, month)
+    w.append(dp.trend_chart(mc.trend_input(data["share_history_months_decks"], "Deck"), top, "Deck",
+                            "Top decks month by month", tfoot, out / "m06_decks_trend.png", colours.of_deck,
+                            period="Period", tick=mtick, subtitle=msub))
+    notes["m06_decks_trend.png"] = (f"Monthly share of {name}'s ten most played decks from {months[0][0]:%B %Y}; each "
+                                    "deck keeps its colour in every chart.")
+    wk = mc.weeks_input(data["weeks_in_month"])
+    partial = dict(zip(wk["Period"], wk["Partial"]))
+    w.append(dp.trend_chart(wk, top, "Deck", f"Top decks week by week in {name}", foot,
+                            out / "m07_weeks_in_month.png", colours.of_deck, period="Period",
+                            tick=lambda x: x.split("-")[1] + ("*" if partial[x] else ""),
+                            subtitle="weekly levels inside the month, not a test · * = ISO week cut at the month "
+                                     "boundary (days of the month only)"))
+    cut = [x.split("-")[1] for x, v in partial.items() if v]
+    notes["m07_weeks_in_month.png"] = (
+        f"Weekly share of {name}'s ten most played decks inside the month" + (f" ({', '.join(cut)} counted only on the "
+                                                                              "days of the month)" if cut else "")
+        + ". These are weekly levels without a test; they do not show a trend inside the month.")
+    w.append(dp.week_matrix(mc.matrix_input(mm, month, di.LEVEL_DECK), "Deck", f"{name} by deck", foot,
+                            out / "m08_month_matrix_decks.png", subtitle="counts for this month only"))
+    notes["m08_month_matrix_decks.png"] = (
+        f"Counts of {name} for the {dp.TOP_N_MATRIX} decks with the most lists: Top 32 lists, events with the deck, Top 8 "
+        "lists, events where it reached the Top 8, and trophies. Each column has its own colour scale; these are "
+        "counts, not rates.")
+    w.append(dp.week_matrix(mc.matrix_input(mm, month, di.LEVEL_ARCHETYPE), "Archetype", f"{name} by archetype", foot,
+                            out / "m09_month_matrix_archetypes.png", top_n=None, subtitle="counts for this month only"))
+    notes["m09_month_matrix_archetypes.png"] = "The same counts for every archetype."
+    t8 = mc.top8_input(data["top8_month"])
+    w.append(dp.top8_chart(t8, f"Top 8 and trophies in {name}", foot, out / "m10_top8_trophies.png", colours,
+                           legend="bar = Top 8 lists this month · ★ = trophies", max_rows=TOP8_MONTH_ROWS))
+    events = int(t8["EventID"].nunique())
+    notes["m10_top8_trophies.png"] = (f"How many of the {len(t8)} Top 8 lists of {name}'s {events} events each deck "
+                                      f"had; the star counts trophies. The {TOP8_MONTH_ROWS} decks with the most Top 8 "
+                                      "lists are bars, every other deck is named with its counts under the chart.")
+    win = t8[t8["Winner"] == 1][["EventID", "Date", "Deck", "Variant", "Archetype"]]
+    w.append(dp.trophy_timeline_chart(win, f"Trophies in {name}, event by event", foot,
+                                      out / "m11_trophy_timeline.png", colours))
+    tc = win["Deck"].value_counts()
+    notes["m11_trophy_timeline.png"] = (
+        f"The winning deck of each of the {events} events of {name} in date order. Most trophies: "
+        + ", ".join(f"{d} {int(tc[d])}" for d in sorted(tc.index, key=lambda d: (-tc[d], d))[:5]) + ".")
+    pm = data["pilots_month"]
+    w.append(dp.pilots_chart(pm, f"Who plays the top decks in {name}", foot, out / "m12_pilots.png", colours,
+                             legend="bar = distinct pilots this month; marked: concentration (top pilot ≥ 1/3 of the "
+                                    "lists or ≥ 1/2 of the Top 8 entries)", flag_text="concentration"))
+    conc = list(pm.loc[pm["Concentrated"] == 1, "Deck"])
+    notes["m12_pilots.png"] = (
+        f"Distinct pilots behind each of the ten most played decks of {name} and the share of the deck's lists from "
+        "its most frequent pilot. " + (f"Marked ({', '.join(conc)}): one pilot holds at least a third of the lists or "
+                                       "half of the Top 8 entries, so the deck's numbers say a lot about that pilot."
+                                       if conc else "No deck depends on one pilot this month."))
+    nc = mc.new_cards_input(data["new_cards_month"])
+    w.append(dp.new_cards_chart(nc, f"New cards in {name}", foot, out / "m13_new_cards.png",
+                                legend="first time the card appears in the deck in the whole export, played by at "
+                                       "least 2 pilots this month", empty="No new cards this month",
+                                more="new_cards_month (data.xlsx)"))
+    notes["m13_new_cards.png"] = (
+        f"{len(nc)} card(s) showed up in a deck for the first time in {name} and were played by at least 2 pilots; "
+        "'SB' marks a sideboard card, lands that only make mana are left out." if len(nc) else
+        f"No card appeared in a deck for the first time with at least 2 pilots in {name}.")
+    v = mc.variants_input(data["variants_month"])
+    w.append(dp.variants_chart(v, f"Variants of the most played decks in {name}", foot, out / "m14_variants.png",
+                               colours))
+    shown = list(dict.fromkeys(dp.DRAWN["m14_variants.png"].get("decks", [])))
+    notes["m14_variants.png"] = (
+        f"Top 32 and Top 8 lists per variant for the decks with the most lists that have variants ({', '.join(shown)})"
+        "; a variant splits a deck's lists, the deck's share is the sum." if shown else
+        f"No deck had variants in {name}.")
+    return [p for p in w if p is not None], notes
+
+
+def _beyond_text(t: pd.DataFrame, key: str) -> str:
+    hit = [f"{r[key]} {dp._pp(r['Change_pp'])}" for _, r in t.iterrows()
+           if pd.notna(r["change_beyond"]) and int(r["change_beyond"]) == 1]
+    return f" ({', '.join(hit)})" if hit else " (none this month)"
+

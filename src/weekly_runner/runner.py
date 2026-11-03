@@ -299,7 +299,8 @@ class WeekRun:
         self.facts["monthly_checks"] = checks
         mo.check_package(stage, self.month, self.facts["export"]["assignments"], self.facts["rules_version"],
                          self.facts["export_sha"]["assignments"], self.facts["data_version"], mo.rules_path(),
-                         week_folder=None if self.month_only else self.dir, checks=checks)
+                         week_folder=None if self.month_only else self.dir, checks=checks,
+                         drawn_path=src.parent / f"{self.month}.charts.json")
         dest = self.monthly_dir
         dest.mkdir(parents=True, exist_ok=True)
         for p in self.monthly_outputs():  # --force (checked at the start)

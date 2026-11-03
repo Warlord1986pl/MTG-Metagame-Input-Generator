@@ -10,7 +10,7 @@ Premier eventy (Showcase Challenge, RC Super Qualifier, Qualifier) nie wchodzą 
 
 ## Paczka miesięczna
 
-Folder monthly/<RRRR-MM>/ z runnera zawiera data.xlsx (arkusze m_deck_results, m_results_bands, m_list_changes, monthly_metrics, contents), wykresy m01_deck_results.png i m02_list_changes.png oraz notes.md (Status, Glossary, speaker notes). Każdy arkusz niesie wersję reguł DeckDB, sha256 eksportu i data_version; wszystkie muszą być identyczne.
+Folder monthly/<RRRR-MM>/ z runnera zawiera data.xlsx (arkusz contents i arkusze danych, m.in. m_deck_results, m_results_bands, m_list_changes, monthly_metrics, variants_month, top8_month, share_history_months_decks, share_history_months_archetypes, weeks_in_month), wykresy m01–m14 oraz notes.md (Status, Glossary, speaker notes). Każdy wykres jest liczony wyłącznie z arkusza paczki. Każdy arkusz niesie wersję reguł DeckDB, sha256 eksportu i data_version; wszystkie muszą być identyczne.
 
 Przed pisaniem sprawdzasz: okres miesiąca kończy się ostatnim dniem miesiąca (nie końcem tygodnia), Status mówi „complete month”, liczba eventów i list miesiąca zgadza się między Status a arkuszami. Rozbieżność zgłaszasz i nie piszesz na takich danych.
 
@@ -33,6 +33,10 @@ Percentyl ma ograniczenie: jego rzetelność obejmuje stałość pilotów talii,
 ## Zmiany list
 
 Zmiana list to zmiana udziału list wariantu talii grających kartę, miesiąc do miesiąca: w obrębie wariantu, co najmniej 10 pp, istotna po korekcie BH (q = 0.1). Lądy dające wyłącznie manę są pominięte. Podaje się dwa poziomy („8% to 69% of lists”) i liczbę pilotów z kartą.
+
+## Zmiany udziału miesiąc do miesiąca
+
+Zmianę udziału talii wobec poprzedniego miesiąca (m03, m05, kolumny change_pp i change_beyond w monthly_metrics) opisuje się jako „beyond normal variation” tylko wtedy, gdy change_beyond = 1, czyli gdy przechodzi korektę Benjaminiego-Hochberga (q = 0.1) w rodzinie tracked decks miesiąca (dla archetypów: w rodzinie archetypów). Każdą inną zmianę talii z tracked decks opisuje się jako mieszczącą się w normalnych wahaniach. Talia spoza tracked decks nie ma testu: podaje się dwa poziomy („3.1% to 4.0% of lists”) z dopiskiem „not tested”. Wykres m07 pokazuje poziomy tygodniowe wewnątrz miesiąca bez testu (tygodnie przecinające granicę miesiąca liczone tylko z dni miesiąca) i nie służy do wnioskowania o trendzie wewnątrz miesiąca. Trendy miesięczne (m04, m06) zaczynają się od pierwszego pełnego miesiąca okresu formatu (czerwiec 2026); wyniki talii (m01) liczą okres formatu od 2026-05-19.
 
 ## Czego nie wolno
 

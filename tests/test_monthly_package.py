@@ -18,6 +18,7 @@ sys.path.insert(0, str(REPO_ROOT / "tests"))
 import deckdb_input as di  # noqa: E402
 from test_deckdb_cards import _card, _cards_csv  # noqa: E402
 from test_deckdb_input import _row, _write  # noqa: E402
+import deckdb_month_checks as mc  # noqa: E402
 from weekly_runner import common, monthly as mo, rule_changes, runner  # noqa: E402
 from weekly_runner.common import Stop  # noqa: E402
 
@@ -113,13 +114,15 @@ def test_closing_week_makes_week_folder_and_monthly_package(w44):
     week, month = tmp / "weekly" / "2026-W44", tmp / "monthly" / "2026-10"
     assert (week / "data.xlsx").exists() and (week / "run_report.md").exists()
     names = {p.name for p in month.iterdir()}
-    assert names == {"data.xlsx", "notes.md", "m01_deck_results.png", "m02_list_changes.png",
+    assert names == {"data.xlsx", "notes.md", "m01_deck_results.png", "m02_list_changes.png", *mc.MONTH_CHARTS,
                      mo.README_NAME, mo.REPORT_NAME}
+    assert (tmp / "work" / "2026-W44" / "pipeline" / "monthly" / "2026-10.charts.json").exists()  # not in the package
     assert not any(p.is_dir() for p in month.iterdir())
     xl = pd.read_excel(month / "data.xlsx", sheet_name=None)
-    assert list(xl) == ["contents", "m_deck_results", "m_results_bands", "m_list_changes", "monthly_metrics",
-                        "variants_month"]
+    assert list(xl) == ["contents", *mo.PACKAGE_SHEETS]
     for name in list(xl)[1:]:
+        if list(xl[name].columns) == ["Info"]:  # an empty table ("no rows"), e.g. no new card this month
+            continue
         assert set(xl[name]["rules_version"]) == {"rv1"} and set(xl[name]["data_version"]) == {"dv"}
     assert list(xl["variants_month"].columns[:5]) == ["Deck", "Variant", "Lists", "Top8", "Trophies"]
     oct_zoo = 31 * 3  # k = 0, 3, 6 every day of October
@@ -127,6 +130,20 @@ def test_closing_week_makes_week_folder_and_monthly_package(w44):
     assert set(xl["m_deck_results"]["Period_end"]) == {"2026-10-31"}
     assert int(xl["m_deck_results"]["Lists"].sum()) == 90 * 10  # 2026-08-03 .. 2026-10-31, no November list
     assert xl["monthly_metrics"]["month_to"].max() == "2026-10-31"
+    # format period from 2026-08-03 (fe.yaml): the first full month is September, August is partial and left out
+    for name, col in (("monthly_metrics", "month"), ("share_history_months_decks", "Month"),
+                      ("share_history_months_archetypes", "Month")):
+        assert sorted(set(xl[name][col])) == ["2026-09", "2026-10"]
+    mm = xl["monthly_metrics"]
+    assert mm.loc[mm["month"] == "2026-09", "change_beyond"].isna().all()  # the first month has no test
+    octd = mm[(mm["month"] == "2026-10") & (mm["level"] == "deck")]
+    assert set(octd.loc[octd["tracked"] == 1, "tracked_reason"]) <= {"top10_month", "top10_prev_month",
+                                                                     "largest_in_archetype"}
+    assert octd.loc[octd["tracked"] == 0, "change_beyond"].isna().all()
+    t8 = xl["top8_month"]
+    assert len(t8) == 31 * 8 and int(t8["Winner"].sum()) == 31 and "player" not in " ".join(t8.columns).lower()
+    wim = xl["weeks_in_month"]
+    assert set(wim.loc[wim["Partial"] == 1, "ISO_week"]) == {"2026-W40", "2026-W44"}  # 1-4 Oct, 26-31 Oct
     notes = (month / "notes.md").read_text(encoding="utf-8")
     heads = ["## Status", "## DeckDB rule changes this month", "## Files", "## Speaker notes", "## Glossary"]
     assert [notes.index(h) for h in heads] == sorted(notes.index(h) for h in heads)
@@ -136,14 +153,17 @@ def test_closing_week_makes_week_folder_and_monthly_package(w44):
     assert "- entry 12, 2026-10-20: deck Gone Deck removed; lists of the month: Gone Deck 0" in notes
     assert "### Classification changes since the previous monthly export" in notes
     speaker = notes.split("## Speaker notes")[1].split("## Glossary")[0]
-    assert [h for h in speaker.splitlines() if h.startswith("### ")] == ["### m01_deck_results.png",
-                                                                         "### m02_list_changes.png"]
+    assert [h for h in speaker.splitlines() if h.startswith("### ")] == [
+        "### m01_deck_results.png", "### m02_list_changes.png", *[f"### {n}" for n in mc.MONTH_CHARTS]]
+    for term in ("tracked decks (month)", "monthly change test (BH)", "weeks in month", "trophy timeline"):
+        assert f"- **{term}** - " in notes
+    assert "start with September 2026, the first full month of the format period" in notes
     assert "g-p" not in notes  # no player names
     readme = (month / mo.README_NAME).read_text(encoding="utf-8").split("\n")
     assert readme[0].startswith("> Generated: ") and "pipelinecommit" in readme[0] and "`rv1`" in readme[0]
     assert "\n".join(readme[mo.HEADER_LINES:]) == (REPO_ROOT / mo.RULES_REL).read_text(encoding="utf-8")
     rep = (month / mo.REPORT_NAME).read_text(encoding="utf-8")
-    assert "BŁĄD" not in rep and rep.count("- OK: ") == 8 and "identyczne z folderem tygodnia 2026-W44" in rep
+    assert "BŁĄD" not in rep and rep.count("- OK: ") == 10 and "identyczne z folderem tygodnia 2026-W44" in rep
     runs = list(csv.DictReader((tmp / "weekly" / "runs.csv").open(encoding="utf-8")))
     assert runs[-1]["tydzien"] == "2026-W44" and runs[-1]["monthly_folder"].endswith("monthly/2026-10")
 
@@ -208,6 +228,7 @@ def test_checks_stop_on_a_mismatch(w44, tmp_path):
 
     tmp, r, _ = w44
     src = tmp / "monthly" / "2026-10"
+    drawn = tmp / "work" / "2026-W44" / "pipeline" / "monthly" / "2026-10.charts.json"
     args = ("2026-10", r.facts["export"]["assignments"], "rv1", r.facts["export_sha"]["assignments"], "dv",
             REPO_ROOT / mo.RULES_REL)
 
@@ -221,12 +242,12 @@ def test_checks_stop_on_a_mismatch(w44, tmp_path):
     p.write_text(p.read_text(encoding="utf-8").replace("(31 events, 310 lists)", "(31 events, 309 lists)"),
                  encoding="utf-8")
     with pytest.raises(Stop, match="notes.md: miesiąc"):
-        mo.check_package(d, *args)
+        mo.check_package(d, *args, drawn_path=drawn)
     d = copy("readme")
     with (d / mo.README_NAME).open("a", encoding="utf-8") as fh:
         fh.write("dopisek\n")
     with pytest.raises(Stop, match="poza nagłówkiem"):
-        mo.check_package(d, *args)
+        mo.check_package(d, *args, drawn_path=drawn)
     d = copy("bands")
     xl = pd.read_excel(d / "data.xlsx", sheet_name=None)
     xl["m_results_bands"].loc[0, "Colour_geometry"] = "green" if xl["m_results_bands"].loc[0, "Colour_geometry"] == \
@@ -235,8 +256,8 @@ def test_checks_stop_on_a_mismatch(w44, tmp_path):
         for name, df in xl.items():
             df.to_excel(xw, sheet_name=name, index=False)
     with pytest.raises(Stop, match="m01"):
-        mo.check_package(d, *args)
-    mo.check_package(src, *args)  # the original passes
+        mo.check_package(d, *args, drawn_path=drawn)
+    mo.check_package(src, *args, drawn_path=drawn)  # the original passes
 
 
 def test_rule_change_rows_from_registry_diff():
@@ -262,3 +283,95 @@ def test_rule_change_rows_from_registry_diff():
         "| wpis 5 | deck:a, priorities:x | 2026-10-07T00:00:00Z | apply-decisions |\n")
     assert dates == {5: "2026-10-07"} and subjects == {5: ["deck:a", "priorities:x"]}
     assert rule_changes.entry_label([48, 49, 50, 52]) == "48-50, 52"
+
+
+def test_charts_and_sheets_mismatch_stops(w44, tmp_path):
+    """Point 6: a chart whose drawn colour, BH emphasis or timeline point disagrees with its sheet, a sheet row removed
+    from top8_month and a May row in a monthly history each stop the run (code 11)."""
+    import shutil
+
+    tmp, r, _ = w44
+    src = tmp / "monthly" / "2026-10"
+    drawn = json.loads((tmp / "work" / "2026-W44" / "pipeline" / "monthly" / "2026-10.charts.json").read_text(
+        encoding="utf-8"))
+    args = ("2026-10", r.facts["export"]["assignments"], "rv1", r.facts["export_sha"]["assignments"], "dv",
+            REPO_ROOT / mo.RULES_REL)
+
+    def tampered(edit, name):
+        d = json.loads(json.dumps(drawn))
+        edit(d)
+        path = tmp_path / f"{name}.json"
+        path.write_text(json.dumps(d), encoding="utf-8")
+        return path
+
+    def recolour(d):
+        d["m05_decks_share.png"]["rows"][0]["colour"] = "#000000"
+
+    def bold(d):
+        d["m03_archetypes_share.png"]["rows"][0]["parts"][1]["weight"] = (
+            "normal" if d["m03_archetypes_share.png"]["rows"][0]["parts"][1]["weight"] == "bold" else "bold")
+
+    def drop_point(d):
+        d["m11_trophy_timeline.png"]["points"].pop()
+
+    def line(d):
+        d["m06_decks_trend.png"]["lines"][0]["y"][-1] += 1.0
+
+    for edit, what in ((recolour, "m05 .* kolor"), (bold, "m03 .* wyróżnienie"), (drop_point, "m11 liczba punktów"),
+                       (line, "m06")):
+        with pytest.raises(Stop, match=what) as e:
+            mo.check_package(src, *args, drawn_path=tampered(edit, edit.__name__))
+        assert e.value.code == common.EXIT_MONTHLY
+
+    def rewrite(d, sheet, fn):
+        xl = pd.read_excel(d / "data.xlsx", sheet_name=None)
+        xl[sheet] = fn(xl[sheet])
+        with pd.ExcelWriter(d / "data.xlsx", engine="openpyxl") as xw:
+            for name, df in xl.items():
+                df.to_excel(xw, sheet_name=name, index=False)
+
+    path = tmp_path / "ok.json"
+    path.write_text(json.dumps(drawn), encoding="utf-8")
+    d = tmp_path / "top8"
+    shutil.copytree(src, d)
+    rewrite(d, "top8_month", lambda df: df.iloc[1:])
+    with pytest.raises(Stop, match="top8_month"):
+        mo.check_package(d, *args, drawn_path=path)
+    d = tmp_path / "may"
+    shutil.copytree(src, d)
+    rewrite(d, "share_history_months_decks", lambda df: pd.concat([df.iloc[:1].assign(Month="2026-05"), df]))
+    with pytest.raises(Stop, match="bez maja 2026"):
+        mo.check_package(d, *args, drawn_path=path)
+
+
+def test_monthly_measures_rules(tmp_path):
+    """full_months leaves out the partial first month (2026-05-19 -> June); weeks_in_month cuts the ISO weeks at the
+    month boundary; pilots_month concentration by >= 1/3 of the lists or >= 1/2 of the Top 8 entries; the change test
+    only on tracked decks, with the monthly reasons."""
+    assert di.full_months(date(2026, 5, 19), date(2026, 10, 1))[0] == (date(2026, 6, 1), date(2026, 6, 30))
+    assert len(di.full_months(date(2026, 5, 19), date(2026, 10, 1))) == 5
+    assert di.full_months(date(2026, 6, 1), date(2026, 6, 1)) == [(date(2026, 6, 1), date(2026, 6, 30))]
+    rows = []
+    for n, day in enumerate(pd.date_range("2026-09-01", "2026-10-31", freq="D")):
+        for k in range(20):
+            deck = ["A", "B", "C", "D"][k % 4]
+            # deck D: 5 lists a day (places 4, 8, 12, 16, 20), 2 of them Top 8; pilot "lead" plays place 4 every day
+            # and place 8 every other day: 30% of the D lists (< 1/3) but 75% of its Top 8 entries (>= 1/2)
+            player = "lead" if deck == "D" and (k == 3 or (k == 7 and n % 2)) else f"p{(n + k) % 17}"
+            rows.append(_row(5000 + n, 100 * n + k, day.date().isoformat(), "assigned", deck,
+                             {"A": "Aggro", "B": "Combo", "C": "Ramp", "D": "Control"}[deck], player, k + 1, pc=40))
+    exp = di.load_export(_write(tmp_path, rows))
+    months = di.full_months(date(2026, 9, 1), date(2026, 10, 1))
+    mm = di.monthly_metrics_tested(exp, months)
+    octd = mm[(mm["month"] == "2026-10") & (mm["level"] == "deck")].set_index("name")
+    assert set(octd["tracked_reason"]) == {"top10_month"} and octd["change_beyond"].notna().all()
+    assert mm.loc[mm["month"] == "2026-09", "change_beyond"].isna().all()
+    oct_rows = di.window_rows(exp, date(2026, 10, 1), date(2026, 10, 31))
+    pm = di.pilots_month(oct_rows, ["A", "D"], {"A": "Aggro", "D": "Control"}).set_index("Deck")
+    assert pm.loc["D", "Top_pilot_share_pct"] < 100 / 3 and pm.loc["D", "Concentrated"] == 1
+    assert pm.loc["D", "Top_pilot_top8_share_pct"] >= 50.0
+    assert pm.loc["A", "Concentrated"] == 0 and int(octd.loc["D", "concentrated"]) == 1
+    wim = di.weeks_in_month(exp, date(2026, 10, 1), date(2026, 10, 31))
+    first = wim[wim["ISO_week"] == "2026-W40"].iloc[0]
+    assert (first["From"], first["To"], first["Partial"]) == ("2026-10-01", "2026-10-04", 1)
+    assert wim.groupby("ISO_week")["Share_Top32_pct"].sum().round(9).eq(100.0).all()

@@ -67,6 +67,11 @@ C_TEXT, C_SOFT = "#222222", "#555555"
 C_BAR = "#2a78d6"
 POOLED = (di.OTHER_DECKS_LABEL, di.NO_DECK_LABEL)
 
+# What every chart drew, read back from its matplotlib artists (bar lengths and colours, label pieces, line points,
+# matrix cells, table rows, timeline points), keyed by file name. The monthly package checks it against the sheet the
+# chart was drawn from (deckdb_month_checks.py) and writes it next to the package for the runner's own check.
+DRAWN: Dict[str, dict] = {}
+
 MARK = ""  # DeckDB K43: "triage pending: ..." only when a blocking triage was forced (set by deckdb_materials)
 NOTICE = ""  # DeckDB K43 supplement: pending_notice, speaker notes and status.md only, never on a chart
 
@@ -137,13 +142,15 @@ def _bare(ax) -> None:
 _CLEAR = {"boxstyle": "square,pad=0.1", "facecolor": "white", "edgecolor": "none"}  # no line drawn over a number
 
 
-def _labels(ax, xs: Sequence[float], parts: Sequence[Sequence[tuple]], pad_px: float = 8.0) -> None:
+def _labels(ax, xs: Sequence[float], parts: Sequence[Sequence[tuple]], pad_px: float = 8.0) -> List[List]:
     """Write each bar's label in pieces [(text, style), ...] right of the bar end, then widen the x range until
-    every label ends inside the axes (nothing is clipped or drawn over a bar)."""
+    every label ends inside the axes (nothing is clipped or drawn over a bar). Returns the text artists per row."""
     fig = ax.figure
     texts: List = []
+    rows: List[List] = []
     for i, (x, row) in enumerate(zip(xs, parts)):
         off = pad_px
+        rows.append([])
         for text, style in row:
             t = ax.annotate(text, xy=(x, i), xytext=(off, 0), textcoords="offset pixels", va="center", ha="left",
                             fontsize=style.get("size", FONT["value"]), color=style.get("color", C_TEXT),
@@ -152,6 +159,7 @@ def _labels(ax, xs: Sequence[float], parts: Sequence[Sequence[tuple]], pad_px: f
             fig.canvas.draw()
             off += t.get_window_extent(fig.canvas.get_renderer()).width + style.get("gap", 0)
             texts.append(t)
+            rows[-1].append(t)
     top = max(xs) if len(xs) else 1.0
     for _ in range(40):
         fig.canvas.draw()
@@ -159,6 +167,25 @@ def _labels(ax, xs: Sequence[float], parts: Sequence[Sequence[tuple]], pad_px: f
         if right <= ax.get_window_extent().x1:
             break
         ax.set_xlim(0, ax.get_xlim()[1] + 0.08 * max(top, 1e-9))
+    return rows
+
+
+def _hex(c) -> str:
+    return matplotlib.colors.to_hex(c)
+
+
+def _piece(t) -> dict:
+    return {"text": t.get_text(), "weight": str(t.get_weight()), "colour": _hex(t.get_color())}
+
+
+def record_bars(path: Path, ax, bars, label_rows: Optional[List[List]] = None, **extra) -> None:
+    """DRAWN[path.name]: per bar (top row first) its y label, length, fill colour and label pieces as drawn."""
+    names = [lab.get_text() for lab in ax.get_yticklabels()]
+    rows = []
+    for i, b in enumerate(bars.patches):
+        rows.append({"label": names[i], "value": float(b.get_width()), "colour": _hex(b.get_facecolor()),
+                     "parts": [_piece(x) for x in (label_rows[i] if label_rows else [])]})
+    DRAWN[path.name] = {"kind": "bars", "rows": rows, **extra}
 
 
 def _fit_left(ax, margin: float = 0.02) -> None:
@@ -172,14 +199,15 @@ def _fit_left(ax, margin: float = 0.02) -> None:
     ax.set_position([left, y0, x0 + w - left, h])
 
 
-def _hbars(ax, names: Sequence[str], values: Sequence[float], colors: Sequence) -> None:
+def _hbars(ax, names: Sequence[str], values: Sequence[float], colors: Sequence):
     y = list(range(len(names)))
-    ax.barh(y, values, color=colors, height=0.68)
+    bars = ax.barh(y, values, color=colors, height=0.68)
     ax.set_yticks(y)
     ax.set_yticklabels(names)
     ax.set_ylim(len(names) - 0.5, -0.5)  # first row on top
     ax.set_xlim(0, max(values) * 1.05 if len(values) and max(values) > 0 else 1.0)
     _bare(ax)
+    return bars
 
 
 def _pp(v: float) -> str:
@@ -199,7 +227,7 @@ LEGEND_TOP = 0.79  # top of the axes of a chart with an archetype legend row
 # --- week: share, presence and change in one chart (B5a, B5b) ----------------------------------------
 
 def share_chart(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path,
-                colours: Optional[Colours] = None) -> Path:
+                colours: Optional[Colours] = None, legend: str = LEGEND_CHANGE) -> Path:
     """One row per deck (or archetype) and 'Rogue & unclassified' last: bar = share; label '<share>% · <presence>/
     <events> events · <change>', the change bold and green / red only when change_beyond (BH, weekly_metrics) is 1. 'other decks' is
     no bar: one line under the chart, 'other decks: <share>% of lists across <n> decks'. Deck bars take their
@@ -217,7 +245,7 @@ def share_chart(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path,
     else:
         arch = list(t[key])
         bar_colours = [colours.of_archetype(a) for a in arch]
-    _hbars(ax, list(t[key]), list(t["Share_Top32_pct"]), bar_colours)
+    bars = _hbars(ax, list(t[key]), list(t["Share_Top32_pct"]), bar_colours)
     _fit_left(ax)
     parts = []
     for r in t.itertuples():
@@ -227,15 +255,17 @@ def share_chart(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path,
         else:
             change = {"color": C_SOFT}
         parts.append([(head, {}), (_pp(r.Change_pp), change)])
-    _labels(ax, list(t["Share_Top32_pct"]), parts)
+    label_rows = _labels(ax, list(t["Share_Top32_pct"]), parts)
     if key == "Deck":
         _arch_legend(fig, [a for a in dict.fromkeys(arch)], colours)
+    other_text = ""
     if not other.empty:
         o = other.iloc[0]
         n = int(o.get("Decks_in_row", o.get("Labels_in_row", 0)))
-        fig.text(0.02, 0.075, f"{di.OTHER_DECKS_LABEL}: {o['Share_Top32_pct']:.1f}% of lists across {n} decks",
-                 fontsize=FONT["legend"], color=C_TEXT, va="bottom")
-    _frame(fig, title, foot, LEGEND_CHANGE)
+        other_text = f"{di.OTHER_DECKS_LABEL}: {o['Share_Top32_pct']:.1f}% of lists across {n} decks"
+        fig.text(0.02, 0.075, other_text, fontsize=FONT["legend"], color=C_TEXT, va="bottom")
+    record_bars(path, ax, bars, label_rows, other=other_text)
+    _frame(fig, title, foot, legend)
     return _save(fig, path)
 
 
@@ -266,24 +296,27 @@ def shared_colours(labels: Sequence[str], colour_of) -> List[tuple[str, str]]:
 
 
 def trend_chart(trend: pd.DataFrame, labels: Sequence[str], key: str, title: str, foot: str, path: Path,
-                colour_of) -> Optional[Path]:
+                colour_of, period: str = "ISO_week", tick=None, subtitle: Optional[str] = None) -> Optional[Path]:
     """Share of Top 32 lists per ISO week for *labels* (one 2 px line each, a fixed colour from *colour_of*; a colour
     repeated in the chart is dashed with a diamond swatch), every line labelled at its right end; weeks without a list
     of the label count 0."""
     if trend.empty or not len(labels):
         return None
-    weeks = sorted(trend["ISO_week"].unique())
-    piv = trend.pivot_table(index="ISO_week", columns=key, values="Share_Top32_pct", aggfunc="sum").reindex(weeks)
+    weeks = sorted(trend[period].unique())
+    piv = trend.pivot_table(index=period, columns=key, values="Share_Top32_pct", aggfunc="sum").reindex(weeks)
     piv = piv.reindex(columns=list(labels)).fillna(0.0)
     fig = _fig()
     ax = fig.add_axes([0.07, 0.15, 0.66, 0.70])
     x = list(range(len(weeks)))
     seen: Dict[str, str] = {}
+    drawn = []
     for lab in labels:  # a colour already used by an earlier line of the chart: dashed (the colour stays fixed)
         c = colour_of(lab)
         style = "--" if c in seen else "-"
         seen.setdefault(c, lab)
-        ax.plot(x, piv[lab], color=c, linewidth=2.2, linestyle=style, marker="o", markersize=5, zorder=3)
+        ln = ax.plot(x, piv[lab], color=c, linewidth=2.2, linestyle=style, marker="o", markersize=5, zorder=3)[0]
+        drawn.append({"label": lab, "y": [float(v) for v in ln.get_ydata()], "colour": _hex(ln.get_color()),
+                      "style": ln.get_linestyle()})
     top = float(piv.to_numpy().max()) if piv.size else 1.0
     ax.set_ylim(0, top * 1.12 if top > 0 else 1.0)
     ends = list(piv.iloc[-1])
@@ -299,14 +332,15 @@ def trend_chart(trend: pd.DataFrame, labels: Sequence[str], key: str, title: str
         ax.annotate(f"{lab} {y:.1f}%", xy=(x[-1] + 0.7, ypos), va="center", ha="left", fontsize=FONT["value"],
                     color=C_TEXT, annotation_clip=False)
     ax.set_xticks(x)
-    ax.set_xticklabels([w.split("-")[1] for w in weeks], fontsize=FONT["value"], color=C_TEXT)
+    ax.set_xticklabels([tick(w) if tick else w.split("-")[1] for w in weeks], fontsize=FONT["value"], color=C_TEXT)
     ax.set_xlim(-0.3, x[-1] + 0.3)
     ax.tick_params(axis="y", labelsize=FONT["value"], colors=C_SOFT)
     ax.set_ylabel("% of Top 32 lists", fontsize=FONT["name"], color=C_SOFT)
     ax.grid(axis="y", color="#e5e5e5", linewidth=0.8)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    _frame(fig, title, foot, f"ISO weeks {weeks[0]} – {weeks[-1]}")
+    DRAWN[path.name] = {"kind": "lines", "x": [str(w) for w in weeks], "lines": drawn}
+    _frame(fig, title, foot, subtitle if subtitle is not None else f"ISO weeks {weeks[0]} – {weeks[-1]}")
     return _save(fig, path)
 
 
@@ -316,8 +350,8 @@ MATRIX_COLS = [("Lists", "Top 32\nlists"), ("Events_with_list", "events\npresent
                ("Events_with_Top8", "events with\nTop 8"), ("Trophies", "trophies")]
 
 
-def week_matrix(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path, top_n: Optional[int] = TOP_N_MATRIX
-                ) -> Path:
+def week_matrix(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path, top_n: Optional[int] = TOP_N_MATRIX,
+                subtitle: str = "counts for this week only") -> Path:
     """Heatmap of counts in the style of the legacy matrices (YlGnBu), each column on its own 0..max scale, no
     conversion; rows = the *top_n* labels by lists (all with None), 'Rogue & unclassified' last."""
     named = tbl[tbl[key] != di.NO_DECK_LABEL].sort_values(["Lists", key], ascending=[False, True])
@@ -327,14 +361,16 @@ def week_matrix(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path, 
     fig = _fig()
     ax = fig.add_axes([0.25, 0.08, 0.72, 0.72])
     cmap = plt.get_cmap("YlGnBu")
+    cells = [[0] * len(MATRIX_COLS) for _ in range(len(t))]
     for j, (col, _head) in enumerate(MATRIX_COLS):
         vmax = max(float(t[col].max()), 1.0)
         for i, v in enumerate(t[col]):
             frac = float(v) / vmax
             ax.add_patch(plt.Rectangle((j, i), 1, 1, facecolor=cmap(0.08 + 0.8 * frac), edgecolor="white",
                                        linewidth=2))
-            ax.text(j + 0.5, i + 0.5, f"{int(v)}", ha="center", va="center", fontsize=FONT["cell"],
-                    color="white" if frac > 0.55 else C_TEXT)
+            txt = ax.text(j + 0.5, i + 0.5, f"{int(v)}", ha="center", va="center", fontsize=FONT["cell"],
+                          color="white" if frac > 0.55 else C_TEXT)
+            cells[i][j] = int(txt.get_text())
     ax.set_xlim(0, len(MATRIX_COLS))
     ax.set_ylim(len(t), 0)
     ax.set_xticks([j + 0.5 for j in range(len(MATRIX_COLS))])
@@ -346,32 +382,51 @@ def week_matrix(tbl: pd.DataFrame, key: str, title: str, foot: str, path: Path, 
     for side in ax.spines.values():
         side.set_visible(False)
     _fit_left(ax)
-    _frame(fig, title, foot, "counts for this week only")
+    DRAWN[path.name] = {"kind": "matrix", "cols": [c for c, _h in MATRIX_COLS],
+                        "rows": [{"label": lab.get_text(), "cells": cells[i]}
+                                 for i, lab in enumerate(ax.get_yticklabels())]}
+    _frame(fig, title, foot, subtitle)
     return _save(fig, path)
 
 
 # --- Top 8 of the week (B5e) ------------------------------------------------------------------------
 
-def top8_chart(top8: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours) -> Path:
+def tail_text(tail: pd.DataFrame) -> str:
+    """The line under a capped Top 8 chart: every deck past the cap with its Top 8 lists and trophies."""
+    return (f"fewer Top 8 lists ({len(tail)} decks): "
+            + ", ".join(f"{r.Deck} {int(r.Top8)}" + (f" ★{int(r.Trophies)}" if r.Trophies else "")
+                        for r in tail.itertuples()))
+
+
+def top8_chart(top8: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours,
+               legend: str = "bar = Top 8 lists this week · ★ = trophies", max_rows: Optional[int] = None) -> Path:
     """Top 8 lists of the week per deck (horizontal bars in the archetype colour), the trophies as a star marker
     with their count; with more than 14 decks the decks with one Top 8 list and no trophy are named in one line under
-    the chart."""
+    the chart. With *max_rows* (monthly package) only the first *max_rows* decks (most Top 8 lists, then trophies, then
+    name) are bars and every other deck is named with its counts in the line under the chart ('Rogue & unclassified'
+    stays a bar)."""
     g = top8.groupby("Deck").agg(Top8=("Place", "size"), Trophies=("Winner", "sum"),
                                  Archetype=("Archetype", "first")).reset_index()
     named = g[g["Deck"] != di.NO_DECK_LABEL].sort_values(["Top8", "Trophies", "Deck"], ascending=[False, False, True])
-    single = named[(named["Top8"] == 1) & (named["Trophies"] == 0)] if len(named) > 14 else named.iloc[0:0]
-    named = named.drop(single.index)
+    tail = named.iloc[0:0]
+    if max_rows is not None:
+        single, tail = named.iloc[0:0], named.iloc[max_rows:]
+        named = named.iloc[:max_rows]
+    else:
+        single = named[(named["Top8"] == 1) & (named["Trophies"] == 0)] if len(named) > 14 else named.iloc[0:0]
+        named = named.drop(single.index)
     t = pd.concat([named, g[g["Deck"] == di.NO_DECK_LABEL]]).reset_index(drop=True)
     fig = _fig()
     bottom = 0.08
-    if not single.empty:  # decks with one Top 8 list and no trophy: one line under the chart, not a bar each
-        text = "\n".join(textwrap.wrap(f"one Top 8 list each ({len(single)} decks): " + ", ".join(single["Deck"]),
-                                       115, break_on_hyphens=False))
+    if not single.empty or not tail.empty:  # one line under the chart, not a bar each
+        line = (f"one Top 8 list each ({len(single)} decks): " + ", ".join(single["Deck"]) if not single.empty
+                else tail_text(tail))
+        text = "\n".join(textwrap.wrap(line, 115, break_on_hyphens=False))
         fig.text(0.02, 0.07, text, fontsize=FONT["legend"], color=C_TEXT, va="bottom")
         bottom = 0.10 + 0.03 * text.count("\n")
     ax = fig.add_axes([0.24, bottom + 0.02, 0.72, LEGEND_TOP - bottom - 0.02])
     arch = [di.NO_DECK_LABEL if d == di.NO_DECK_LABEL else a for d, a in zip(t["Deck"], t["Archetype"])]
-    _hbars(ax, list(t["Deck"]), list(t["Top8"]), [colours.of_archetype(a) for a in arch])
+    bars = _hbars(ax, list(t["Deck"]), list(t["Top8"]), [colours.of_archetype(a) for a in arch])
     _fit_left(ax)
     parts = []
     for r in t.itertuples():
@@ -380,42 +435,50 @@ def top8_chart(top8: pd.DataFrame, title: str, foot: str, path: Path, colours: C
             row.append(("★", {"color": C_TROPHY, "size": FONT["value"] + 2, "gap": 2}))
             row.append((f"{r.Trophies}", {"color": C_TEXT}))
         parts.append(row)
-    _labels(ax, list(t["Top8"]), parts)
+    label_rows = _labels(ax, list(t["Top8"]), parts)
     _arch_legend(fig, list(dict.fromkeys(arch)), colours)
-    _frame(fig, title, foot, "bar = Top 8 lists this week · ★ = trophies")
+    record_bars(path, ax, bars, label_rows, single=list(single["Deck"]),
+                tail=[{"label": r.Deck, "top8": int(r.Top8), "trophies": int(r.Trophies)} for r in tail.itertuples()])
+    _frame(fig, title, foot, legend)
     return _save(fig, path)
 
 
 # --- pilots (B5g) ------------------------------------------------------------------------------------
 
-def pilots_chart(p: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours) -> Path:
+def pilots_chart(p: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours,
+                 legend: str = "bar = distinct pilots this week; marked: one pilot holds at least a third of the lists",
+                 flag_text: str = "one pilot ≥ 1/3") -> Path:
     """For the ten decks of the share chart: distinct pilots (bar, archetype colour) and the top pilot's share of
     the deck's lists; decks whose top pilot holds >= 1/3 of the lists are marked."""
     t = p.sort_values(["Pilots", "Lists", "Deck"], ascending=[False, False, True]).reset_index(drop=True)
     fig = _fig()
     ax = fig.add_axes([0.24, 0.10, 0.72, LEGEND_TOP - 0.10])
-    _hbars(ax, list(t["Deck"]), list(t["Pilots"]), [colours.of_archetype(a) for a in t["Archetype"]])
+    bars = _hbars(ax, list(t["Deck"]), list(t["Pilots"]), [colours.of_archetype(a) for a in t["Archetype"]])
     _arch_legend(fig, list(dict.fromkeys(t["Archetype"])), colours)
     _fit_left(ax)
     parts = []
     for r in t.itertuples():
         row = [(f"{r.Pilots} pilots · top pilot {r.Top_pilot_share_pct:.0f}% of {r.Lists} lists", {"gap": 10})]
         if r.Concentrated:
-            row.append(("one pilot ≥ 1/3", {"weight": "bold", "color": C_FLAG}))
+            row.append((flag_text, {"weight": "bold", "color": C_FLAG}))
         parts.append(row)
-    _labels(ax, list(t["Pilots"]), parts)
-    _frame(fig, title, foot, "bar = distinct pilots this week; marked: one pilot holds at least a third of the lists")
+    label_rows = _labels(ax, list(t["Pilots"]), parts)
+    record_bars(path, ax, bars, label_rows)
+    _frame(fig, title, foot, legend)
     return _save(fig, path)
 
 
 # --- new cards (B5f) ----------------------------------------------------------------------------------
 
-def new_cards_chart(nc: pd.DataFrame, title: str, foot: str, path: Path) -> Path:
+def new_cards_chart(nc: pd.DataFrame, title: str, foot: str, path: Path,
+                    legend: str = "first time the card appears in the deck, played by at least 2 pilots this week",
+                    empty: str = "No new cards this week", more: str = "data_new_cards.csv") -> Path:
     """Table chart: deck, card, pilots, zone (SB only for a sideboard card); at most TOP_N_NEW_CARDS rows."""
     fig = _fig()
-    _frame(fig, title, foot, "first time the card appears in the deck, played by at least 2 pilots this week")
+    _frame(fig, title, foot, legend)
+    DRAWN[path.name] = {"kind": "table", "rows": []}
     if nc.empty:
-        fig.text(0.5, 0.5, "No new cards this week", ha="center", va="center", fontsize=FONT["title"], color=C_SOFT)
+        fig.text(0.5, 0.5, empty, ha="center", va="center", fontsize=FONT["title"], color=C_SOFT)
         return _save(fig, path)
     t = nc.head(TOP_N_NEW_CARDS)
     ax = fig.add_axes([0.04, 0.10, 0.92, 0.74])
@@ -432,11 +495,91 @@ def new_cards_chart(nc: pd.DataFrame, title: str, foot: str, path: Path) -> Path
             ax.add_patch(plt.Rectangle((0, y - h / 2), 1, h, transform=ax.transAxes, facecolor="#f3f4f6",
                                        edgecolor="none"))
         vals = [r.Deck, r.Card, f"{int(r.Pilots_with_card)}", "SB" if r.Zone != "main" else ""]
+        drawn = []
         for (c, x, ha), v in zip(cols, vals):
-            ax.text(x + (0.005 if ha == "left" else 0), y, v, ha=ha, va="center", fontsize=FONT["value"],
-                    color=C_TEXT, transform=ax.transAxes)
+            drawn.append(ax.text(x + (0.005 if ha == "left" else 0), y, v, ha=ha, va="center", fontsize=FONT["value"],
+                                 color=C_TEXT, transform=ax.transAxes).get_text())
+        DRAWN[path.name]["rows"].append(drawn)
     if len(nc) > len(t):
-        fig.text(0.04, 0.07, f"{len(nc) - len(t)} more in data_new_cards.csv", fontsize=FONT["legend"], color=C_SOFT)
+        fig.text(0.04, 0.07, f"{len(nc) - len(t)} more in {more}", fontsize=FONT["legend"], color=C_SOFT)
+    return _save(fig, path)
+
+
+# --- monthly package: trophy timeline (m11) and variants (m14) ------------------------------------------------------
+
+TOP_N_VARIANTS = 14
+
+
+def trophy_timeline_chart(winners: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours) -> Path:
+    """Every event of the month in date order (columns EventID, Date, Deck, Variant, Archetype of top8_month's winners):
+    one dot per event in its winning deck's archetype colour, the deck (variant when the list has one) written above
+    it, the day under it; the trophies per deck in one line under the chart. No player names."""
+    t = winners.sort_values(["Date", "EventID"]).reset_index(drop=True)
+    fig = _fig()
+    ax = fig.add_axes([0.03, 0.24, 0.95, 0.04])
+    x = list(range(len(t)))
+    cols = [colours.of_archetype(a if d != di.NO_DECK_LABEL else di.NO_DECK_LABEL)
+            for d, a in zip(t["Deck"], t["Archetype"])]
+    sc = ax.scatter(x, [0] * len(t), s=150, c=cols, zorder=3, edgecolors="white", linewidths=1)
+    ax.axhline(0, color="#d1d5db", linewidth=1.2, zorder=1)
+    names = [v if isinstance(v, str) and v else d for d, v in zip(t["Deck"], t["Variant"])]
+    texts = [ax.annotate(n, xy=(i, 0), xytext=(0, 14), textcoords="offset points", rotation=90, ha="center",
+                         va="bottom", fontsize=FONT["marker"] + 3, color=C_TEXT, annotation_clip=False)
+             for i, n in enumerate(names)]
+    ax.set_xlim(-0.8, max(len(t) - 0.2, 1))
+    ax.set_ylim(-1, 1)
+    ax.set_yticks([])
+    ax.set_xticks(x)
+    days = list(t["Date"])  # the day under the first event of each day only (several events a day share it)
+    ax.set_xticklabels([d[8:10] if i == 0 or d != days[i - 1] else "" for i, d in enumerate(days)],
+                       fontsize=FONT["marker"] + 3, color=C_SOFT, rotation=90)
+    ax.tick_params(axis="x", length=0)
+    for side in ax.spines.values():
+        side.set_visible(False)
+    counts = t["Deck"].value_counts()
+    line = "trophies: " + ", ".join(f"{d} {int(counts[d])}" for d in sorted(counts.index, key=lambda d: (-counts[d], d)))
+    fig.text(0.02, 0.075, "\n".join(textwrap.wrap(line, 118, break_on_hyphens=False)), fontsize=FONT["legend"],
+             color=C_TEXT, va="bottom")
+    _arch_legend(fig, list(dict.fromkeys(a if d != di.NO_DECK_LABEL else di.NO_DECK_LABEL
+                                         for d, a in zip(t["Deck"], t["Archetype"]))), colours)
+    offsets = sc.get_offsets()
+    face = sc.get_facecolors()
+    DRAWN[path.name] = {"kind": "timeline", "points": [
+        {"event_id": str(e), "date": str(dt), "label": tx.get_text(), "x": float(offsets[i][0]),
+         "colour": _hex(face[i])} for i, (e, dt, tx) in enumerate(zip(t["EventID"], t["Date"], texts))],
+        "trophies": {str(k): int(v) for k, v in counts.items()}}
+    _frame(fig, title, foot, "one dot per event, in date order (day of the month below); the winning deck above it")
+    return _save(fig, path)
+
+
+def variant_bar_text(lists: int, top8: int) -> str:
+    return f"{int(lists)} list{'' if int(lists) == 1 else 's'} · {int(top8)} Top 8"
+
+
+def variants_chart(v: pd.DataFrame, title: str, foot: str, path: Path, colours: Colours,
+                   top_n: int = TOP_N_VARIANTS) -> Path:
+    """Variants of the decks with the most lists of the month (variants_month: Deck, Variant, Lists, Top8): whole decks
+    in order of their lists, every variant of a deck as a bar in the deck's fixed colour, until *top_n* bars; label
+    '<lists> lists · <Top 8> Top 8'."""
+    tot = v.groupby("Deck")["Lists"].sum()
+    rows = []
+    for d in sorted(tot.index, key=lambda d: (-int(tot[d]), d)):
+        g = v[v["Deck"] == d].sort_values(["Lists", "Variant"], ascending=[False, True])
+        if rows and len(rows) + len(g) > top_n:
+            break
+        rows += list(g.itertuples())
+    fig = _fig()
+    _frame(fig, title, foot, "bar = Top 32 lists of the variant this month · bars of one deck share its colour")
+    if not rows:
+        DRAWN[path.name] = {"kind": "bars", "rows": []}
+        fig.text(0.5, 0.5, "No deck with variants this month", ha="center", va="center", fontsize=FONT["title"],
+                 color=C_SOFT)
+        return _save(fig, path)
+    ax = fig.add_axes([0.30, 0.10, 0.66, 0.75])
+    bars = _hbars(ax, [r.Variant for r in rows], [r.Lists for r in rows], [colours.of_deck(r.Deck) for r in rows])
+    _fit_left(ax)
+    label_rows = _labels(ax, [r.Lists for r in rows], [[(variant_bar_text(r.Lists, r.Top8), {})] for r in rows])
+    record_bars(path, ax, bars, label_rows, decks=[r.Deck for r in rows])
     return _save(fig, path)
 
 

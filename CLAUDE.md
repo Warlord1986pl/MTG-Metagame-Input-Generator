@@ -53,8 +53,10 @@ triage_check.bat                                   rem Friday alarm: exit 0 comp
 
 Everything (stages, stop codes, Task Scheduler XML, pptx validator path for `qa.py --validator`) is in `docs/runner.md`; code in
 `src/weekly_runner/`. In the week closing a month (ISO week with the 1st of the next month) the same DATA run also
-writes `monthly/<YYYY-MM>/` (gitignored) for the metagame.info article: m01/m02, `data.xlsx` (m_* sheets identical
-to the week folder's, monthly_metrics, variants_month), `notes.md` (incl. "DeckDB rule changes this month" from the
+writes `monthly/<YYYY-MM>/` (gitignored) for the metagame.info article: m01-m14 (m03-m14 = the weekly charts at month
+scale + trophy timeline / weeks in month / variants, drawn only from package sheets and checked against them via
+`src/deckdb_month_checks.py`), `data.xlsx` (m_* sheets identical to the week folder's, monthly_metrics with the
+BH-tested month-on-month change from the first full month of the format period, variants_month, top8_month, ...), `notes.md` (incl. "DeckDB rule changes this month" from the
 DeckDB registry diff of each decisions.md entry), `README_metagame_info.md` (= `docs/monthly_package_rules.md` +
 header), `run_report_monthly.md`; checks stop with code 11. The runner never commits and never writes `docs/decisions.md`; `outputs/presentation/` is the
 archive of published folders and is not written by it.

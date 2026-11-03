@@ -16,7 +16,9 @@ RULES_REL = "docs/monthly_package_rules.md"
 README_NAME = "README_metagame_info.md"
 REPORT_NAME = "run_report_monthly.md"
 M_SHEETS = ("m_deck_results", "m_results_bands", "m_list_changes")
-PACKAGE_SHEETS = M_SHEETS + ("monthly_metrics", "variants_month")
+PACKAGE_SHEETS = M_SHEETS + ("monthly_metrics", "variants_month", "top8_month", "new_cards_month", "pilots_month",
+                             "share_history_months_decks", "share_history_months_archetypes", "weeks_in_month")
+MONTH_HISTORY_SHEETS = ("monthly_metrics", "share_history_months_decks", "share_history_months_archetypes")
 PACKAGE_PNGS = ("m01_deck_results.png", "m02_list_changes.png")
 NO_DECK = "Rogue & unclassified"
 MEASURE_FLAG = {"Mean_place_percentile": "Percentile_BH_rejects", "Top8_conversion_pct": "Conversion_BH_rejects"}
@@ -82,7 +84,7 @@ def _export(path: Path) -> pd.DataFrame:
 
 def check_package(folder: Path, month: str, export_path: Path, rules_version: str, export_sha: str,
                   data_version: str, rules_path: Path, week_folder: Optional[Path] = None,
-                  checks: Optional[Checks] = None) -> Checks:
+                  checks: Optional[Checks] = None, drawn_path: Optional[Path] = None) -> Checks:
     """The checks of the order of 2026-11-03, points 4 and 8, on the files of *folder* against the export file."""
     c = checks or Checks()
     ms, me = month_bounds(month)
@@ -220,6 +222,9 @@ def check_package(folder: Path, month: str, export_path: Path, rules_version: st
          f"({int((bands['Colour_geometry'] != 'grey').sum())} kolorowych)")
     c.facts.update(decks=int((res["Deck"] != NO_DECK).sum()), decks_tested=len(tested), bh_rejects=rej)
 
+    check_month_measures(c, xl, ex, month, fstart)
+    check_charts(c, folder, xl, month, drawn_path)
+
     # 8: README = docs/monthly_package_rules.md apart from the header
     lines = (folder / README_NAME).read_text(encoding="utf-8").split("\n")
     body = "\n".join(lines[HEADER_LINES:])
@@ -227,6 +232,98 @@ def check_package(folder: Path, month: str, export_path: Path, rules_version: st
         c.fail(f"{README_NAME} różny od {RULES_REL} poza nagłówkiem")
     c.ok(f"{README_NAME} obecny, identyczny z {RULES_REL} poza nagłówkiem ({lines[0][2:]})")
     return c
+
+
+def _first_full_month(fstart: str) -> str:
+    d = date.fromisoformat(fstart)
+    if d.day != 1:
+        d = (d + timedelta(days=32)).replace(day=1)
+    return f"{d:%Y-%m}"
+
+
+def check_month_measures(c: Checks, xl: Dict[str, pd.DataFrame], ex: pd.DataFrame, month: str, fstart: str) -> None:
+    """Order of 2026-11-03 b, point 6 (sheets): sums against the export, Top 8 of every event, monotonicity, the test
+    only on tracked decks, no month before the first full month of the format period (May 2026)."""
+    mm = xl["monthly_metrics"].copy()
+    for col in ("lists", "top8", "trophies", "events_with_list", "month_events", "tracked"):
+        mm[col] = pd.to_numeric(mm[col]).astype(int)
+    mm["month"] = mm["month"].astype(str)
+    first = _first_full_month(fstart)
+    for name in MONTH_HISTORY_SHEETS:
+        col = "month" if name == "monthly_metrics" else "Month"
+        months = sorted(set(xl[name][col].astype(str)))
+        if months[0] != first or months[-1] != month or any(m < first for m in months):
+            c.fail(f"{name}: miesiące {months[0]} .. {months[-1]}, oczekiwane {first} .. {month} (bez maja 2026 i "
+                   "miesięcy przed pierwszym pełnym miesiącem okresu formatu)")
+    for (m, level), g in mm.groupby(["month", "level"]):
+        ms, me = month_bounds(m)
+        n = int(((ex["event_date"] >= ms.isoformat()) & (ex["event_date"] <= me.isoformat())).sum())
+        if int(g["lists"].sum()) != n:
+            c.fail(f"monthly_metrics {m} {level}: suma list {int(g['lists'].sum())}, eksport {n}")
+    bad = mm[(mm["trophies"] > mm["top8"]) | (mm["top8"] > mm["lists"]) | (mm["events_with_list"] > mm["month_events"])]
+    if not bad.empty:
+        c.fail(f"monthly_metrics: monotoniczność naruszona w {len(bad)} wierszach, np. "
+               f"{bad.iloc[0][['month', 'level', 'name']].tolist()}")
+    beyond = pd.to_numeric(mm["change_beyond"], errors="coerce")
+    if (beyond.notna() & (mm["tracked"] != 1)).any() or (beyond.isna() & (mm["tracked"] == 1)).any():
+        c.fail("monthly_metrics: change_beyond poza tracked albo tracked bez testu")
+    t8 = xl["top8_month"].copy()
+    t8["Winner"] = pd.to_numeric(t8["Winner"]).astype(int)
+    ms, me = month_bounds(month)
+    in_month = ex[(ex["event_date"] >= ms.isoformat()) & (ex["event_date"] <= me.isoformat())]
+    per = t8.groupby(t8["EventID"].astype(str)).agg(n=("Place", "size"), w=("Winner", "sum"))
+    if set(per.index) != set(in_month["event_id"].astype(str)) or (per["n"] != 8).any() or (per["w"] != 1).any():
+        bad = per[(per["n"] != 8) | (per["w"] != 1)]
+        c.fail(f"top8_month: eventy {len(per)} (eksport {in_month['event_id'].nunique()}), zdarzenia bez 8 list Top 8 "
+               f"albo jednego zwycięzcy: {list(bad.index)[:5]}")
+    if int(t8["Winner"].sum()) != in_month["event_id"].nunique():
+        c.fail(f"top8_month: {int(t8['Winner'].sum())} trofeów, eventów miesiąca {in_month['event_id'].nunique()}")
+    cur = mm[mm["month"] == month]
+    c.ok(f"monthly_metrics i historie miesięczne: {first} .. {month} (bez maja 2026); suma list talii i archetypów = "
+         f"eksport w każdym miesiącu ({int(cur[cur['level'] == 'deck']['lists'].sum())} list w {month}); trophies <= "
+         "top8 <= lists, events_with_list <= month_events; change_beyond tylko przy tracked; top8_month: "
+         f"{len(per)} eventów x 8 list Top 8, {int(t8['Winner'].sum())} trofeów = eventy miesiąca")
+    deck = cur[cur["level"] == "deck"]
+    c.facts["tracked"] = [(r["name"], r["tracked_reason"], int(pd.to_numeric(r["change_beyond"])),
+                           float(pd.to_numeric(r["change_pp"]))) for _, r in deck[deck["tracked"] == 1].iterrows()]
+    arch = cur[(cur["level"] == "archetype") & (cur["tracked"] == 1)]
+    c.facts["archetype_tests"] = [(r["name"], int(pd.to_numeric(r["change_beyond"])),
+                                   float(pd.to_numeric(r["change_pp"]))) for _, r in arch.iterrows()]
+
+
+def check_charts(c: Checks, folder: Path, xl: Dict[str, pd.DataFrame], month: str, drawn_path: Optional[Path]) -> None:
+    """Point 6: every chart m03-m14 against its sheet (deckdb_month_checks), from the drawn record of the pipeline."""
+    import json
+
+    try:
+        import deckdb_month_checks as mc
+        import deckdb_presentation as dp
+    except ModuleNotFoundError:  # pragma: no cover
+        from .. import deckdb_month_checks as mc
+        from .. import deckdb_presentation as dp
+    missing = [n for n in mc.MONTH_CHARTS if not (folder / n).exists()]
+    if missing:
+        c.fail(f"brak wykresów {missing}")
+    if drawn_path is None or not Path(drawn_path).exists():
+        c.fail(f"brak zapisu rysunków wykresów ({drawn_path})")
+    drawn = json.loads(Path(drawn_path).read_text(encoding="utf-8"))
+    try:
+        facts = mc.check_month_charts(drawn, xl, month, dp.Colours(REPO / "docs" / "deckdb_colours.csv"))
+    except mc.ChartMismatch as e:
+        c.fail(f"wykres niezgodny z arkuszem: {e}")
+    pm = xl["pilots_month"]
+    mm = xl["monthly_metrics"]
+    cur = mm[(mm["month"].astype(str) == month) & (mm["level"] == "deck")].set_index("name")
+    for _, r in pm.iterrows():
+        m = cur.loc[r["Deck"]]
+        if (int(r["Lists"]), int(r["Pilots"]), int(r["Concentrated"])) != (int(m["lists"]), int(m["pilots"]),
+                                                                           int(m["concentrated"])):
+            c.fail(f"pilots_month {r['Deck']}: różny od monthly_metrics (listy, piloci, koncentracja)")
+    c.ok(f"wykresy m03-m14 zgodne z arkuszami (liczby, kolejność, kolory, wyróżnienia BH): {', '.join(mc.MONTH_CHARTS)}; "
+         f"m11: {len(drawn['m11_trophy_timeline.png']['points'])} punktów = eventy miesiąca, zwycięzcy = top8_month; "
+         "pilots_month = monthly_metrics")
+    c.facts.update(charts=sorted(p.name for p in folder.glob("m*.png")), trophies=facts["trophies"],
+                   concentrated=facts["concentrated"])
 
 
 def report(month: str, ok: bool, stop: Optional[Stop], facts: dict, checks: Checks, steps: list,
@@ -254,6 +351,17 @@ def report(month: str, ok: bool, stop: Optional[Stop], facts: dict, checks: Chec
                 f"BH: percentyl {cf['bh_rejects']['percentile']}, konwersja {cf['bh_rejects']['conversion']}"]
     if "rule_changes" in facts:
         out += [f"- Zmiany reguł DeckDB w miesiącu (notes.md): {facts['rule_changes']} linii"]
+    if "charts" in cf:
+        out += [f"- Wykresy: {', '.join(cf['charts'])}"]
+    if "tracked" in cf:
+        out += ["- Tracked decks miesiąca (powód; zmiana vs poprzedni miesiąc; poza wahaniami po BH): "
+                + "; ".join(f"{d} ({why}; {ch:+.1f} pp; {'tak' if b else 'nie'})" for d, why, b, ch in cf["tracked"])]
+        out += ["- Archetypy (zmiana; poza wahaniami po BH): "
+                + "; ".join(f"{a} ({ch:+.1f} pp; {'tak' if b else 'nie'})" for a, b, ch in cf["archetype_tests"])]
+    if "trophies" in cf:
+        out += ["- Trofea na talię: " + ", ".join(f"{d} {n}" for d, n in sorted(cf["trophies"].items(),
+                                                                                key=lambda kv: (-kv[1], kv[0])))]
+        out += ["- Koncentracja pilotów (top 10 miesiąca): " + (", ".join(cf["concentrated"]) or "brak")]
     out += ["", "## Kontrole", ""] + (checks.lines or ["- (nie wykonane)"])
     out += ["", "## Kroki", "", "| krok | czas | wynik |", "|---|---|---|"]
     out += [f"| {n} | {s:.0f} s | {r} |" for n, s, r in steps]

@@ -137,9 +137,10 @@ Zawartość (płaski folder):
 
 | plik | treść |
 |---|---|
-| `data.xlsx` | `contents`, `m_deck_results`, `m_results_bands`, `m_list_changes`, `monthly_metrics` (okres formatu do ostatniego dnia miesiąca), `variants_month` (Deck, Variant, Lists, Top8, Trophies miesiąca; suma wariantów = talia); każdy arkusz z `rules_version`, `export_sha256`, `data_version` |
-| `m01_deck_results.png`, `m02_list_changes.png` | te same wykresy co w folderze tygodnia (m02 nie powstaje, gdy żadna zmiana list nie przeszła testów) |
-| `notes.md` | Status (miesiąc i jego okres, okres formatu do ostatniego dnia miesiąca, eventy i listy miesiąca i okresu formatu, pokrycie uczestników miesiąca, wersja reguł, sha256, `complete month`, triage, zmiany klasyfikacji od poprzedniego miesięcznego eksportu z linią `renamed`), DeckDB rule changes this month, Files, Speaker notes (tylko m01 i m02), Glossary (pełny) |
+| `data.xlsx` | `contents`, `m_deck_results`, `m_results_bands`, `m_list_changes`, `monthly_metrics` (miesiąc × talia / archetyp, od pierwszego pełnego miesiąca okresu formatu – dziś czerwiec 2026, maj pominięty – do miesiąca paczki: listy, udział, eventy, Top 8, eventy z Top 8, trofea, piloci, udział top pilota, `concentrated`, zmiana vs poprzedni miesiąc, `tracked` / `tracked_reason`, przedział, p, q BH, `change_beyond`), `variants_month` (Deck, Variant, Lists, Top8, Trophies; suma wariantów = talia), `top8_month`, `new_cards_month`, `pilots_month`, `share_history_months_decks`, `share_history_months_archetypes`, `weeks_in_month`; każdy arkusz z `rules_version`, `export_sha256`, `data_version` |
+| `m01_deck_results.png`, `m02_list_changes.png` | te same wykresy co w folderze tygodnia (m02 nie powstaje, gdy żadna zmiana list nie przeszła testów); m01 liczy okres formatu od 2026-05-19 |
+| `m03`–`m14` | odpowiedniki wykresów tygodniowych w skali miesiąca i wykresy miesiąca: m03 udział archetypów, m04 archetypy miesiąc po miesiącu, m05 10 talii + Rogue & unclassified (other decks linią), m06 te talie miesiąc po miesiącu, m07 te talie tydzień po tygodniu w miesiącu (tygodnie przecięte granicą z `*`, bez testu), m08 / m09 macierze liczb, m10 Top 8 i trofea (15 talii słupkami, reszta linią pod wykresem), m11 oś trofeów (event po evencie, bez graczy), m12 piloci i koncentracja, m13 nowe karty miesiąca, m14 warianty. Moduł wykresów `src/deckdb_presentation.py` (te same funkcje co w tygodniu, parametry z domyślnymi tygodniowymi), wejścia z arkuszy: `src/deckdb_month_checks.py` |
+| `notes.md` | Status (miesiąc i jego okres, okres formatu do ostatniego dnia miesiąca, eventy i listy miesiąca i okresu formatu, pokrycie uczestników miesiąca, wersja reguł, sha256, `complete month`, triage, zmiany klasyfikacji od poprzedniego miesięcznego eksportu z linią `renamed`), DeckDB rule changes this month, Files, Speaker notes (m01–m14), Glossary (pełny, z terminami `tracked decks (month)`, `monthly change test (BH)`, `weeks in month`, `trophy timeline`) |
 | `README_metagame_info.md` | `docs/monthly_package_rules.md` (zasady danych dla projektu metagame.info) z nagłówkiem: data wygenerowania, commit repo, wersja reguł DeckDB |
 | `run_report_monthly.md` | wersje i commity, eksporty, triage (status z tego przebiegu), liczba talii w `m_deck_results` z testem i odrzucenia BH obu miar, kontrole, czasy kroków, komenda pipeline'u |
 
@@ -170,7 +171,21 @@ nazw graczy. Ograniczenie: zmiana rejestru zrobiona w innym commicie niż wpis n
    trofea talii z eksportu;
 6. m01: kolor słupka (`Colour_geometry` w `m_results_bands`) = `Flag_sheet` = `*_BH_rejects` talii w `m_deck_results`
    (asercja jak w b5c848c / 81b2556), talie wykresu = talie z największą liczbą list;
-7. `README_metagame_info.md` obecny i identyczny z `docs/monthly_package_rules.md` poza czterema liniami nagłówka.
+7. `README_metagame_info.md` obecny i identyczny z `docs/monthly_package_rules.md` poza czterema liniami nagłówka;
+8. miary miesięczne: suma list talii i suma po archetypach = listy eksportu w każdym miesiącu `monthly_metrics`;
+   `top8_month`: każdy event miesiąca z 8 listami Top 8 i jednym zwycięzcą, trofea = eventy miesiąca; trophies <= top8
+   <= lists, events_with_list <= month_events; `change_beyond` tylko przy `tracked = 1`; brak maja 2026 (i każdego
+   miesiąca przed pierwszym pełnym miesiącem okresu formatu) w `monthly_metrics` i `share_history_months_*`;
+   `pilots_month` = `monthly_metrics` (listy, piloci, koncentracja);
+9. wykresy m03–m14: każdy wykres zapisuje, co narysował (długości i kolory słupków, kawałki etykiet z pogrubieniem i
+   kolorem zmiany, punkty linii, komórki macierzy, wiersze tabeli, punkty osi trofeów, odczytane z obiektów
+   matplotlib); pipeline sprawdza to od razu, a runner ponownie na plikach (`<outputs-base>/monthly/<RRRR-MM>.charts.json`
+   poza folderem paczki, arkusze z `data.xlsx`): kolejność i liczby = arkusz, kolory archetypów / stałe kolory talii,
+   Rogue & unclassified szary, pogrubiona zielona / czerwona zmiana tylko przy `change_beyond = 1`; m11: liczba
+   punktów = eventy miesiąca, każdy zwycięzca = `top8_month`.
+
+Rozdzielczość wykresów m03–m14 jak tygodniowych i m01 / m02: 1920 × 1080 px (144 dpi); polecenie podawało „dpi 200,
+1920x1080 jak tygodniowe”, a przy 200 dpi ten sam kadr miałby 2667 × 1500 px, więc zostało 1920 × 1080 jak w tygodniu.
 
 Testy: `E:\github\.venv\Scripts\python.exe -m pytest tests/test_monthly_package.py` (przebieg syntetyczny W44 z
 oboma folderami, W45 tylko z tygodniowym, `--month 2026-10` odtwarza paczkę W44 arkusz po arkuszu i PNG bajtowo,

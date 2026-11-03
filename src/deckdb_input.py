@@ -775,14 +775,15 @@ def week_periods(period_start: date, last_week_end: date) -> List[tuple[date, da
     return out
 
 
-def tracked_decks(cur: pd.DataFrame, prev: pd.DataFrame, arch: Dict[str, str]) -> Dict[str, str]:
+def tracked_decks(cur: pd.DataFrame, prev: pd.DataFrame, arch: Dict[str, str],
+                  reasons: tuple = (TRACK_TOP10_WEEK, TRACK_TOP10_PREV)) -> Dict[str, str]:
     """Tracked decks of week w -> reason: the top 10 of w, the top 10 of w-1, and for every archetype without a deck in
     those two top 10s its largest deck by lists in w (ties alphabetical) when that deck has a share >= 1% in w or w-1.
     One reason per deck, in this order."""
     top_w = ranked_labels(cur, "material_deck")[:WEEK_TOP_N]
     top_p = ranked_labels(prev, "material_deck")[:WEEK_TOP_N]
-    out = {d: TRACK_TOP10_WEEK for d in top_w}
-    out.update({d: TRACK_TOP10_PREV for d in top_p if d not in out})
+    out = {d: reasons[0] for d in top_w}
+    out.update({d: reasons[1] for d in top_p if d not in out})
     covered = {arch[d] for d in out}
     n_cur, n_prev = cur["material_deck"].value_counts(), prev["material_deck"].value_counts()
     for a in sorted({x for x in arch.values() if x != NO_DECK_LABEL} - covered):
@@ -1070,3 +1071,191 @@ def match_mtgo_cache(rows: pd.DataFrame, cache_dir: Path, start: date, end: date
         "export_events_not_in_cache": len(export_events - cache_events),
         "cache_events_not_in_export": len(cache_events - export_events),
     }
+
+
+# --- monthly measures of the monthly package (order of 2026-11-03 b) -----------------------------------------------
+
+TRACK_TOP10_MONTH, TRACK_TOP10_PREV_MONTH = "top10_month", "top10_prev_month"
+MONTHLY_TESTED_COLUMNS = ["month", "month_from", "month_to", "complete_month", "level", "name", "archetype", "lists",
+                          "share_pct", "events_with_list", "month_events", "top8", "top8_events", "trophies", "pilots",
+                          "top_pilot_share_pct", "concentrated", "prev_month_lists", "prev_share_pct", "change_pp",
+                          "tracked", "tracked_reason", "change_ci_low_pp", "change_ci_high_pp", "change_p",
+                          "change_q_bh", "change_beyond"]
+
+
+def month_end(ms: date) -> date:
+    return (ms + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+
+def full_months(format_start: date, last_month_start: date) -> List[tuple[date, date]]:
+    """Every full calendar month of the format period up to the month starting *last_month_start*: from the first month
+    that starts on or after *format_start* (format period from 2026-05-19 -> June 2026; May is a partial month and is
+    left out)."""
+    ms = format_start if format_start.day == 1 else month_end(format_start) + timedelta(days=1)
+    out = []
+    while ms <= last_month_start:
+        out.append((ms, month_end(ms)))
+        ms = month_end(ms) + timedelta(days=1)
+    if not out:
+        raise DeckdbInputError(f"brak pełnego miesiąca okresu formatu od {format_start} do {last_month_start:%Y-%m}")
+    return out
+
+
+def _lead_concentration(rows: pd.DataFrame, labels: List[str]) -> pd.DataFrame:
+    """Per deck: the top pilot (most lists, ties: more Top 8 lists, then the id; _lead_pilot) with their lists and Top 8
+    lists, the share of the deck's lists, and 'concentrated' as in the glossary term 'pilot labels': the top pilot holds
+    >= 1/3 of the lists or >= 1/2 of the Top 8 entries. NaN / NA for a deck without lists and for 'Rogue &
+    unclassified' (not a deck)."""
+    out = {}
+    for d in labels:
+        g = rows[rows["material_deck"] == d]
+        if d == NO_DECK_LABEL or g.empty:
+            out[d] = {"top_pilot_lists": 0, "top_pilot_top8": 0, "top_pilot_share_pct": math.nan,
+                      "top_pilot_top8_share_pct": math.nan, "concentrated": pd.NA}
+            continue
+        _per, lead = _lead_pilot(g)
+        lists, top8 = len(g), int(g["top8"].sum())
+        conc = lead["lists"] / lists >= CONCENTRATION_LISTS or (top8 > 0 and lead["top8"] / top8 >= CONCENTRATION_TOP8)
+        out[d] = {"top_pilot_lists": int(lead["lists"]), "top_pilot_top8": int(lead["top8"]),
+                  "top_pilot_share_pct": lead["lists"] / lists * 100.0,
+                  "top_pilot_top8_share_pct": (lead["top8"] / top8 * 100.0) if top8 else math.nan,
+                  "concentrated": int(conc)}
+    return pd.DataFrame.from_dict(out, orient="index")
+
+
+def monthly_metrics_tested(export: DeckdbExport, months: List[tuple[date, date]], draws: int = CHANGE_DRAWS,
+                           seed: int = CHANGE_SEED) -> pd.DataFrame:
+    """Long table of the monthly package (monthly_metrics): every month of *months* (full_months) x every deck (with
+    'Rogue & unclassified') and, apart, every archetype of those months; a label absent in a month has 0 lists. Change
+    vs the previous month of the table (none for the first month): tracked decks of month M = the top 10 of M, the top
+    10 of M-1 and the largest deck of every archetype without a deck in those top 10s with a share >= 1% in M or M-1
+    (tracked_decks); archetypes (and 'Rogue & unclassified') with a list in M or M-1. Event bootstrap as the weekly test
+    (CHANGE_DRAWS draws, CHANGE_SEED, the events of each month drawn independently, M first), 95% interval, two-sided
+    p, BH q = 0.1 separately for the tracked decks and for the archetypes; change_beyond = BH rejection. Decks outside
+    the tracked decks: test columns empty."""
+    span = window_rows(export, months[0][0], months[-1][1])
+    arch = deck_archetype_map(span).to_dict()
+    universe = {LEVEL_DECK: ("material_deck", sorted(span["material_deck"].unique())),
+                LEVEL_ARCHETYPE: ("material_archetype", sorted(span["material_archetype"].unique()))}
+    out: List[pd.DataFrame] = []
+    prev_rows: Optional[pd.DataFrame] = None
+    for ms, me in months:
+        rows = window_rows(export, ms, me)
+        if rows.empty:
+            raise DeckdbInputError(f"miesiąc {ms:%Y-%m} bez list: udział nieokreślony")
+        for level, (key, labels) in universe.items():
+            t = _label_counts(rows, key, labels, top_pilot=False).drop(columns=["top_pilot_share_pct",
+                                                                                "concentrated"])
+            if level == LEVEL_DECK:
+                lead = _lead_concentration(rows, labels)
+                t["top_pilot_share_pct"] = lead["top_pilot_share_pct"].astype(float)
+                t["concentrated"] = lead["concentrated"].astype("Int64")
+            else:
+                t["top_pilot_share_pct"], t["concentrated"] = math.nan, pd.NA
+            t["share_pct"] = t["lists"] / len(rows) * 100.0
+            t["month_events"] = int(rows["event_id"].nunique())
+            t["archetype"] = [arch.get(x, x) for x in labels] if level == LEVEL_DECK else labels
+            for col in ("prev_month_lists", "prev_share_pct", "change_pp", "change_ci_low_pp", "change_ci_high_pp",
+                        "change_p", "change_q_bh"):
+                t[col] = math.nan
+            t["tracked"], t["tracked_reason"], t["change_beyond"] = 0, "", pd.NA
+            if prev_rows is not None:
+                n_prev = prev_rows[key].value_counts().reindex(labels).fillna(0).astype(int)
+                t["prev_month_lists"] = n_prev
+                t["prev_share_pct"] = n_prev / len(prev_rows) * 100.0
+                t["change_pp"] = t["share_pct"] - t["prev_share_pct"]
+                if level == LEVEL_DECK:
+                    reasons = tracked_decks(rows, prev_rows, arch, (TRACK_TOP10_MONTH, TRACK_TOP10_PREV_MONTH))
+                else:
+                    reasons = {x: TRACK_ARCHETYPE for x in labels if t.at[x, "lists"] or n_prev[x]}
+                fam = [x for x in labels if x in reasons]
+                rng = np.random.default_rng(seed)
+                diff = (_event_share_draws(rows.assign(_group=rows[key]), labels, draws, rng)
+                        - _event_share_draws(prev_rows.assign(_group=prev_rows[key]), labels, draws, rng))
+                lo, hi = np.percentile(diff, [2.5, 97.5], axis=0)
+                p = bootstrap_p(diff)
+                j = [labels.index(x) for x in fam]
+                qv, rej, _t = bh(p[j]) if fam else (np.array([]), np.array([], dtype=bool), math.nan)
+                t.loc[fam, "tracked"] = 1
+                t.loc[fam, "tracked_reason"] = [reasons[x] for x in fam]
+                t.loc[fam, "change_ci_low_pp"], t.loc[fam, "change_ci_high_pp"] = lo[j], hi[j]
+                t.loc[fam, "change_p"], t.loc[fam, "change_q_bh"] = p[j], qv
+                t.loc[fam, "change_beyond"] = rej.astype(int)
+            t = t.rename_axis("name").reset_index()
+            t.insert(0, "level", level)
+            t.insert(0, "complete_month", 1)
+            t.insert(0, "month_to", me.isoformat())
+            t.insert(0, "month_from", ms.isoformat())
+            t.insert(0, "month", f"{ms:%Y-%m}")
+            out.append(t)
+        prev_rows = rows
+    mm = pd.concat(out, ignore_index=True)[MONTHLY_TESTED_COLUMNS]
+    mm["change_beyond"] = mm["change_beyond"].astype("Int64")
+    mm["concentrated"] = mm["concentrated"].astype("Int64")
+    check_monthly_metrics_tested(export, mm)
+    return mm
+
+
+def check_monthly_metrics_tested(export: DeckdbExport, mm: pd.DataFrame) -> None:
+    """Per month and level the lists sum to the month's lists of the export; per row trophies <= top8 <= lists and
+    events_with_list <= month_events; change_beyond only on tracked rows (and on every tracked row). DeckdbInputError
+    otherwise (no fallback)."""
+    for (month, level), g in mm.groupby(["month", "level"]):
+        n = len(window_rows(export, date.fromisoformat(g["month_from"].iloc[0]),
+                            date.fromisoformat(g["month_to"].iloc[0])))
+        if int(g["lists"].sum()) != n:
+            raise DeckdbInputError(f"monthly_metrics {month} {level}: suma list {int(g['lists'].sum())} != {n}")
+    bad = mm[(mm["trophies"] > mm["top8"]) | (mm["top8"] > mm["lists"]) | (mm["events_with_list"] > mm["month_events"])]
+    if not bad.empty:
+        raise DeckdbInputError(f"monthly_metrics: monotoniczność naruszona w {len(bad)} wierszach, np. "
+                               f"{bad.iloc[0][['month', 'level', 'name']].tolist()}")
+    if (mm["change_beyond"].notna() != (mm["tracked"] == 1)).any():
+        raise DeckdbInputError("monthly_metrics: change_beyond poza tracked albo brak testu przy tracked")
+
+
+def monthly_trend(export: DeckdbExport, months: List[tuple[date, date]], key: str, key_name: str) -> pd.DataFrame:
+    """Share of Challenge Top 32 per full month (share_history_months_*): one row per month and label with a list."""
+    out = []
+    for ms, me in months:
+        rows = window_rows(export, ms, me)
+        for label, n in rows[key].value_counts().items():
+            out.append({"Month": f"{ms:%Y-%m}", "From": ms.isoformat(), "To": me.isoformat(), key_name: label,
+                        "Lists": int(n), "Month_lists": int(len(rows)), "Month_events": int(rows["event_id"].nunique()),
+                        "Share_Top32_pct": n / len(rows) * 100.0})
+    return pd.DataFrame(out).sort_values(["Month", "Lists", key_name], ascending=[True, False, True]).reset_index(
+        drop=True)
+
+
+def weeks_in_month(export: DeckdbExport, ms: date, me: date) -> pd.DataFrame:
+    """weeks_in_month: every ISO week that meets month ms .. me, counted only on the days of the month (Partial = 1 when
+    the ISO week crosses the month boundary): per deck (with 'Rogue & unclassified') lists and share of the week's
+    lists of the month. Weekly levels, no test."""
+    out = []
+    ws = ms - timedelta(days=ms.weekday())
+    while ws <= me:
+        a, b = max(ws, ms), min(ws + timedelta(days=6), me)
+        rows = window_rows(export, a, b)
+        partial = int((a, b) != (ws, ws + timedelta(days=6)))
+        for label, n in rows["material_deck"].value_counts().items():
+            out.append({"ISO_week": iso_week_label(ws), "From": a.isoformat(), "To": b.isoformat(), "Partial": partial,
+                        "Deck": label, "Lists": int(n), "Week_lists": int(len(rows)),
+                        "Week_events": int(rows["event_id"].nunique()), "Share_Top32_pct": n / len(rows) * 100.0})
+        ws += timedelta(days=7)
+    return pd.DataFrame(out).sort_values(["ISO_week", "Lists", "Deck"], ascending=[True, False, True]).reset_index(
+        drop=True)
+
+
+def pilots_month(rows: pd.DataFrame, decks: List[str], arch: Dict[str, str]) -> pd.DataFrame:
+    """pilots_month: for *decks*: lists, Top 8 lists, distinct pilots, the top pilot's lists / Top 8 lists and shares,
+    Concentrated (glossary 'pilot labels': >= 1/3 of the lists or >= 1/2 of the Top 8 entries)."""
+    lead = _lead_concentration(rows, decks)
+    out = []
+    for d in decks:
+        g = rows[rows["material_deck"] == d]
+        r = lead.loc[d]
+        out.append({"Deck": d, "Archetype": arch.get(d, ""), "Lists": len(g), "Top8": int(g["top8"].sum()),
+                    "Pilots": int(g["player"].nunique()), "Top_pilot_lists": int(r["top_pilot_lists"]),
+                    "Top_pilot_share_pct": float(r["top_pilot_share_pct"]), "Top_pilot_top8": int(r["top_pilot_top8"]),
+                    "Top_pilot_top8_share_pct": float(r["top_pilot_top8_share_pct"]),
+                    "Concentrated": int(r["concentrated"])})
+    return pd.DataFrame(out)
