@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857403,2026-11-01,C32,Challenge,QF,niuwaid001,2372533,_Arise,3583029,2,0,Living End,Azorius Blink
+12857403,2026-11-01,C32,Challenge,QF,Bullet_Time,2005514,BienTech,3160934,2,0,R,Esper Blink
+12857403,2026-11-01,C32,Challenge,QF,__BMJ__,1870388,Daniele123,991522,2,0,Broodscale Combo,Affinity
+12857403,2026-11-01,C32,Challenge,QF,mei0024,2253154,_theMoonSage_,2001341,2,1,Rakdos Midrange,Prowess
+12857403,2026-11-01,C32,Challenge,SF,mei0024,2253154,Bullet_Time,2005514,2,0,Rakdos Midrange,R
+12857403,2026-11-01,C32,Challenge,SF,niuwaid001,2372533,__BMJ__,1870388,2,1,Living End,Broodscale Combo
+12857403,2026-11-01,C32,Challenge,F,mei0024,2253154,niuwaid001,2372533,2,0,Rakdos Midrange,Living End

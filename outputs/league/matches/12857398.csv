@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857398,2026-11-01,C32,Challenge,QF,sedotwc,3535709,tabunghasisi,636881,2,0,Prowess,Broodscale Combo
+12857398,2026-11-01,C32,Challenge,QF,nk20,1326026,JV_7777,2045296,2,0,Amulet Titan,Affinity
+12857398,2026-11-01,C32,Challenge,QF,kasiso,2257869,eclipse4343,2714224,2,1,Jeskai Energy,Azorius Control
+12857398,2026-11-01,C32,Challenge,QF,E90_DeliveryBoy,3122660,Bails76,3023463,2,0,Belcher,Jeskai Energy
+12857398,2026-11-01,C32,Challenge,SF,kasiso,2257869,E90_DeliveryBoy,3122660,2,1,Jeskai Energy,Belcher
+12857398,2026-11-01,C32,Challenge,SF,nk20,1326026,sedotwc,3535709,2,1,Amulet Titan,Prowess
+12857398,2026-11-01,C32,Challenge,F,nk20,1326026,kasiso,2257869,2,0,Amulet Titan,Jeskai Energy
