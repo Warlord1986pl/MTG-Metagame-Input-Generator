@@ -370,10 +370,31 @@
       "IngestedAt": "2026-11-04T00:17:42Z",
       "WindowClose": "2026-11-04",
       "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857419",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857420",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857426",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
     }
   ],
-  "RankChangeAnchor": "2026-11-03",
-  "as_of": "2026-11-04",
+  "RankChangeAnchor": "2026-11-04",
+  "as_of": "2026-11-05",
   "events": [
     {
       "date": "2026-09-01",
@@ -1088,20 +1109,38 @@
       "event_id": "12857413",
       "rows": 32,
       "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857419",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857420",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857426",
+      "rows": 32,
+      "type": "challenge"
     }
   ],
-  "events_challenge": 116,
+  "events_challenge": 119,
   "events_premier": 3,
-  "events_total": 119,
-  "generated_at": "2026-11-04T00:17:57Z",
-  "pilots_scoring": 732,
-  "pilots_total": 1104,
-  "points_total": 3782,
-  "results_csv_sha256": "98a54ac8fe2daeb32fba95c96be46ba04d4c653ec0e5c9cfe8aef582bc3baad7",
+  "events_total": 122,
+  "generated_at": "2026-11-05T00:16:55Z",
+  "pilots_scoring": 739,
+  "pilots_total": 1111,
+  "points_total": 3875,
+  "results_csv_sha256": "7a0037b39d471233dd6f876f5b18df2b93a7c155306473abe0382428d5f8a80b",
   "season": "Autumn 2026",
   "season_end": "2026-11-30",
   "season_start": "2026-09-01",
-  "starts_total": 3754,
+  "starts_total": 3850,
   "validation": {
     "all_passed": true,
     "checks": [

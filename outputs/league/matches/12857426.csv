@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857426,2026-11-03,C32,Challenge,QF,gamerl,1959835,2345678,3043545,2,0,Ruby Storm,RG
+12857426,2026-11-03,C32,Challenge,QF,MeninoNey,2903591,AChord4Five,3177282,2,1,Living End,Amulet Titan
+12857426,2026-11-03,C32,Challenge,QF,rastaf,254536,Nyxen,3578004,2,1,Rakdos Midrange,Jeskai Energy
+12857426,2026-11-03,C32,Challenge,QF,Odin2015,3306092,duke12,6062,2,1,Eldrazi Tron,Boros Energy
+12857426,2026-11-03,C32,Challenge,SF,Odin2015,3306092,rastaf,254536,2,0,Eldrazi Tron,Rakdos Midrange
+12857426,2026-11-03,C32,Challenge,SF,MeninoNey,2903591,gamerl,1959835,2,0,Living End,Ruby Storm
+12857426,2026-11-03,C32,Challenge,F,Odin2015,3306092,MeninoNey,2903591,2,0,Eldrazi Tron,Living End
