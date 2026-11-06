@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857725,2026-11-04,C16,Challenge,QF,Fransadness,3143623,raisans,2083529,2,0,Broodscale Combo,Eldrazi Tron
+12857725,2026-11-04,C16,Challenge,QF,Bradykiesling13,2026932,Redman1034,3363119,2,1,Eldrazi Tron,Broodscale Combo
+12857725,2026-11-04,C16,Challenge,QF,nahuel10,1942357,fazparte,3106246,2,0,Azorius Control,Boros Energy
+12857725,2026-11-04,C16,Challenge,QF,Odin2015,3306092,joaoclaudioms,516507,2,1,Eldrazi Tron,Rakdos Midrange
+12857725,2026-11-04,C16,Challenge,SF,Fransadness,3143623,Bradykiesling13,2026932,2,0,Broodscale Combo,Eldrazi Tron
+12857725,2026-11-04,C16,Challenge,SF,nahuel10,1942357,Odin2015,3306092,2,0,Azorius Control,Eldrazi Tron
+12857725,2026-11-04,C16,Challenge,F,nahuel10,1942357,Fransadness,3143623,2,0,Azorius Control,Broodscale Combo
