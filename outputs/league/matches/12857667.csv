@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857667,2026-11-05,C32,Challenge,QF,makaaaa,3154401,DobleP,2955614,2,0,Ruby Storm,Living End
+12857667,2026-11-05,C32,Challenge,QF,Fransadness,3143623,4FunNoWin,3479773,2,1,Broodscale Combo,Boros Energy
+12857667,2026-11-05,C32,Challenge,QF,komattaman,2690217,NickBolas90,2921975,2,1,Rakdos Midrange,Yawgmoth
+12857667,2026-11-05,C32,Challenge,QF,Lightspirit,3222070,rastaf,254536,2,1,Broodscale Combo,Rakdos Midrange
+12857667,2026-11-05,C32,Challenge,SF,makaaaa,3154401,Fransadness,3143623,2,0,Ruby Storm,Broodscale Combo
+12857667,2026-11-05,C32,Challenge,SF,Lightspirit,3222070,komattaman,2690217,2,0,Broodscale Combo,Rakdos Midrange
+12857667,2026-11-05,C32,Challenge,F,makaaaa,3154401,Lightspirit,3222070,2,0,Ruby Storm,Broodscale Combo
