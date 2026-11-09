@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857683,2026-11-07,C16,Challenge,QF,kePs,1984508,Sebastian0722,3002475,2,0,Mono-Green Hardened Scales,Affinity
+12857683,2026-11-07,C16,Challenge,QF,DB_BFG,3308824,Selfeisek,2042214,2,1,Jund,Mono-Black Midrange
+12857683,2026-11-07,C16,Challenge,QF,Ghift,3157325,oosunq,1155358,2,0,The Rock,Azorius Control
+12857683,2026-11-07,C16,Challenge,QF,Foxantes,2092644,Walker735,2638611,2,1,Living End,Affinity
+12857683,2026-11-07,C16,Challenge,SF,Foxantes,2092644,DB_BFG,3308824,2,1,Living End,Jund
+12857683,2026-11-07,C16,Challenge,SF,kePs,1984508,Ghift,3157325,2,0,Mono-Green Hardened Scales,The Rock
+12857683,2026-11-07,C16,Challenge,F,Foxantes,2092644,kePs,1984508,2,0,Living End,Mono-Green Hardened Scales
