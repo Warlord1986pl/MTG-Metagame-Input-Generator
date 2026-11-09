@@ -3,6 +3,26 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-09 - weekly/2026-W45 rebuilt on DeckDB rules 37380967f3fb8a22 (K45) and the two-method weekly test
+
+- What: `docs/deckdb_config.csv` points to `assignments_37380967f3fb8a22_2026-11-08.csv` (sha256
+  `f39fca371294b5487637abe3ad79d377d9d7fc9afe213ed162682aeb47dbc3ab`) and `cards_37380967f3fb8a22_2026-11-08.csv`
+  (commit 2726ceb); `metagame_week.bat --week 2026-W45 --force` rebuilt `weekly/2026-W45/` with the weekly test of
+  87c8d8a (event and pilot bootstrap). No pipeline logic or DeckDB rule changed. `outputs/presentation/2026-W45/`
+  (archive) untouched.
+- Why: DeckDB K45 (Mono-Black Midrange mono-black only) moved list 12857683/58709494 (2026-11-07, place 3) from
+  Mono-Black Midrange to Rogue & unclassified; the folder was built on 14088fe43471e350 with the event-only test.
+- Checked: 14 events, 443 lists, 677 players, coverage 65.4%, the same 14 event IDs; every sheet with rules_version
+  37380967f3fb8a22, the new export sha256 and data_version; Mono-Black Midrange 10 -> 9 lists (Top 8 3, 1 pilot, top
+  pilot share 100%); Rogue & unclassified 25 -> 26 lists, 5.6% -> 5.9% (Rogue 16, unassigned 10 in
+  Rogue_unclassified_split); archetype Midrange 51 -> 50; top 10 decks and the 11 tracked decks unchanged;
+  change_beyond = 0 for the 11 tracked decks and 7 archetypes, change_p_pilot / change_q_bh_pilot on every tracked row;
+  Top 8 112 lists, 14 trophies; notes.md classification changes show Mono-Black Midrange -> Rogue & unclassified (6
+  common lists; the W45 list is new vs the previous week's export); triage pending_notice, 4 groups, 2.7%. run_report
+  lists the immediate neighbours 12857403 (2026-11-01) and 12857704 (2026-11-09), both outside the window;
+  12857398 (2026-11-01, in the export and on mtgo.com) is not named there, as the runner reports one neighbour per side.
+- Output files changed: every file of `weekly/2026-W45/` (charts 01-09, data.xlsx, notes.md, run_report.md, snapshot).
+
 ## 2026-11-09 - Weekly change test: rule of both methods (event and pilot bootstrap); Rogue_unclassified_split sheet
 
 - What: `deckdb_input.weekly_metrics` tests every weekly change twice, each with 2000 draws from its own generator
