@@ -604,6 +604,37 @@ def test_weekly_metrics_full_grid_sums_and_bh(tmp_path):
     assert list(mm["month_to"].unique()) == ["2026-10-25"] and mm["complete_month"].eq(0).all()
 
 
+def test_weekly_metrics_pilot_bootstrap_both_methods(tmp_path):
+    """Order of 2026-11-09: the weekly change is also tested with a pilot bootstrap; change_beyond = 1 only when BH
+    rejects in both methods. A big change carried by one pilot with many lists is beyond in the event bootstrap only;
+    a list without a pilot stops the run (no fallback)."""
+    rows = []
+    for wk, day in enumerate(["2026-10-12", "2026-10-25"]):
+        for e in range(8):
+            eid = 100 * wk + e
+            for i in range(8):
+                # week 2: deck A in 4 lists of every event, all from one pilot "solo"; week 1: A in 1 list per event
+                deck = "A" if (i < 4 if wk == 1 else i < 1) else "B"
+                player = "solo" if (wk == 1 and deck == "A") else f"{wk}{e}{i}"
+                rows.append(_row(eid, eid * 10 + i, day, "assigned", deck, "Aggro" if deck == "A" else "Ramp", player,
+                                 i + 1, pc=8))
+    exp = di.load_export(_write(tmp_path, rows))
+    wm = di.weekly_metrics(exp, date(2026, 10, 12), date(2026, 10, 25))
+    w = wm[(wm["iso_week"] == "2026-W43") & (wm["level"] == "deck")].set_index("name")
+    a = w.loc["A"]
+    assert a["tracked"] == 1 and a["change_q_bh"] <= di.BH_Q  # event bootstrap: beyond
+    assert a["change_q_bh_pilot"] > di.BH_Q and a["change_beyond"] == 0  # one pilot: not beyond in the pilot one
+    assert wm.loc[wm["tracked"] == 0, ["change_p_pilot", "change_q_bh_pilot"]].isna().all().all()
+    bad = wm.copy()
+    bad.loc[(bad["tracked"] == 1).idxmax(), "change_beyond"] = 1 - int(bad.loc[(bad["tracked"] == 1).idxmax(),
+                                                                                   "change_beyond"])
+    with pytest.raises(di.DeckdbInputError, match="obu metodach"):
+        di.check_weekly_metrics(exp, bad)
+    rows[0] = {**rows[0], "player": ""}
+    with pytest.raises(di.DeckdbInputError, match="bez pilota"):
+        di.weekly_metrics(di.load_export(_write(tmp_path, rows)), date(2026, 10, 12), date(2026, 10, 25))
+
+
 def test_results_bh_against_rest_and_band(tmp_path):
     """K41 change of 2026-10-28: p against baseline_rest (the field without the deck) from the same pilot draws, BH
     q = 0.1 per measure, T = q k / m; the band at level 1 - T holds baseline_rest outside exactly for BH rejections."""

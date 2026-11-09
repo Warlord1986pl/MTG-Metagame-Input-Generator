@@ -92,6 +92,8 @@ MAX_FILES = 13
 SHEETS = {
     "decks": "the deck rows of the share chart: share, presence, pilots, change vs last week with its interval",
     "archetypes": "the archetype rows of the share chart",
+    "Rogue_unclassified_split": "the 'Rogue & unclassified' row of the week split into the DeckDB statuses Rogue and "
+                                "unassigned (shares of all lists of the week); working detail, never on a chart",
     "top8": "the eight Top 8 lists of every event of the week: place, deck, variant, archetype, winner",
     "new_cards": "every new card of the week (reported and observations), mana-only lands flagged",
     "pilots": "pilots per deck of the share chart: lists, distinct pilots, top pilot's lists and share",
@@ -452,7 +454,11 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
         (f"{len(nc_shown)} card(s) showed up in a deck for the first time and were played by at least 2 pilots this "
          "week; 'SB' marks a sideboard card. Lands that only make mana are left out." if len(nc_shown) else
          "No card appeared in a deck for the first time with at least 2 pilots this week."))
-    data = {"decks": decks, "archetypes": archs, "top8": top8, "new_cards": nc, "pilots": pilots,
+    split = di.no_deck_split(rows, trophies=True)
+    if split.empty:
+        split = pd.DataFrame([{"Info": "no Rogue or unassigned list this week"}])
+    data = {"decks": decks, "archetypes": archs, "Rogue_unclassified_split": split, "top8": top8, "new_cards": nc,
+            "pilots": pilots,
             "share_history_decks": trend_d, "share_history_archetypes": trend_a,
             "variants_week": di.variant_week_table(rows), "weekly_metrics": wm, "monthly_metrics": mm}
     month_note: List[str] = []

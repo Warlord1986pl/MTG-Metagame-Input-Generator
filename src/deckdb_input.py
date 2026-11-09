@@ -799,7 +799,17 @@ WEEKLY_METRIC_COLUMNS = ["iso_week", "week_from", "week_to", "level", "name", "a
                          "events_with_list", "week_events", "top8", "top8_events", "trophies", "pilots",
                          "top_pilot_share_pct", "concentrated", "prev_week_lists", "prev_share_pct", "change_pp",
                          "tracked", "tracked_reason", "change_ci_low_pp", "change_ci_high_pp", "change_p",
-                         "change_q_bh", "change_beyond"]
+                         "change_q_bh", "change_p_pilot", "change_q_bh_pilot", "change_beyond"]
+
+
+def _require_pilots(rows: pd.DataFrame, what: str) -> None:
+    """The pilot bootstrap needs the anonymous player of every list: no column or an empty value = DeckdbInputError
+    (no fallback to the event bootstrap alone)."""
+    if "player" not in rows.columns:
+        raise DeckdbInputError(f"{what}: brak kolumny player (bootstrap po pilotach)")
+    bad = rows["player"].isna() | (rows["player"].astype(str).str.strip() == "")
+    if bad.any():
+        raise DeckdbInputError(f"{what}: {int(bad.sum())} list bez pilota (bootstrap po pilotach)")
 
 
 def _label_counts(rows: pd.DataFrame, key: str, labels: List[str], top_pilot: bool) -> pd.DataFrame:
@@ -825,10 +835,12 @@ def weekly_metrics(export: DeckdbExport, period_start: date, last_week_end: date
     """Long table, recomputed from the export on every call: every ISO week of the format period x every deck (with
     'Rogue & unclassified') and, apart, every archetype (with 'Rogue & unclassified') seen in the period; a label
     absent in a week has 0 lists and share 0. The change test runs only for the tracked decks (tracked_decks) and for
-    the archetypes with a list in w or w-1: event bootstrap as week_share_table (the same seed per week, the current
-    week drawn first), 95% interval, two-sided p (bootstrap_p), BH q = 0.10 separately in the week's family of tracked
-    decks and of archetypes; change_beyond = BH rejection. The first week of the period has no previous week in it:
-    no change, nothing tracked."""
+    the archetypes with a list in w or w-1, twice, each from its own generator seeded with *seed*, the current week
+    drawn first: the event bootstrap as week_share_table (95% interval change_ci_*, change_p, change_q_bh) and the
+    pilot bootstrap (pilot_share_draws: the pilots of each week drawn with replacement, all their lists of the week;
+    change_p_pilot, change_q_bh_pilot). Each: two-sided p (bootstrap_p), BH q = 0.10 separately in the week's family of
+    tracked decks and of archetypes; change_beyond = 1 only when BH rejects in both methods (order of 2026-11-09, the
+    rule of the monthly test). The first week of the period has no previous week in it: no change, nothing tracked."""
     weeks = week_periods(period_start, last_week_end)
     span = window_rows(export, weeks[0][0], weeks[-1][1])
     arch = deck_archetype_map(span).to_dict()
@@ -840,13 +852,14 @@ def weekly_metrics(export: DeckdbExport, period_start: date, last_week_end: date
         rows = window_rows(export, ws, we)
         if rows.empty:
             raise DeckdbInputError(f"tydzień {iso_week_label(ws)} ({ws}..{we}) bez list: udział nieokreślony")
+        _require_pilots(rows, f"weekly_metrics {iso_week_label(ws)}")
         for level, (key, labels) in universe.items():
             t = _label_counts(rows, key, labels, top_pilot=level == LEVEL_DECK)
             t["share_pct"] = t["lists"] / len(rows) * 100.0
             t["week_events"] = int(rows["event_id"].nunique())
             t["archetype"] = [arch.get(x, x) for x in labels] if level == LEVEL_DECK else labels
             for col in ("prev_week_lists", "prev_share_pct", "change_pp", "change_ci_low_pp", "change_ci_high_pp",
-                        "change_p", "change_q_bh"):
+                        "change_p", "change_q_bh", "change_p_pilot", "change_q_bh_pilot"):
                 t[col] = math.nan
             t["tracked"], t["tracked_reason"], t["change_beyond"] = 0, "", pd.NA
             if prev_rows is not None:
@@ -870,7 +883,13 @@ def weekly_metrics(export: DeckdbExport, period_start: date, last_week_end: date
                 t.loc[fam, "tracked_reason"] = [reasons[x] for x in fam]
                 t.loc[fam, "change_ci_low_pp"], t.loc[fam, "change_ci_high_pp"] = lo[j], hi[j]
                 t.loc[fam, "change_p"], t.loc[fam, "change_q_bh"] = p[j], qv
-                t.loc[fam, "change_beyond"] = rej.astype(int)
+                rng_p = np.random.default_rng(seed)
+                diff_p = (pilot_share_draws(rows, key, labels, draws, rng_p)
+                          - pilot_share_draws(prev_rows, key, labels, draws, rng_p))
+                p_p = bootstrap_p(diff_p)
+                qv_p, rej_p, _t = bh(p_p[j]) if fam else (np.array([]), np.array([], dtype=bool), math.nan)
+                t.loc[fam, "change_p_pilot"], t.loc[fam, "change_q_bh_pilot"] = p_p[j], qv_p
+                t.loc[fam, "change_beyond"] = (rej & rej_p).astype(int)
             t = t.rename_axis("name").reset_index()
             t.insert(0, "level", level)
             t.insert(0, "week_to", we.isoformat())
@@ -887,7 +906,19 @@ def weekly_metrics(export: DeckdbExport, period_start: date, last_week_end: date
 
 def check_weekly_metrics(export: DeckdbExport, wm: pd.DataFrame) -> None:
     """Per week and level: the lists sum to the week's lists; per row trophies <= top8 <= lists and events_with_list
-    <= week_events. DeckdbInputError otherwise (no fallback)."""
+    <= week_events; on tracked rows (and only there) both methods' p and BH q are present and change_beyond = event
+    rejection AND pilot rejection (q <= BH_Q). DeckdbInputError otherwise (no fallback)."""
+    missing = [c for c in ("change_p", "change_q_bh", "change_p_pilot", "change_q_bh_pilot") if c not in wm.columns]
+    if missing:
+        raise DeckdbInputError(f"weekly_metrics: brak kolumn {missing}")
+    tr = wm["tracked"] == 1
+    for col in ("change_p", "change_q_bh", "change_p_pilot", "change_q_bh_pilot", "change_beyond"):
+        if (wm[col].notna() != tr).any():
+            raise DeckdbInputError(f"weekly_metrics: {col} poza tracked albo brak testu przy tracked")
+    t = wm[tr]
+    both = (t["change_q_bh"] <= BH_Q + BH_EPS) & (t["change_q_bh_pilot"] <= BH_Q + BH_EPS)
+    if (t["change_beyond"].astype(int) != both.astype(int)).any():
+        raise DeckdbInputError("weekly_metrics: change_beyond różny od odrzucenia BH w obu metodach (event AND pilot)")
     for (week, level), g in wm.groupby(["iso_week", "level"]):
         n = len(window_rows(export, date.fromisoformat(g["week_from"].iloc[0]), date.fromisoformat(g["week_to"].iloc[0])))
         if int(g["lists"].sum()) != n:

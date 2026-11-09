@@ -167,17 +167,25 @@ GLOSSARY: List[tuple[str, str]] = [
                 "every tie by deck name in alphabetical order. Column tracked_reason: top10_week, top10_prev or "
                 "largest_in_archetype (the first that applies). Every other deck is still counted, never tested. Not "
                 "defined in the first week of the format period (no previous week in it)."),
-    (M_CHANGE_BH, f"two-sided p of the {M_CHANGE} from its event-bootstrap distribution d: p = 2 x min(P(d <= 0), "
-                  f"P(d >= 0)), at least 1/{di.CHANGE_DRAWS}; Benjamini-Hochberg q = {di.BH_Q} separately in the "
-                  f"week's family of {M_TRACKED} and in its family of archetypes (every archetype and the 'Rogue & "
-                  "unclassified' row with a list in w or w-1). change_beyond = 1 when BH rejects: the change is "
-                  f"{BEYOND_TEXT}. The 'Rogue & unclassified' row of the deck chart takes its test from the archetype "
-                  "family (the same quantity); the pooled 'other decks' row is not tested."),
+    (M_CHANGE_BH, f"the {M_CHANGE} is tested twice, each with {di.CHANGE_DRAWS} draws from its own generator (seed "
+                  f"{di.CHANGE_SEED}), the two weeks drawn independently: an event bootstrap (the events of each week "
+                  "drawn with replacement, all lists of a drawn event; columns change_p, change_q_bh) and a pilot "
+                  "bootstrap (the pilots of each week drawn with replacement, all lists of a drawn pilot in that week; "
+                  "columns change_p_pilot, change_q_bh_pilot). In each, the two-sided p from the bootstrap distribution "
+                  f"d: p = 2 x min(P(d <= 0), P(d >= 0)), at least 1/{di.CHANGE_DRAWS}; Benjamini-Hochberg q = "
+                  f"{di.BH_Q} separately in the week's family of {M_TRACKED} and in its family of archetypes (every "
+                  "archetype and the 'Rogue & unclassified' row with a list in w or w-1). change_beyond = 1 only when "
+                  f"BH rejects in both methods: the change is {BEYOND_TEXT}. The lists of a week depend on each other "
+                  "through shared events and through pilots who play several events with the same deck; requiring both "
+                  "methods is the rule of the monthly test. The 'Rogue & unclassified' row of the deck chart takes its "
+                  "test from the archetype family (the same quantity); the pooled 'other decks' row is not tested."),
     (M_WEEKLY_METRICS, "data.xlsx sheet, long format, recomputed from the export on every run (never appended): one row "
                        "per ISO week of the format period x deck (level deck) and x archetype (level archetype), both "
                        "with 'Rogue & unclassified'; a label absent in a week has 0 lists and share 0. Counts, share, "
                        "top pilot share (decks), change vs the previous week, tracked, and for tracked rows the "
-                       "interval, p, BH q and change_beyond; the first week is clipped to the format period start."),
+                       "event-bootstrap interval, p and BH q of both methods (change_p / change_q_bh: events; "
+                       "change_p_pilot / change_q_bh_pilot: pilots) and change_beyond (both reject); the first week is "
+                       "clipped to the format period start."),
     (M_MONTHLY_METRICS, "data.xlsx sheet: calendar month of the format period x deck and x archetype, the same scope "
                         "and recomputation: lists, share, events, Top 8, trophies, pilots, top pilot share (decks); the "
                         "first month starts at the format period start, the last one ends with the folder's week "

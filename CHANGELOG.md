@@ -3,6 +3,29 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-09 - Weekly change test: rule of both methods (event and pilot bootstrap); Rogue_unclassified_split sheet
+
+- What: `deckdb_input.weekly_metrics` tests every weekly change twice, each with 2000 draws from its own generator
+  (seed 20261026), the two weeks drawn independently: the event bootstrap as before (columns change_ci_low_pp,
+  change_ci_high_pp, change_p, change_q_bh, unchanged) and the pilot bootstrap of the monthly test
+  (`pilot_share_draws`: the pilots of each week drawn with replacement, all lists of a drawn pilot in that week; new
+  columns change_p_pilot, change_q_bh_pilot). Two-sided p as in the Glossary, BH q = 0.1 separately in the family of
+  tracked decks and of archetypes. change_beyond = 1 only when BH rejects in both methods. A list without a pilot (no
+  `player` column or an empty value) and any row where change_beyond differs from the AND of both rejections, or a
+  test outside / missing on a tracked row, stop the run with DeckdbInputError (no fallback to one method). Glossary
+  "weekly change test (BH)" and "weekly_metrics" describe both methods. The week folder's data.xlsx gets the sheet
+  `Rogue_unclassified_split` (the week's Rogue & unclassified lists split into the DeckDB statuses Rogue and
+  unassigned), which the Glossary entry "Rogue & unclassified" already referred to.
+- Why: order of 2026-11-09 (the same rule as the monthly test, decision of 2026-11-03; lists of a week depend on each
+  other through shared events and through pilots who play several events with the same deck).
+- Check on W45 (export `assignments_14088fe43471e350_2026-11-08.csv`): change_beyond = 0 for all 11 tracked decks and
+  all 7 archetype rows, as before; the event columns (p, q, interval) identical to the published weekly_metrics up to
+  float rounding (max 5.6e-17). Over the whole format period the rows with change_beyond = 1 go from 50 to 12 (every
+  one of the 38 lost is beyond in the event bootstrap only; W44: Amulet Titan, Prowess, Tron and the archetypes Aggro,
+  Combo, Control, Ramp). Published folders (`outputs/presentation/`, `weekly/2026-W44`, `weekly/2026-W45`) not rebuilt.
+- Output files changed: data.xlsx of the week folder (weekly_metrics columns, new sheet), Glossary in notes.md /
+  GLOSSARY.md; the charts change only where a change was beyond in the event bootstrap alone.
+
 ## 2026-11-03 - Month-on-month change test: rule of both methods (event and pilot bootstrap)
 
 - What: monthly_metrics of the monthly package tests every change twice: the event bootstrap (columns renamed to
