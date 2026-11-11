@@ -391,10 +391,24 @@
       "IngestedAt": "2026-11-05T00:16:40Z",
       "WindowClose": "2026-11-04",
       "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-09",
+      "EventID": "12857704",
+      "IngestedAt": "2026-11-11T01:16:26Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-09",
+      "EventID": "12857706",
+      "IngestedAt": "2026-11-11T01:16:26Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
     }
   ],
-  "RankChangeAnchor": "2026-11-09",
-  "as_of": "2026-11-10",
+  "RankChangeAnchor": "2026-11-10",
+  "as_of": "2026-11-11",
   "events": [
     {
       "date": "2026-09-01",
@@ -1181,20 +1195,32 @@
       "event_id": "12857696",
       "rows": 32,
       "type": "challenge"
+    },
+    {
+      "date": "2026-11-09",
+      "event_id": "12857704",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-09",
+      "event_id": "12857706",
+      "rows": 32,
+      "type": "challenge"
     }
   ],
-  "events_challenge": 128,
+  "events_challenge": 130,
   "events_premier": 3,
-  "events_total": 131,
-  "generated_at": "2026-11-10T01:16:36Z",
-  "pilots_scoring": 763,
-  "pilots_total": 1151,
-  "points_total": 4154,
-  "results_csv_sha256": "bc6b26c76973db81b60acdc9fdaec08b62c70079045d97ea631f764d58594093",
+  "events_total": 133,
+  "generated_at": "2026-11-11T01:16:42Z",
+  "pilots_scoring": 767,
+  "pilots_total": 1157,
+  "points_total": 4216,
+  "results_csv_sha256": "9b53921a7b572abf3dcf2dd4e9176c4ee9d536d30222552b2afd5862a65c577e",
   "season": "Autumn 2026",
   "season_end": "2026-11-30",
   "season_start": "2026-09-01",
-  "starts_total": 4133,
+  "starts_total": 4197,
   "validation": {
     "all_passed": true,
     "checks": [

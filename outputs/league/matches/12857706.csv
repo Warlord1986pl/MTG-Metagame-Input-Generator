@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857706,2026-11-09,C32,Challenge,QF,SuperCow12653,2064081,TooPoorToPlay,3189030,2,1,Amulet Titan,Belcher
+12857706,2026-11-09,C32,Challenge,QF,Erik157751,2578127,jvidarte,2651868,2,0,Ruby Storm,Boros Energy
+12857706,2026-11-09,C32,Challenge,QF,jbl2311,3024004,steelleaf51,2409685,2,0,Rakdos Midrange,Sam Combo
+12857706,2026-11-09,C32,Challenge,QF,sioutis_kk,3499660,klien7,2564773,2,1,Affinity,Domain Zoo
+12857706,2026-11-09,C32,Challenge,SF,jbl2311,3024004,SuperCow12653,2064081,2,0,Rakdos Midrange,Amulet Titan
+12857706,2026-11-09,C32,Challenge,SF,sioutis_kk,3499660,Erik157751,2578127,2,0,Affinity,Ruby Storm
+12857706,2026-11-09,C32,Challenge,F,jbl2311,3024004,sioutis_kk,3499660,2,1,Rakdos Midrange,Affinity
