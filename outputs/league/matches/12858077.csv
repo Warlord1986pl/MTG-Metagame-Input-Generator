@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858077,2026-11-10,C32,Challenge,QF,nahuel10,1942357,makaaaa,3154401,2,1,Azorius Control,Affinity
+12858077,2026-11-10,C32,Challenge,QF,Odin2015,3306092,Mikebrav,726347,2,0,Eldrazi Tron,Boros Energy
+12858077,2026-11-10,C32,Challenge,QF,ZerglingMTG,2737951,jessy_samek,922706,2,0,Indomitable Creativity,Azorius Control
+12858077,2026-11-10,C32,Challenge,QF,sioutis_kk,3499660,MisterTwin,3190187,2,0,Affinity,Azorius Control
+12858077,2026-11-10,C32,Challenge,SF,Odin2015,3306092,nahuel10,1942357,2,0,Eldrazi Tron,Azorius Control
+12858077,2026-11-10,C32,Challenge,SF,sioutis_kk,3499660,ZerglingMTG,2737951,2,1,Affinity,Indomitable Creativity
+12858077,2026-11-10,C32,Challenge,F,Odin2015,3306092,sioutis_kk,3499660,2,0,Eldrazi Tron,Affinity
