@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858082,2026-11-11,C32,Challenge,QF,NuBlkAu,1719515,VicTm,2399891,2,0,Rakdos Midrange,Amulet Titan
+12858082,2026-11-11,C32,Challenge,QF,reidq7,3155916,ChaoticMTG,3117739,2,0,Amulet Titan,Azorius Control
+12858082,2026-11-11,C32,Challenge,QF,rastaf,254536,HolaChico,3485421,2,0,Rakdos Midrange,Prowess
+12858082,2026-11-11,C32,Challenge,QF,Fransadness,3143623,BienTech,3160934,2,0,Broodscale Combo,Esper Blink
+12858082,2026-11-11,C32,Challenge,SF,rastaf,254536,NuBlkAu,1719515,2,0,Rakdos Midrange,Rakdos Midrange
+12858082,2026-11-11,C32,Challenge,SF,reidq7,3155916,Fransadness,3143623,2,1,Amulet Titan,Broodscale Combo
+12858082,2026-11-11,C32,Challenge,F,rastaf,254536,reidq7,3155916,2,0,Rakdos Midrange,Amulet Titan

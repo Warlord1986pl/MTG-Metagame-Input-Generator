@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858079,2026-11-11,C32,Challenge,QF,nahuel10,1942357,Fransadness,3143623,2,0,Azorius Control,Broodscale Combo
+12858079,2026-11-11,C32,Challenge,QF,MeninooNey,3263693,solaec0501,1773910,2,1,Living End,Broodscale Combo
+12858079,2026-11-11,C32,Challenge,QF,Tinker147,3179421,Venom01,3535587,2,0,Affinity,Broodscale Combo
+12858079,2026-11-11,C32,Challenge,QF,rastaf,254536,ejk,1952341,2,0,Rakdos Midrange,Esper Reanimator
+12858079,2026-11-11,C32,Challenge,SF,MeninooNey,3263693,nahuel10,1942357,2,1,Living End,Azorius Control
+12858079,2026-11-11,C32,Challenge,SF,Tinker147,3179421,rastaf,254536,2,0,Affinity,Rakdos Midrange
+12858079,2026-11-11,C32,Challenge,F,MeninooNey,3263693,Tinker147,3179421,2,0,Living End,Affinity
