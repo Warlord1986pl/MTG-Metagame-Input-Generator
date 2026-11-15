@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858098,2026-11-13,C32,Challenge,QF,O_danielakos,1017550,jdenora,3190208,2,0,Prowess,Boros Energy
+12858098,2026-11-13,C32,Challenge,QF,Walker735,2638611,tA326_,1823579,2,0,Affinity,Goryo's Vengeance
+12858098,2026-11-13,C32,Challenge,QF,MisterTwin,3190187,Mistakenn,2129541,2,0,Rakdos Midrange,Amulet Titan
+12858098,2026-11-13,C32,Challenge,QF,Capitano_CL,535716,hugofreitas1,1997683,2,1,Broodscale Combo,Ruby Storm
+12858098,2026-11-13,C32,Challenge,SF,O_danielakos,1017550,Capitano_CL,535716,2,1,Prowess,Broodscale Combo
+12858098,2026-11-13,C32,Challenge,SF,MisterTwin,3190187,Walker735,2638611,2,1,Rakdos Midrange,Affinity
+12858098,2026-11-13,C32,Challenge,F,O_danielakos,1017550,MisterTwin,3190187,2,0,Prowess,Rakdos Midrange
