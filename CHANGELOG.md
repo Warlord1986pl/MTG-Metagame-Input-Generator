@@ -3,6 +3,29 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-16 - weekly/2026-W46 built on DeckDB rules c4310b586bc1a4d2 (K46 Vengevine, K47 Birthing Ritual), Scryfall dump 3
+
+- What: `docs/deckdb_config.csv` points to `assignments_c4310b586bc1a4d2_2026-11-15.csv` (sha256
+  `820b94511613bac20219e7142a0d5331dc5b853593c8d882316b308c63ee1186`) and `cards_c4310b586bc1a4d2_2026-11-15.csv`
+  (sha256 `ebec54d9484c2b1fd07b810da0fda9fe7774e10d9ab88b34c34f2733450412a0`), commit 32d71e4;
+  `metagame_week.py --week 2026-W46` built `weekly/2026-W46/` (first runner run of W46). No pipeline logic changed (no
+  W42 control needed; the morning control after 87c8d8a was OK). `docs/deckdb_colours.csv` unchanged: neither new deck
+  is in the top 10 of W45 (cut 18 lists) or W46 (cut 16 lists). `outputs/presentation/2026-W46/` (archive, written in
+  the morning on rules 37380967f3fb8a22 by a direct pipeline run) untouched.
+- Why: DeckDB K46 (Vengevine, Aggro, 11 lists) and K47 (Birthing Ritual, Combo, the whole family, 313 lists) of
+  2026-11-16; the morning W46 export had no card export without Scryfall dump 3 (TRK set). The morning W46 build had no
+  `run_report.md` because it was a direct `src/metagame_input_generator.py` run (the /poniedzialek command), not the week
+  runner, which alone writes `weekly/<week>/` and `run_report.md`.
+- Checked: 13 events, 403 lists, 620 players, coverage 65.0%; 13 of 13 event IDs match mtgo.com, neighbours 12857696
+  (2026-11-08) and 12858125 (2026-11-16) outside the window; every sheet of data.xlsx with rules_version
+  c4310b586bc1a4d2, the export sha256 and the one data_version; Top 8 104 lists, 13 trophies; Rogue & unclassified 21 ->
+  14 (Rogue 10, unassigned 4), Vengevine 4, Birthing Ritual 3, Blink 9; notes.md classification changes vs the
+  2026-11-08 export: 317 of 24 965 common lists (Rogue & unclassified -> Birthing Ritual 294, Blink -> Birthing Ritual
+  16, Rogue & unclassified -> Vengevine 7) plus the 7 new W46 lists (4 + 3) = 324 = DeckDB's change count;
+  weekly_metrics over the format period from W21 (Birthing Ritual 70 lists from W21, Vengevine 11 from W44, its first
+  list); triage pending_notice, 4 groups, 1.0%.
+- Output files changed: every file of `weekly/2026-W46/` (new folder).
+
 ## 2026-11-09 - weekly/2026-W45 rebuilt on DeckDB rules 37380967f3fb8a22 (K45) and the two-method weekly test
 
 - What: `docs/deckdb_config.csv` points to `assignments_37380967f3fb8a22_2026-11-08.csv` (sha256
