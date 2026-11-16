@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858103,2026-11-14,C32,Challenge,QF,Bradykiesling13,2026932,DragonFodder,415299,2,0,Eldrazi Tron,Rakdos Aggro
+12858103,2026-11-14,C32,Challenge,QF,nahuel10,1942357,WestvalePreacher,1896339,2,0,Azorius Control,Esper Reanimator
+12858103,2026-11-14,C32,Challenge,QF,Capriccioso,536053,gazmon48,1636994,2,0,Amulet Titan,Rakdos Midrange
+12858103,2026-11-14,C32,Challenge,QF,xfile,2449332,caquaa,221272,2,1,Affinity,Broodscale Combo
+12858103,2026-11-14,C32,Challenge,SF,Bradykiesling13,2026932,xfile,2449332,2,1,Eldrazi Tron,Affinity
+12858103,2026-11-14,C32,Challenge,SF,Capriccioso,536053,nahuel10,1942357,2,1,Amulet Titan,Azorius Control
+12858103,2026-11-14,C32,Challenge,F,Bradykiesling13,2026932,Capriccioso,536053,2,0,Eldrazi Tron,Amulet Titan

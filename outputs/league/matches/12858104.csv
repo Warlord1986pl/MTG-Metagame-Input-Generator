@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858104,2026-11-14,C16,Challenge,QF,DemianDesposito10,2747375,E_Kaminuma,2707045,2,1,Boros Energy,Broodscale Combo
+12858104,2026-11-14,C16,Challenge,QF,Taddy_99,3412001,Raistlin_Majere1981,199359,2,0,Lantern,Affinity
+12858104,2026-11-14,C16,Challenge,QF,SFDK,3509735,mlex,2229031,2,0,Affinity,Azorius Control
+12858104,2026-11-14,C16,Challenge,QF,Bradykiesling13,2026932,sioutis_kk,3499660,2,0,Eldrazi Tron,Affinity
+12858104,2026-11-14,C16,Challenge,SF,SFDK,3509735,Bradykiesling13,2026932,2,0,Affinity,Eldrazi Tron
+12858104,2026-11-14,C16,Challenge,SF,DemianDesposito10,2747375,Taddy_99,3412001,2,1,Boros Energy,Lantern
+12858104,2026-11-14,C16,Challenge,F,SFDK,3509735,DemianDesposito10,2747375,2,0,Affinity,Boros Energy
