@@ -798,3 +798,82 @@ def write_notes(out: Path, notes: Dict[str, str]) -> Path:
     path.write_text(f"# Speaker notes\n\n{mark}{body}\n", encoding="utf-8")
     return path
 
+
+
+# --- pilot moves week to week (order of 2026-11-18) -------------------------------------------------------------------
+
+PM_SIZE, PM_DPI = (8.55, 5.45), 200  # this chart only: the size and dpi of the order, white background
+PM_OUT, PM_GONE, PM_IN, PM_NEW = "#EA580C", "#FED7AA", "#2563EB", "#BFDBFE"
+PM_OUT_TEXT, PM_IN_TEXT, PM_TEXT, PM_SOFT, PM_FOOT = "#9A3412", "#1E40AF", "#111827", "#4B5563", "#6B7280"
+
+
+def pilot_moves_footer(start: date, end: date, rows: pd.DataFrame) -> str:
+    """'MTGO Modern Challenge Top 32 · <start w-1> to <end w> · <events> events, <lists> lists · counts, not tested'
+    (+ the blocking-triage mark, as every chart)."""
+    return (f"MTGO Modern Challenge Top 32 · {start.isoformat()} to {end.isoformat()} · {rows['event_id'].nunique()} "
+            f"events, {len(rows)} lists · counts, not tested" + (f" · {MARK}" if MARK else ""))
+
+
+def pilot_moves_chart(moves: pd.DataFrame, decks: Sequence[str], prev_week: str, week: str, foot: str,
+                      path: Path) -> Path:
+    """10_pilot_moves.png: one diverging bar per deck (*decks*, top to bottom). Left: moved_out (white count in the
+    bar), then left_top32 (count beside the bar); right: moved_in (white count), then new_top32 (count beside); the
+    'stayed' column on the right in bold. Vertical line at 0, symmetric x axis labelled with absolute values."""
+    d = moves[moves["level"] == di.LEVEL_DECK].set_index("name").loc[list(decks)]
+    pw, w = int(prev_week.split("-W")[1]), int(week.split("-W")[1])
+    span = max(1, int((d["moved_out"] + d["left_top32"]).max()), int((d["moved_in"] + d["new_top32"]).max()))
+    step = next(s for s in (1, 2, 5, 10, 20, 50, 100) if span / s <= 6)
+    lim = span * 1.09 + 0.5  # room for the count beside the longest bar (W46: 22 -> 24.5)
+    stay_x = lim * 1.065
+    pad = lim * 0.017
+    plt.rcParams["font.family"] = "DejaVu Sans"
+    fig, ax = plt.subplots(figsize=PM_SIZE, dpi=PM_DPI)
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
+    n = len(d)
+    ys = list(range(n))[::-1]
+    for y, (name, r) in zip(ys, d.iterrows()):
+        out, gone, inn, new = (int(r["moved_out"]), int(r["left_top32"]), int(r["moved_in"]), int(r["new_top32"]))
+        ax.barh(y, -out, color=PM_OUT, height=0.62)
+        ax.barh(y, -gone, left=-out, color=PM_GONE, height=0.62)
+        ax.barh(y, inn, color=PM_IN, height=0.62)
+        ax.barh(y, new, left=inn, color=PM_NEW, height=0.62)
+        if out:
+            ax.text(-out / 2, y, str(out), ha="center", va="center", fontsize=7.5, color="white", fontweight="bold")
+        if inn:
+            ax.text(inn / 2, y, str(inn), ha="center", va="center", fontsize=7.5, color="white", fontweight="bold")
+        if gone:
+            ax.text(-(out + gone) - pad, y, str(gone), ha="right", va="center", fontsize=7, color=PM_OUT_TEXT)
+        if new:
+            ax.text(inn + new + pad, y, str(new), ha="left", va="center", fontsize=7, color=PM_IN_TEXT)
+        ax.text(stay_x, y, str(int(r["stayed"])), ha="center", va="center", fontsize=8, color=PM_TEXT,
+                fontweight="bold")
+    ax.set_yticks(ys)
+    ax.set_yticklabels(list(d.index), fontsize=8.5)
+    ax.axvline(0, color=PM_TEXT, lw=0.8)
+    ticks = [t for t in range(-int(lim // step) * step, int(lim // step) * step + 1, step) if abs(t) < lim]
+    ax.set_xlim(-lim, stay_x + lim * 0.06)
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(abs(t)) for t in ticks], fontsize=7.5)
+    ax.text(stay_x, n - 0.35, "stayed", ha="center", va="bottom", fontsize=7.5, color="#374151")
+    ax.text(-lim / 2, n - 0.35, "← pilots who left the deck", ha="center", va="bottom", fontsize=8, color=PM_OUT_TEXT)
+    ax.text(lim / 2, n - 0.35, "pilots who joined the deck →", ha="center", va="bottom", fontsize=8, color=PM_IN_TEXT)
+    for s in ("top", "right", "left"):
+        ax.spines[s].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.set_ylim(-0.6, n + 0.3)
+    fig.text(0.015, 0.965, f"Pilot moves, week {pw} to week {w}", fontsize=12.5, fontweight="bold", color=PM_TEXT,
+             ha="left")
+    fig.text(0.015, 0.925, "Pilots in Challenge Top 32 per deck; a pilot can play several decks in a week", fontsize=8,
+             color=PM_SOFT, ha="left")
+    ax.legend(handles=[Patch(color=PM_OUT, label="moved to another deck"),
+                       Patch(color=PM_GONE, label=f"not in Top 32 in week {w}"),
+                       Patch(color=PM_IN, label="came from another deck"),
+                       Patch(color=PM_NEW, label=f"not in Top 32 in week {pw}")],
+              loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=4, fontsize=7, frameon=False)
+    fig.text(0.015, 0.012, foot, fontsize=6.5, color=PM_FOOT)
+    fig.subplots_adjust(left=0.17, right=0.985, top=0.86, bottom=0.17)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=PM_DPI, facecolor="white")
+    plt.close(fig)
+    return path

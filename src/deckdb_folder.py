@@ -1,9 +1,11 @@
 """One flat presentation folder per ISO week (order of 2026-10-26 k, point B7): ``outputs/presentation/<year>-W<nn>/``,
-next to the working directories of outputs/_working/deckdb/ (unchanged), no subdirectories, at most 13 files (the
-presentation project takes at most 24 attachments; correction to the order of 2026-10-26 k):
+next to the working directories of outputs/_working/deckdb/ (unchanged), no subdirectories, at most 14 files (the
+presentation project takes at most 24 attachments; correction to the order of 2026-10-26 k; 10_pilot_moves.png since
+the order of 2026-11-18):
 
   01_archetypes_share.png  02_archetypes_trend.png  03_decks_share.png  04_decks_trend.png
   05_week_matrix_decks.png  06_week_matrix_archetypes.png  07_top8.png  08_pilots.png  09_new_cards.png
+  10_pilot_moves.png (deckdb_pilot_moves.py; sheets pilot_moves, pilot_flows)
   with the monthly material: m01_deck_results.png  m02_list_changes.png
   data.xlsx  (sheet "contents" first, then one sheet per table, SHEETS / MONTH_SHEETS)
   notes.md   (sections Status, Files, Speaker notes, Glossary)
@@ -29,12 +31,14 @@ try:
     import deckdb_input as di
     import deckdb_materials as dm
     import deckdb_month_checks as mc
+    import deckdb_pilot_moves as pm
     import deckdb_presentation as dp
 except ModuleNotFoundError:
     from . import deckdb_cards as dc
     from . import deckdb_input as di
     from . import deckdb_materials as dm
     from . import deckdb_month_checks as mc
+    from . import deckdb_pilot_moves as pm
     from . import deckdb_presentation as dp
 
 FOLDER_NAME = "presentation"
@@ -77,6 +81,9 @@ WEEK_FILES = {
     "08_pilots.png": "distinct pilots and the top pilot's share of the lists for the ten decks of the share chart",
     "09_new_cards.png": "cards appearing in a deck for the first time, played by at least 2 pilots this week (lands "
                         "that only make mana left out)",
+    "10_pilot_moves.png": "pilots who left and joined each of the ten most played decks (plus at most two other decks "
+                          "with the most moves) from the previous ISO week to this one, and how many stayed; counts, "
+                          "not tested",
     "data.xlsx": "every table of the folder, one sheet each; the first sheet 'contents' lists them",
     "notes.md": "Status (window, events, lists, coverage, rules version, export sha256, triage, classification "
                 "changes, event IDs to verify on mtgo.com), Files, Speaker notes, Glossary",
@@ -88,7 +95,7 @@ MONTH_FILES = {
     "m02_list_changes.png": "the biggest list changes from the month before to this month (at most 12, mana-only "
                             "lands left out), added or cut",
 }
-MAX_FILES = 13
+MAX_FILES = 14
 SHEETS = {
     "decks": "the deck rows of the share chart: share, presence, pilots, change vs last week with its interval",
     "archetypes": "the archetype rows of the share chart",
@@ -106,6 +113,13 @@ SHEETS = {
                       "decks and the BH-corrected change test",
     "monthly_metrics": "every month of the format period x every deck and archetype: lists, share, events, Top 8, "
                        "trophies, pilots, top pilot share",
+    "pilot_moves": "per deck and, apart, per archetype present in this week or the previous ISO week: pilots in each "
+                   "week, stayed, moved_out (to another deck), left_top32, moved_in (from another deck), new_top32 "
+                   "and the three biggest directions out (top_out) and in (top_in); a pilot can play several decks in "
+                   "a week and counts in each; counts, not tested (glossary 'pilot moves (week)')",
+    "pilot_flows": "every pair from -> to with at least one pilot, per deck and per archetype: pilots in the Top 32 of "
+                   "both weeks who dropped 'from' and took up 'to'; a pilot can give several pairs; counts, not tested "
+                   "(glossary 'pilot flows (week)')",
 }
 MONTH_SHEETS = {
     "m_deck_results": "results of every deck in the format period up to the end of the month, with the "
@@ -394,6 +408,8 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
     named = [d for d in decks["Deck"] if d not in dp.POOLED]
     pilots = _pilots(rows, named, arch)
     _check_pilots(pilots, wm, label)
+    moves, flows = pm.pilot_moves(prev, rows)
+    pm.check_pilot_moves(moves, flows, wm, prev, rows)
     if cards is not None:
         nc = dc.new_cards_in_week(export, cards, ws, we)
         mo = cards.mana_only_ids or frozenset()
@@ -454,13 +470,22 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
         (f"{len(nc_shown)} card(s) showed up in a deck for the first time and were played by at least 2 pilots this "
          "week; 'SB' marks a sideboard card. Lands that only make mana are left out." if len(nc_shown) else
          "No card appeared in a deck for the first time with at least 2 pilots this week."))
-    split = di.no_deck_split(rows, trophies=True)
+    # 10: in the order of 03_decks_share.png (share descending, ties by name), Rogue & unclassified left out
+    order = list(decks[~decks["Deck"].isin(dp.POOLED)].sort_values(["Share_Top32_pct", "Deck"],
+                                                                     ascending=[False, True])["Deck"])
+    pm_decks = pm.chart_decks(moves, order)
+    prev_label = di.iso_week_label(ps)
+    w.append(dp.pilot_moves_chart(moves, pm_decks, prev_label, label,
+                                  dp.pilot_moves_footer(ps, we, pd.concat([prev, rows])), out / "10_pilot_moves.png"))
+    notes["10_pilot_moves.png"] = pm.speaker_note(moves, flows, pm_decks, prev_label, label)
+    split =di.no_deck_split(rows, trophies=True)
     if split.empty:
         split = pd.DataFrame([{"Info": "no Rogue or unassigned list this week"}])
     data = {"decks": decks, "archetypes": archs, "Rogue_unclassified_split": split, "top8": top8, "new_cards": nc,
             "pilots": pilots,
             "share_history_decks": trend_d, "share_history_archetypes": trend_a,
-            "variants_week": di.variant_week_table(rows), "weekly_metrics": wm, "monthly_metrics": mm}
+            "variants_week": di.variant_week_table(rows), "weekly_metrics": wm, "monthly_metrics": mm,
+            "pilot_moves": moves, "pilot_flows": flows}
     month_note: List[str] = []
     if m_period is not None:
         mw, mnotes, mdata, month_note = _month(export, cards, out, *m_period)
@@ -468,6 +493,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
         notes.update(mnotes)
         data.update(mdata)
     w.append(_workbook(export, out / "data.xlsx", data))
+    _check_stamps(out / "data.xlsx", ("pilot_moves", "pilot_flows"))
     status = _status(export, label, ws, we, rows, cov, triage, colours, month_note, as_of, decks)
     w.append(_notes(export, out, label, status, notes, m_period is not None))
     files = [p for p in out.iterdir() if p.is_file()]
@@ -487,6 +513,19 @@ def _check_pilots(pilots: pd.DataFrame, wm: pd.DataFrame, week: str) -> None:
         if (r.Lists, r.Pilots) != (int(m["lists"]), int(m["pilots"])) or abs(r.Top_pilot_share_pct
                                                                             - m["top_pilot_share_pct"]) > 1e-9:
             raise di.DeckdbInputError(f"{week} {r.Deck}: arkusz pilots różny od weekly_metrics")
+
+
+def _check_stamps(path: Path, sheets: tuple) -> None:
+    """*sheets* of data.xlsx carry the same single rules_version, export_sha256 and data_version as the other sheets."""
+    xl = pd.read_excel(path, sheet_name=None, dtype=str)
+    cols = ("rules_version", "export_sha256", "data_version")
+    stamps = {name: {tuple(r) for r in df[list(cols)].itertuples(index=False)}
+              for name, df in xl.items() if name != "contents" and set(cols) <= set(df.columns)}
+    ref = set().union(*(v for k, v in stamps.items() if k not in sheets))
+    for name in sheets:
+        if name in stamps and (len(stamps[name]) != 1 or stamps[name] != ref):
+            raise di.DeckdbInputError(f"{path.name} {name}: rules_version / export_sha256 / data_version {stamps[name]} "
+                                      f"różne od pozostałych arkuszy {ref}")
 
 
 def _workbook(export, path: Path, data: Dict[str, pd.DataFrame], texts: Optional[Dict[str, str]] = None) -> Path:
@@ -630,6 +669,7 @@ def _notes(export, out: Path, label: str, status: List[str], notes: Dict[str, st
         file_lines += ["", "Not produced this time: " + ", ".join(f"`{name}`" for name in missing) + "."]
     sheets = {**SHEETS, **(MONTH_SHEETS if with_month else {})}
     file_lines += ["", "Sheets of `data.xlsx` (after `contents`): " + ", ".join(f"`{s}`" for s in sheets) + "."]
+    file_lines += [""] + [f"- `{s}` - {SHEETS[s]}." for s in ("pilot_moves", "pilot_flows")]
     mark = dp.MARK or dp.NOTICE
     speaker = ([f"**{mark}**", ""] if mark else []) + [line for name, text in notes.items()
                                                        for line in (f"### {name}", "", text, "")]
@@ -637,7 +677,8 @@ def _notes(export, out: Path, label: str, status: List[str], notes: Dict[str, st
     terms = list(FOLDER_TERMS) + (list(MONTH_TERMS) + [dc.KIND_LIST] if with_month else [])
     glossary = ([f"DeckDB rules `{export.rules_version}`, export `{export.path.name}`, sha256 `{export.sha256}`. "
                  "Every data sheet carries `rules_version`, `export_sha256` and `data_version`.", ""]
-                + [f"- **{t}** - {g[t]}" for t in terms if t in g] + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY])
+                + [f"- **{t}** - {g[t]}" for t in terms if t in g]
+                + [f"- **{t}** - {d}" for t, d in EXTRA_GLOSSARY + pm.GLOSSARY])
     body = ([f"# Presentation {label}", "",
              "MTGO Modern Challenge Top 32, input mode deckdb (DeckDB export only). Slide order = file number.", "",
              "## Status", ""] + status + ["", "## Files", ""] + file_lines + ["", "## Speaker notes", ""] + speaker

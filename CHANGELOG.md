@@ -3,6 +3,37 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-18 - pilot moves week to week: sheets pilot_moves and pilot_flows, chart 10_pilot_moves.png
+
+- What: from 2026-W47 every week folder (`outputs/presentation/<week>/`, copied by the runner to `weekly/<week>/`) has
+  two new `data.xlsx` sheets and one new chart, recomputed in full on every run from the same export as the rest:
+  `pilot_moves` (per deck and per archetype present in w or w-1: pilots_prev, pilots, stayed, moved_out, left_top32,
+  moved_in, new_top32, top_out, top_in + rules_version, export_sha256, data_version) and `pilot_flows` (every pair
+  from -> to with >= 1 pilot, both levels), and `10_pilot_moves.png` (diverging bars, 8.55 x 5.45 in at 200 dpi, the
+  top 10 of `03_decks_share.png` plus at most 2 other decks with moved_in + moved_out >= 3). New module
+  `src/deckdb_pilot_moves.py`, chart `deckdb_presentation.pilot_moves_chart`; `deckdb_folder.MAX_FILES` 13 -> 14.
+  `contents`, notes.md Files (both sheets described), Speaker notes (10_pilot_moves.png, 1-3 sentences) and Glossary
+  ("pilot moves (week)", "pilot flows (week)": definitions, a pilot can play several decks in a week, counts not
+  tested). Spec: `docs/deckdb_metodologia.md` section (o).
+- Definitions: P(w) = pilots with >= 1 list in week w; S_X(w) = pilots with >= 1 list of X; stayed = |S_X(w-1) ∩
+  S_X(w)|; moved_out / left_top32 = dropped X and in / not in P(w); moved_in / new_top32 = took up X and in / not in
+  P(w-1); flow X -> Y = a pilot of both weeks who dropped X and took up Y (several pairs per pilot possible); lists
+  without a deck = one deck and one archetype "Rogue & unclassified"; w-1 = previous ISO week (also across the year).
+- Checks (any mismatch = DeckdbInputError, no fallback): both sum identities per row; pilots (and pilots_prev when w-1
+  is in the format period) = weekly_metrics.pilots on both levels; per X the sum of pilot_flows over "to" = the number
+  of pairs from X recounted from the lists; every top_out / top_in direction = pilot_flows and X -> Y in top_out of X =
+  X in top_in of Y; the two sheets carry the same rules_version, export_sha256, data_version as the other sheets.
+- W46 control (`assignments_c4310b586bc1a4d2_2026-11-15.csv`, 2026-W46 vs 2026-W45, `tests/test_pilot_moves.py`):
+  P(W45) 254, P(W46) 229, both 120; Energy 22/14/5/7/10/2/7, Neobrand 7/11/1/2/4/5/5, Prowess, Tron, Broodscale Combo,
+  Moonshadow, Prison and archetypes Aggro, Combo, Midrange, Ramp as ordered, top_out/top_in as ordered; both sheets
+  identical row by row with `outputs/_working/pilot_moves_w46_mock.csv` / `pilot_flows_w46_mock.csv`. Correction of
+  the order: the W46 chart has 12 decks (top 10 + Neobrand + Dimir Midrange 3 + 1 = 4 >= 3), not 11 -- the rule stays,
+  the "11" came from the mock-up with Neobrand added by hand. A W46 rerun leaves 01..09 and every existing sheet
+  byte-identical to `weekly/2026-W46/`; notes.md only gains lines.
+  Legacy W42 control: 83 files, 82 identical, only `generated_at` of `metagame_input_grouped.xml`. Tests: 181 passed.
+- Output files changed: new `10_pilot_moves.png`, `data.xlsx` (+2 sheets, +2 contents rows), `notes.md` (+Files,
+  Speaker notes, Glossary lines). Nothing else; numbering 01..09 unchanged. Checked on DeckDB rules c4310b586bc1a4d2.
+
 ## 2026-11-16 - weekly/2026-W46 built on DeckDB rules c4310b586bc1a4d2 (K46 Vengevine, K47 Birthing Ritual), Scryfall dump 3
 
 - What: `docs/deckdb_config.csv` points to `assignments_c4310b586bc1a4d2_2026-11-15.csv` (sha256

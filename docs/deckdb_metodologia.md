@@ -760,3 +760,33 @@ Sprawdzenie na danych (eksport do 2026-10-25, więc W44 jeszcze nie istnieje): a
 2026-W40 (2026-09-28 … 2026-10-04, `--as-of 2026-10-04`): okres m01 2026-05-19 … 2026-09-30 (7484 listy = eksport),
 m02 2026-08-01 … 2026-09-30, wrzesień 59 eventów i 1884 listy = eksport, arkusze tygodniowe obejmują eventy z
 2026-10-01 … 10-04. Dokładnie W44 sprawdza test syntetyczny `test_month_material_in_the_week_closing_the_month`.
+
+## (o) Przejścia pilotów tydzień do tygodnia (polecenie 2026-11-18)
+
+Od 2026-W47 folder tygodnia ma arkusze `pilot_moves` i `pilot_flows` w `data.xlsx` i wykres `10_pilot_moves.png`
+(`src/deckdb_pilot_moves.py`, wykres `deckdb_presentation.pilot_moves_chart`; najwyżej 14 plików w folderze zamiast
+13). Liczby opisowe, bez testu. Ta sama populacja co reszta folderu (listy Top 32 z eksportu przypisań, `player` =
+anonimowy pilot); listy bez talii (status inny niż `assigned`) to jedna talia i jeden archetyp „Rogue &
+unclassified”. Tydzień w = tydzień folderu, w-1 = poprzedni tydzień ISO (także przez granicę roku), oba z tego samego
+eksportu.
+
+Dla poziomu talii i osobno archetypu (X): P(w) = piloci z ≥ 1 listą w tygodniu w; S_X(w) = piloci z ≥ 1 listą X (pilot
+z kilkoma taliami w tygodniu liczy się w każdej); `pilots_prev` = |S_X(w-1)|, `pilots` = |S_X(w)|, `stayed` =
+|S_X(w-1) ∩ S_X(w)|, `moved_out` = |(S_X(w-1) \ S_X(w)) ∩ P(w)|, `left_top32` = |(S_X(w-1) \ S_X(w)) \ P(w)|,
+`moved_in` = |(S_X(w) \ S_X(w-1)) ∩ P(w-1)|, `new_top32` = |(S_X(w) \ S_X(w-1)) \ P(w-1)|. Przejście X → Y: pilot z
+P(w-1) ∩ P(w), dla którego X ∈ talie(w-1) \ talie(w) i Y ∈ talie(w) \ talie(w-1); jeden pilot może dać kilka par.
+`top_out` / `top_in`: do trzech największych kierunków, „Talia n; Talia n” (malejąco po n, remis alfabetycznie).
+
+Wykres: top 10 tygodnia w kolejności z `03_decks_share.png` (bez Rogue & unclassified) i do 2 talii spoza top 10 z
+największym `moved_in + moved_out`, gdy ta suma ≥ 3 (remis alfabetycznie). Kontrole (rozjazd = `DeckdbInputError`):
+obie tożsamości sum w każdym wierszu; `pilots` (i `pilots_prev`, gdy w-1 należy do okresu formatu) = `pilots` z
+`weekly_metrics` na obu poziomach; suma `pilot_flows` po „to” dla X = liczba par z X policzona ponownie z list;
+każdy kierunek `top_out`/`top_in` = `pilot_flows`, X → Y w `top_out` X = X w `top_in` Y; te same `rules_version`,
+`export_sha256`, `data_version` co w pozostałych arkuszach.
+
+Kontrola W46 (eksport `assignments_c4310b586bc1a4d2_2026-11-15.csv`, W46 wobec W45, `tests/test_pilot_moves.py`):
+P(W45) = 254, P(W46) = 229, w obu 120; wszystkie liczby zlecenia zgodne co do sztuki, oba arkusze identyczne z
+`outputs/_working/pilot_moves_w46_mock.csv` / `pilot_flows_w46_mock.csv`. Poprawka zlecenia: wykres W46 ma 12 talii
+(top 10 + Neobrand 2 + 5 + Dimir Midrange 3 + 1), nie 11 — reguła „do 2 talii, suma ≥ 3” zostaje, „11” w zleceniu
+brało się ze wzoru, w którym Neobrand był wpisany ręcznie. Pozostałe pliki i arkusze W46 bajt w bajt jak w
+`weekly/2026-W46/`.

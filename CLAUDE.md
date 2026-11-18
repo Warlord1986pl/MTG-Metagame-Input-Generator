@@ -299,8 +299,9 @@ bad merge inflates that deck's share and skews the whole field's rogue/median cu
   group(s) awaiting decision" in chart footers, STATUS sheet, `status.md`, speaker notes).
 - Rogue and unassigned lists are one row labelled "Rogue & unclassified" (`di.NO_DECK_LABEL`) in every material.
 - Presentation folder (`deckdb_folder.py`, order 2026-10-26 k, B7; spec `docs/deckdb_metodologia.md` (k)): a run with
-  level `week`/`all` also writes ONE flat folder `outputs/presentation/<year>-W<nn>/` of at most 13 files (the
-  presentation project takes at most 24 attachments): the 01..09 charts, `data.xlsx` (sheet `contents` first, then one
+  level `week`/`all` also writes ONE flat folder `outputs/presentation/<year>-W<nn>/` of at most 14 files (the
+  presentation project takes at most 24 attachments): the 01..10 charts (10_pilot_moves.png: pilot moves vs the previous
+  ISO week, sheets pilot_moves / pilot_flows, `src/deckdb_pilot_moves.py`, counts, not tested; spec section (o)), `data.xlsx` (sheet `contents` first, then one
   sheet per table) and `notes.md` (sections Status, Files, Speaker notes, Glossary); the previous month's `m01`/`m02`
   charts and `m_*` sheets join the ISO week that contains the first day of the next month and end on the last day of
   the month (October 2026 -> 2026-W44, period up to 2026-10-31; 2026-11-01 only in the weekly sheets), `--presentation-month YYYY-MM`

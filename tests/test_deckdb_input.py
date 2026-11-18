@@ -476,8 +476,9 @@ def test_presentation_folder_flat_with_month(tmp_path):
     names = {p.name for p in folder.iterdir()}
     assert not any(p.is_dir() for p in folder.iterdir())
     week = set(fo.WEEK_FILES)
-    # no card export in this test: no m02_list_changes.png and no m_list_changes sheet (12 files; 13 with cards)
-    assert names == week | {"m01_deck_results.png"} and len(names) == 12 <= fo.MAX_FILES
+    # no card export in this test: no m02_list_changes.png and no m_list_changes sheet (13 files; 14 with cards)
+    assert names == week | {"m01_deck_results.png"} and len(names) == 13 <= fo.MAX_FILES
+    assert "10_pilot_moves.png" in names
     xl = pd.read_excel(folder / "data.xlsx", sheet_name=None)
     assert list(xl) == ["contents", *fo.SHEETS, "m_deck_results", "m_results_bands"]
     assert xl["contents"]["sheet"].tolist() == list(xl)[1:]
