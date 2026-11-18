@@ -19,6 +19,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
+from . import card_images as ci
 from . import monthly as mo
 from . import mtgo_check, rule_changes
 from .common import (EXIT_ARGS, EXIT_BUILD, EXIT_EXPORT, EXIT_FOLDER, EXIT_IMPORT, EXIT_MONTHLY, EXIT_PIPELINE,
@@ -279,6 +280,33 @@ class WeekRun:
         if bad:
             raise Stop(EXIT_FOLDER, f"kopia do {self.dir} różni się od {src}: {bad}")
         self.facts["files"] = [p.name for p in files]
+        if "card_images" in self.facts:  # staged and checked by card_images(): cards/ and the notes.md line
+            stage, cards = self.work / "cards", self.dir / "cards"
+            if cards.exists():
+                shutil.rmtree(cards)
+            shutil.copytree(stage, cards)
+            bad = [p.name for p in sorted(stage.iterdir()) if sha256(p) != sha256(cards / p.name)]
+            if bad:
+                raise Stop(EXIT_FOLDER, f"kopia do {cards} różni się od {stage}: {bad}")
+            try:
+                ci.check_cards_dir(cards, self.facts["card_names"])
+                ci.add_notes_line(self.dir / "notes.md")
+            except ci.CardImageError as e:
+                raise Stop(EXIT_FOLDER, f"obrazy kart: {e}") from None
+
+    def card_images(self) -> None:
+        """Full Scryfall images of the cards of the sheet new_cards, staged in the work directory (cards/) and checked
+        there; the week folder gets them in folder() (card_images.py, no fallback: a missing card is a stop)."""
+        src: Path = self.facts["presentation_src"]
+        stage = self.work / "cards"
+        if stage.exists():
+            shutil.rmtree(stage)
+        try:
+            names = ci.card_names(src / "data.xlsx")
+            self.facts["card_images"] = ci.fetch_card_images(names, stage)
+        except ci.CardImageError as e:
+            raise Stop(EXIT_FOLDER, f"obrazy kart: {e}") from None
+        self.facts["card_names"] = names
 
     def monthly_folder(self) -> None:
         """monthly/<YYYY-MM>/: the pipeline's package + README_metagame_info.md, assembled and checked in the work
@@ -475,6 +503,14 @@ def report(r: WeekRun, stage: str, stop: Optional[Stop]) -> str:
         out += ["", "## Ostrzeżenia", ""] + [f"- {w}" for w in r.log.warnings]
     if "files" in f:
         out += ["", "## Pliki", "", ", ".join(f["files"])]
+    if "card_images" in f:
+        c = f["card_images"]
+        out += ["", "## Obrazy kart (cards/)", "",
+                f"{len(c['cards'])} obrazów kart z arkusza new_cards (Scryfall png): pobrane {c['downloaded']}, z cache "
+                f"{c['cached']} (`data/card_images/`); zapytań do Scryfalla {c['requests']}.", "",
+                "| karta | plik | set | artysta | rozmiar | źródło |", "|---|---|---|---|---|---|"]
+        out += [f"| {x['card']} | {x['file']} | {x['set']} | {x['artist']} | {x['width']}x{x['height']} | "
+                f"{'pobrany' if x['source'] == 'download' else 'cache'} |" for x in c["cards"]]
     if "build_sha" in f:
         out += ["", "## Skrypty build/ (sha256)", ""] + [f"- `{k}`: `{v}`" for k, v in f["build_sha"].items()]
     if "qa" in f:
@@ -590,6 +626,7 @@ def execute(r: WeekRun, stage: str) -> int:
             if r.month:
                 r.log.run("zmiany reguł DeckDB miesiąca", r.rule_changes)
             r.log.run("pipeline", r.pipeline)
+            r.log.run("obrazy kart (Scryfall)", r.card_images)
             r.log.run("folder tygodnia", r.folder)
             if r.month:
                 r.log.run("pakiet miesięczny", r.monthly_folder)

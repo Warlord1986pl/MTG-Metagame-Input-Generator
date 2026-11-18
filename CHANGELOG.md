@@ -3,6 +3,29 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-18 - paczka tygodnia: folder cards/ z obrazami nowych kart (Scryfall png)
+
+- What: the week runner (`metagame_week.py`, stage DATA) adds `weekly/<week>/cards/<card>.png`: the full Scryfall image
+  of every distinct card of the sheet `new_cards` (column `Card`), for the short renderer (`build_short.py`, "NEW CARD
+  ALERT"). New module `src/weekly_runner/card_images.py`, step "obrazy kart (Scryfall)" between the pipeline and the
+  week folder: images staged and checked in `outputs/_working/runner/<week>/cards/`, copied in the folder step (sha256
+  checked), so a stop leaves the week folder unchanged. Lookup `api.scryfall.com/cards/named?exact=<name>` (User-Agent
+  `MetagameBreakdown/1.0`, Accept `application/json`), `image_uris.png` or for a double-faced card
+  `card_faces[0].image_uris.png`, saved byte for byte. >= 100 ms between requests; 500 ms before a `cards/named`
+  lookup, because Scryfall answered HTTP 429 to lookups 100 ms apart during the W46 check; on a 429 the second attempt
+  waits Retry-After (at most 10 s). Cache `data/card_images/<scryfall_id>.png` + `.json` (name, set, artist;
+  gitignored). File name = card name with `<>:"/\|?*` -> `_` (`Emeria's Call // Emeria, Shattered Skyclave` ->
+  `Emeria's Call __ Emeria, Shattered Skyclave.png`). `notes.md` Files gets `- cards/: full Scryfall card images (png)
+  for cards in new_cards; source: Scryfall`; `run_report.md` a section "Obrazy kart (cards/)" with downloaded / cached
+  counts and card / file / set / artist / size / source per card.
+- No fallback (stop code 9 with the card name): card not on Scryfall, HTTP error after 2 attempts, a file that is not
+  a PNG of 745x1040 or 744x1040 (PNG header), files in cards/ different from the distinct cards of new_cards.
+- Checked on W46 (`weekly/2026-W46/data.xlsx`): 42 distinct cards (45 rows), 42 files, all 744x1040 or 745x1040;
+  `Genesis Device.png` 744x1040, set trk, artist Cliff Nielsen; three double-faced / two-part names saved with `__`.
+  Tests: `tests/test_card_images.py` (offline with a fake Scryfall; the W46 control is marker `live`).
+- Impact: new files in the week package (`cards/`, one line in notes.md, a section in run_report.md); every number,
+  chart and sheet unchanged. `weekly/2026-W46/` itself not rebuilt.
+
 ## 2026-11-18 - pilot moves week to week: sheets pilot_moves and pilot_flows, chart 10_pilot_moves.png
 
 - What: from 2026-W47 every week folder (`outputs/presentation/<week>/`, copied by the runner to `weekly/<week>/`) has

@@ -94,3 +94,5 @@ monthly/
 
 # private pilot identity directory of this machine (src/identity.py, 2026-10-30)
 .pilot_identity_dir
+# Scryfall card images cache of the week runner (weekly_runner/card_images.py)
+data/card_images/

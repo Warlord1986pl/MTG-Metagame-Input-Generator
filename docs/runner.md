@@ -64,13 +64,27 @@ metagame_week.bat --month 2026-10 --force
    `--outputs-base` w `outputs/_working/runner/<tydzień>/pipeline/`. Materiał miesięczny według reguły `month_for`
    (miesiąc M w tygodniu ISO z 1. dniem M+1). `outputs/presentation/` (archiwum opublikowanych folderów) nie jest
    ruszany.
-7. **Folder** `weekly/<tydzień>/` (płaski): `data.xlsx`, `notes.md`, PNG, `mtgo_snapshot_*.html`, `run_report.md`.
-8. **Paczka miesięczna** (tylko w tygodniu zamknięcia miesiąca, przed krokiem 6 zmiany reguł DeckDB miesiąca, w kroku
+7. **Obrazy kart** (`src/weekly_runner/card_images.py`, polecenie 2026-11-18): dla każdej unikalnej karty arkusza
+   `new_cards` (kolumna `Card`) pełny obraz ze Scryfalla (`cards/named?exact=<nazwa>`, nagłówki `User-Agent:
+   MetagameBreakdown/1.0`, `Accept: application/json`; `image_uris.png`, karta dwustronna bez `image_uris`:
+   `card_faces[0].image_uris.png`), zapisany bajt w bajt (bez kadrowania, skalowania, ponownego zapisu) najpierw w
+   `outputs/_working/runner/<tydzień>/cards/`. Odstęp między zapytaniami co najmniej 100 ms, przed zapytaniem
+   `cards/named` 500 ms (Scryfall odpowiada 429 przy szybszych); przy 429 druga próba czeka `Retry-After` (najwyżej
+   10 s). Cache `data/card_images/<scryfall_id>.png` (+ `.json` z nazwą, setem, artystą; poza gitem): obraz z cache
+   nie jest pobierany ponownie, zapytanie o kartę idzie zawsze. Nazwa pliku = nazwa karty, znaki niedozwolone w
+   nazwie pliku Windows (`<>:"/\|?*`) zamienione na `_` (`A // B` → `A __ B.png`). Bez fallbacku: brak karty w
+   Scryfallu, błąd HTTP po 2 próbach, plik inny niż PNG 745×1040 / 744×1040 albo liczba plików różna od liczby kart
+   = stop (kod 9) z nazwą karty.
+8. **Folder** `weekly/<tydzień>/`: `data.xlsx`, `notes.md`, PNG, `mtgo_snapshot_*.html`, `run_report.md` i podkatalog
+   `cards/` (kopia z kontrolą sha256, liczby plików i rozmiarów; `notes.md`, sekcja Files, dostaje linię
+   `- cards/: full Scryfall card images (png) for cards in new_cards; source: Scryfall`).
+9. **Paczka miesięczna** (tylko w tygodniu zamknięcia miesiąca, przed krokiem 6 zmiany reguł DeckDB miesiąca, w kroku
    6 ten sam przebieg pipeline'u): `monthly/<RRRR-MM>/`, sekcja „Paczka miesięczna” niżej.
 
 `run_report.md`: tydzień i okno, commity obu repo i configu, wersja reguł, sha256 eksportów, eventy i listy,
 tabela weryfikacji (ID / plik / mtgo.com / daty / rozmiar), sąsiedzi, triage, materiał miesięczny, ostrzeżenia,
-czasy kroków, komenda pipeline'u. Przy stopie raport jest w `outputs/_working/runner/<tydzień>/run_report_STOP.md`
+obrazy kart (liczba, pobrane / z cache, tabela karta / plik / set / artysta / rozmiar / źródło), czasy kroków,
+komenda pipeline'u. Przy stopie raport jest w `outputs/_working/runner/<tydzień>/run_report_STOP.md`
 (folder tygodnia nie powstaje albo zostaje bez zmian). Logi komend: `outputs/_working/runner/<tydzień>/logs/`.
 
 ## Etap BUILD
@@ -204,7 +218,7 @@ kontrole zatrzymują przy rozjeździe).
 | 6 | eksport | `już istnieje z inną zawartością`, `data_version różne`, `stan bazy zmienił się po triage'u` | porównaj pliki (`scripts/export_diff.py` w DeckDB), przenieś stary plik; przy zmianie stanu uruchom ponownie |
 | 7 | mtgo.com | `brak w eksporcie: <ID>`, `brak na mtgo.com: <ID>`, `data różna o więcej niż 1 dzień`, `brak linków ... (zmiana struktury strony?)`, `po 4 próbach` | brak w eksporcie: sprawdź import (event mógł wystartować po listingu, uruchom ponownie); nadmiarowy: sprawdź event na mtgo.com; struktura strony: obejrzyj `mtgo_snapshot_*.html` w `outputs/_working/runner/<tydzień>/snapshots/` |
 | 8 | pipeline | `pipeline (input mode deckdb): kod wyjścia 2` z końcem logu | błąd danych w pipeline'ie (np. `DeckdbInputError`): log w `logs/pipeline.log` |
-| 9 | folder | `kopia ... różni się`, `ma podkatalogi` | błąd dysku albo zmiana pipeline'u: zgłoś |
+| 9 | folder | `kopia ... różni się`, `ma podkatalogi`; `obrazy kart: karta '<nazwa>': brak w Scryfallu`, `... błąd po 2 próbach (HTTP <kod>)`, `obraz <w>x<h>`, `<n> plików, kart w new_cards <m>` | błąd dysku albo zmiana pipeline'u: zgłoś; obrazy kart: sprawdź kartę na scryfall.com (nazwa w eksporcie kart DeckDB), przy błędzie sieci uruchom ponownie z `--force` |
 | 11 | paczka miesięczna | `kontrola paczki miesięcznej: ...` (np. `notes.md: miesiąc ...`, `m01 <talia>: kolor ...`, `README_metagame_info.md różny`), `nie znaleziono commitu, który dodał wpis` | rozjazd danych albo zmiana kodu: raport `run_report_monthly_STOP.md` w `outputs/_working/runner/...`; folder `monthly/` zostaje bez zmian |
 | 10 | build | `brak skryptów buildu`, `brak plików treści`, `pptxgenjs niedostępny`, `brak ... validate.py`, `build/<skrypt>: kod wyjścia`, `qa.py: N FAIL` | wgraj brakujące pliki / wymagania jednorazowe wyżej; FAIL: popraw treść tygodnia |
 
