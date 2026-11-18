@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858125,2026-11-16,C32,Challenge,QF,nahuel10,1942357,DemianDesposito10,2747375,2,0,Azorius Control,Boros Energy
+12858125,2026-11-16,C32,Challenge,QF,xfile,2449332,Chaughey,926112,2,1,Jeskai Energy,Affinity
+12858125,2026-11-16,C32,Challenge,QF,eclipse4343,2714224,MisterTwin,3190187,2,0,Azorius Control,Rakdos Midrange
+12858125,2026-11-16,C32,Challenge,QF,Capitano_CL,535716,jayrod115,2760324,2,1,Broodscale Combo,Boros Energy
+12858125,2026-11-16,C32,Challenge,SF,nahuel10,1942357,eclipse4343,2714224,2,0,Azorius Control,Azorius Control
+12858125,2026-11-16,C32,Challenge,SF,xfile,2449332,Capitano_CL,535716,2,0,Jeskai Energy,Broodscale Combo
+12858125,2026-11-16,C32,Challenge,F,nahuel10,1942357,xfile,2449332,2,1,Azorius Control,Jeskai Energy
