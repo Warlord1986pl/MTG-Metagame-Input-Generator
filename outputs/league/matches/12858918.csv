@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858918,2026-11-19,C32,Challenge,QF,Dark_Shine,3464807,albertosd87,3565947,2,1,Rakdos Midrange,Boros Energy
+12858918,2026-11-19,C32,Challenge,QF,Boucha,844369,Azzay0,1699326,2,1,Amulet Titan,Affinity
+12858918,2026-11-19,C32,Challenge,QF,Gniksigerg,3150278,azatoyellow,1872748,2,1,Boros Energy,Azorius Control
+12858918,2026-11-19,C32,Challenge,QF,Capitano_CL,535716,HolaChico,3485421,2,1,Broodscale Combo,Prowess
+12858918,2026-11-19,C32,Challenge,SF,Boucha,844369,Dark_Shine,3464807,2,1,Amulet Titan,Rakdos Midrange
+12858918,2026-11-19,C32,Challenge,SF,Gniksigerg,3150278,Capitano_CL,535716,2,1,Boros Energy,Broodscale Combo
+12858918,2026-11-19,C32,Challenge,F,Boucha,844369,Gniksigerg,3150278,2,1,Amulet Titan,Boros Energy

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858988,2026-11-19,C16,Challenge,QF,HouseOfManaMTG,2669359,MystikHawk,2626857,2,1,Amulet Titan,Boros Energy
+12858988,2026-11-19,C16,Challenge,QF,hellisreal,3551942,Silentstorm1003,3021329,2,0,WBRG,Mono-White Midrange
+12858988,2026-11-19,C16,Challenge,QF,komattaman,2690217,caquaa,221272,2,0,Rakdos Midrange,Broodscale Combo
+12858988,2026-11-19,C16,Challenge,QF,albertosd87,3565947,wellknownthrower,3535555,2,1,Boros Energy,Rakdos Midrange
+12858988,2026-11-19,C16,Challenge,SF,hellisreal,3551942,HouseOfManaMTG,2669359,2,1,WBRG,Amulet Titan
+12858988,2026-11-19,C16,Challenge,SF,albertosd87,3565947,komattaman,2690217,2,1,Boros Energy,Rakdos Midrange
+12858988,2026-11-19,C16,Challenge,F,hellisreal,3551942,albertosd87,3565947,2,0,WBRG,Boros Energy
