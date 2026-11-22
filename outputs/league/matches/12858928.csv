@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858928,2026-11-20,C32,Challenge,QF,pepeteam,2272105,JPA93,1181017,2,0,Boros Energy,Neobrand
+12858928,2026-11-20,C32,Challenge,QF,Misplacedginger,736792,Xwhale,1428769,2,0,Broodscale Combo,Goryo's Vengeance
+12858928,2026-11-20,C32,Challenge,QF,O_danielakos,1017550,Thunus,3076886,2,1,Prowess,WBRG
+12858928,2026-11-20,C32,Challenge,QF,Mapletreefrog,1557079,sioutis_kk,3499660,2,0,Esper Blink,Affinity
+12858928,2026-11-20,C32,Challenge,SF,Misplacedginger,736792,Mapletreefrog,1557079,2,0,Broodscale Combo,Esper Blink
+12858928,2026-11-20,C32,Challenge,SF,O_danielakos,1017550,pepeteam,2272105,2,0,Prowess,Boros Energy
+12858928,2026-11-20,C32,Challenge,F,Misplacedginger,736792,O_danielakos,1017550,2,0,Broodscale Combo,Prowess
