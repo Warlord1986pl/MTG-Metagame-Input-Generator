@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858934,2026-11-21,C16,Challenge,QF,Venom01,3535587,HouseOfManaMTG,2669359,2,1,Broodscale Combo,Amulet Titan
+12858934,2026-11-21,C16,Challenge,QF,Lord_of_The_Wastes,3051633,sedotwc,3535709,2,0,Amulet Titan,Prowess
+12858934,2026-11-21,C16,Challenge,QF,narca,2776772,SFDK,3509735,2,1,Tron,Boros Energy
+12858934,2026-11-21,C16,Challenge,QF,Rarian,331207,Zlatan1044,3032093,2,0,Broodscale Combo,Broodscale Combo
+12858934,2026-11-21,C16,Challenge,SF,Lord_of_The_Wastes,3051633,Rarian,331207,2,0,Amulet Titan,Broodscale Combo
+12858934,2026-11-21,C16,Challenge,SF,narca,2776772,Venom01,3535587,2,0,Tron,Broodscale Combo
+12858934,2026-11-21,C16,Challenge,F,Lord_of_The_Wastes,3051633,narca,2776772,2,1,Amulet Titan,Tron

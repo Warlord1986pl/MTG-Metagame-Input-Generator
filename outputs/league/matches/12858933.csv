@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858933,2026-11-21,C32,Challenge,QF,cthibert,1077142,Chef_Chuy,3142372,2,1,Tron,Amulet Titan
+12858933,2026-11-21,C32,Challenge,QF,Redman1034,3363119,mlex,2229031,2,1,Broodscale Combo,Ruby Storm
+12858933,2026-11-21,C32,Challenge,QF,Gullit_Careca,3467433,auzzie51,1111936,2,0,Indomitable Creativity,Ruby Storm
+12858933,2026-11-21,C32,Challenge,QF,yolad,3342362,HelpfulHobo,2063678,2,0,Rakdos Midrange,Esper Blink
+12858933,2026-11-21,C32,Challenge,SF,Gullit_Careca,3467433,yolad,3342362,2,1,Indomitable Creativity,Rakdos Midrange
+12858933,2026-11-21,C32,Challenge,SF,Redman1034,3363119,cthibert,1077142,2,0,Broodscale Combo,Tron
+12858933,2026-11-21,C32,Challenge,F,Redman1034,3363119,Gullit_Careca,3467433,2,0,Broodscale Combo,Indomitable Creativity
