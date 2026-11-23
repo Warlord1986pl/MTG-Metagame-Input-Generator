@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857687,2026-11-07,C32,Challenge,QF,Reitze27,3503044,tailorman,1174124,2,1,Domain Zoo,Song of Creation
+12857687,2026-11-07,C32,Challenge,QF,Matts,2631782,TrueHero,2569009,2,0,Affinity,Azorius Control
+12857687,2026-11-07,C32,Challenge,QF,Mistakenn,2129541,AChord4Five,3177282,2,0,Amulet Titan,Amulet Titan
+12857687,2026-11-07,C32,Challenge,QF,Fransadness,3143623,Jumba,2618500,2,1,Broodscale Combo,Eldrazi Tron
+12857687,2026-11-07,C32,Challenge,SF,Mistakenn,2129541,Fransadness,3143623,2,0,Amulet Titan,Broodscale Combo
+12857687,2026-11-07,C32,Challenge,SF,Reitze27,3503044,Matts,2631782,2,1,Domain Zoo,Affinity
+12857687,2026-11-07,C32,Challenge,F,Mistakenn,2129541,Reitze27,3503044,2,0,Amulet Titan,Domain Zoo

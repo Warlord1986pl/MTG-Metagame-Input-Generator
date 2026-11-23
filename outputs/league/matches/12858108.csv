@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858108,2026-11-14,C32,Challenge,QF,TooPoorToPlay,3189030,sioutis_kk,3499660,2,1,Belcher,Affinity
+12858108,2026-11-14,C32,Challenge,QF,nahuel10,1942357,Fransadness,3143623,2,1,Azorius Control,Broodscale Combo
+12858108,2026-11-14,C32,Challenge,QF,r0cknati0n,1137752,Mikebrav,726347,2,1,Jeskai Energy,Boros Energy
+12858108,2026-11-14,C32,Challenge,QF,O_danielakos,1017550,caquaa,221272,2,1,Prowess,Broodscale Combo
+12858108,2026-11-14,C32,Challenge,SF,O_danielakos,1017550,TooPoorToPlay,3189030,2,1,Prowess,Belcher
+12858108,2026-11-14,C32,Challenge,SF,r0cknati0n,1137752,nahuel10,1942357,2,1,Jeskai Energy,Azorius Control
+12858108,2026-11-14,C32,Challenge,F,r0cknati0n,1137752,O_danielakos,1017550,2,1,Jeskai Energy,Prowess

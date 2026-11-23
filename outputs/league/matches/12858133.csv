@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858133,2026-11-17,C32,Challenge,QF,kthanakit26,2122697,peter780108,1742159,2,0,Goryo's Vengeance,Azorius Control
+12858133,2026-11-17,C32,Challenge,QF,ho-oh,2134671,MeninoNey,2903591,2,1,Affinity,Living End
+12858133,2026-11-17,C32,Challenge,QF,Tetsubou,1700365,justFeather,2446403,2,1,Azorius Control,Broodscale Combo
+12858133,2026-11-17,C32,Challenge,QF,el-pollo-lolo,2636302,yolad,3342362,2,1,Boros Energy,Rakdos Midrange
+12858133,2026-11-17,C32,Challenge,SF,ho-oh,2134671,Tetsubou,1700365,2,1,Affinity,Azorius Control
+12858133,2026-11-17,C32,Challenge,SF,el-pollo-lolo,2636302,kthanakit26,2122697,2,1,Boros Energy,Goryo's Vengeance
+12858133,2026-11-17,C32,Challenge,F,el-pollo-lolo,2636302,ho-oh,2134671,2,0,Boros Energy,Affinity

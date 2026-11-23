@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857677,2026-11-06,C32,Challenge,QF,bugzbugs,3486773,secr3tm0de,3158040,2,1,Belcher,Rakdos Midrange
+12857677,2026-11-06,C32,Challenge,QF,Oscar_Franco,2114194,Adndmage,3360921,2,1,Azorius Control,Prowess
+12857677,2026-11-06,C32,Challenge,QF,ETBJezus,3040474,Dark_Shine,3464807,2,1,Dimir Midrange,Rakdos Midrange
+12857677,2026-11-06,C32,Challenge,QF,Selfeisek,2042214,Capitano_CL,535716,2,1,Mono-Black Midrange,Rakdos Midrange
+12857677,2026-11-06,C32,Challenge,SF,Oscar_Franco,2114194,Selfeisek,2042214,2,0,Azorius Control,Mono-Black Midrange
+12857677,2026-11-06,C32,Challenge,SF,bugzbugs,3486773,ETBJezus,3040474,2,1,Belcher,Dimir Midrange
+12857677,2026-11-06,C32,Challenge,F,bugzbugs,3486773,Oscar_Franco,2114194,2,0,Belcher,Azorius Control

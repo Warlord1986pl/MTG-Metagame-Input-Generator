@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858112,2026-11-15,C32,Challenge,QF,Atagomax,3441315,Bok_Choy_,2999477,2,0,BRG,Broodscale Combo
+12858112,2026-11-15,C32,Challenge,QF,Keggers,2385663,Venom01,3535587,2,1,Azorius Control,Broodscale Combo
+12858112,2026-11-15,C32,Challenge,QF,Selfeisek,2042214,Shuichi_Saito,3310009,2,0,Mono-Black Midrange,Rakdos Midrange
+12858112,2026-11-15,C32,Challenge,QF,ryuumei,933670,yolad,3342362,2,1,Rakdos Midrange,Rakdos Midrange
+12858112,2026-11-15,C32,Challenge,SF,Atagomax,3441315,Keggers,2385663,2,0,BRG,Azorius Control
+12858112,2026-11-15,C32,Challenge,SF,Selfeisek,2042214,ryuumei,933670,2,0,Mono-Black Midrange,Rakdos Midrange
+12858112,2026-11-15,C32,Challenge,F,Selfeisek,2042214,Atagomax,3441315,2,1,Mono-Black Midrange,BRG

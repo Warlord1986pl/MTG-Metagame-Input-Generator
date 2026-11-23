@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857712,2026-11-10,C32,Challenge,QF,solaec0501,1773910,niuwaid001,2372533,2,0,Broodscale Combo,Living End
+12857712,2026-11-10,C32,Challenge,QF,Cachorrowo,2720911,Dioferreira,1950164,2,1,Ruby Storm,Neobrand
+12857712,2026-11-10,C32,Challenge,QF,caquaa,221272,nahuel10,1942357,2,0,Broodscale Combo,Azorius Control
+12857712,2026-11-10,C32,Challenge,QF,Venom01,3535587,toothymtg,3087786,2,0,Broodscale Combo,Azorius Control
+12857712,2026-11-10,C32,Challenge,SF,solaec0501,1773910,caquaa,221272,2,0,Broodscale Combo,Broodscale Combo
+12857712,2026-11-10,C32,Challenge,SF,Venom01,3535587,Cachorrowo,2720911,2,1,Broodscale Combo,Ruby Storm
+12857712,2026-11-10,C32,Challenge,F,Venom01,3535587,solaec0501,1773910,2,0,Broodscale Combo,Broodscale Combo

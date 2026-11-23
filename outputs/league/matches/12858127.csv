@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858127,2026-11-16,C32,Challenge,QF,Rvng,649380,novaschin22,2838825,2,0,Goryo's Vengeance,Rakdos Midrange
+12858127,2026-11-16,C32,Challenge,QF,MayoDominaria,1112102,NickBolas90,2921975,2,0,Jeskai Energy,Yawgmoth
+12858127,2026-11-16,C32,Challenge,QF,GWT,3544040,sedotwc,3535709,2,0,Azorius Control,Prowess
+12858127,2026-11-16,C32,Challenge,QF,O_danielakos,1017550,Polikasoll,2237473,2,1,Prowess,Rakdos Midrange
+12858127,2026-11-16,C32,Challenge,SF,MayoDominaria,1112102,Rvng,649380,2,0,Jeskai Energy,Goryo's Vengeance
+12858127,2026-11-16,C32,Challenge,SF,GWT,3544040,O_danielakos,1017550,2,0,Azorius Control,Prowess
+12858127,2026-11-16,C32,Challenge,F,MayoDominaria,1112102,GWT,3544040,2,1,Jeskai Energy,Azorius Control

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857696,2026-11-08,C32,Challenge,QF,Bradykiesling13,2026932,Venom01,3535587,2,0,Eldrazi Tron,Broodscale Combo
+12857696,2026-11-08,C32,Challenge,QF,DelverOfBolts,2688845,sedotwc,3535709,2,0,Mono-Green Hardened Scales,Prowess
+12857696,2026-11-08,C32,Challenge,QF,Xerk,1089456,kaiszern,2078647,2,1,Yawgmoth,Domain Zoo
+12857696,2026-11-08,C32,Challenge,QF,BENTO_,3458153,Walker735,2638611,2,1,Neobrand,Affinity
+12857696,2026-11-08,C32,Challenge,SF,Bradykiesling13,2026932,BENTO_,3458153,2,1,Eldrazi Tron,Neobrand
+12857696,2026-11-08,C32,Challenge,SF,Xerk,1089456,DelverOfBolts,2688845,2,0,Yawgmoth,Mono-Green Hardened Scales
+12857696,2026-11-08,C32,Challenge,F,Bradykiesling13,2026932,Xerk,1089456,2,1,Eldrazi Tron,Yawgmoth

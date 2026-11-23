@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858938,2026-11-21,C32,Challenge,QF,E90_DeliveryBoy,3122660,hxlfnxxsx,2313977,2,0,Belcher,Prowess
+12858938,2026-11-21,C32,Challenge,QF,_Elfkid_,2675769,IkeanWarlord,3022580,2,0,Boros Energy,Goryo's Vengeance
+12858938,2026-11-21,C32,Challenge,QF,mERAZED,3150538,Player44,2554735,1,0,Amulet Titan,Affinity
+12858938,2026-11-21,C32,Challenge,QF,sedotwc,3535709,Strongmind,3405199,2,1,Prowess,Rakdos Midrange
+12858938,2026-11-21,C32,Challenge,SF,mERAZED,3150538,_Elfkid_,2675769,2,1,Amulet Titan,Boros Energy
+12858938,2026-11-21,C32,Challenge,SF,E90_DeliveryBoy,3122660,sedotwc,3535709,2,1,Belcher,Prowess
+12858938,2026-11-21,C32,Challenge,F,E90_DeliveryBoy,3122660,mERAZED,3150538,2,1,Belcher,Amulet Titan

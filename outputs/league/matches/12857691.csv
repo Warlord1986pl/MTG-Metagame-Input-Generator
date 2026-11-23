@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857691,2026-11-08,C32,Challenge,QF,KizmaHusky,2568669,Chef_Chuy,3142372,2,1,Amulet Titan,Amulet Titan
+12857691,2026-11-08,C32,Challenge,QF,nahuel10,1942357,mark_68,1324666,2,1,Azorius Control,Indomitable Creativity
+12857691,2026-11-08,C32,Challenge,QF,Kollslaw,3311758,caquaa,221272,2,1,Broodscale Combo,Broodscale Combo
+12857691,2026-11-08,C32,Challenge,QF,_Shikamaru_,3332226,ls149950,1862893,2,0,Rakdos Midrange,Broodscale Combo
+12857691,2026-11-08,C32,Challenge,SF,nahuel10,1942357,KizmaHusky,2568669,2,0,Azorius Control,Amulet Titan
+12857691,2026-11-08,C32,Challenge,SF,_Shikamaru_,3332226,Kollslaw,3311758,2,0,Rakdos Midrange,Broodscale Combo
+12857691,2026-11-08,C32,Challenge,F,nahuel10,1942357,_Shikamaru_,3332226,2,0,Azorius Control,Rakdos Midrange

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857682,2026-11-07,C32,Challenge,QF,komattaman,2690217,lime360jr,1169657,2,1,Rakdos Midrange,Broodscale Combo
+12857682,2026-11-07,C32,Challenge,QF,RHNog,3227886,hugofreitas1,1997683,2,1,Amulet Titan,Ruby Storm
+12857682,2026-11-07,C32,Challenge,QF,manohito,2908947,toothymtg,3087786,2,0,Grixis Midrange,Azorius Control
+12857682,2026-11-07,C32,Challenge,QF,peter780108,1742159,duke12,6062,2,0,Azorius Control,Izzet Murktide
+12857682,2026-11-07,C32,Challenge,SF,RHNog,3227886,komattaman,2690217,2,0,Amulet Titan,Rakdos Midrange
+12857682,2026-11-07,C32,Challenge,SF,peter780108,1742159,manohito,2908947,2,1,Azorius Control,Grixis Midrange
+12857682,2026-11-07,C32,Challenge,F,peter780108,1742159,RHNog,3227886,2,1,Azorius Control,Amulet Titan

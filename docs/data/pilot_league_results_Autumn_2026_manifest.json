@@ -356,10 +356,108 @@
       "IngestedAt": "2026-10-29T01:16:11Z",
       "WindowClose": "2026-10-28",
       "WindowStart": "2026-10-21"
+    },
+    {
+      "EventDate": "2026-11-02",
+      "EventID": "12857411",
+      "IngestedAt": "2026-11-04T00:17:42Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-02",
+      "EventID": "12857413",
+      "IngestedAt": "2026-11-04T00:17:42Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857419",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857420",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-03",
+      "EventID": "12857426",
+      "IngestedAt": "2026-11-05T00:16:40Z",
+      "WindowClose": "2026-11-04",
+      "WindowStart": "2026-10-28"
+    },
+    {
+      "EventDate": "2026-11-09",
+      "EventID": "12857704",
+      "IngestedAt": "2026-11-11T01:16:26Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-09",
+      "EventID": "12857706",
+      "IngestedAt": "2026-11-11T01:16:26Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-10",
+      "EventID": "12857712",
+      "IngestedAt": "2026-11-12T00:16:38Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-10",
+      "EventID": "12857713",
+      "IngestedAt": "2026-11-12T00:16:38Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-10",
+      "EventID": "12858077",
+      "IngestedAt": "2026-11-12T00:16:38Z",
+      "WindowClose": "2026-11-11",
+      "WindowStart": "2026-11-04"
+    },
+    {
+      "EventDate": "2026-11-16",
+      "EventID": "12858125",
+      "IngestedAt": "2026-11-18T01:17:09Z",
+      "WindowClose": "2026-11-18",
+      "WindowStart": "2026-11-11"
+    },
+    {
+      "EventDate": "2026-11-16",
+      "EventID": "12858127",
+      "IngestedAt": "2026-11-18T01:17:09Z",
+      "WindowClose": "2026-11-18",
+      "WindowStart": "2026-11-11"
+    },
+    {
+      "EventDate": "2026-11-17",
+      "EventID": "12858133",
+      "IngestedAt": "2026-11-19T01:16:35Z",
+      "WindowClose": "2026-11-18",
+      "WindowStart": "2026-11-11"
+    },
+    {
+      "EventDate": "2026-11-17",
+      "EventID": "12858134",
+      "IngestedAt": "2026-11-19T01:16:35Z",
+      "WindowClose": "2026-11-18",
+      "WindowStart": "2026-11-11"
     }
   ],
-  "RankChangeAnchor": "2026-11-02",
-  "as_of": "2026-11-03",
+  "RankChangeAnchor": "2026-11-22",
+  "as_of": "2026-11-23",
   "events": [
     {
       "date": "2026-09-01",
@@ -1062,20 +1160,242 @@
       "event_id": "12857403",
       "rows": 32,
       "type": "challenge"
+    },
+    {
+      "date": "2026-11-02",
+      "event_id": "12857411",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-02",
+      "event_id": "12857413",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857419",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857420",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-03",
+      "event_id": "12857426",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-04",
+      "event_id": "12857428",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-04",
+      "event_id": "12857725",
+      "rows": 30,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-05",
+      "event_id": "12857667",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-06",
+      "event_id": "12857677",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-07",
+      "event_id": "12857682",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-07",
+      "event_id": "12857683",
+      "rows": 29,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-07",
+      "event_id": "12857687",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-08",
+      "event_id": "12857691",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-08",
+      "event_id": "12857696",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-09",
+      "event_id": "12857704",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-09",
+      "event_id": "12857706",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-10",
+      "event_id": "12857712",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-10",
+      "event_id": "12857713",
+      "rows": 26,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-10",
+      "event_id": "12858077",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-11",
+      "event_id": "12858079",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-11",
+      "event_id": "12858082",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-12",
+      "event_id": "12858088",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-13",
+      "event_id": "12858098",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-14",
+      "event_id": "12858103",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-14",
+      "event_id": "12858104",
+      "rows": 25,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-14",
+      "event_id": "12858108",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-15",
+      "event_id": "12858112",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-16",
+      "event_id": "12858125",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-16",
+      "event_id": "12858127",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-17",
+      "event_id": "12858133",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-17",
+      "event_id": "12858134",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-19",
+      "event_id": "12858918",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-19",
+      "event_id": "12858988",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-20",
+      "event_id": "12858928",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-21",
+      "event_id": "12858933",
+      "rows": 32,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-21",
+      "event_id": "12858934",
+      "rows": 25,
+      "type": "challenge"
+    },
+    {
+      "date": "2026-11-21",
+      "event_id": "12858938",
+      "rows": 32,
+      "type": "challenge"
     }
   ],
-  "events_challenge": 114,
+  "events_challenge": 151,
   "events_premier": 3,
-  "events_total": 117,
-  "generated_at": "2026-11-03T00:16:42Z",
-  "pilots_scoring": 726,
-  "pilots_total": 1094,
-  "points_total": 3720,
-  "results_csv_sha256": "6a5a981d0ae13c91698e2ea0e8481b9ac7cd3adb7da0ae7949a2718415839780",
+  "events_total": 154,
+  "generated_at": "2026-11-23T01:17:41Z",
+  "pilots_scoring": 825,
+  "pilots_total": 1227,
+  "points_total": 4867,
+  "results_csv_sha256": "bc357a7e5d80a467d5c05c55b827eb44c1f22891faa47dcdd475922c33cd76f8",
   "season": "Autumn 2026",
   "season_end": "2026-11-30",
   "season_start": "2026-09-01",
-  "starts_total": 3690,
+  "starts_total": 4849,
   "validation": {
     "all_passed": true,
     "checks": [

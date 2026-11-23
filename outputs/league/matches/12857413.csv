@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857413,2026-11-02,C32,Challenge,QF,MeninoNey,2903591,bcs8995,1824707,2,1,Living End,Jeskai Energy
+12857413,2026-11-02,C32,Challenge,QF,sedotwc,3535709,onlybrews,3037817,2,0,Prowess,Grixis Reanimator
+12857413,2026-11-02,C32,Challenge,QF,Bradykiesling13,2026932,Savior0117,2464763,2,0,Eldrazi Tron,Belcher
+12857413,2026-11-02,C32,Challenge,QF,Imaeda,1304755,Gorzone,2697545,2,1,Domain Zoo,Jeskai Energy
+12857413,2026-11-02,C32,Challenge,SF,Bradykiesling13,2026932,MeninoNey,2903591,2,1,Eldrazi Tron,Living End
+12857413,2026-11-02,C32,Challenge,SF,sedotwc,3535709,Imaeda,1304755,2,0,Prowess,Domain Zoo
+12857413,2026-11-02,C32,Challenge,F,sedotwc,3535709,Bradykiesling13,2026932,2,1,Prowess,Eldrazi Tron

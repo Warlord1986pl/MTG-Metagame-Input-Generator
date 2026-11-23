@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857419,2026-11-03,C32,Challenge,QF,Cachorrowo,2720911,yama33,1758149,2,0,Ruby Storm,Affinity
+12857419,2026-11-03,C32,Challenge,QF,MeninoNey,2903591,caquaa,221272,2,1,Living End,Broodscale Combo
+12857419,2026-11-03,C32,Challenge,QF,Lightspirit,3222070,4FunNoWin,3479773,2,1,Broodscale Combo,Grixis Reanimator
+12857419,2026-11-03,C32,Challenge,QF,Venom01,3535587,komattaman,2690217,2,1,Broodscale Combo,Rakdos Midrange
+12857419,2026-11-03,C32,Challenge,SF,Cachorrowo,2720911,Lightspirit,3222070,2,0,Ruby Storm,Broodscale Combo
+12857419,2026-11-03,C32,Challenge,SF,Venom01,3535587,MeninoNey,2903591,2,0,Broodscale Combo,Living End
+12857419,2026-11-03,C32,Challenge,F,Venom01,3535587,Cachorrowo,2720911,1,0,Broodscale Combo,Ruby Storm

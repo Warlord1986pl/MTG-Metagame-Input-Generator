@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857704,2026-11-09,C32,Challenge,QF,nahuel10,1942357,Sarlanga,643454,2,1,Azorius Control,Neobrand
+12857704,2026-11-09,C32,Challenge,QF,kasa,1763014,MC_amp2267,2729232,2,1,Rakdos Midrange,Rakdos Midrange
+12857704,2026-11-09,C32,Challenge,QF,storti,3073424,bcs8995,1824707,1,0,Dimir Midrange,Neobrand
+12857704,2026-11-09,C32,Challenge,QF,niuwaid001,2372533,Kollslaw,3311758,2,0,Living End,Broodscale Combo
+12857704,2026-11-09,C32,Challenge,SF,storti,3073424,kasa,1763014,2,0,Dimir Midrange,Rakdos Midrange
+12857704,2026-11-09,C32,Challenge,SF,niuwaid001,2372533,nahuel10,1942357,2,1,Living End,Azorius Control
+12857704,2026-11-09,C32,Challenge,F,storti,3073424,niuwaid001,2372533,2,0,Dimir Midrange,Living End

@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857428,2026-11-04,C32,Challenge,QF,_Batutinha_,453404,caquaa,221272,2,1,Rakdos Midrange,Broodscale Combo
+12857428,2026-11-04,C32,Challenge,QF,Rvng,649380,MeninoNey,2903591,2,0,Goryo's Vengeance,Living End
+12857428,2026-11-04,C32,Challenge,QF,badgods,2712630,hugofreitas1,1997683,2,1,Broodscale Combo,Ruby Storm
+12857428,2026-11-04,C32,Challenge,QF,Selfeisek,2042214,ejk,1952341,2,0,Mono-Black Midrange,Esper Reanimator
+12857428,2026-11-04,C32,Challenge,SF,badgods,2712630,Selfeisek,2042214,2,1,Broodscale Combo,Mono-Black Midrange
+12857428,2026-11-04,C32,Challenge,SF,Rvng,649380,_Batutinha_,453404,2,0,Goryo's Vengeance,Rakdos Midrange
+12857428,2026-11-04,C32,Challenge,F,badgods,2712630,Rvng,649380,2,0,Broodscale Combo,Goryo's Vengeance

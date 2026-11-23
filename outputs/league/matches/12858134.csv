@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858134,2026-11-17,C16,Challenge,QF,Capriccioso,536053,E_Kaminuma,2707045,2,0,Amulet Titan,Broodscale Combo
+12858134,2026-11-17,C16,Challenge,QF,GigaChadSigmaMale,3085636,EthanBird,2658587,2,0,Jeskai Energy,Rakdos Midrange
+12858134,2026-11-17,C16,Challenge,QF,Gxs3v3n,2861105,Matts,2631782,2,1,W,Affinity
+12858134,2026-11-17,C16,Challenge,QF,ejk,1952341,komattaman,2690217,2,0,Yawgmoth,Rakdos Midrange
+12858134,2026-11-17,C16,Challenge,SF,GigaChadSigmaMale,3085636,Gxs3v3n,2861105,2,1,Jeskai Energy,W
+12858134,2026-11-17,C16,Challenge,SF,ejk,1952341,Capriccioso,536053,2,0,Yawgmoth,Amulet Titan
+12858134,2026-11-17,C16,Challenge,F,GigaChadSigmaMale,3085636,ejk,1952341,2,0,Jeskai Energy,Yawgmoth

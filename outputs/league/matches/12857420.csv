@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857420,2026-11-03,C16,Challenge,QF,sioutis_kk,3499660,harlouuk,1239343,2,0,Affinity,Amulet Titan
+12857420,2026-11-03,C16,Challenge,QF,Bradykiesling13,2026932,Cachorrowo,2720911,2,1,Eldrazi Tron,Ruby Storm
+12857420,2026-11-03,C16,Challenge,QF,reidq7,3155916,jeunejulio,2667582,2,1,Amulet Titan,Rakdos Midrange
+12857420,2026-11-03,C16,Challenge,QF,kanister,1205292,virp13,3525848,2,0,Amulet Titan,Affinity
+12857420,2026-11-03,C16,Challenge,SF,reidq7,3155916,Bradykiesling13,2026932,2,0,Amulet Titan,Eldrazi Tron
+12857420,2026-11-03,C16,Challenge,SF,kanister,1205292,sioutis_kk,3499660,2,0,Amulet Titan,Affinity
+12857420,2026-11-03,C16,Challenge,F,reidq7,3155916,kanister,1205292,2,1,Amulet Titan,Amulet Titan

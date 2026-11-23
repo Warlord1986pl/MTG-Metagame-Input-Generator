@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12857411,2026-11-02,C32,Challenge,QF,oinkmage22,2858193,ejk,1952341,2,1,Boros Energy,Esper Reanimator
+12857411,2026-11-02,C32,Challenge,QF,Redman1034,3363119,DragonFodder,415299,2,0,Broodscale Combo,Rakdos Midrange
+12857411,2026-11-02,C32,Challenge,QF,HelpfulHobo,2063678,mashirorc,1394572,2,1,Broodscale Combo,Selesnya Midrange
+12857411,2026-11-02,C32,Challenge,QF,hateatos,2444204,justFeather,2446403,2,0,Grixis Reanimator,Broodscale Combo
+12857411,2026-11-02,C32,Challenge,SF,Redman1034,3363119,hateatos,2444204,2,0,Broodscale Combo,Grixis Reanimator
+12857411,2026-11-02,C32,Challenge,SF,HelpfulHobo,2063678,oinkmage22,2858193,2,1,Broodscale Combo,Boros Energy
+12857411,2026-11-02,C32,Challenge,F,Redman1034,3363119,HelpfulHobo,2063678,2,0,Broodscale Combo,Broodscale Combo

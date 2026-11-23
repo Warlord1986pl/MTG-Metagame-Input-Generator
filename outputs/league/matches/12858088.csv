@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858088,2026-11-12,C32,Challenge,QF,Redman1034,3363119,cool95,1210043,2,1,Broodscale Combo,Eldrazi Tron
+12858088,2026-11-12,C32,Challenge,QF,Pnutz47,2602372,Gerardo94,2077747,2,1,Rakdos Midrange,Azorius Control
+12858088,2026-11-12,C32,Challenge,QF,Rvng,649380,novaschin22,2838825,2,0,Goryo's Vengeance,Rakdos Midrange
+12858088,2026-11-12,C32,Challenge,QF,Pafru,3069560,JPA93,1181017,2,1,Belcher,Neobrand
+12858088,2026-11-12,C32,Challenge,SF,Rvng,649380,Redman1034,3363119,2,1,Goryo's Vengeance,Broodscale Combo
+12858088,2026-11-12,C32,Challenge,SF,Pnutz47,2602372,Pafru,3069560,2,1,Rakdos Midrange,Belcher
+12858088,2026-11-12,C32,Challenge,F,Pnutz47,2602372,Rvng,649380,2,0,Rakdos Midrange,Goryo's Vengeance
