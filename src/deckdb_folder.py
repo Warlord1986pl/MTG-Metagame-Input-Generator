@@ -326,6 +326,56 @@ def classification_changes(export: di.DeckdbExport, prev_path: Optional[Path], s
                                          f"{len(ch)} changed deck"), renamed
 
 
+def _short_variant(deck: str, variant: str) -> str:
+    """A card variant / the residual reads "<Deck>: <Variant>" in the export: shown without the deck; empty (no variant
+    or a variant conflict): "(none)"."""
+    if not variant:
+        return "(none)"
+    return variant[len(deck) + 2:] if variant.startswith(f"{deck}: ") else variant
+
+
+def attribute_changes(export: di.DeckdbExport, prev_path: Optional[Path], fstart: date,
+                      renames: Optional[Dict[str, str]] = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Archetype and variant changes against the previous export, summed (never per list), over the common lists
+    assigned to the same deck in both exports (after *renames*; a deck change stays in classification_changes).
+    Archetypes: one row per (Deck, From, To); variants: one row per (Deck, From, To), From / To without the deck
+    prefix, "(none)" for an empty variant. Lists = whole DB, Lists_format_period = lists from *fstart*."""
+    cols = ["Deck", "From", "To", "Lists", "Lists_format_period"]
+    empty = pd.DataFrame(columns=cols)
+    if prev_path is None:
+        return empty, empty.copy()
+    renames = renames or {}
+    old = pd.read_csv(prev_path, dtype=str, keep_default_na=False)
+    for c in ("event_id", "decktournamentid"):
+        old[c] = old[c].map(di._norm_id)
+    old = old[old["status"] == di.STATUS_ASSIGNED].copy()
+    old["deck_now"] = old["deck"].map(lambda d: renames.get(d, d))
+    # a renamed deck renames its variant labels too: compare them under the new name
+    old["variant_now"] = [v.replace(d, n, 1) if d != n else v
+                          for v, d, n in zip(old["variant"], old["deck"], old["deck_now"])]
+    cur = export.rows[export.rows["status"] == di.STATUS_ASSIGNED][
+        ["event_id", "decktournamentid", "event_date", "deck", "archetype", "variant"]]
+    m = cur.merge(old[["event_id", "decktournamentid", "deck_now", "archetype", "variant_now"]],
+                  on=["event_id", "decktournamentid"], suffixes=("", "_old"))
+    m = m[m["deck"] == m["deck_now"]]
+    m["in_period"] = (m["event_date"] >= fstart.isoformat()).astype(int)
+
+    def summed(changed: pd.DataFrame, f: str, t: str) -> pd.DataFrame:
+        if changed.empty:
+            return empty.copy()
+        g = (changed.assign(From=changed[f], To=changed[t]).groupby(["deck", "From", "To"])
+             .agg(Lists=("in_period", "size"), Lists_format_period=("in_period", "sum")).reset_index()
+             .rename(columns={"deck": "Deck"}))
+        g["Lists_format_period"] = g["Lists_format_period"].astype(int)
+        return g[cols].sort_values(["Deck", "Lists", "To"], ascending=[True, False, True]).reset_index(drop=True)
+
+    arch = summed(m[m["archetype"] != m["archetype_old"]], "archetype_old", "archetype")
+    vch = m[m["variant"] != m["variant_now"]].copy()
+    vch["vf"] = [_short_variant(d, v) for d, v in zip(vch["deck"], vch["variant_now"])]
+    vch["vt"] = [_short_variant(d, v) for d, v in zip(vch["deck"], vch["variant"])]
+    return arch, summed(vch, "vf", "vt")
+
+
 def _stamp(df: pd.DataFrame, export: di.DeckdbExport) -> pd.DataFrame:
     out = df.copy()
     out["rules_version"], out["export_sha256"], out["data_version"] = (export.rules_version, export.sha256,
@@ -494,7 +544,7 @@ def _build(export, cards, out: Path, as_of: date, tweeks, ps, pe, ws, we, rows, 
         data.update(mdata)
     w.append(_workbook(export, out / "data.xlsx", data))
     _check_stamps(out / "data.xlsx", ("pilot_moves", "pilot_flows"))
-    status = _status(export, label, ws, we, rows, cov, triage, colours, month_note, as_of, decks)
+    status = _status(export, label, ws, we, rows, cov, triage, colours, month_note, as_of, decks, wstart)
     w.append(_notes(export, out, label, status, notes, m_period is not None))
     files = [p for p in out.iterdir() if p.is_file()]
     if len(files) > MAX_FILES:
@@ -604,11 +654,12 @@ def _month(export, cards, out: Path, ms: date, me: date, complete: bool, fstart:
 
 
 def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dict, triage, colours,
-            month_note: List[str], as_of: date, decks: pd.DataFrame) -> List[str]:
+            month_note: List[str], as_of: date, decks: pd.DataFrame, fstart: date) -> List[str]:
     """The lines of the Status section of notes.md."""
     prev_path = previous_export(export, we - timedelta(days=7))
     renames = load_renames()
     moves, desc, renamed = classification_changes(export, prev_path, renames=renames)
+    arch_ch, var_ch = attribute_changes(export, prev_path, fstart, renames)
     # this week's lists are new (not in the previous week's export): the month of the week instead
     mmoves = classification_changes(export, prev_path, we.replace(day=1), renames)[0] if prev_path is not None else None
     ev = di.event_table(rows)
@@ -650,6 +701,13 @@ def _status(export, label: str, ws: date, we: date, rows: pd.DataFrame, cov: dic
         if mv is not None:
             lines += ["", f"{title}:", ""] + ([f"- {r.From} → {r.To}: {r.Lists}" for r in mv.itertuples()]
                                               or ["- none"])
+    if prev_path is not None:
+        span = (f"lists assigned to the same deck in both exports; whole DB / format period from "
+                f"{fstart.isoformat()}")
+        for title, ch in (("Archetype changes", arch_ch), ("Variant changes", var_ch)):
+            lines += ["", f"{title} ({span}):", ""] + (
+                [f"- {r.Deck}: {r.From} → {r.To}: {r.Lists} / {r.Lists_format_period}" for r in ch.itertuples()]
+                or ["- none"])
     lines += ["", "### Events of the week (verify on mtgo.com)", "", "| EventID | Date | Players | Lists |",
               "|---|---|---|---|"]
     lines += [f"| {r.EventID} | {r.Date} | {r.Event_players} | {r.Lists} |" for r in ev.itertuples()]

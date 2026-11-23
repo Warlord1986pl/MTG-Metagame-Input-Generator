@@ -3,6 +3,22 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-23 - notes.md Status: zmiany archetypu i wariantu względem poprzedniego eksportu
+
+- What: `deckdb_folder.attribute_changes()` compares the archetype and the variant of every list assigned to the same
+  deck in the previous week's export and in this one (after `docs/deckdb_renames.csv`; a renamed deck's variant labels
+  are compared under the new name). Summed, never per list: one row per (deck, old -> new archetype) and one per
+  (deck, old -> new variant; variant without the deck prefix, "(none)" when empty), each with the lists of the whole
+  DB and of the format period (from its start in `format_events.yaml`, today 2026-05-19). `notes.md` Status, section
+  "Classification changes since the previous week", gets "Archetype changes" and "Variant changes" after the deck
+  moves (unchanged). The monthly package Status is unchanged.
+- Why: DeckDB K48 / K49 changed the archetype and the variants of Birthing Ritual without moving any list; the
+  section only counted deck moves and showed "0 changed deck" for W47.
+- Check W47 (`assignments_c4310b586bc1a4d2_2026-11-15.csv` vs `assignments_0d581b8f86ce6168_2026-11-22.csv`): deck
+  moves 0; archetype Birthing Ritual Combo -> Midrange 313 / 70; variant Birthing Ritual (none) -> Oculus 263 / 37,
+  -> Ephemerate 38 / 33, -> other 12 / 0; no other row. Test: `tests/test_deckdb_attribute_changes.py`.
+- Output files changed: `notes.md` of the weekly folder.
+
 ## 2026-11-23 - deckdb: konfiguracja na eksporty reguł 0d581b8f86ce6168 z 2026-11-22 (DeckDB K48, K49)
 
 - What: `docs/deckdb_config.csv` reads `assignments_0d581b8f86ce6168_2026-11-22.csv` and
