@@ -3,6 +3,21 @@
 Changes of the deckdb input mode and its presentation materials. Each entry: date, what, why, output files changed,
 DeckDB rules version of the export the change was checked on. Newest first.
 
+## 2026-11-23 - deckdb: konfiguracja na eksporty reguł 0d581b8f86ce6168 z 2026-11-22 (DeckDB K48, K49)
+
+- What: `docs/deckdb_config.csv` reads `assignments_0d581b8f86ce6168_2026-11-22.csv` and
+  `cards_0d581b8f86ce6168_2026-11-22.csv` (was `..._c4310b586bc1a4d2_2026-11-15.csv`). `data_version`
+  `challenge_lists=25745;last_challenge=2026-11-22;scryfall_dump=3;name_match=2` (import of W47, 12 events, 377 lists).
+- Why: DeckDB rules changed (DeckDB decisions.md entries 401-409): W47 triage; K48 deck Birthing Ritual archetype
+  Combo -> Midrange (313 lists in the DeckDB, 70 in the format period, 0 in W47) with card variants Oculus /
+  Ephemerate / other; K49 Oculus before Ephemerate (4 lists before the format period). No list changes deck.
+- Check: sha256 of the files the pipeline loads (`load_export`, `load_cards`, `load_triage`) equal to the DeckDB
+  export: assignments `3cf370889de7ba7da9b6173ce0107e6cd3b7d86e5847ed84409cc2627b6f0a27`, cards
+  `883a2afa96e19c18402956bea0e6d79ec2f2e7e0805c6e11a92f37374b7115df`, triage
+  `d35e6fcad11576951ce0232cb7734d84be38bdd5eb32a7a4569758cf35ff51c3` (`pending_notice`, 2 items, not blocking).
+- Output files changed: every deckdb material from this export (archetype shares: Birthing Ritual under Midrange;
+  variant sheets: Birthing Ritual variants).
+
 ## 2026-11-18 - paczka tygodnia: folder cards/ z obrazami nowych kart (Scryfall png)
 
 - What: the week runner (`metagame_week.py`, stage DATA) adds `weekly/<week>/cards/<card>.png`: the full Scryfall image
