@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858942,2026-11-22,C32,Challenge,QF,eclipse4343,2714224,Game_Night,2657742,2,1,Azorius Control,Azorius Control
+12858942,2026-11-22,C32,Challenge,QF,Raydric,2253484,Arcbound_Papi,2137107,2,1,Broodscale Combo,Affinity
+12858942,2026-11-22,C32,Challenge,QF,nahuel10,1942357,Botboy,3165422,2,1,Azorius Control,Ruby Storm
+12858942,2026-11-22,C32,Challenge,QF,klien7,2564773,YGGORF,1162835,2,1,Boros Energy,Amulet Titan
+12858942,2026-11-22,C32,Challenge,SF,klien7,2564773,eclipse4343,2714224,2,1,Boros Energy,Azorius Control
+12858942,2026-11-22,C32,Challenge,SF,Raydric,2253484,nahuel10,1942357,2,1,Broodscale Combo,Azorius Control
+12858942,2026-11-22,C32,Challenge,F,klien7,2564773,Raydric,2253484,2,1,Boros Energy,Broodscale Combo

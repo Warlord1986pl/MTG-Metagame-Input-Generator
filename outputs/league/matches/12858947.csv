@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858947,2026-11-22,C32,Challenge,QF,GLSwadow,3438702,solaec0501,1773910,2,0,Grixis Reanimator,Broodscale Combo
+12858947,2026-11-22,C32,Challenge,QF,oosunq,1155358,MeninoNey,2903591,2,0,Boros Energy,Living End
+12858947,2026-11-22,C32,Challenge,QF,Ares80,240494,peter780108,1742159,2,0,Grixis Reanimator,Azorius Control
+12858947,2026-11-22,C32,Challenge,QF,Rvng,649380,Lightspirit,3222070,2,0,Goryo's Vengeance,Eldrazi Ramp
+12858947,2026-11-22,C32,Challenge,SF,GLSwadow,3438702,Rvng,649380,2,0,Grixis Reanimator,Goryo's Vengeance
+12858947,2026-11-22,C32,Challenge,SF,Ares80,240494,oosunq,1155358,2,1,Grixis Reanimator,Boros Energy
+12858947,2026-11-22,C32,Challenge,F,GLSwadow,3438702,Ares80,240494,2,0,Grixis Reanimator,Grixis Reanimator
