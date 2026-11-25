@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858957,2026-11-23,C32,Challenge,QF,4FunNoWin,3479773,optivial,3140486,2,1,Azorius Control,Ruby Storm
+12858957,2026-11-23,C32,Challenge,QF,makaaaa,3154401,WhiteNinja,3555118,2,0,Broodscale Combo,Dimir Midrange
+12858957,2026-11-23,C32,Challenge,QF,nahuel10,1942357,Cereza,3012299,2,0,Azorius Control,Boros Energy
+12858957,2026-11-23,C32,Challenge,QF,MayoDominaria,1112102,bcs8995,1824707,2,0,Jeskai Energy,Saheeli Combo
+12858957,2026-11-23,C32,Challenge,SF,MayoDominaria,1112102,nahuel10,1942357,2,1,Jeskai Energy,Azorius Control
+12858957,2026-11-23,C32,Challenge,SF,makaaaa,3154401,4FunNoWin,3479773,2,0,Broodscale Combo,Azorius Control
+12858957,2026-11-23,C32,Challenge,F,MayoDominaria,1112102,makaaaa,3154401,2,0,Jeskai Energy,Broodscale Combo

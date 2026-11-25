@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858955,2026-11-23,C32,Challenge,QF,Kollslaw,3311758,rastaf,254536,2,1,Goryo's Vengeance,Rakdos Midrange
+12858955,2026-11-23,C32,Challenge,QF,Venom01,3535587,niuwaid001,2372533,2,1,Broodscale Combo,Living End
+12858955,2026-11-23,C32,Challenge,QF,caquaa,221272,SFDK,3509735,2,1,Broodscale Combo,Boros Energy
+12858955,2026-11-23,C32,Challenge,QF,HolaChico,3485421,Omegauo,30930,2,1,Prowess,Esper Blink
+12858955,2026-11-23,C32,Challenge,SF,Venom01,3535587,HolaChico,3485421,2,0,Broodscale Combo,Prowess
+12858955,2026-11-23,C32,Challenge,SF,Kollslaw,3311758,caquaa,221272,2,1,Goryo's Vengeance,Broodscale Combo
+12858955,2026-11-23,C32,Challenge,F,Venom01,3535587,Kollslaw,3311758,2,1,Broodscale Combo,Goryo's Vengeance
