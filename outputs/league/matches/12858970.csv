@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858970,2026-11-24,C32,Challenge,QF,rastaf,254536,hugofreitas1,1997683,2,1,Rakdos Midrange,Ruby Storm
+12858970,2026-11-24,C32,Challenge,QF,kylet23,3502605,Fransadness,3143623,2,1,Kethis Combo,Broodscale Combo
+12858970,2026-11-24,C32,Challenge,QF,SFDK,3509735,OlorinMaiar,2899285,2,0,Grixis Reanimator,Prowess
+12858970,2026-11-24,C32,Challenge,QF,LucasG1ggs,750888,xfile,2449332,2,1,Neobrand,Saheeli Combo
+12858970,2026-11-24,C32,Challenge,SF,rastaf,254536,SFDK,3509735,2,1,Rakdos Midrange,Grixis Reanimator
+12858970,2026-11-24,C32,Challenge,SF,kylet23,3502605,LucasG1ggs,750888,2,0,Kethis Combo,Neobrand
+12858970,2026-11-24,C32,Challenge,F,kylet23,3502605,rastaf,254536,2,0,Kethis Combo,Rakdos Midrange

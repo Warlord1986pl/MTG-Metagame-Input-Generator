@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858964,2026-11-24,C16,Challenge,QF,sioutis_kk,3499660,Selfeisek,2042214,2,1,Affinity,Mono-Black Midrange
+12858964,2026-11-24,C16,Challenge,QF,Laplasjan,1706283,TrueHero,2569009,2,1,Esper Blink,Saheeli Combo
+12858964,2026-11-24,C16,Challenge,QF,MyPotatoes,3147183,kePs,1984508,2,1,Neobrand,Affinity
+12858964,2026-11-24,C16,Challenge,QF,JPA93,1181017,esatheking,1237256,2,0,Prowess,Land Destruction
+12858964,2026-11-24,C16,Challenge,SF,sioutis_kk,3499660,MyPotatoes,3147183,2,1,Affinity,Neobrand
+12858964,2026-11-24,C16,Challenge,SF,Laplasjan,1706283,JPA93,1181017,2,1,Esper Blink,Prowess
+12858964,2026-11-24,C16,Challenge,F,sioutis_kk,3499660,Laplasjan,1706283,2,0,Affinity,Esper Blink

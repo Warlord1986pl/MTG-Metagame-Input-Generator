@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858963,2026-11-24,C32,Challenge,QF,SFDK,3509735,ChuChuMTFKR,2886707,2,0,Grixis Reanimator,Boros Energy
+12858963,2026-11-24,C32,Challenge,QF,Cachorrowo,2720911,EthanBird,2658587,2,0,Ruby Storm,Rakdos Midrange
+12858963,2026-11-24,C32,Challenge,QF,Kollslaw,3311758,Grendalos,2761697,2,1,Goryo's Vengeance,Bant Midrange
+12858963,2026-11-24,C32,Challenge,QF,niuwaid001,2372533,Nogamblenofutur,2710814,2,1,Living End,Goryo's Vengeance
+12858963,2026-11-24,C32,Challenge,SF,niuwaid001,2372533,SFDK,3509735,2,0,Living End,Grixis Reanimator
+12858963,2026-11-24,C32,Challenge,SF,Cachorrowo,2720911,Kollslaw,3311758,2,0,Ruby Storm,Goryo's Vengeance
+12858963,2026-11-24,C32,Challenge,F,Cachorrowo,2720911,niuwaid001,2372533,2,0,Ruby Storm,Living End
