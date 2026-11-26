@@ -1,6 +1,18 @@
-"""Per-season ranking rulesets for the pilot league.
+"""Season calendar and per-season ranking rulesets for the pilot league.
 
-Each season is ranked under exactly one ruleset, looked up by season name in SEASON_RULESETS:
+SEASONS is the season calendar from Summer 2026 on: each season's name, its date range (both ends
+inclusive) and its ruleset. An event belongs to the season whose range contains its EventDate
+(season_for_date). Dates before the first configured season fall back to meteorological quarters
+(the convention the league started with); a date after the last configured season raises
+UnconfiguredSeasonError, so the rebuild stops until the next season is configured.
+
+From Winter 2026/27 every season is a whole number of full 7-day weeks (13 weeks = 91 days; a 52-week
+year drifts about one day per year against the calendar, so every 5-6 years one season will get a
+14th week to realign -- not automated, it is a config change with an explicit K), and each season
+starts the day after the previous one ends. validate_seasons() enforces this at import time.
+Season names stay quarter-based; season dates come from this config, not from calendar months.
+
+Each season is ranked under exactly one ruleset:
 
   legacy -- the rule Summer 2026 and Autumn 2026 were published under, implemented by
             league_engine._rank_table / _apply_tie_break_sort and left untouched: Points desc,
@@ -18,8 +30,8 @@ Each season is ranked under exactly one ruleset, looked up by season name in SEA
             canonical LoginID ascending; that order never affects Rank.
 
 The ruleset is configuration, not something derived from the data: a season missing from
-SEASON_RULESETS that starts on or after FIRST_CONFIG_REQUIRED_START raises
-UnconfiguredSeasonError instead of silently picking a rule (K is a per-season value).
+SEASONS that starts on or after FIRST_CONFIG_REQUIRED_START raises UnconfiguredSeasonError instead
+of silently picking a rule (K is a per-season value).
 """
 from __future__ import annotations
 
@@ -43,36 +55,120 @@ class Ruleset:
 
 LEGACY_RULESET = Ruleset(LEGACY)
 
-# Season names as league_engine.season_for_date produces them (Winter spans the year boundary and
-# is labelled "Winter 2026/27"). Autumn 2026 is pinned to legacy explicitly: nothing about the
-# season in progress may change.
-SEASON_RULESETS: Dict[str, Ruleset] = {
-    "Summer 2026": LEGACY_RULESET,
-    "Autumn 2026": LEGACY_RULESET,
-    "Winter 2026/27": Ruleset(K10, k=10),
-    "Spring 2027": Ruleset(K10, k=10),
-}
+@dataclass(frozen=True)
+class Season:
+    name: str
+    start: date
+    end: date  # inclusive
+    ruleset: Ruleset
 
-# Seasons starting before this date that are not listed above predate the k10 rule and are
-# legacy. Seasons starting on/after it must be listed explicitly.
+
+# Summer 2026 and Autumn 2026 keep the dates they were published with (meteorological quarters)
+# and the legacy rule: nothing about them may change. Names are what the site and file slugs use
+# (Winter spans the year boundary and is labelled "Winter 2026/27").
+SEASONS: Tuple[Season, ...] = (
+    Season("Summer 2026", date(2026, 6, 1), date(2026, 8, 31), LEGACY_RULESET),
+    Season("Autumn 2026", date(2026, 9, 1), date(2026, 11, 30), LEGACY_RULESET),
+    Season("Winter 2026/27", date(2026, 12, 1), date(2027, 3, 1), Ruleset(K10, k=10)),
+    Season("Spring 2027", date(2027, 3, 2), date(2027, 5, 31), Ruleset(K10, k=10)),
+)
+
+# Seasons starting before this date that are not configured predate the k10 rule and are legacy.
+# Seasons starting on/after it must be configured explicitly.
 FIRST_CONFIG_REQUIRED_START = date(2026, 12, 1)
 
 
 class UnconfiguredSeasonError(LookupError):
-    """A season on/after FIRST_CONFIG_REQUIRED_START has no entry in SEASON_RULESETS."""
+    """No configured season covers a date / season on or after FIRST_CONFIG_REQUIRED_START."""
+
+
+class SeasonConfigError(ValueError):
+    """SEASONS (or a season_config.csv row) is inconsistent; see validate_seasons()."""
+
+
+def validate_seasons(seasons: Sequence[Season]) -> None:
+    """Raises SeasonConfigError unless *seasons* is a valid calendar: unique names, start <= end,
+    each season starting exactly the day after the previous one ends (no overlap, no gap), and
+    every k10 season a whole number of 7-day weeks with an integer K >= 1."""
+    names = [x.name for x in seasons]
+    if len(set(names)) != len(names):
+        raise SeasonConfigError(f"duplicate season names in {names}")
+    for x in seasons:
+        if x.end < x.start:
+            raise SeasonConfigError(f"{x.name}: ends {x.end} before it starts {x.start}")
+        if x.ruleset.name == K10:
+            days = (x.end - x.start).days + 1
+            if days % 7:
+                raise SeasonConfigError(
+                    f"{x.name}: a k10 season must be whole weeks, got {days} days ({x.start}..{x.end})"
+                )
+            if not isinstance(x.ruleset.k, int) or isinstance(x.ruleset.k, bool) or x.ruleset.k < 1:
+                raise SeasonConfigError(f"{x.name}: k10 needs an integer K >= 1, got {x.ruleset.k!r}")
+    ordered = sorted(seasons, key=lambda x: x.start)
+    for prev, nxt in zip(ordered, ordered[1:]):
+        if nxt.start <= prev.end:
+            raise SeasonConfigError(f"{prev.name} ({prev.start}..{prev.end}) overlaps {nxt.name} ({nxt.start}..{nxt.end})")
+        if nxt.start != prev.end + timedelta(days=1):
+            raise SeasonConfigError(
+                f"gap between {prev.name} (ends {prev.end}) and {nxt.name} (starts {nxt.start})"
+            )
+
+
+validate_seasons(SEASONS)
+SEASON_RULESETS: Dict[str, Ruleset] = {x.name: x.ruleset for x in SEASONS}
+_SEASONS_BY_NAME: Dict[str, Season] = {x.name: x for x in SEASONS}
+
+
+def _meteorological_season(d: date) -> Tuple[str, date, date]:
+    """The original season convention (calendar quarters), used only for dates before the first
+    configured season."""
+    m, y = d.month, d.year
+    if m in (3, 4, 5):
+        return f"Spring {y}", date(y, 3, 1), date(y, 5, 31)
+    if m in (6, 7, 8):
+        return f"Summer {y}", date(y, 6, 1), date(y, 8, 31)
+    if m in (9, 10, 11):
+        return f"Autumn {y}", date(y, 9, 1), date(y, 11, 30)
+    y0 = y if m == 12 else y - 1
+    end = date(y0 + 1, 3, 1) - timedelta(days=1)
+    return f"Winter {y0}/{str(y0 + 1)[-2:]}", date(y0, 12, 1), end
+
+
+def season_for_date(d: date, seasons: Sequence[Season] = SEASONS) -> Tuple[str, date, date]:
+    """(name, start, end) of the configured season whose range contains *d*. Before the first
+    configured season: meteorological quarters. After the last one: UnconfiguredSeasonError."""
+    for x in seasons:
+        if x.start <= d <= x.end:
+            return x.name, x.start, x.end
+    if seasons and d < min(x.start for x in seasons):
+        return _meteorological_season(d)
+    raise UnconfiguredSeasonError(
+        f"no season configured for {d.isoformat()}; add the next season to league_rules.SEASONS "
+        f"(dates, ruleset and K)"
+    )
+
+
+def check_season_config_rows(rows: Iterable[Tuple[str, date, date]]) -> None:
+    """Raises SeasonConfigError if a (Season, StartDate, EndDate) row of season_config.csv names a
+    configured season with dates other than its configured ones (the file is derived from SEASONS
+    and must agree with it)."""
+    for name, start, end in rows:
+        x = _SEASONS_BY_NAME.get(str(name).strip())
+        if x is not None and (start, end) != (x.start, x.end):
+            raise SeasonConfigError(
+                f"season_config.csv: {name} is {start}..{end}, config says {x.start}..{x.end}"
+            )
 
 
 def ruleset_for_season(season: str, season_start: date) -> Ruleset:
     rs = SEASON_RULESETS.get(season)
     if rs is not None:
-        if rs.name == K10 and (not isinstance(rs.k, int) or rs.k < 1):
-            raise ValueError(f"ruleset for {season!r}: k10 needs an integer K >= 1, got {rs.k!r}")
         return rs
     if season_start < FIRST_CONFIG_REQUIRED_START:
         return LEGACY_RULESET
     raise UnconfiguredSeasonError(
         f"no ranking ruleset configured for season {season!r} (starts {season_start.isoformat()}); "
-        f"add it to league_rules.SEASON_RULESETS with an explicit K"
+        f"add it to league_rules.SEASONS with an explicit K"
     )
 
 
@@ -227,14 +323,18 @@ class WeeklyOutcome:
 
 
 def weekly_windows(season_start: date, season_end: date) -> List[Tuple[int, date, date]]:
-    """[(N, start, end), ...]: 7-day windows counted from the season start, week N =
-    [start + 7(N-1), start + 7(N-1) + 6], the last one clipped at the season's end date."""
-    out = []
-    n, s = 1, season_start
-    while s <= season_end:
-        out.append((n, s, min(s + timedelta(days=6), season_end)))
-        n, s = n + 1, s + timedelta(days=7)
-    return out
+    """[(N, start, end), ...]: full 7-day windows counted from the season start, week N =
+    [start + 7(N-1), start + 7(N-1) + 6]. A k10 season is whole weeks (validate_seasons), so there
+    is no partial week; a range that is not raises SeasonConfigError."""
+    days = (season_end - season_start).days + 1
+    if days < 7 or days % 7:
+        raise SeasonConfigError(
+            f"weekly windows need a whole number of weeks, got {days} days ({season_start}..{season_end})"
+        )
+    return [
+        (n, season_start + timedelta(days=7 * (n - 1)), season_start + timedelta(days=7 * (n - 1) + 6))
+        for n in range(1, days // 7 + 1)
+    ]
 
 
 def weekly_outcomes(

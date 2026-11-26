@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import random
 import sys
-from datetime import date
+import json
+from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -22,7 +23,8 @@ from league_rules import PilotStats, Ruleset, compare, competition_rank  # noqa:
 
 FIXTURE = Path(__file__).parent / "fixtures" / "k10" / "autumn_2026_results_through_2026-11-17.csv"
 K10 = Ruleset(lr.K10, k=10)
-WINTER_START, WINTER_END = date(2026, 12, 1), date(2027, 2, 28)
+WINTER_START, WINTER_END = date(2026, 12, 1), date(2027, 3, 1)
+SPRING_START, SPRING_END = date(2027, 3, 2), date(2027, 5, 31)
 
 
 def stats(score, points, placements, wins=None):
@@ -54,11 +56,64 @@ def test_rulesets_pinned_per_season():
     assert lr.ruleset_for_season("Winter 2026/27", WINTER_START) == K10
     assert le.season_ruleset(date(2026, 9, 1)).name == lr.LEGACY
     assert le.season_ruleset(WINTER_START) == K10
-    assert lr.ruleset_for_season("Spring 2027", date(2027, 3, 1)) == K10
-    assert le.season_ruleset(date(2027, 3, 1)) == K10
-    assert le.season_for_date(date(2027, 3, 1)) == ("Spring 2027", date(2027, 3, 1), date(2027, 5, 31))
+    assert lr.ruleset_for_season("Spring 2027", SPRING_START) == K10
+    assert le.season_ruleset(SPRING_START) == K10
     with pytest.raises(lr.UnconfiguredSeasonError):
         lr.ruleset_for_season("Summer 2027", date(2027, 6, 1))
+
+
+# --- season calendar ----------------------------------------------------------------------------
+
+def test_season_assignment_by_configured_dates():
+    assert le.season_for_date(date(2026, 11, 30)) == ("Autumn 2026", date(2026, 9, 1), date(2026, 11, 30))
+    assert le.season_for_date(date(2026, 12, 1)) == ("Winter 2026/27", WINTER_START, WINTER_END)
+    assert le.season_for_date(date(2027, 3, 1)) == ("Winter 2026/27", WINTER_START, WINTER_END)
+    assert le.season_for_date(date(2027, 3, 2)) == ("Spring 2027", SPRING_START, SPRING_END)
+    assert le.season_for_date(date(2027, 5, 31)) == ("Spring 2027", SPRING_START, SPRING_END)
+    assert le.season_for_date(date(2026, 6, 1))[0] == "Summer 2026"
+    # Before the first configured season: meteorological quarters, as before.
+    assert le.season_for_date(date(2026, 3, 15)) == ("Spring 2026", date(2026, 3, 1), date(2026, 5, 31))
+    # Summer 2027 is not configured: the rebuild stops rather than guessing.
+    with pytest.raises(lr.UnconfiguredSeasonError):
+        le.season_for_date(date(2027, 6, 1))
+    assert le.seasons_for_dates([date(2027, 3, 1), date(2027, 3, 2)]) == {
+        "Winter 2026/27": (WINTER_START, WINTER_END), "Spring 2027": (SPRING_START, SPRING_END)}
+
+
+def test_configured_k10_seasons_are_13_full_weeks():
+    for x in lr.SEASONS:
+        if x.ruleset.name == lr.K10:
+            assert (x.end - x.start).days + 1 == 91, x
+
+
+def _season(name, start, days, ruleset=K10):
+    return lr.Season(name, start, start + timedelta(days=days - 1), ruleset)
+
+
+@pytest.mark.parametrize("days", [90, 92])
+def test_k10_season_that_is_not_whole_weeks_is_rejected(days):
+    with pytest.raises(lr.SeasonConfigError, match="whole weeks"):
+        lr.validate_seasons([_season("Winter 2026/27", WINTER_START, days)])
+
+
+def test_k10_season_of_14_weeks_is_allowed():
+    lr.validate_seasons([_season("Winter 2026/27", WINTER_START, 91), _season("Spring 2027", SPRING_START, 98)])
+
+
+def test_overlapping_seasons_are_rejected():
+    with pytest.raises(lr.SeasonConfigError, match="overlaps"):
+        lr.validate_seasons([_season("A", WINTER_START, 91), _season("B", date(2027, 3, 1), 91)])
+
+
+def test_gap_between_seasons_is_rejected():
+    with pytest.raises(lr.SeasonConfigError, match="gap"):
+        lr.validate_seasons([_season("A", WINTER_START, 91), _season("B", date(2027, 3, 3), 91)])
+
+
+def test_season_config_csv_must_agree_with_the_calendar():
+    lr.check_season_config_rows([("Autumn 2026", date(2026, 9, 1), date(2026, 11, 30))])
+    with pytest.raises(lr.SeasonConfigError):
+        lr.check_season_config_rows([("Winter 2026/27", WINTER_START, date(2027, 2, 28))])
 
 
 # --- comparator ---------------------------------------------------------------------------------
@@ -163,16 +218,35 @@ def test_weekly_win_is_provisional_during_the_grace_period():
     assert lr.weekly_wins(df, "_Key", order, WINTER_START, WINTER_END, as_of=date(2026, 12, 11)) == {"id:1": 1}
 
 
-def test_spring_last_week_is_the_remainder():
-    w = lr.weekly_windows(date(2027, 3, 1), date(2027, 5, 31))
-    assert w[-1] == (14, date(2027, 5, 31), date(2027, 5, 31))
-
-
-def test_weekly_windows_count_from_season_start():
+def test_weekly_windows_are_13_full_weeks():
     w = lr.weekly_windows(WINTER_START, WINTER_END)
+    assert len(w) == 13
     assert w[0] == (1, date(2026, 12, 1), date(2026, 12, 7))
     assert w[1] == (2, date(2026, 12, 8), date(2026, 12, 14))
-    assert w[-1] == (13, date(2027, 2, 23), date(2027, 2, 28))  # clipped at the season end
+    assert w[-1] == (13, date(2027, 2, 23), date(2027, 3, 1))
+    assert all((e - s).days == 6 for _n, s, e in w)
+    sp = lr.weekly_windows(SPRING_START, SPRING_END)
+    assert (sp[0], sp[-1], len(sp)) == ((1, date(2027, 3, 2), date(2027, 3, 8)), (13, date(2027, 5, 25), date(2027, 5, 31)), 13)
+    with pytest.raises(lr.SeasonConfigError):
+        lr.weekly_windows(WINTER_START, date(2027, 2, 28))
+
+
+def test_week_13_grace_period_ends_2027_03_04():
+    rows = [(1, 101, "2027-03-01", 1, 5, "Challenge"), (2, 101, "2027-03-01", 2, 4, "Challenge")]
+    df = le.keyed_results(result_rows(rows))
+    order = {k: le._row_order_key_for(k) for k in df["_Key"].unique()}
+
+    def week13(as_of):
+        return [o for o in lr.weekly_outcomes(df, "_Key", order, WINTER_START, WINTER_END, as_of=as_of)
+                if o.week == 13]
+
+    assert week13(date(2027, 3, 1)) == []  # still running
+    for d in (2, 3, 4):
+        (w,) = week13(date(2027, 3, d))
+        assert (w.winners, w.provisional) == (("id:1",), True)
+    (w,) = week13(date(2027, 3, 5))
+    assert not w.provisional
+    assert lr.weekly_wins(df, "_Key", order, WINTER_START, WINTER_END, as_of=date(2027, 3, 5)) == {"id:1": 1}
 
 
 # --- pipeline: build_season_table / validate_league / determinism ---------------------------
@@ -303,3 +377,90 @@ def test_acceptance_k10_on_frozen_autumn_export():
 
     # The same checks validate_league runs on a published k10 table.
     le._validate_k10(table.to_dict("records"), K10, results)
+
+
+# --- full export path: late Autumn arrival, empty and near-empty Winter ---------------------------
+
+def _event_rows(event_id, event_date, first_login=1):
+    """One 32-player Challenge, LoginIDs first_login..first_login+31 in placement order."""
+    return [(first_login + place - 1, event_id, event_date, place, le.league_points_for_place(place), "Challenge")
+            for place in range(1, 33)]
+
+
+def _export_all(tmp_path, rows, as_of, seasons, ingested_at=None):
+    """Writes result files, season_config.csv (rows for *seasons*), then runs the site export, the
+    results export and the deploy guards exactly as league-rebuild does. Returns (docs_dir, ok)."""
+    from league_export_guards import check_docs_data
+    from league_results_export import export_results_and_manifest
+    from league_site_export import export_league_site
+
+    league = tmp_path / "league"
+    res = league / "results"
+    res.mkdir(parents=True)
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    if rows:
+        _write_results(res, result_rows(rows))
+    for name in seasons:
+        x = next(x for x in lr.SEASONS if x.name == name)
+        le.upsert_season_config(league / "season_config.csv", x.name, x.start, x.end)
+    if ingested_at:
+        le._write_csv_lf(pd.DataFrame(sorted(ingested_at.items()), columns=["EventID", "IngestedAtUTC"]),
+                         league / "ingestion_log.csv")
+    log = []
+    export_league_site(league, docs, as_of, log=log.append)
+    ok = export_results_and_manifest(res, league / "season_config.csv", docs, "modern", league / "ingestion_log.csv",
+                                     docs / "pilot_league_seasons.csv", as_of, log=log.append)
+    guards = check_docs_data(docs, identity_map={}, log=log.append)
+    return docs, ok and guards, log
+
+
+def test_autumn_event_ingested_in_december_stays_in_autumn_under_legacy(tmp_path):
+    rows = _event_rows(9001, "2026-11-30") + _event_rows(9002, "2026-12-01", first_login=100)
+    touched = le.seasons_for_dates([date(2026, 11, 30), date(2026, 12, 1)])
+    assert sorted(touched) == ["Autumn 2026", "Winter 2026/27"]
+    docs, ok, log = _export_all(tmp_path, rows, date(2026, 12, 2), touched,
+                                ingested_at={"9001": "2026-12-02T09:15:00Z", "9002": "2026-12-02T09:15:00Z"})
+    assert ok, log
+    autumn = pd.read_csv(docs / "pilot_league_results_Autumn_2026.csv", dtype=str)
+    assert set(autumn.EventID) == {"9001"} and set(autumn.Season) == {"Autumn 2026"}
+    assert "Counted" not in autumn.columns  # legacy columns
+    autumn_doc = json.loads((docs / "season_Autumn_2026.json").read_text(encoding="utf-8"))
+    assert "ruleset" not in autumn_doc and list(range(1, 33)) == [p["rank"] for p in autumn_doc["pilots"]]
+    winter = pd.read_csv(docs / "pilot_league_results_Winter_2026-27.csv", dtype=str)
+    assert set(winter.EventID) == {"9002"} and set(winter.Season) == {"Winter 2026/27"}
+
+
+def test_empty_winter_season_exports_cleanly(tmp_path):
+    autumn = _event_rows(9001, "2026-11-28")
+    docs, ok, log = _export_all(tmp_path, autumn, date(2026, 12, 1), ["Autumn 2026", "Winter 2026/27"])
+    assert ok, log
+    doc = json.loads((docs / "season_Winter_2026-27.json").read_text(encoding="utf-8"))
+    assert (doc["pilotCount"], doc["pilots"], doc["weeks"], doc["ruleset"]) == (0, [], [], "k10")
+    assert not (docs / "pilot_league_results_Winter_2026-27.csv").exists()
+    seasons = json.loads((docs / "seasons.json").read_text(encoding="utf-8"))
+    assert seasons["currentSeason"] == "Winter 2026/27"
+
+
+def test_winter_with_first_day_events_only(tmp_path):
+    rows = _event_rows(9101, "2026-12-01") + _event_rows(9102, "2026-12-01", first_login=20)
+    docs, ok, log = _export_all(tmp_path, rows, date(2026, 12, 2), ["Winter 2026/27"])
+    assert ok, log
+    doc = json.loads((docs / "season_Winter_2026-27.json").read_text(encoding="utf-8"))
+    assert doc["weeks"] == []  # week 1 still running
+    assert all(p["weeklyWins"] == 0 and p["weeklyWinsProvisional"] == 0 for p in doc["pilots"])
+    assert doc["pilots"][0]["rank"] == 1
+
+
+def test_guard_rejects_a_season_column_that_disagrees_with_the_calendar(tmp_path):
+    from league_export_guards import check_season
+    rows = _event_rows(9201, "2027-03-01")
+    docs, ok, log = _export_all(tmp_path, rows, date(2027, 3, 2), ["Winter 2026/27"])
+    assert ok, log
+    csv = docs / "pilot_league_results_Winter_2026-27.csv"
+    df = pd.read_csv(csv, dtype=str, keep_default_na=False)
+    assert set(df.Season) == {"Winter 2026/27"}
+    df["Season"] = "Spring 2027"
+    le._write_csv_lf(df, csv)
+    failures = check_season(docs / "season_Winter_2026-27.json", csv, docs / "pilots_Winter_2026-27.json", {})
+    assert any("Season" in f for f in failures), failures

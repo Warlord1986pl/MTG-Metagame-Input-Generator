@@ -84,7 +84,7 @@ INGESTION_LOG_COLS: List[str] = ["EventID", "IngestedAtUTC"]
 
 # One row per season (or one per co-champion, for a shared rank 1), written once when a season
 # closes and never rewritten afterward -- see maybe_close_season. SeasonStart/SeasonEnd are the
-# meteorological quarter bounds; CoverageStart/CoverageEnd are the dates actually backed by data,
+# season's configured bounds (league_rules.SEASONS; meteorological quarters up to Autumn 2026); CoverageStart/CoverageEnd are the dates actually backed by data,
 # which can differ (Summer 2026: quarter is 2026-06-01..2026-08-31, data starts 2026-07-13, since
 # LoginID tracking itself only began then) -- Partial records that gap so a later, full-quarter
 # season's event count is never compared against this one without the caveat living in the data.
@@ -506,6 +506,14 @@ def export_results_and_manifest(
         return True
 
     seasons_df = pd.read_csv(season_config_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    try:
+        league_rules.check_season_config_rows(
+            (r["Season"], date.fromisoformat(r["StartDate"]), date.fromisoformat(r["EndDate"]))
+            for _, r in seasons_df.iterrows()
+        )
+    except (league_rules.SeasonConfigError, ValueError) as err:
+        emit(f"season_config.csv disagrees with the season calendar -- not publishing: {err}")
+        return False
     ingestion_log = update_ingestion_log(results_dir, ingestion_log_path)
 
     overall_ok = True

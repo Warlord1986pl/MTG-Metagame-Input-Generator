@@ -24,7 +24,7 @@ import sys
 from datetime import date, timedelta
 from fractions import Fraction
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import pandas as pd
 
@@ -175,19 +175,23 @@ def premier_points_for_place(place: object) -> int:
 
 
 def season_for_date(d: date) -> Tuple[str, date, date]:
-    """Meteorological quarter for *d*. Winter spans the year boundary and is labelled e.g.
-    "Winter 2026/27" for events from 2026-12-01 through 2027-02-28/29 inclusive.
+    """(name, start, end) of the season *d* belongs to, from the season calendar in
+    league_rules.SEASONS (e.g. 2027-03-01 is in "Winter 2026/27", 2026-12-01..2027-03-01). Dates
+    before the first configured season use meteorological quarters; a date after the last
+    configured season raises league_rules.UnconfiguredSeasonError.
     """
-    m, y = d.month, d.year
-    if m in (3, 4, 5):
-        return f"Spring {y}", date(y, 3, 1), date(y, 5, 31)
-    if m in (6, 7, 8):
-        return f"Summer {y}", date(y, 6, 1), date(y, 8, 31)
-    if m in (9, 10, 11):
-        return f"Autumn {y}", date(y, 9, 1), date(y, 11, 30)
-    y0 = y if m == 12 else y - 1
-    end = date(y0 + 1, 3, 1) - timedelta(days=1)
-    return f"Winter {y0}/{str(y0 + 1)[-2:]}", date(y0, 12, 1), end
+    return league_rules.season_for_date(d)
+
+
+def seasons_for_dates(dates: Iterable[date]) -> Dict[str, Tuple[date, date]]:
+    """{season name: (start, end)} for every season one of *dates* (event dates) belongs to -- by
+    EventDate only, never by when the event was ingested: an Autumn 2026 event dated 2026-11-30
+    that arrives on 2026-12-02 still goes to Autumn 2026."""
+    out: Dict[str, Tuple[date, date]] = {}
+    for d in dates:
+        name, s, e = season_for_date(d)
+        out[name] = (s, e)
+    return out
 
 
 def weekly_window_start(d: date) -> date:
@@ -2117,9 +2121,7 @@ def run_league_update(
         written_dates = pd.to_datetime(
             all_results[all_results["EventID"].isin(written_set)]["EventDate"], errors="coerce"
         ).dt.date.dropna().unique()
-        for d in written_dates:
-            name, s, e = season_for_date(d)
-            seasons_touched[name] = (s, e)
+        seasons_touched = seasons_for_dates(written_dates)
 
     summary = {"written_event_ids": written, "seasons": {}}
     snapshot_dir = league_dir / "snapshots"

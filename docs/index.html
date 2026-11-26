@@ -466,7 +466,8 @@
     var partial = !!(seasonStart && seasonEnd && (coverageStart > seasonStart || coverageEnd < seasonEnd));
     var n = manifest.events_total;
     box.textContent = "Covers " + coverageStart + " to " + coverageEnd + " · " + n +
-      (n === 1 ? " event" : " events") + (partial ? " · partial season (coverage narrower than the full quarter)" : "");
+      (n === 1 ? " event" : " events") + (partial ? " · partial season (coverage narrower than the full " +
+        (isK10(state.seasonDoc) ? "season" : "quarter") + ")" : "");
   }
 
   // ---- season table view ------------------------------------------------------------------------
@@ -539,7 +540,10 @@
     var box = seasonResultsBox;
     box.innerHTML = "";
 
-    if (pageRows.length === 0) {
+    if (!doc.pilots.length) {
+      // A season with no events yet (e.g. its first day, before any result is published).
+      box.appendChild(el("div", { class: "empty-state" }, ["No results yet for " + doc.season + "."]));
+    } else if (pageRows.length === 0) {
       box.appendChild(el("div", { class: "empty-state" }, ["No pilots match “" + state.searchQuery + "”."]));
     } else {
       var tableScroll = el("div", { class: "table-scroll" });
@@ -860,10 +864,50 @@
   // ---- about / how-it-works view -------------------------------------------------------------
 
   // Ranking card for a k10 season (Winter 2026/27 onward). Earlier seasons keep the card below.
+  // "2026-12-01" -> { text: "1 Dec 2026", weekday: "Tuesday", utc: ms }. Parsed by hand (UTC) so the
+  // viewer's time zone can never shift the day.
+  var MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  function isoDay(iso) {
+    var parts = String(iso).split("-").map(Number);
+    var utc = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+    return {
+      text: parts[2] + " " + MONTHS_SHORT[parts[1] - 1] + " " + parts[0],
+      weekday: WEEKDAYS[new Date(utc).getUTCDay()],
+      utc: utc,
+    };
+  }
+
+  // "Winter 2026/27: 1 Dec 2026 to 1 Mar 2027, 13 weeks" from the season doc's own dates.
+  function k10SeasonDates(doc) {
+    var start = isoDay(doc.seasonStart), end = isoDay(doc.seasonEnd);
+    var weeks = Math.round((end.utc - start.utc) / 86400000 + 1) / 7;
+    return {
+      line: doc.season + ": " + start.text + " to " + end.text + ", " + weeks + " weeks",
+      firstDay: start.weekday, lastDay: end.weekday,
+    };
+  }
+
+  // Seasons card for a k10 season (Winter 2026/27 onward): seasons are whole weeks, not quarters.
+  function renderK10SeasonCard(doc) {
+    var dates = k10SeasonDates(doc);
+    var card = el("div", { class: "card" });
+    card.appendChild(el("h2", {}, ["Seasons"]));
+    card.appendChild(el("p", {}, [
+      "From Winter 2026/27, every season is exactly 13 full weeks (91 days) and starts the day after ",
+      "the previous one ends. Seasons keep their quarter names, but their dates no longer follow ",
+      "calendar months. " + dates.line + ". Points reset to zero at the start of each season. Every ",
+      "pilot who reaches a Top 32 during the season appears in its table, including pilots on zero points.",
+    ]));
+    return card;
+  }
+
   function renderK10RankCard(doc) {
     var k = doc.countedResultsK;
+    var dates = k10SeasonDates(doc);
     var card = el("div", { class: "card" });
     card.appendChild(el("h2", {}, ["Ranking order"]));
+    card.appendChild(el("p", {}, [dates.line + "."]));
     card.appendChild(el("p", {}, [
       "From " + doc.season + ", a pilot's season score is the sum of their " + k + " best results ",
       "(all of them, if they have fewer than " + k + "). Pilots are ordered by, in sequence:",
@@ -880,8 +924,9 @@
     card.appendChild(el("p", { class: "note" }, [
       "Pilots still equal after all of these share the rank, shown as “=N” (for example 1, =2, =2, 4). ",
       "A pilot's profile marks which results count towards the score. A weekly win goes to the pilot ",
-      "ranked first, by the same order, on the results of one 7-day week counted from the season start ",
-      "(the last week of the season is whatever days remain); pilots sharing first place each get one. ",
+      "ranked first, by the same order, on the results of one week; pilots sharing first place each ",
+      "get one. Every week is a full 7-day window counted from the season start (" + dates.firstDay +
+      " to " + dates.lastDay + "). ",
       "A week's win is provisional for " + (doc.weeklyGraceDays != null ? doc.weeklyGraceDays : 3) +
       " days after the week ends, since late results can still change it, and only counts once final.",
     ]));
@@ -925,6 +970,9 @@
     ]));
     container.appendChild(scoringCard);
 
+    if (isK10(state.seasonDoc)) {
+      container.appendChild(renderK10SeasonCard(state.seasonDoc));
+    } else {
     var seasonCard = el("div", { class: "card" });
     seasonCard.appendChild(el("h2", {}, ["Seasons"]));
     seasonCard.appendChild(el("p", {}, [
@@ -934,6 +982,7 @@
       "in its table, including pilots on zero points.",
     ]));
     container.appendChild(seasonCard);
+    }
 
     if (isK10(state.seasonDoc)) {
       container.appendChild(renderK10RankCard(state.seasonDoc));

@@ -538,6 +538,10 @@ def export_league_site(
         return []
 
     config = config.sort_values("StartDate", kind="mergesort")
+    league_rules.check_season_config_rows(
+        (str(r["Season"]).strip(), pd.to_datetime(r["StartDate"]).date(), pd.to_datetime(r["EndDate"]).date())
+        for _, r in config.iterrows()
+    )
 
     from league_engine import season_for_date  # local import: avoids a cycle at module load time
     try:

@@ -17,7 +17,12 @@ Checks, per season:
   6. per LoginID, Wins/Top2/Top4/Top8/Top16/Starts in standings equal those rebuilt from results
      after resolving raw LoginIDs through the pipeline's own merge map (data/pilot_identity.csv);
   7. the latest EventDate in results equals the latest event in the standings snapshot (the
-     per-pilot event lists in docs/data/pilots_<slug>.json, built in the same run as standings).
+     per-pilot event lists in docs/data/pilots_<slug>.json, built in the same run as standings);
+  8. every results row's Season column equals the standings' season, and that is the season the
+     season calendar (league_rules.season_for_date) assigns to the row's EventDate.
+
+A season with no pilots and no results file (a season configured but with no events yet) has
+nothing to compare and passes.
 
 Read-only. Never fixes anything, never back-fills by name.
 
@@ -36,8 +41,9 @@ import pandas as pd
 
 try:
     import identity
+    import league_rules
 except ImportError:  # pragma: no cover
-    from . import identity
+    from . import identity, league_rules
 
 VALID_EVENT_POINT_SUMS = (31, 62)
 BRACKET_COLS = ["wins", "top2", "top4", "top8", "top16", "starts"]
@@ -59,10 +65,12 @@ def check_season(
     identity_map: Optional[Dict[str, str]] = None,
 ) -> List[str]:
     """Returns a list of human-readable failures for one season; empty means all checks passed."""
-    if not results_csv.exists():
-        return [f"results file missing: {results_csv.name}"]
     season = json.loads(season_json.read_text(encoding="utf-8"))
     pilots = season.get("pilots") or []
+    if not results_csv.exists():
+        if not pilots:
+            return []
+        return [f"results file missing: {results_csv.name}"]
     results = pd.read_csv(results_csv, dtype=str, keep_default_na=False, encoding="utf-8-sig")
     failures: List[str] = []
 
@@ -149,6 +157,26 @@ def check_season(
         res_latest = results["EventDate"].max() if len(results) else None
         if std_latest != res_latest:
             failures.append(f"latest EventDate: results {res_latest} != standings snapshot {std_latest}")
+
+    # 8. Season column vs the season calendar.
+    if "Season" in results.columns and len(results):
+        name = str(season.get("season") or "")
+        wrong_label = results[results["Season"].str.strip() != name]
+        if len(wrong_label):
+            failures.append(
+                f"{len(wrong_label)} results row(s) whose Season is not {name!r}: "
+                f"{wrong_label[['EventID', 'EventDate', 'Season']].drop_duplicates().head(5).to_dict('records')}"
+            )
+        bad_dates = []
+        for d in sorted(set(results["EventDate"].str.strip())):
+            try:
+                assigned = league_rules.season_for_date(pd.Timestamp(d).date())[0]
+            except Exception as err:  # noqa: BLE001 -- unparseable date or no configured season
+                assigned = f"error: {err}"
+            if assigned != name:
+                bad_dates.append((d, assigned))
+        if bad_dates:
+            failures.append(f"EventDate(s) the season calendar assigns to another season than {name!r}: {bad_dates[:5]}")
 
     return failures
 
