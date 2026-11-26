@@ -544,24 +544,51 @@ def export_league_site(
     )
 
     from league_engine import season_for_date  # local import: avoids a cycle at module load time
+    seasons = [
+        (str(r["Season"]).strip(), pd.to_datetime(r["StartDate"]).date(), pd.to_datetime(r["EndDate"]).date())
+        for _, r in config.iterrows()
+    ]
+    # The season containing as_of is listed from its first day, even before any result of it has
+    # been ingested (the page then shows its "No results yet" state). It is not written to
+    # season_config.csv here: that file still only lists seasons with results.
     try:
-        current_season_name, _s, _e = season_for_date(as_of)
+        today_season = season_for_date(as_of)
     except Exception:
-        current_season_name = None
+        today_season = None
+    if today_season is not None and today_season[0] not in {x[0] for x in seasons} \
+            and all(today_season[1] > x[2] for x in seasons):
+        seasons.append(today_season)
+
+    # Closed = has a record, or a result dated after its end has been ingested (the results export
+    # of this same run then writes the record) -- league_rules.season_is_closed.
+    registry_csv = docs_data_dir / "pilot_league_seasons.csv"
+    registered = set(
+        pd.read_csv(registry_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)["Season"]
+    ) if registry_csv.exists() else set()
+    all_results = load_all_league_results(results_dir)
+    latest_event = (
+        pd.to_datetime(all_results["EventDate"], errors="coerce").max() if not all_results.empty else None
+    )
+    latest_event_date = None if latest_event is None or pd.isna(latest_event) else latest_event.date()
+    closed = {
+        name: league_rules.season_is_closed(name, end, latest_event_date, registered)
+        for name, _start, end in seasons
+    }
+    current_season_name = league_rules.default_season(seasons, closed, as_of)
 
     written_seasons: List[str] = []
     manifest_seasons: List[dict] = []
 
-    for _, row in config.iterrows():
-        season = str(row["Season"]).strip()
-        s_start = pd.to_datetime(row["StartDate"]).date()
-        s_end = pd.to_datetime(row["EndDate"]).date()
+    for season, s_start, s_end in seasons:
         slug = season_filename_slug(season)
 
         season_doc, pilots_doc = build_season_site_data(
             results_dir, season, s_start, s_end, as_of=as_of, matches_dir=matches_dir,
             snapshot_dir=snapshot_dir,
         )
+        if as_of > s_end and not closed[season]:
+            # Ended, but no result of the next season ingested yet: late results can still arrive.
+            season_doc["finalResultsPending"] = True
         _write_json(season_doc, docs_data_dir / f"season_{slug}.json")
         _write_json(pilots_doc, docs_data_dir / f"pilots_{slug}.json")
         written_seasons.append(season)

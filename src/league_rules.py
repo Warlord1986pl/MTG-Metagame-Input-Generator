@@ -160,6 +160,45 @@ def check_season_config_rows(rows: Iterable[Tuple[str, date, date]]) -> None:
             )
 
 
+# --- season close -------------------------------------------------------------------------------
+#
+# A season's record (docs/data/pilot_league_seasons.csv, league_results_export.maybe_close_season) is
+# written on the first run that has ingested a result dated after the season's end -- by the
+# EventDate of an ingested event, not by the run date -- so late results for the last days of a
+# season (ingestion lag is ~2-3 days) still count. Until then the season is "final results pending"
+# on the site and stays the default season. Summer 2026 was closed by the old run-date rule; its
+# record is already written and never touched again.
+#
+# A result dated inside a closed season that is ingested after the close (detected from Autumn 2026
+# on, see LATE_AFTER_CLOSE_FROM) still goes into that season's standings and results, is flagged in
+# the season's results manifest (LateArrivals, AfterSeasonClose) and alerted on; the record itself
+# is never changed automatically.
+LATE_AFTER_CLOSE_FROM = date(2026, 9, 1)
+
+
+def season_is_closed(season: str, season_end: date, latest_event_date: Optional[date], registered: Iterable[str]) -> bool:
+    """True once *season* has a record, or once a result dated after its end has been ingested
+    (the run that sees that result writes the record)."""
+    if season in set(registered):
+        return True
+    return latest_event_date is not None and latest_event_date > season_end
+
+
+def default_season(
+    seasons: Sequence[Tuple[str, date, date]], closed: Dict[str, bool], as_of: date
+) -> Optional[str]:
+    """The season the site opens on: the earliest started season that is not closed yet (a season
+    whose end has passed stays the default, "final results pending", until its record is written),
+    else the latest started season."""
+    started = sorted((x for x in seasons if x[1] <= as_of), key=lambda x: x[1])
+    for name, _start, _end in started:
+        if not closed.get(name, False):
+            return name
+    if started:
+        return started[-1][0]
+    return sorted(seasons, key=lambda x: x[1])[-1][0] if seasons else None
+
+
 def ruleset_for_season(season: str, season_start: date) -> Ruleset:
     rs = SEASON_RULESETS.get(season)
     if rs is not None:

@@ -431,15 +431,22 @@ def test_autumn_event_ingested_in_december_stays_in_autumn_under_legacy(tmp_path
     assert set(winter.EventID) == {"9002"} and set(winter.Season) == {"Winter 2026/27"}
 
 
-def test_empty_winter_season_exports_cleanly(tmp_path):
+@pytest.mark.parametrize("winter_row", [False, True])
+def test_empty_winter_season_exports_cleanly(tmp_path, winter_row):
+    # Without a season_config row (the pipeline only writes one once a Winter result exists) and
+    # with one: either way Winter is listed from 2026-12-01 as an empty k10 season, and Autumn --
+    # ended, no Winter result ingested yet -- stays the default, "final results pending".
     autumn = _event_rows(9001, "2026-11-28")
-    docs, ok, log = _export_all(tmp_path, autumn, date(2026, 12, 1), ["Autumn 2026", "Winter 2026/27"])
+    seasons_cfg = ["Autumn 2026", "Winter 2026/27"] if winter_row else ["Autumn 2026"]
+    docs, ok, log = _export_all(tmp_path, autumn, date(2026, 12, 1), seasons_cfg)
     assert ok, log
     doc = json.loads((docs / "season_Winter_2026-27.json").read_text(encoding="utf-8"))
     assert (doc["pilotCount"], doc["pilots"], doc["weeks"], doc["ruleset"]) == (0, [], [], "k10")
     assert not (docs / "pilot_league_results_Winter_2026-27.csv").exists()
     seasons = json.loads((docs / "seasons.json").read_text(encoding="utf-8"))
-    assert seasons["currentSeason"] == "Winter 2026/27"
+    assert [x["season"] for x in seasons["seasons"]] == ["Autumn 2026", "Winter 2026/27"]
+    assert seasons["currentSeason"] == "Autumn 2026"
+    assert json.loads((docs / "season_Autumn_2026.json").read_text(encoding="utf-8"))["finalResultsPending"] is True
 
 
 def test_winter_with_first_day_events_only(tmp_path):

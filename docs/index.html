@@ -445,8 +445,11 @@
   function updateHeaderMeta() {
     var meta = document.getElementById("seasonMeta");
     if (!state.seasonDoc) { meta.textContent = ""; return; }
-    meta.textContent = state.seasonDoc.season + " · as of " + state.seasonDoc.asOf +
-      " · " + state.seasonDoc.pilotCount + " pilots";
+    // finalResultsPending: the season has ended but no result of the next season has been ingested
+    // yet, so late results can still change it (set only then; absent otherwise).
+    meta.textContent = state.seasonDoc.season +
+      (state.seasonDoc.finalResultsPending ? " · final results pending" : "") +
+      " · as of " + state.seasonDoc.asOf + " · " + state.seasonDoc.pilotCount + " pilots";
   }
 
   // Reads from state.resultsManifestCache only (never fetches) -- safe to call from render() on

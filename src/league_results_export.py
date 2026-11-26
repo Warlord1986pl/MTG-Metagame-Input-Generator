@@ -139,6 +139,83 @@ def load_season_registry(registry_path: Path) -> pd.DataFrame:
     return pd.read_csv(registry_path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
 
 
+def _champion_rows(season_table: pd.DataFrame, season_start: date) -> pd.DataFrame:
+    """The season's champion row(s): Rank 1 for k10 (shared ranks are real), the #1 row plus any
+    row equal to it on every legacy ranking column otherwise (see maybe_close_season)."""
+    if season_table.empty:
+        return season_table
+    if season_ruleset(season_start).name == league_rules.K10:
+        return season_table[pd.to_numeric(season_table["Rank"]) == 1]
+    top_row = season_table.loc[season_table["Rank"].idxmin()]
+    tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
+    return season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+
+
+def _top16(season_table: pd.DataFrame) -> tuple:
+    rows = season_table[pd.to_numeric(season_table["Rank"]) <= 16]
+    return tuple(sorted((str(r.LoginID), int(r.Rank)) for r in rows.itertuples()))
+
+
+def latest_event_date(results_dir: Path) -> Optional[date]:
+    """The latest EventDate of any ingested result, any season (None when there are none)."""
+    all_results = load_all_league_results(results_dir)
+    if all_results.empty:
+        return None
+    latest = pd.to_datetime(all_results["EventDate"], errors="coerce").max()
+    return None if pd.isna(latest) else latest.date()
+
+
+def find_late_after_close(
+    season_name: str,
+    season_start: date,
+    season_end: date,
+    as_of: date,
+    current_results: pd.DataFrame,
+    export_df: pd.DataFrame,
+    results_dir: Path,
+    ingestion_log: Dict[str, str],
+    registry_path: Path,
+) -> List[dict]:
+    """Events dated inside *season_name* that were ingested after the season closed (seasons from
+    league_rules.LATE_AFTER_CLOSE_FROM on, with a record in the registry). The close moment is the
+    first ingestion of a result dated after the season's end -- the run that wrote the record; events
+    ingested in that same run are part of the record, so only a strictly later IngestedAt counts.
+    For each, whether leaving it out would change the champion(s) or the top 16 (LoginID, Rank).
+    Never changes the record."""
+    if season_start < league_rules.LATE_AFTER_CLOSE_FROM or export_df.empty:
+        return []
+    registry = load_season_registry(registry_path)
+    if registry.empty or season_name not in set(registry["Season"]):
+        return []
+    all_results = load_all_league_results(results_dir)
+    dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
+    later_ids = set(all_results.loc[(dates > season_end).fillna(False), "EventID"].astype(str).str.strip())
+    later_ingested = sorted(ingestion_log[e] for e in later_ids if ingestion_log.get(e))
+    if not later_ingested:
+        return []
+    closed_at = later_ingested[0]
+
+    events = export_df.drop_duplicates(subset=["EventID"])[["EventID", "EventDate", "IngestedAt"]]
+    late = [r for r in events.itertuples() if r.IngestedAt and r.IngestedAt > closed_at]
+    if not late:
+        return []
+    full = rank_season(current_results, season_start, season_end, as_of)
+    out = []
+    for r in sorted(late, key=lambda r: (r.EventDate, str(r.EventID))):
+        without = rank_season(
+            current_results[current_results["EventID"].astype(str).str.strip() != str(r.EventID)],
+            season_start, season_end, as_of,
+        )
+        out.append({
+            "EventID": str(r.EventID), "EventDate": str(r.EventDate), "IngestedAt": r.IngestedAt,
+            "AfterSeasonClose": True, "SeasonClosedAt": closed_at,
+            "ChangesChampion": set(_champion_rows(full, season_start)["LoginID"].astype(str))
+            != set(_champion_rows(without, season_start)["LoginID"].astype(str)),
+            "ChangesTop16": _top16(full) != _top16(without),
+        })
+    return out
+
+
 def maybe_close_season(
     season_name: str,
     season_start: date,
@@ -148,10 +225,13 @@ def maybe_close_season(
     season_table: pd.DataFrame,
     registry_path: Path,
     log: Optional[Callable[[str], None]] = None,
+    latest_ingested_event_date: Optional[date] = None,
 ) -> bool:
     """Appends one row (or one per co-champion, for a shared rank 1) for *season_name* to
     pilot_league_seasons.csv -- but only the first time this is called for a season that has
-    actually closed (today > season_end). A season already present in the registry is never
+    closed: a result dated after season_end has been ingested (*latest_ingested_event_date* >
+    season_end; see league_rules.season_is_closed). Without that date (older callers) the old
+    run-date rule applies (today > season_end). A season already present in the registry is never
     touched again, regardless of what later reruns compute -- "written once at season close and
     never rewritten" is the whole point: it is the permanent record of what a season looked like
     the moment it ended, not a live-updating summary. Returns True iff a row was actually written.
@@ -160,7 +240,10 @@ def maybe_close_season(
         if log:
             log(f"[season-registry] {msg}")
 
-    if today <= season_end:
+    if latest_ingested_event_date is not None:
+        if latest_ingested_event_date <= season_end:
+            return False
+    elif today <= season_end:
         return False
     if export_df.empty or season_table.empty:
         return False
@@ -184,13 +267,8 @@ def maybe_close_season(
     # tie-break rule actually uses (Points, Wins, Top2/4/8/16, Starts -- the 8th key, Points/Starts
     # as a Fraction, is a deterministic function of Points and Starts, both already compared here,
     # so matching on these seven is equivalent to matching on the full 8-key rule).
-    if season_ruleset(season_start).name == league_rules.K10:
-        # k10 assigns shared ranks itself (competition ranking), so a co-champion is Rank 1.
-        champions = season_table[pd.to_numeric(season_table["Rank"]) == 1]
-    else:
-        top_row = season_table.loc[season_table["Rank"].idxmin()]
-        tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
-        champions = season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+    # k10 assigns shared ranks itself (competition ranking), so a co-champion is Rank 1 there.
+    champions = _champion_rows(season_table, season_start)
     new_rows = [
         {
             "Season": season_name,
@@ -516,6 +594,7 @@ def export_results_and_manifest(
         return False
     ingestion_log = update_ingestion_log(results_dir, ingestion_log_path)
 
+    latest_ingested = latest_event_date(results_dir)
     overall_ok = True
     for _, row in seasons_df.iterrows():
         season_name = row["Season"]
@@ -548,6 +627,21 @@ def export_results_and_manifest(
             placement_issues, reconciliation_issues,
             season_table.attrs.get("rank_change_anchor"),
         )
+        # Results of an already closed season ingested after its close: published as usual, flagged
+        # here (collector/alert.py mails each one once), the season record left unchanged.
+        late_after_close = find_late_after_close(
+            season_name, season_start, season_end, as_of, current_results, export_df,
+            results_dir, ingestion_log, season_registry_path,
+        )
+        if late_after_close:
+            manifest["LateArrivals"] = manifest["LateArrivals"] + late_after_close
+            for e in late_after_close:
+                emit(
+                    f"{season_name}: LATE AFTER SEASON CLOSE -- event {e['EventID']} ({e['EventDate']}) "
+                    f"ingested {e['IngestedAt']}, season closed {e['SeasonClosedAt']}; "
+                    f"changes champion: {e['ChangesChampion']}, changes top 16: {e['ChangesTop16']}; "
+                    "season record NOT changed"
+                )
 
         slug = season_filename_slug(season_name)
         csv_path = docs_data_dir / f"pilot_league_results_{slug}.csv"
@@ -578,7 +672,7 @@ def export_results_and_manifest(
         # (event counts, champion) derived from data that failed its own self-validation.
         maybe_close_season(
             season_name, season_start, season_end, as_of, export_df, season_table,
-            season_registry_path, log=log,
+            season_registry_path, log=log, latest_ingested_event_date=latest_ingested,
         )
 
     return overall_ok
