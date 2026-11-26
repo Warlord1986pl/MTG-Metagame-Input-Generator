@@ -49,16 +49,20 @@ try:
         build_season_table,
         load_all_league_results,
         season_filename_slug,
+        season_ruleset,
         _identity_key,
     )
+    import league_rules
 except ImportError:
     from .league_engine import (
         LEAGUE_RESULTS_COLS,
         build_season_table,
         load_all_league_results,
         season_filename_slug,
+        season_ruleset,
         _identity_key,
     )
+    from . import league_rules
 
 try:
     import identity as pilot_identity
@@ -154,7 +158,7 @@ def _name_history(all_results: pd.DataFrame) -> Dict[str, dict]:
     return out
 
 
-def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
+def _pilot_results_rows(grp: pd.DataFrame, counted: Optional[Dict[str, bool]] = None) -> List[dict]:
     """One row per event this identity appeared in, most recent first (ties broken by EventID
     ascending, for determinism when two events share a date).
 
@@ -174,6 +178,9 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
          library yet to compute a nearest neighbor at all).
     An event with neither available (this identity's first-ever appearance, still unclassified,
     with no classifier signal yet) stays blank.
+
+    *counted* (k10 seasons only: EventID -> whether that result is one of the pilot's K counted
+    results) adds a "counted" field to every row; left None, rows are exactly as before.
     """
     g = grp.copy()
     g["_Date"] = pd.to_datetime(g["EventDate"], errors="coerce")
@@ -196,6 +203,8 @@ def _pilot_results_rows(grp: pd.DataFrame) -> List[dict]:
             "swissPoints": _to_int_or_none(r.get("SwissPoints")),
             "gwp": _to_float_or_none(r.get("GWP")),
         })
+        if counted is not None:
+            rows[-1]["counted"] = bool(counted.get(rows[-1]["eventId"], False))
 
     # rows is newest-first; walk it oldest-first to carry each resolved deck forward onto any
     # later NEEDS_MANUAL_REVIEW event, until the next real resolution.
@@ -260,6 +269,9 @@ def build_season_site_data(
     table = build_season_table(
         results_dir, season_start, season_end, as_of=as_of, snapshot_dir=snapshot_dir,
     )
+    # k10 seasons (league_rules) add fields; a legacy season's documents are exactly as before.
+    ruleset = season_ruleset(season_start)
+    is_k10 = ruleset.name == league_rules.K10
     all_results = load_all_league_results(results_dir)
     # Bracket opponents are labelled with each identity's newest name across all seasons (as
     # before). priorNames uses only names known by the end of THIS season: a later season's rename
@@ -277,6 +289,26 @@ def build_season_site_data(
         _pilot_key(lid, p) for lid, p in zip(season_results.get("LoginID", ""), season_results.get("Pilot", ""))
     ]
     results_by_key = {k: g for k, g in season_results.groupby("_Key")}
+    counted_by_key: Dict[str, Dict[str, bool]] = {}
+    if is_k10 and not season_results.empty:
+        mask = league_rules.counted_mask(season_results, "_Key", ruleset.k)
+        for key, eid, flag in zip(season_results["_Key"], season_results["EventID"], mask):
+            counted_by_key.setdefault(key, {})[str(eid).strip()] = bool(flag)
+
+    # k10: weekly windows that have ended (final, or provisional during the grace period -- see
+    # league_rules.WEEKLY_GRACE_DAYS), winners re-keyed to this document's pilot ids.
+    weeks_doc: List[dict] = []
+    provisional_wins: Dict[str, int] = {}
+    if is_k10:
+        for w in table.attrs.get("weekly_outcomes") or []:
+            winners = [_pilot_key(lid, p) for lid, p in w["winners"]]
+            weeks_doc.append({
+                "week": w["week"], "start": w["start"], "end": w["end"],
+                "provisional": bool(w["provisional"]), "winners": winners,
+            })
+            if w["provisional"]:
+                for k in winners:
+                    provisional_wins[k] = provisional_wins.get(k, 0) + 1
 
     season_pilots: List[dict] = []
     pilots_doc_entries: Dict[str, dict] = {}
@@ -337,6 +369,18 @@ def build_season_site_data(
             # entry is omitted from pilots_doc_entries below, so a stale/guessed link 404s).
             "profileHidden": bool(profile_hidden),
         })
+        k10_fields = {}
+        if is_k10:
+            weakest = row.get("WeakestCounted")
+            k10_fields = {
+                "seasonScore": int(row["SeasonScore"]),
+                "countedResults": int(row["CountedResults"]),
+                "weakestCounted": None if pd.isna(weakest) else int(weakest),
+                "weeklyWins": int(row["WeeklyWins"]),
+                "weeklyWinsProvisional": provisional_wins.get(key, 0),
+                "tied": bool(row["Tied"]),
+            }
+            season_pilots[-1].update(k10_fields)
 
         if profile_hidden:
             # Never serialize this identity's per-event results/bracket history at all -- same
@@ -344,7 +388,10 @@ def build_season_site_data(
             continue
 
         grp = results_by_key.get(key)
-        results_rows = _pilot_results_rows(grp) if grp is not None else []
+        results_rows = (
+            _pilot_results_rows(grp, counted_by_key.get(key, {}) if is_k10 else None)
+            if grp is not None else []
+        )
         for rr in results_rows:
             resolved_deck_by_key_event[(key, rr["eventId"])] = rr["deck"]
         if grp is not None:
@@ -382,6 +429,7 @@ def build_season_site_data(
             # this pilot's events, or the pilot never reached the bracket at all).
             "bracketMatches": [],
         }
+        pilots_doc_entries[key].update(k10_fields)
 
     # Attach each pilot's elimination-bracket matches (see league_matches.py: Round is QF/SF/F,
     # captured from the mtgo.com JSON cache alongside the results sync, entirely separate from
@@ -443,6 +491,11 @@ def build_season_site_data(
         "pilotCount": len(season_pilots),
         "pilots": season_pilots,
     }
+    if is_k10:
+        season_doc["ruleset"] = ruleset.name
+        season_doc["countedResultsK"] = ruleset.k
+        season_doc["weeklyGraceDays"] = league_rules.WEEKLY_GRACE_DAYS
+        season_doc["weeks"] = weeks_doc
     pilots_doc = {
         "season": season,
         "pilots": pilots_doc_entries,

@@ -41,25 +41,44 @@ try:
         build_season_table,
         load_all_league_results,
         season_filename_slug,
-        _rank_table,
+        season_ruleset,
+        rank_season,
+        _identity_key,
         _write_csv_lf,
+        K10_TABLE_COLS,
     )
     from league_site_export import _event_label, _write_json
+    import league_rules
 except ImportError:
     from .league_engine import (
         aggregate_pilot_table,
         build_season_table,
         load_all_league_results,
         season_filename_slug,
-        _rank_table,
+        season_ruleset,
+        rank_season,
+        _identity_key,
         _write_csv_lf,
+        K10_TABLE_COLS,
     )
     from .league_site_export import _event_label, _write_json
+    from . import league_rules
 
 RESULTS_EXPORT_COLS: List[str] = [
     "EventDate", "IngestedAt", "EventID", "EventName", "EventType", "Format", "Season",
     "LoginID", "Name", "Placement", "PointsAwarded",
 ]
+
+# k10 seasons only (league_rules): whether the row is one of the pilot's K counted results, the
+# pilot being the resolved identity (pilot_identity merges applied) even though LoginID here is raw.
+K10_RESULTS_EXTRA_COLS: List[str] = ["Counted"]
+
+
+def results_export_cols(season_start: date) -> List[str]:
+    if season_ruleset(season_start).name == league_rules.K10:
+        return RESULTS_EXPORT_COLS + K10_RESULTS_EXTRA_COLS
+    return RESULTS_EXPORT_COLS
+
 
 INGESTION_LOG_COLS: List[str] = ["EventID", "IngestedAtUTC"]
 
@@ -165,9 +184,13 @@ def maybe_close_season(
     # tie-break rule actually uses (Points, Wins, Top2/4/8/16, Starts -- the 8th key, Points/Starts
     # as a Fraction, is a deterministic function of Points and Starts, both already compared here,
     # so matching on these seven is equivalent to matching on the full 8-key rule).
-    top_row = season_table.loc[season_table["Rank"].idxmin()]
-    tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
-    champions = season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+    if season_ruleset(season_start).name == league_rules.K10:
+        # k10 assigns shared ranks itself (competition ranking), so a co-champion is Rank 1.
+        champions = season_table[pd.to_numeric(season_table["Rank"]) == 1]
+    else:
+        top_row = season_table.loc[season_table["Rank"].idxmin()]
+        tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
+        champions = season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
     new_rows = [
         {
             "Season": season_name,
@@ -234,15 +257,16 @@ def build_results_rows(
     reconcile_with_season_table can re-derive the season aggregate from the exact same rows
     without re-reading and re-filtering results_dir a second time.
     """
+    cols = results_export_cols(season_start)
     all_results = load_all_league_results(results_dir)
     if all_results.empty:
-        return pd.DataFrame(columns=RESULTS_EXPORT_COLS), all_results
+        return pd.DataFrame(columns=cols), all_results
 
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)
     current_results = all_results[mask].copy()
     if current_results.empty:
-        return pd.DataFrame(columns=RESULTS_EXPORT_COLS), current_results
+        return pd.DataFrame(columns=cols), current_results
 
     login_id = current_results["LoginID"].astype(str).str.strip()
     name_by_login = _name_by_raw_login_id(current_results)
@@ -267,6 +291,12 @@ def build_results_rows(
         "Placement": pd.to_numeric(current_results["Place"], errors="coerce").astype("Int64"),
         "PointsAwarded": pd.to_numeric(current_results["LeaguePoints"], errors="coerce").fillna(0).astype(int),
     })
+    ruleset = season_ruleset(season_start)
+    if ruleset.name == league_rules.K10:
+        keyed = current_results.assign(_Key=[
+            _identity_key(lid, p) for lid, p in zip(current_results["LoginID"], current_results["Pilot"])
+        ])
+        out["Counted"] = league_rules.counted_mask(keyed, "_Key", ruleset.k).reindex(out.index).astype(bool)
     out = out.sort_values(["EventDate", "EventID", "Placement"], kind="mergesort").reset_index(drop=True)
     return out, current_results
 
@@ -312,18 +342,28 @@ def reconcile_with_season_table(
     exactly the class of bug this check exists to catch, not a re-test of arithmetic already
     guarded by check_league_invariants/validate_league upstream.
     """
-    mine = _rank_table(aggregate_pilot_table(current_results))
+    mine = rank_season(current_results, season_start, season_end, as_of)
     canonical = build_season_table(results_dir, season_start, season_end, as_of=as_of)
     if canonical.empty and mine.empty:
         return []
-    mine_cmp = mine[_RECONCILE_COLS].reset_index(drop=True) if not mine.empty else mine
-    canon_cmp = canonical[_RECONCILE_COLS].reset_index(drop=True) if not canonical.empty else canonical
+    cols = _RECONCILE_COLS
+    if season_ruleset(season_start).name == league_rules.K10:
+        cols = _RECONCILE_COLS + K10_TABLE_COLS
+    mine_cmp = mine[cols].reset_index(drop=True) if not mine.empty else mine
+    canon_cmp = canonical[cols].reset_index(drop=True) if not canonical.empty else canonical
     if len(mine_cmp) != len(canon_cmp):
         return [{
             "error": "row count mismatch between this export's re-derivation and the season table",
             "mine_rows": int(len(mine_cmp)), "canonical_rows": int(len(canon_cmp)),
         }]
-    diff_mask = (mine_cmp != canon_cmp).any(axis=1)
+    if cols is _RECONCILE_COLS:
+        diff_mask = (mine_cmp != canon_cmp).any(axis=1)
+    else:
+        # k10: WeakestCounted is nullable; NA != NA is unknown (skipped by .any()), so blanks are
+        # compared as "" explicitly.
+        diff_mask = (
+            mine_cmp.astype("string").fillna("") != canon_cmp.astype("string").fillna("")
+        ).any(axis=1)
     if not diff_mask.any():
         return []
 
@@ -515,7 +555,7 @@ def export_results_and_manifest(
 
         export_out = export_df.copy()
         export_out["Placement"] = export_out["Placement"].astype(int)
-        _write_csv_lf(export_out[RESULTS_EXPORT_COLS], csv_path)
+        _write_csv_lf(export_out[results_export_cols(season_start)], csv_path)
         # Content hash of the exact bytes just written. The site appends it to the CSV's download
         # URL (?v=<sha>), so every distinct results file gets a distinct URL. Cytrus sits behind
         # Cloudflare, which caches *.csv at the edge (but not *.json): on 2026-09-24 the edge kept

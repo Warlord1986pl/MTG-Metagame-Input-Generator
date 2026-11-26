@@ -198,6 +198,40 @@
     { key: "conversion", label: "Top 32 → Top 8", get: function (p) { return p.top8 / p.starts; }, defaultDirection: "desc" },
   ];
 
+  // Seasons ranked under the k10 ruleset (from Winter 2026/27; the season JSON then carries
+  // ruleset: "k10") add two columns: Score (the sum of the pilot's K best results, the first ranking
+  // key) and Weekly wins. Every other season shows exactly SORTABLE_COLUMNS.
+  var K10_SCORE_COLUMN = { key: "score", label: "Score", get: function (p) { return p.seasonScore; }, defaultDirection: "desc" };
+  var K10_WEEKLY_COLUMN = { key: "weeklyWins", label: "Weekly wins", get: function (p) { return p.weeklyWins; }, defaultDirection: "desc" };
+
+  function isK10(doc) { return !!(doc && doc.ruleset === "k10"); }
+
+  function sortableColumns(doc) {
+    if (!isK10(doc)) return SORTABLE_COLUMNS;
+    var cols = [SORTABLE_COLUMNS[0], K10_SCORE_COLUMN];
+    SORTABLE_COLUMNS.slice(1).forEach(function (c) {
+      cols.push(c);
+      if (c.key === "wins") cols.push(K10_WEEKLY_COLUMN);
+    });
+    return cols;
+  }
+
+  // Weekly wins cell: final wins, plus "+N provisional" for weeks still inside the grace period
+  // (their winner can still change; they are not counted in the final number or its sort).
+  function weeklyWinsCell(p) {
+    var parts = [String(p.weeklyWins)];
+    if (p.weeklyWinsProvisional) {
+      parts.push(" ", el("span", { class: "muted", title: "Week(s) still inside the grace period; may change" },
+        ["+" + p.weeklyWinsProvisional + " provisional"]));
+    }
+    return el("td", {}, parts);
+  }
+
+  // A shared rank (k10 seasons only -- legacy ranks are never shared) is shown as "=N".
+  function rankLabel(p) {
+    return (p.tied ? "=" : "") + String(p.rank);
+  }
+
   // ---- small stats helpers -------------------------------------------------------------------
 
   // Two-sided 95% critical values by degrees of freedom (n-1), falling back to the normal z-value
@@ -315,15 +349,22 @@
       "AsOf", "Rank", "Name", "LoginID", "Points", "PremierPoints", "Wins",
       "Top2", "Top4", "Top8", "Top16", "Starts", "Top32ToTop8Pct", "RankChange", "PriorNames",
     ];
+    var k10 = isK10(doc);
+    if (k10) cols = cols.concat(["SeasonScore", "CountedResults", "WeakestCounted", "WeeklyWins", "Tied", "Ruleset"]);
     var lines = [cols.join(",")];
     (doc.pilots || []).forEach(function (p) {
       var rankChange = (p.prevRank != null) ? (p.prevRank - p.rank) : "";
       var conversionPct = (p.top8 / p.starts * 100).toFixed(1);
-      lines.push([
+      var values = [
         doc.asOf, p.rank, p.name, p.loginId, p.points, p.premierPoints, p.wins,
         p.top2, p.top4, p.top8, p.top16, p.starts, conversionPct, rankChange,
         (p.priorNames || []).join("; "),
-      ].map(csvEscape).join(","));
+      ];
+      if (k10) {
+        values = values.concat([p.seasonScore, p.countedResults, p.weakestCounted, p.weeklyWins,
+          p.tied ? "true" : "false", doc.ruleset]);
+      }
+      lines.push(values.map(csvEscape).join(","));
     });
     return lines.join("\r\n");
   }
@@ -476,9 +517,10 @@
 
   function updateSeasonResults() {
     var doc = state.seasonDoc;
+    var columns = sortableColumns(doc);
     var rows = doc.pilots.filter(function (p) { return matchesSearch(p, state.searchQuery); });
     if (state.sortColumn) {
-      var activeCol = SORTABLE_COLUMNS.filter(function (c) { return c.key === state.sortColumn; })[0];
+      var activeCol = columns.filter(function (c) { return c.key === state.sortColumn; })[0];
       if (activeCol) {
         // Array#sort is a stable sort in every browser this page targets, so ties keep falling
         // back to the array's existing (rank) order without needing an explicit tiebreak here.
@@ -504,9 +546,9 @@
       var table = el("table");
       table.appendChild(el("thead", {}, [
         el("tr", {}, [
-          sortHeaderCell(SORTABLE_COLUMNS[0]), // Rank
+          sortHeaderCell(columns[0]), // Rank
           el("th", {}, [""]), el("th", {}, ["Pilot"]),
-        ].concat(SORTABLE_COLUMNS.slice(1).map(sortHeaderCell))),
+        ].concat(columns.slice(1).map(sortHeaderCell))),
       ]));
       var tbody = el("tbody");
       pageRows.forEach(function (p) {
@@ -514,17 +556,16 @@
           p.profileHidden ? el("span", { class: "pilot-name-plain" }, [p.name]) : el("a", { class: "pilot-link", href: pilotHash(p.id) }, [p.name]),
           p.priorNames.length ? el("div", { class: "prior-names" }, ["formerly " + p.priorNames.join(", ")]) : null,
         ]);
-        tbody.appendChild(el("tr", {}, [
-          el("td", { class: "rank-cell" }, [String(p.rank)]),
+        var cells = [
+          el("td", { class: "rank-cell", title: p.tied ? "Shared rank" : null }, [rankLabel(p)]),
           el("td", {}, [movementCell(p)]),
           nameCell,
-          el("td", {}, [String(p.points)]),
-          el("td", {}, [String(p.wins)]),
-          el("td", {}, [String(p.top8)]),
-          el("td", {}, [String(p.top16)]),
-          el("td", {}, [String(p.starts)]),
-          el("td", {}, [fmtPct(p.top8 / p.starts)]),
-        ]));
+        ];
+        columns.slice(1).forEach(function (c) {
+          if (c.key === "weeklyWins") { cells.push(weeklyWinsCell(p)); return; }
+          cells.push(el("td", {}, [c.key === "conversion" ? fmtPct(p.top8 / p.starts) : String(c.get(p))]));
+        });
+        tbody.appendChild(el("tr", {}, cells));
       });
       table.appendChild(tbody);
       tableScroll.appendChild(table);
@@ -714,7 +755,14 @@
       var challengePoints = pilot.points - pilot.premierPoints;
 
       var rankBlock = el("div", { class: "rank-points" }, [
-        el("div", { class: "big" }, ["#" + pilot.rank]),
+        el("div", { class: "big" }, ["#" + rankLabel(pilot)]),
+        pilot.seasonScore != null
+          ? el("div", { class: "muted" }, ["Score " + pilot.seasonScore + " (best " + pilot.countedResults + " result" +
+              (pilot.countedResults === 1 ? "" : "s") + ")" +
+              (pilot.weeklyWins ? " · " + pilot.weeklyWins + " weekly win" + (pilot.weeklyWins === 1 ? "" : "s") : "") +
+              (pilot.weeklyWinsProvisional ? " · " + pilot.weeklyWinsProvisional + " provisional weekly win" +
+                (pilot.weeklyWinsProvisional === 1 ? "" : "s") : "")])
+          : null,
         el("div", { class: "muted" }, [pilot.points + " pts total"]),
         premierResults.length
           ? el("div", { class: "muted" }, [challengePoints + " from Challenges, " + pilot.premierPoints + " from premier events"])
@@ -768,23 +816,27 @@
       resultsCard.appendChild(el("div", { class: "section-title" }, ["Results"]));
       var scroll = el("div", { class: "table-scroll" });
       var table = el("table");
-      table.appendChild(el("thead", {}, [
-        el("tr", {}, [
-          el("th", {}, ["Date"]), el("th", {}, ["Event"]), el("th", {}, ["Tier"]),
-          el("th", {}, ["Finish"]), el("th", {}, ["Deck"]), el("th", {}, ["Points"]),
-        ]),
-      ]));
+      // k10 seasons flag each result that counts towards the season score.
+      var showCounted = pilot.results.some(function (r) { return r.counted != null; });
+      var headCells = [
+        el("th", {}, ["Date"]), el("th", {}, ["Event"]), el("th", {}, ["Tier"]),
+        el("th", {}, ["Finish"]), el("th", {}, ["Deck"]), el("th", {}, ["Points"]),
+      ];
+      if (showCounted) headCells.push(el("th", { title: "Counts towards the season score" }, ["Counted"]));
+      table.appendChild(el("thead", {}, [el("tr", {}, headCells)]));
       var tbody = el("tbody");
       pilot.results.forEach(function (r) {
         var badge = el("span", { class: "badge " + (r.eventClass === "Premier" ? "badge-premier" : "badge-challenge") }, [r.eventClass]);
-        tbody.appendChild(el("tr", {}, [
+        var rowCells = [
           el("td", {}, [r.date]),
           el("td", { style: "text-align:left; white-space:normal;" }, [r.event + " ", badge]),
           el("td", {}, [r.tier]),
           el("td", {}, [r.finish != null ? String(r.finish) : "—"]),
           el("td", { style: "text-align:left; white-space:normal;" }, [r.deck || "—"]),
           el("td", {}, [String(r.points)]),
-        ]));
+        ];
+        if (showCounted) rowCells.push(el("td", {}, [r.counted ? "✓" : ""]));
+        tbody.appendChild(el("tr", {}, rowCells));
       });
       table.appendChild(tbody);
       scroll.appendChild(table);
@@ -806,6 +858,35 @@
   }
 
   // ---- about / how-it-works view -------------------------------------------------------------
+
+  // Ranking card for a k10 season (Winter 2026/27 onward). Earlier seasons keep the card below.
+  function renderK10RankCard(doc) {
+    var k = doc.countedResultsK;
+    var card = el("div", { class: "card" });
+    card.appendChild(el("h2", {}, ["Ranking order"]));
+    card.appendChild(el("p", {}, [
+      "From " + doc.season + ", a pilot's season score is the sum of their " + k + " best results ",
+      "(all of them, if they have fewer than " + k + "). Pilots are ordered by, in sequence:",
+    ]));
+    var list = el("ol");
+    [
+      "Season score (" + k + " best results)",
+      "Wins, then Top 2, Top 4, Top 8 and Top 16 finishes, over the whole season",
+      "Points per Top 32 finish (all results, Points ÷ Starts), compared exactly",
+      "Starts (Top 32 finishes), more ranks higher",
+      "Best placements: each pilot's placements from best to worst, compared one by one",
+    ].forEach(function (item) { list.appendChild(el("li", {}, [item])); });
+    card.appendChild(list);
+    card.appendChild(el("p", { class: "note" }, [
+      "Pilots still equal after all of these share the rank, shown as “=N” (for example 1, =2, =2, 4). ",
+      "A pilot's profile marks which results count towards the score. A weekly win goes to the pilot ",
+      "ranked first, by the same order, on the results of one 7-day week counted from the season start ",
+      "(the last week of the season is whatever days remain); pilots sharing first place each get one. ",
+      "A week's win is provisional for " + (doc.weeklyGraceDays != null ? doc.weeklyGraceDays : 3) +
+      " days after the week ends, since late results can still change it, and only counts once final.",
+    ]));
+    return card;
+  }
 
   function renderAboutView(container) {
     container.appendChild(el("a", { class: "back-link", href: "#/" }, ["← Back to season table"]));
@@ -854,6 +935,9 @@
     ]));
     container.appendChild(seasonCard);
 
+    if (isK10(state.seasonDoc)) {
+      container.appendChild(renderK10RankCard(state.seasonDoc));
+    } else {
     var rankCard = el("div", { class: "card" });
     rankCard.appendChild(el("h2", {}, ["Ranking order"]));
     rankCard.appendChild(el("p", {}, ["Pilots tied on points are ordered by, in sequence:"]));
@@ -882,6 +966,7 @@
       "account tracking began).",
     ]));
     container.appendChild(rankCard);
+    }
 
     var moveCard = el("div", { class: "card" });
     moveCard.appendChild(el("h2", {}, ["Movement and identity"]));
