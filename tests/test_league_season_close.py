@@ -56,7 +56,7 @@ class League:
         (self.docs / "pilot_league_seasons.csv").write_bytes(SUMMER_RECORD.encode("utf-8"))
         self.monkeypatch = monkeypatch
 
-    def run(self, as_of: date, ingested_at: str, events):
+    def run(self, as_of: date, ingested_at: str, events, expect_ok: bool = True):
         """One league-rebuild: write the new result files, upsert their seasons (run_league_update),
         then site export, results export and guards. Returns (season docs by name, seasons.json)."""
         for eid, d, first in events:
@@ -70,7 +70,9 @@ class League:
             self.results, self.league / "season_config.csv", self.docs, "modern",
             self.league / "ingestion_log.csv", self.docs / "pilot_league_seasons.csv", as_of, log=log.append,
         )
-        assert ok and check_docs_data(self.docs, identity_map={}, log=log.append), log
+        assert ok == expect_ok, log
+        if expect_ok:
+            assert check_docs_data(self.docs, identity_map={}, log=log.append), log
         self.log = log
         seasons = json.loads((self.docs / "seasons.json").read_text(encoding="utf-8"))
         docs = {
@@ -78,6 +80,12 @@ class League:
             for x in seasons["seasons"]
         }
         return docs, seasons
+
+    def close_log(self) -> dict:
+        return lre.load_season_close_log(self.league / lre.SEASON_CLOSE_LOG_NAME)
+
+    def late_after_close(self, slug: str) -> list:
+        return [x for x in self.manifest(slug)["LateArrivals"] if x.get("AfterSeasonClose")]
 
     def registry(self) -> bytes:
         return (self.docs / "pilot_league_seasons.csv").read_bytes()
@@ -107,6 +115,7 @@ def test_season_close_by_event_date_and_late_arrival_after_close(tmp_path, monke
     assert seasons["currentSeason"] == "Winter 2026/27"
     assert "finalResultsPending" not in docs["Autumn 2026"]
     assert not [x for x in lg.manifest("Autumn_2026")["LateArrivals"] if x.get("AfterSeasonClose")]
+    assert lg.close_log() == {"Autumn 2026": "2026-12-03T08:15:00Z"}  # the run that wrote the record
     record_after_close = lg.registry()
 
     # Run 3: a late Autumn result (2026-11-29, pilot 100 wins again) arrives after the close.
@@ -148,3 +157,34 @@ def test_no_close_while_only_autumn_dated_events_are_ingested(tmp_path, monkeypa
     if late_ingested:
         lg.run(date(2026, 12, 20), "2026-12-20T08:15:00Z", [(9002, "2026-11-30", 100)])
     assert lg.registry() == SUMMER_RECORD.encode("utf-8")
+
+
+def test_failed_closing_export_then_late_autumn_results_are_part_of_the_record(tmp_path, monkeypatch):
+    """The close moment is when the record is written, not when the first Winter result arrived:
+    run 2 ingests a Winter result but the Autumn export fails validation (no record); run 3 ingests
+    another Autumn result and writes the record, which includes it; nothing is flagged late."""
+    lg = League(tmp_path, monkeypatch)
+    lg.run(date(2026, 12, 2), "2026-12-02T08:15:00Z", [(9001, "2026-11-28", 1)])
+
+    real_check = lre.check_placement_integrity
+    autumn_fails = lambda df: ([{"EventID": "x", "issue": "simulated"}]  # noqa: E731
+                               if (df["EventDate"] <= "2026-11-30").all() else real_check(df))
+    monkeypatch.setattr(lre, "check_placement_integrity", autumn_fails)
+    lg.run(date(2026, 12, 3), "2026-12-03T08:15:00Z", [(9101, "2026-12-01", 200)], expect_ok=False)
+    assert lg.registry() == SUMMER_RECORD.encode("utf-8")  # closing export failed: no record
+    assert lg.close_log() == {}
+    assert any("Autumn 2026: VALIDATION FAILED" in m for m in lg.log)
+
+    monkeypatch.setattr(lre, "check_placement_integrity", real_check)
+    lg.run(date(2026, 12, 4), "2026-12-04T08:15:00Z", [(9002, "2026-11-30", 100)])
+    registry = pd.read_csv(pd.io.common.BytesIO(lg.registry()), dtype=str)
+    autumn = registry[registry.Season == "Autumn 2026"]
+    assert set(autumn.EventsTotal) == {"2"}  # 9001 and the result ingested before the record: 9002
+    assert lg.close_log() == {"Autumn 2026": "2026-12-04T08:15:00Z"}
+    assert lg.late_after_close("Autumn_2026") == []
+
+    lg.run(date(2026, 12, 5), "2026-12-05T08:15:00Z", [])  # nothing new: still nothing flagged
+    assert lg.late_after_close("Autumn_2026") == []
+    lg.run(date(2026, 12, 6), "2026-12-06T08:15:00Z", [(9003, "2026-11-29", 300)])  # after the record
+    assert [x["EventID"] for x in lg.late_after_close("Autumn_2026")] == ["9003"]
+    assert lg.late_after_close("Autumn_2026")[0]["SeasonClosedAt"] == "2026-12-04T08:15:00Z"

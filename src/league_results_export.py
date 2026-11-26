@@ -133,6 +133,32 @@ def update_ingestion_log(results_dir: Path, log_path: Path) -> Dict[str, str]:
     return log
 
 
+# The moment each season's record was actually written (outputs/league/season_close_log.csv, next
+# to ingestion_log.csv; write-once per season, git-tracked). A result of a closed season counts as
+# "late after close" only if it was ingested strictly after this moment: anything ingested before
+# the record was written is part of the record, however many runs the close took (e.g. a closing
+# export that failed validation on its first attempt). Seasons closed before this log existed
+# (Summer 2026) have no entry and are never checked.
+SEASON_CLOSE_LOG_NAME = "season_close_log.csv"
+SEASON_CLOSE_LOG_COLS: List[str] = ["Season", "ClosedAtUTC"]
+
+
+def load_season_close_log(path: Path) -> Dict[str, str]:
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    return dict(zip(df["Season"], df["ClosedAtUTC"]))
+
+
+def record_season_close(path: Path, season_name: str) -> str:
+    """Appends (season, now) unless the season already has an entry; returns its ClosedAtUTC."""
+    log = load_season_close_log(path)
+    if season_name not in log:
+        log[season_name] = _utcnow_iso()
+        _write_csv_lf(pd.DataFrame(list(log.items()), columns=SEASON_CLOSE_LOG_COLS), path)
+    return log[season_name]
+
+
 def load_season_registry(registry_path: Path) -> pd.DataFrame:
     if not registry_path.exists():
         return pd.DataFrame(columns=SEASON_REGISTRY_COLS)
@@ -172,28 +198,23 @@ def find_late_after_close(
     as_of: date,
     current_results: pd.DataFrame,
     export_df: pd.DataFrame,
-    results_dir: Path,
-    ingestion_log: Dict[str, str],
+    close_log_path: Path,
     registry_path: Path,
 ) -> List[dict]:
-    """Events dated inside *season_name* that were ingested after the season closed (seasons from
-    league_rules.LATE_AFTER_CLOSE_FROM on, with a record in the registry). The close moment is the
-    first ingestion of a result dated after the season's end -- the run that wrote the record; events
-    ingested in that same run are part of the record, so only a strictly later IngestedAt counts.
-    For each, whether leaving it out would change the champion(s) or the top 16 (LoginID, Rank).
-    Never changes the record."""
+    """Events dated inside *season_name* that were ingested after the season's record was written
+    (seasons from league_rules.LATE_AFTER_CLOSE_FROM on). The close moment is the season's entry in
+    the close log (SEASON_CLOSE_LOG_NAME), written together with the record; results ingested before
+    it -- in the same run or earlier -- are part of the record, so only a strictly later IngestedAt
+    counts. For each, whether leaving it out would change the champion(s) or the top 16 (LoginID,
+    Rank). Never changes the record."""
     if season_start < league_rules.LATE_AFTER_CLOSE_FROM or export_df.empty:
         return []
     registry = load_season_registry(registry_path)
     if registry.empty or season_name not in set(registry["Season"]):
         return []
-    all_results = load_all_league_results(results_dir)
-    dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
-    later_ids = set(all_results.loc[(dates > season_end).fillna(False), "EventID"].astype(str).str.strip())
-    later_ingested = sorted(ingestion_log[e] for e in later_ids if ingestion_log.get(e))
-    if not later_ingested:
+    closed_at = load_season_close_log(close_log_path).get(season_name)
+    if not closed_at:
         return []
-    closed_at = later_ingested[0]
 
     events = export_df.drop_duplicates(subset=["EventID"])[["EventID", "EventDate", "IngestedAt"]]
     late = [r for r in events.itertuples() if r.IngestedAt and r.IngestedAt > closed_at]
@@ -226,6 +247,7 @@ def maybe_close_season(
     registry_path: Path,
     log: Optional[Callable[[str], None]] = None,
     latest_ingested_event_date: Optional[date] = None,
+    close_log_path: Optional[Path] = None,
 ) -> bool:
     """Appends one row (or one per co-champion, for a shared rank 1) for *season_name* to
     pilot_league_seasons.csv -- but only the first time this is called for a season that has
@@ -292,9 +314,11 @@ def maybe_close_season(
         [registry, pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)], ignore_index=True,
     ) if not registry.empty else pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)
     _write_csv_lf(combined, registry_path)
+    closed_at = record_season_close(close_log_path, season_name) if close_log_path is not None else None
     emit(
         f"{season_name}: CLOSED -- {events_total} events, coverage {coverage_start}..{coverage_end}"
         f"{' (PARTIAL)' if partial else ''}, {len(new_rows)} champion row(s) recorded"
+        + (f", closed at {closed_at}" if closed_at else "")
     )
     return True
 
@@ -595,6 +619,7 @@ def export_results_and_manifest(
     ingestion_log = update_ingestion_log(results_dir, ingestion_log_path)
 
     latest_ingested = latest_event_date(results_dir)
+    close_log_path = ingestion_log_path.parent / SEASON_CLOSE_LOG_NAME
     overall_ok = True
     for _, row in seasons_df.iterrows():
         season_name = row["Season"]
@@ -631,7 +656,7 @@ def export_results_and_manifest(
         # here (collector/alert.py mails each one once), the season record left unchanged.
         late_after_close = find_late_after_close(
             season_name, season_start, season_end, as_of, current_results, export_df,
-            results_dir, ingestion_log, season_registry_path,
+            close_log_path, season_registry_path,
         )
         if late_after_close:
             manifest["LateArrivals"] = manifest["LateArrivals"] + late_after_close
@@ -673,6 +698,7 @@ def export_results_and_manifest(
         maybe_close_season(
             season_name, season_start, season_end, as_of, export_df, season_table,
             season_registry_path, log=log, latest_ingested_event_date=latest_ingested,
+            close_log_path=close_log_path,
         )
 
     return overall_ok

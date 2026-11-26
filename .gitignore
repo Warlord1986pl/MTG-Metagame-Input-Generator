@@ -38,6 +38,11 @@ outputs/**
 # small enough to track directly" reasoning as the two history CSVs below.
 !outputs/league/ingestion_log.csv
 
+# When each season's record (docs/data/pilot_league_seasons.csv) was actually written
+# (league_results_export.record_season_close) -- write-once per season, and the reference for
+# flagging results that arrive after a season closed. Not recomputable after the fact.
+!outputs/league/season_close_log.csv
+
 # A weekly snapshot (outputs/league/snapshots/pilot_league_<Season>_w<NN>.csv) is an irreplaceable
 # point-in-time capture of that week's standings -- it cannot be recomputed from later season data
 # (only from another snapshot of the same week, which by definition doesn't exist once it's gone),
