@@ -18,12 +18,13 @@ appear over time and a text filter would silently miss them.
 
 from __future__ import annotations
 
+import bisect
 import re
 import sys
 from datetime import date, timedelta
 from fractions import Fraction
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import pandas as pd
 
@@ -45,6 +46,11 @@ try:
     import identity as pilot_identity
 except ImportError:
     from . import identity as pilot_identity
+
+try:
+    import league_rules
+except ImportError:
+    from . import league_rules
 
 
 class LeagueBlockingError(Exception):
@@ -121,6 +127,18 @@ PILOT_TABLE_COLS: List[str] = [
     "PrevPremierPoints",
 ]
 
+# Appended to PILOT_TABLE_COLS for a season ranked under the k10 ruleset only (see league_rules) --
+# a legacy season's table keeps exactly PILOT_TABLE_COLS, byte for byte.
+K10_TABLE_COLS: List[str] = [
+    "SeasonScore", "CountedResults", "WeakestCounted", "WeeklyWins", "Tied", "Ruleset",
+]
+
+
+def season_ruleset(season_start: date) -> "league_rules.Ruleset":
+    """The ranking ruleset of the season that starts on *season_start* (see league_rules)."""
+    name, _s, _e = season_for_date(season_start)
+    return league_rules.ruleset_for_season(name, season_start)
+
 
 def league_points_for_place(place: object) -> int:
     """Challenge ladder: 1 point for reaching the Top 16, 1 more for reaching the Top 8, 1 more for
@@ -157,19 +175,23 @@ def premier_points_for_place(place: object) -> int:
 
 
 def season_for_date(d: date) -> Tuple[str, date, date]:
-    """Meteorological quarter for *d*. Winter spans the year boundary and is labelled e.g.
-    "Winter 2026/27" for events from 2026-12-01 through 2027-02-28/29 inclusive.
+    """(name, start, end) of the season *d* belongs to, from the season calendar in
+    league_rules.SEASONS (e.g. 2027-03-01 is in "Winter 2026/27", 2026-12-01..2027-03-01). Dates
+    before the first configured season use meteorological quarters; a date after the last
+    configured season raises league_rules.UnconfiguredSeasonError.
     """
-    m, y = d.month, d.year
-    if m in (3, 4, 5):
-        return f"Spring {y}", date(y, 3, 1), date(y, 5, 31)
-    if m in (6, 7, 8):
-        return f"Summer {y}", date(y, 6, 1), date(y, 8, 31)
-    if m in (9, 10, 11):
-        return f"Autumn {y}", date(y, 9, 1), date(y, 11, 30)
-    y0 = y if m == 12 else y - 1
-    end = date(y0 + 1, 3, 1) - timedelta(days=1)
-    return f"Winter {y0}/{str(y0 + 1)[-2:]}", date(y0, 12, 1), end
+    return league_rules.season_for_date(d)
+
+
+def seasons_for_dates(dates: Iterable[date]) -> Dict[str, Tuple[date, date]]:
+    """{season name: (start, end)} for every season one of *dates* (event dates) belongs to -- by
+    EventDate only, never by when the event was ingested: an Autumn 2026 event dated 2026-11-30
+    that arrives on 2026-12-02 still goes to Autumn 2026."""
+    out: Dict[str, Tuple[date, date]] = {}
+    for d in dates:
+        name, s, e = season_for_date(d)
+        out[name] = (s, e)
+    return out
 
 
 def weekly_window_start(d: date) -> date:
@@ -802,6 +824,105 @@ def _rank_table(agg: pd.DataFrame) -> pd.DataFrame:
     return ranked
 
 
+def _row_order_key_for(key: str) -> tuple:
+    """league_rules.row_order_key for an _identity_key value: the canonical LoginID of an
+    "id:" key, the name of a "name:" key."""
+    if key.startswith("id:"):
+        return league_rules.row_order_key(key[3:], "")
+    return league_rules.row_order_key("", key[5:] if key.startswith("name:") else key)
+
+
+def keyed_results(results_df: pd.DataFrame) -> pd.DataFrame:
+    """*results_df* with Pilot/LoginID stripped, blank-Pilot rows dropped (same filter as
+    aggregate_pilot_table) and an _Key column holding the resolved identity (_identity_key) --
+    the per-result view the k10 ruleset ranks from."""
+    work = results_df.copy()
+    work["Pilot"] = work["Pilot"].astype(str).str.strip()
+    if "LoginID" not in work.columns:
+        work["LoginID"] = ""
+    work["LoginID"] = work["LoginID"].astype(str).str.strip()
+    work = work[work["Pilot"] != ""]
+    work["_Key"] = [_identity_key(lid, p) for lid, p in zip(work["LoginID"], work["Pilot"])]
+    return work
+
+
+def _rank_table_k10(
+    agg: pd.DataFrame,
+    results_df: pd.DataFrame,
+    ruleset: "league_rules.Ruleset",
+    season_start: date,
+    season_end: date,
+    as_of: date,
+    with_weekly_wins: bool = True,
+) -> pd.DataFrame:
+    """k10 counterpart of _rank_table (rule: league_rules module docstring). *agg* is
+    aggregate_pilot_table(results_df). Returns agg's rows in file order with Rank (competition
+    ranking, shared ranks allowed) inserted first and K10_TABLE_COLS appended."""
+    out_cols = ["Rank"] + list(agg.columns) + K10_TABLE_COLS
+    if agg.empty:
+        return pd.DataFrame(columns=out_cols)
+    work = keyed_results(results_df)
+    stats = league_rules.stats_by_key(work, "_Key", ruleset.k)
+    if set(stats) != set(agg["_Key"]):
+        raise AssertionError("k10: identities in results and in the aggregated table differ")
+    order_key = {key: _row_order_key_for(key) for key in agg["_Key"]}
+    ranked = league_rules.competition_rank(stats, order_key)
+    outcomes = (
+        league_rules.weekly_outcomes(work, "_Key", order_key, season_start, season_end, as_of)
+        if with_weekly_wins else []
+    )
+    weekly = league_rules.count_wins(outcomes, provisional=False)
+    by_key = agg.set_index("_Key", drop=False)
+    rows = []
+    for key, rank, tied in ranked:
+        s = stats[key]
+        base = by_key.loc[key]
+        if int(base["Starts"]) != s.starts:
+            raise AssertionError(
+                f"k10: {key} has {s.starts} result row(s) but Starts={int(base['Starts'])} "
+                f"(an event counted twice for one identity?)"
+            )
+        row = {"Rank": rank, **base.to_dict()}
+        row.update({
+            "SeasonScore": s.score,
+            "CountedResults": min(s.starts, ruleset.k),
+            "WeakestCounted": s.weakest_counted,
+            "WeeklyWins": weekly.get(key, 0),
+            "Tied": bool(tied),
+            "Ruleset": ruleset.name,
+        })
+        rows.append(row)
+    out = pd.DataFrame(rows, columns=out_cols)
+    out["WeakestCounted"] = out["WeakestCounted"].astype("Int64")
+    out["Tied"] = out["Tied"].astype(bool)
+    # Weekly outcomes (final and provisional) for the site export, winners as (LoginID, Pilot) of
+    # this table's rows. Not part of the CSV: WeeklyWins above counts final weeks only.
+    out.attrs["weekly_outcomes"] = [
+        {
+            "week": o.week, "start": o.start.isoformat(), "end": o.end.isoformat(),
+            "provisional": o.provisional,
+            "winners": [
+                (str(by_key.loc[k, "LoginID"]).strip(), str(by_key.loc[k, "Pilot"]).strip())
+                for k in o.winners
+            ],
+        }
+        for o in outcomes
+    ]
+    return out
+
+
+def rank_season(
+    results_df: pd.DataFrame, season_start: date, season_end: date, as_of: date,
+) -> pd.DataFrame:
+    """aggregate + rank *results_df* (already filtered to one season) under that season's ruleset
+    -- the ranking half of build_season_table, without PrevRank/deltas."""
+    ruleset = season_ruleset(season_start)
+    agg = aggregate_pilot_table(results_df)
+    if ruleset.name == league_rules.K10:
+        return _rank_table_k10(agg, results_df, ruleset, season_start, season_end, as_of)
+    return _rank_table(agg)
+
+
 def _log_identity_coverage(agg: pd.DataFrame, label: str, log: Optional[Callable[[str], None]]) -> None:
     """Task 3's coverage report: how many identities in this table were keyed by the real LoginID
     versus fell back to the display name (no LoginID available -- always true for pre-2026-07-13
@@ -874,9 +995,13 @@ def build_season_table(
     pilot_identity_cli that doesn't want the stderr noise of a missing-snapshot warning), or when no
     snapshot exists yet, every DELTA_COLS cell stays blank -- never 0, since 0 is a legitimate delta.
     """
+    ruleset = season_ruleset(season_start)
+    is_k10 = ruleset.name == league_rules.K10
+    table_cols = PILOT_TABLE_COLS + K10_TABLE_COLS if is_k10 else PILOT_TABLE_COLS
+
     all_results = load_all_league_results(results_dir)
     if all_results.empty:
-        return pd.DataFrame(columns=PILOT_TABLE_COLS)
+        return pd.DataFrame(columns=table_cols)
 
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     season_mask = (dates >= season_start) & (dates <= season_end)
@@ -885,9 +1010,15 @@ def build_season_table(
     current_results = all_results[season_mask]
     current_agg = aggregate_pilot_table(current_results)
     _log_identity_coverage(current_agg, "current", log)
-    current_ranked = _rank_table(current_agg)
+    if is_k10:
+        current_ranked = _rank_table_k10(
+            current_agg, current_results, ruleset, season_start, season_end, as_of,
+        )
+    else:
+        current_ranked = _rank_table(current_agg)
     if current_ranked.empty:
-        return pd.DataFrame(columns=PILOT_TABLE_COLS)
+        return pd.DataFrame(columns=table_cols)
+    weekly_outcomes = current_ranked.attrs.get("weekly_outcomes")
 
     anchor = rank_change_anchor(as_of, season_end)
 
@@ -913,7 +1044,13 @@ def build_season_table(
     else:
         prev_mask = season_mask & (dates < anchor)
         prev_results = all_results[prev_mask]
-        prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
+        if is_k10:
+            prev_ranked = _rank_table_k10(
+                aggregate_pilot_table(prev_results), prev_results, ruleset,
+                season_start, season_end, as_of, with_weekly_wins=False,
+            )
+        else:
+            prev_ranked = _rank_table(aggregate_pilot_table(prev_results))
         prev_rank_lookup = (
             prev_ranked.set_index("_Key")["Rank"] if not prev_ranked.empty else pd.Series(dtype="int64")
         )
@@ -925,8 +1062,11 @@ def build_season_table(
     # Set on the object actually being returned, not earlier -- pandas' .attrs propagation through
     # intermediate operations (_apply_deltas, the column-selection below) is not guaranteed across
     # pandas versions, so this assigns it last rather than relying on it surviving the trip.
-    result = current_ranked[PILOT_TABLE_COLS]
+    result = current_ranked[table_cols]
     result.attrs["rank_change_anchor"] = anchor.isoformat()
+    result.attrs["ruleset"] = ruleset.name
+    if is_k10:
+        result.attrs["weekly_outcomes"] = weekly_outcomes
     return result
 
 
@@ -1120,6 +1260,17 @@ def _remigrate_snapshot_ranks(snapshot_dir: Path, log: Optional[Callable[[str], 
         emit("no snapshots to remigrate")
         return {"snapshots_migrated": 0, "rows_changed": 0}
 
+    # This migration re-ranks with the LEGACY rule only; a snapshot of a season under any other
+    # ruleset (k10: competition ranks with shared places) must never be rewritten by it.
+    non_legacy_slugs = {
+        season_filename_slug(name)
+        for name, rs in league_rules.SEASON_RULESETS.items() if rs.name != league_rules.LEGACY
+    }
+    paths = [
+        p for p in paths
+        if not any(p.name.startswith(f"pilot_league_{slug}_w") for slug in non_legacy_slugs)
+    ]
+
     snapshots_migrated = 0
     rows_changed = 0
     for p in paths:
@@ -1173,7 +1324,14 @@ def _validate_num(v: object) -> Optional[int]:
     return int(float(v))
 
 
-def validate_league(rows, n_events: int, n_premier_events: int, n_starts: int) -> None:
+def validate_league(
+    rows,
+    n_events: int,
+    n_premier_events: int,
+    n_starts: int,
+    ruleset: Optional["league_rules.Ruleset"] = None,
+    season_results: Optional[pd.DataFrame] = None,
+) -> None:
     """Hard invariants for a rebuilt season table -- run immediately before writing the CSV (see
     run_league_update). Every violation raises AssertionError naming the offending LoginID and
     values; there are no warnings and no silent pass-through here, by design (see this feature's
@@ -1206,6 +1364,10 @@ def validate_league(rows, n_events: int, n_premier_events: int, n_starts: int) -
 
     Checks 15-16 (delta sanity) run only for a row that actually has a snapshot base (PrevPoints
     not blank) -- a debutant, or a season with no snapshot at all yet, has nothing to check there.
+
+    *ruleset* None or legacy: exactly the checks above. k10: checks 13-14 (which assume ranks
+    1..N and a terminal LoginID key) are replaced by _validate_k10, which needs *season_results*
+    (the season's raw result rows) to rebuild each pilot's per-result points and placements.
     """
     if isinstance(rows, pd.DataFrame):
         rows = rows.to_dict("records")
@@ -1277,6 +1439,13 @@ def validate_league(rows, n_events: int, n_premier_events: int, n_starts: int) -
             points_sum,
         )
 
+    if ruleset is not None and ruleset.name == league_rules.K10:
+        if season_results is None:
+            _fail("k10 validation", "season_results is required to validate a k10 table", None)
+        _validate_k10(rows, ruleset, season_results)
+        _validate_deltas(rows)
+        return
+
     # 13: Rank is exactly 1..len(rows), no gaps/duplicates.
     ranks = sorted(num(r.get("Rank")) for r in rows)
     expected_ranks = list(range(1, len(rows) + 1))
@@ -1328,6 +1497,113 @@ def validate_league(rows, n_events: int, n_premier_events: int, n_starts: int) -
                 f"but its Rank={actual_rank}",
                 {"LoginID": lid_of(r), "position": i, "Rank": actual_rank},
             )
+
+    _validate_deltas(rows)
+
+
+def _validate_k10(rows: List[dict], ruleset: "league_rules.Ruleset", season_results: pd.DataFrame) -> None:
+    """k10 replacements for validate_league's checks 13-14, plus the k10 columns. The order is
+    checked against league_rules.sort_key, a key-based formulation of the rule written separately
+    from the production comparator (league_rules.compare)."""
+    num = _validate_num
+    k = ruleset.k
+
+    def lid_of(row: dict) -> str:
+        return str(row.get("LoginID", "")).strip()
+
+    work = keyed_results(season_results)
+    pts = pd.to_numeric(work["LeaguePoints"], errors="coerce").fillna(0).astype(int)
+    place = pd.to_numeric(work["Place"], errors="coerce")
+    per_key = {
+        key: (sorted(pts.loc[idx].tolist(), reverse=True), sorted(place.loc[idx].astype(int).tolist()))
+        for key, idx in work.groupby("_Key").groups.items()
+    }
+
+    keys: List[tuple] = []
+    for r in rows:
+        key = _identity_key(lid_of(r), r.get("Pilot", ""))
+        if key not in per_key:
+            _fail("k10 results", f"{key}: table row has no result rows in the season", key)
+        best, placements = per_key[key]
+        starts = num(r.get("Starts")) or 0
+        points = num(r.get("Points")) or 0
+        score = num(r.get("SeasonScore"))
+        counted = num(r.get("CountedResults"))
+        weakest = num(r.get("WeakestCounted"))
+        info = {"LoginID": lid_of(r), "SeasonScore": score, "Points": points, "Starts": starts,
+                "CountedResults": counted, "WeakestCounted": weakest}
+        if starts != len(placements) or points != sum(best):
+            _fail("k10 results", "Starts/Points differ from the season's result rows", info)
+        if score != sum(best[:k]):
+            _fail("k10 SeasonScore", f"SeasonScore != sum of the {k} best results", info)
+        if score is None or score > points:
+            _fail("k10 SeasonScore", "SeasonScore > Points", info)
+        if starts <= k and score != points:
+            _fail("k10 SeasonScore", f"Starts <= {k} but SeasonScore != Points", info)
+        if counted != min(starts, k):
+            _fail("k10 CountedResults", f"CountedResults != min(Starts, {k})", info)
+        if (weakest is None) != (starts < k):
+            _fail("k10 WeakestCounted", f"WeakestCounted must be empty iff Starts < {k}", info)
+        if weakest is not None and weakest != best[k - 1]:
+            _fail("k10 WeakestCounted", f"WeakestCounted != points of the {k}-th counted result", info)
+        if str(r.get("Ruleset", "")).strip() != ruleset.name:
+            _fail("k10 Ruleset", f"Ruleset column != {ruleset.name!r}", info)
+        stats = league_rules.PilotStats.from_results(best, placements, k)
+        keys.append(league_rules.sort_key(stats))
+
+    ranks = [num(r.get("Rank")) for r in rows]
+    sorted_keys = sorted(keys)
+    for i, r in enumerate(rows):
+        # Ordering: every adjacent pair is "better or equal", never "worse".
+        if i and keys[i - 1] > keys[i]:
+            _fail("k10 ordering", f"row {i + 1} ranks above row {i} under the rule",
+                  {"above": lid_of(rows[i - 1]), "below": lid_of(r)})
+        # Tie consistency: equal Rank iff the comparator says equal.
+        if i and (ranks[i - 1] == ranks[i]) != (keys[i - 1] == keys[i]):
+            _fail("k10 tie consistency", "equal Rank must mean equal under the rule, and vice versa",
+                  {"a": lid_of(rows[i - 1]), "b": lid_of(r), "ranks": (ranks[i - 1], ranks[i])})
+        # Competition ranking: Rank = 1 + number of pilots strictly better.
+        expected = 1 + bisect.bisect_left(sorted_keys, keys[i])
+        if ranks[i] != expected:
+            _fail("k10 competition rank", f"Rank={ranks[i]} but {expected - 1} pilot(s) are strictly better",
+                  {"LoginID": lid_of(r), "Rank": ranks[i], "expected": expected})
+        group = sum(1 for x in ranks if x == ranks[i])
+        tied = r.get("Tied")
+        tied = str(tied).strip().lower() in ("true", "1") if not isinstance(tied, bool) else tied
+        if tied != (group > 1):
+            _fail("k10 Tied", "Tied must be true exactly for members of a shared rank",
+                  {"LoginID": lid_of(r), "Rank": ranks[i], "group": group, "Tied": r.get("Tied")})
+        # File order inside a tie group: canonical LoginID ascending (not a ranking key).
+        if i and ranks[i - 1] == ranks[i]:
+            a = league_rules.row_order_key(lid_of(rows[i - 1]), rows[i - 1].get("Pilot", ""))
+            b = league_rules.row_order_key(lid_of(r), r.get("Pilot", ""))
+            if a > b:
+                _fail("k10 tie row order", "rows inside a shared rank must be in LoginID order",
+                      {"a": lid_of(rows[i - 1]), "b": lid_of(r)})
+
+    # Determinism: the ranking does not depend on the order of the input rows.
+    if not season_results.empty:
+        def _ranking(df: pd.DataFrame) -> List[tuple]:
+            w = keyed_results(df)
+            st = league_rules.stats_by_key(w, "_Key", k)
+            ok = {key: _row_order_key_for(key) for key in st}
+            return [(key, rank) for key, rank, _t in league_rules.competition_rank(st, ok)]
+        reference = _ranking(season_results)
+        for seed in (1, 2):
+            if _ranking(season_results.sample(frac=1.0, random_state=seed)) != reference:
+                _fail("k10 determinism", "shuffled result rows produce a different ranking", seed)
+        expected_lids = [key for key, _r in reference]
+        actual_lids = [_identity_key(lid_of(r), r.get("Pilot", "")) for r in rows]
+        if expected_lids != actual_lids:
+            _fail("k10 determinism", "table row order differs from a fresh ranking of the results", None)
+
+
+def _validate_deltas(rows: List[dict]) -> None:
+    """validate_league's checks 15-16 (shared by every ruleset)."""
+    num = _validate_num
+
+    def lid_of(row: dict) -> str:
+        return str(row.get("LoginID", "")).strip()
 
     # 15-16: delta checks, only for rows that actually have a snapshot base.
     for row in rows:
@@ -1845,9 +2121,7 @@ def run_league_update(
         written_dates = pd.to_datetime(
             all_results[all_results["EventID"].isin(written_set)]["EventDate"], errors="coerce"
         ).dt.date.dropna().unique()
-        for d in written_dates:
-            name, s, e = season_for_date(d)
-            seasons_touched[name] = (s, e)
+        seasons_touched = seasons_for_dates(written_dates)
 
     summary = {"written_event_ids": written, "seasons": {}}
     snapshot_dir = league_dir / "snapshots"
@@ -1866,7 +2140,10 @@ def run_league_update(
             season_results.get("EventClass", pd.Series(dtype=str)).astype(str).str.strip() == "Premier"
         ]["EventID"].nunique()
         try:
-            validate_league(table, n_events_season, n_premier_season, len(season_results))
+            validate_league(
+                table, n_events_season, n_premier_season, len(season_results),
+                ruleset=season_ruleset(s), season_results=season_results,
+            )
         except AssertionError as exc:
             raise LeagueBlockingError(
                 f"validate_league failed for {season}: {exc}"

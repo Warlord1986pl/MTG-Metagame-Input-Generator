@@ -41,31 +41,50 @@ try:
         build_season_table,
         load_all_league_results,
         season_filename_slug,
-        _rank_table,
+        season_ruleset,
+        rank_season,
+        _identity_key,
         _write_csv_lf,
+        K10_TABLE_COLS,
     )
     from league_site_export import _event_label, _write_json
+    import league_rules
 except ImportError:
     from .league_engine import (
         aggregate_pilot_table,
         build_season_table,
         load_all_league_results,
         season_filename_slug,
-        _rank_table,
+        season_ruleset,
+        rank_season,
+        _identity_key,
         _write_csv_lf,
+        K10_TABLE_COLS,
     )
     from .league_site_export import _event_label, _write_json
+    from . import league_rules
 
 RESULTS_EXPORT_COLS: List[str] = [
     "EventDate", "IngestedAt", "EventID", "EventName", "EventType", "Format", "Season",
     "LoginID", "Name", "Placement", "PointsAwarded",
 ]
 
+# k10 seasons only (league_rules): whether the row is one of the pilot's K counted results, the
+# pilot being the resolved identity (pilot_identity merges applied) even though LoginID here is raw.
+K10_RESULTS_EXTRA_COLS: List[str] = ["Counted"]
+
+
+def results_export_cols(season_start: date) -> List[str]:
+    if season_ruleset(season_start).name == league_rules.K10:
+        return RESULTS_EXPORT_COLS + K10_RESULTS_EXTRA_COLS
+    return RESULTS_EXPORT_COLS
+
+
 INGESTION_LOG_COLS: List[str] = ["EventID", "IngestedAtUTC"]
 
 # One row per season (or one per co-champion, for a shared rank 1), written once when a season
 # closes and never rewritten afterward -- see maybe_close_season. SeasonStart/SeasonEnd are the
-# meteorological quarter bounds; CoverageStart/CoverageEnd are the dates actually backed by data,
+# season's configured bounds (league_rules.SEASONS; meteorological quarters up to Autumn 2026); CoverageStart/CoverageEnd are the dates actually backed by data,
 # which can differ (Summer 2026: quarter is 2026-06-01..2026-08-31, data starts 2026-07-13, since
 # LoginID tracking itself only began then) -- Partial records that gap so a later, full-quarter
 # season's event count is never compared against this one without the caveat living in the data.
@@ -114,10 +133,108 @@ def update_ingestion_log(results_dir: Path, log_path: Path) -> Dict[str, str]:
     return log
 
 
+# The moment each season's record was actually written (outputs/league/season_close_log.csv, next
+# to ingestion_log.csv; write-once per season, git-tracked). A result of a closed season counts as
+# "late after close" only if it was ingested strictly after this moment: anything ingested before
+# the record was written is part of the record, however many runs the close took (e.g. a closing
+# export that failed validation on its first attempt). Seasons closed before this log existed
+# (Summer 2026) have no entry and are never checked.
+SEASON_CLOSE_LOG_NAME = "season_close_log.csv"
+SEASON_CLOSE_LOG_COLS: List[str] = ["Season", "ClosedAtUTC"]
+
+
+def load_season_close_log(path: Path) -> Dict[str, str]:
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    return dict(zip(df["Season"], df["ClosedAtUTC"]))
+
+
+def record_season_close(path: Path, season_name: str) -> str:
+    """Appends (season, now) unless the season already has an entry; returns its ClosedAtUTC."""
+    log = load_season_close_log(path)
+    if season_name not in log:
+        log[season_name] = _utcnow_iso()
+        _write_csv_lf(pd.DataFrame(list(log.items()), columns=SEASON_CLOSE_LOG_COLS), path)
+    return log[season_name]
+
+
 def load_season_registry(registry_path: Path) -> pd.DataFrame:
     if not registry_path.exists():
         return pd.DataFrame(columns=SEASON_REGISTRY_COLS)
     return pd.read_csv(registry_path, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+
+
+def _champion_rows(season_table: pd.DataFrame, season_start: date) -> pd.DataFrame:
+    """The season's champion row(s): Rank 1 for k10 (shared ranks are real), the #1 row plus any
+    row equal to it on every legacy ranking column otherwise (see maybe_close_season)."""
+    if season_table.empty:
+        return season_table
+    if season_ruleset(season_start).name == league_rules.K10:
+        return season_table[pd.to_numeric(season_table["Rank"]) == 1]
+    top_row = season_table.loc[season_table["Rank"].idxmin()]
+    tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
+    return season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+
+
+def _top16(season_table: pd.DataFrame) -> tuple:
+    rows = season_table[pd.to_numeric(season_table["Rank"]) <= 16]
+    return tuple(sorted((str(r.LoginID), int(r.Rank)) for r in rows.itertuples()))
+
+
+def latest_event_date(results_dir: Path) -> Optional[date]:
+    """The latest EventDate of any ingested result, any season (None when there are none)."""
+    all_results = load_all_league_results(results_dir)
+    if all_results.empty:
+        return None
+    latest = pd.to_datetime(all_results["EventDate"], errors="coerce").max()
+    return None if pd.isna(latest) else latest.date()
+
+
+def find_late_after_close(
+    season_name: str,
+    season_start: date,
+    season_end: date,
+    as_of: date,
+    current_results: pd.DataFrame,
+    export_df: pd.DataFrame,
+    close_log_path: Path,
+    registry_path: Path,
+) -> List[dict]:
+    """Events dated inside *season_name* that were ingested after the season's record was written
+    (seasons from league_rules.LATE_AFTER_CLOSE_FROM on). The close moment is the season's entry in
+    the close log (SEASON_CLOSE_LOG_NAME), written together with the record; results ingested before
+    it -- in the same run or earlier -- are part of the record, so only a strictly later IngestedAt
+    counts. For each, whether leaving it out would change the champion(s) or the top 16 (LoginID,
+    Rank). Never changes the record."""
+    if season_start < league_rules.LATE_AFTER_CLOSE_FROM or export_df.empty:
+        return []
+    registry = load_season_registry(registry_path)
+    if registry.empty or season_name not in set(registry["Season"]):
+        return []
+    closed_at = load_season_close_log(close_log_path).get(season_name)
+    if not closed_at:
+        return []
+
+    events = export_df.drop_duplicates(subset=["EventID"])[["EventID", "EventDate", "IngestedAt"]]
+    late = [r for r in events.itertuples() if r.IngestedAt and r.IngestedAt > closed_at]
+    if not late:
+        return []
+    full = rank_season(current_results, season_start, season_end, as_of)
+    out = []
+    for r in sorted(late, key=lambda r: (r.EventDate, str(r.EventID))):
+        without = rank_season(
+            current_results[current_results["EventID"].astype(str).str.strip() != str(r.EventID)],
+            season_start, season_end, as_of,
+        )
+        out.append({
+            "EventID": str(r.EventID), "EventDate": str(r.EventDate), "IngestedAt": r.IngestedAt,
+            "AfterSeasonClose": True, "SeasonClosedAt": closed_at,
+            "ChangesChampion": set(_champion_rows(full, season_start)["LoginID"].astype(str))
+            != set(_champion_rows(without, season_start)["LoginID"].astype(str)),
+            "ChangesTop16": _top16(full) != _top16(without),
+        })
+    return out
 
 
 def maybe_close_season(
@@ -129,10 +246,14 @@ def maybe_close_season(
     season_table: pd.DataFrame,
     registry_path: Path,
     log: Optional[Callable[[str], None]] = None,
+    latest_ingested_event_date: Optional[date] = None,
+    close_log_path: Optional[Path] = None,
 ) -> bool:
     """Appends one row (or one per co-champion, for a shared rank 1) for *season_name* to
     pilot_league_seasons.csv -- but only the first time this is called for a season that has
-    actually closed (today > season_end). A season already present in the registry is never
+    closed: a result dated after season_end has been ingested (*latest_ingested_event_date* >
+    season_end; see league_rules.season_is_closed). Without that date (older callers) the old
+    run-date rule applies (today > season_end). A season already present in the registry is never
     touched again, regardless of what later reruns compute -- "written once at season close and
     never rewritten" is the whole point: it is the permanent record of what a season looked like
     the moment it ended, not a live-updating summary. Returns True iff a row was actually written.
@@ -141,7 +262,10 @@ def maybe_close_season(
         if log:
             log(f"[season-registry] {msg}")
 
-    if today <= season_end:
+    if latest_ingested_event_date is not None:
+        if latest_ingested_event_date <= season_end:
+            return False
+    elif today <= season_end:
         return False
     if export_df.empty or season_table.empty:
         return False
@@ -165,9 +289,8 @@ def maybe_close_season(
     # tie-break rule actually uses (Points, Wins, Top2/4/8/16, Starts -- the 8th key, Points/Starts
     # as a Fraction, is a deterministic function of Points and Starts, both already compared here,
     # so matching on these seven is equivalent to matching on the full 8-key rule).
-    top_row = season_table.loc[season_table["Rank"].idxmin()]
-    tie_cols = ["Points", "Wins", "Top2", "Top4", "Top8", "Top16", "Starts"]
-    champions = season_table[(season_table[tie_cols] == top_row[tie_cols]).all(axis=1)]
+    # k10 assigns shared ranks itself (competition ranking), so a co-champion is Rank 1 there.
+    champions = _champion_rows(season_table, season_start)
     new_rows = [
         {
             "Season": season_name,
@@ -191,9 +314,11 @@ def maybe_close_season(
         [registry, pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)], ignore_index=True,
     ) if not registry.empty else pd.DataFrame(new_rows, columns=SEASON_REGISTRY_COLS)
     _write_csv_lf(combined, registry_path)
+    closed_at = record_season_close(close_log_path, season_name) if close_log_path is not None else None
     emit(
         f"{season_name}: CLOSED -- {events_total} events, coverage {coverage_start}..{coverage_end}"
         f"{' (PARTIAL)' if partial else ''}, {len(new_rows)} champion row(s) recorded"
+        + (f", closed at {closed_at}" if closed_at else "")
     )
     return True
 
@@ -234,15 +359,16 @@ def build_results_rows(
     reconcile_with_season_table can re-derive the season aggregate from the exact same rows
     without re-reading and re-filtering results_dir a second time.
     """
+    cols = results_export_cols(season_start)
     all_results = load_all_league_results(results_dir)
     if all_results.empty:
-        return pd.DataFrame(columns=RESULTS_EXPORT_COLS), all_results
+        return pd.DataFrame(columns=cols), all_results
 
     dates = pd.to_datetime(all_results["EventDate"], errors="coerce").dt.date
     mask = ((dates >= season_start) & (dates <= season_end)).fillna(False)
     current_results = all_results[mask].copy()
     if current_results.empty:
-        return pd.DataFrame(columns=RESULTS_EXPORT_COLS), current_results
+        return pd.DataFrame(columns=cols), current_results
 
     login_id = current_results["LoginID"].astype(str).str.strip()
     name_by_login = _name_by_raw_login_id(current_results)
@@ -267,6 +393,12 @@ def build_results_rows(
         "Placement": pd.to_numeric(current_results["Place"], errors="coerce").astype("Int64"),
         "PointsAwarded": pd.to_numeric(current_results["LeaguePoints"], errors="coerce").fillna(0).astype(int),
     })
+    ruleset = season_ruleset(season_start)
+    if ruleset.name == league_rules.K10:
+        keyed = current_results.assign(_Key=[
+            _identity_key(lid, p) for lid, p in zip(current_results["LoginID"], current_results["Pilot"])
+        ])
+        out["Counted"] = league_rules.counted_mask(keyed, "_Key", ruleset.k).reindex(out.index).astype(bool)
     out = out.sort_values(["EventDate", "EventID", "Placement"], kind="mergesort").reset_index(drop=True)
     return out, current_results
 
@@ -312,18 +444,28 @@ def reconcile_with_season_table(
     exactly the class of bug this check exists to catch, not a re-test of arithmetic already
     guarded by check_league_invariants/validate_league upstream.
     """
-    mine = _rank_table(aggregate_pilot_table(current_results))
+    mine = rank_season(current_results, season_start, season_end, as_of)
     canonical = build_season_table(results_dir, season_start, season_end, as_of=as_of)
     if canonical.empty and mine.empty:
         return []
-    mine_cmp = mine[_RECONCILE_COLS].reset_index(drop=True) if not mine.empty else mine
-    canon_cmp = canonical[_RECONCILE_COLS].reset_index(drop=True) if not canonical.empty else canonical
+    cols = _RECONCILE_COLS
+    if season_ruleset(season_start).name == league_rules.K10:
+        cols = _RECONCILE_COLS + K10_TABLE_COLS
+    mine_cmp = mine[cols].reset_index(drop=True) if not mine.empty else mine
+    canon_cmp = canonical[cols].reset_index(drop=True) if not canonical.empty else canonical
     if len(mine_cmp) != len(canon_cmp):
         return [{
             "error": "row count mismatch between this export's re-derivation and the season table",
             "mine_rows": int(len(mine_cmp)), "canonical_rows": int(len(canon_cmp)),
         }]
-    diff_mask = (mine_cmp != canon_cmp).any(axis=1)
+    if cols is _RECONCILE_COLS:
+        diff_mask = (mine_cmp != canon_cmp).any(axis=1)
+    else:
+        # k10: WeakestCounted is nullable; NA != NA is unknown (skipped by .any()), so blanks are
+        # compared as "" explicitly.
+        diff_mask = (
+            mine_cmp.astype("string").fillna("") != canon_cmp.astype("string").fillna("")
+        ).any(axis=1)
     if not diff_mask.any():
         return []
 
@@ -466,8 +608,18 @@ def export_results_and_manifest(
         return True
 
     seasons_df = pd.read_csv(season_config_csv, dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    try:
+        league_rules.check_season_config_rows(
+            (r["Season"], date.fromisoformat(r["StartDate"]), date.fromisoformat(r["EndDate"]))
+            for _, r in seasons_df.iterrows()
+        )
+    except (league_rules.SeasonConfigError, ValueError) as err:
+        emit(f"season_config.csv disagrees with the season calendar -- not publishing: {err}")
+        return False
     ingestion_log = update_ingestion_log(results_dir, ingestion_log_path)
 
+    latest_ingested = latest_event_date(results_dir)
+    close_log_path = ingestion_log_path.parent / SEASON_CLOSE_LOG_NAME
     overall_ok = True
     for _, row in seasons_df.iterrows():
         season_name = row["Season"]
@@ -500,6 +652,21 @@ def export_results_and_manifest(
             placement_issues, reconciliation_issues,
             season_table.attrs.get("rank_change_anchor"),
         )
+        # Results of an already closed season ingested after its close: published as usual, flagged
+        # here (collector/alert.py mails each one once), the season record left unchanged.
+        late_after_close = find_late_after_close(
+            season_name, season_start, season_end, as_of, current_results, export_df,
+            close_log_path, season_registry_path,
+        )
+        if late_after_close:
+            manifest["LateArrivals"] = manifest["LateArrivals"] + late_after_close
+            for e in late_after_close:
+                emit(
+                    f"{season_name}: LATE AFTER SEASON CLOSE -- event {e['EventID']} ({e['EventDate']}) "
+                    f"ingested {e['IngestedAt']}, season closed {e['SeasonClosedAt']}; "
+                    f"changes champion: {e['ChangesChampion']}, changes top 16: {e['ChangesTop16']}; "
+                    "season record NOT changed"
+                )
 
         slug = season_filename_slug(season_name)
         csv_path = docs_data_dir / f"pilot_league_results_{slug}.csv"
@@ -515,7 +682,7 @@ def export_results_and_manifest(
 
         export_out = export_df.copy()
         export_out["Placement"] = export_out["Placement"].astype(int)
-        _write_csv_lf(export_out[RESULTS_EXPORT_COLS], csv_path)
+        _write_csv_lf(export_out[results_export_cols(season_start)], csv_path)
         # Content hash of the exact bytes just written. The site appends it to the CSV's download
         # URL (?v=<sha>), so every distinct results file gets a distinct URL. Cytrus sits behind
         # Cloudflare, which caches *.csv at the edge (but not *.json): on 2026-09-24 the edge kept
@@ -530,7 +697,8 @@ def export_results_and_manifest(
         # (event counts, champion) derived from data that failed its own self-validation.
         maybe_close_season(
             season_name, season_start, season_end, as_of, export_df, season_table,
-            season_registry_path, log=log,
+            season_registry_path, log=log, latest_ingested_event_date=latest_ingested,
+            close_log_path=close_log_path,
         )
 
     return overall_ok
