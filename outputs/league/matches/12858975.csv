@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858975,2026-11-25,C32,Challenge,QF,MeninoNey,2903591,ElGaiteiro,3063759,2,1,Living End,Domain Zoo
+12858975,2026-11-25,C32,Challenge,QF,MayoDominaria,1112102,Jumba,2618500,2,0,Jeskai Energy,Broodscale Combo
+12858975,2026-11-25,C32,Challenge,QF,FynnOfBlood,2799885,Silentstorm1003,3021329,2,0,Eldrazi Tron,Esper Blink
+12858975,2026-11-25,C32,Challenge,QF,Gerardo94,2077747,CarlosZ,194753,2,1,Azorius Control,Mono-Black Midrange
+12858975,2026-11-25,C32,Challenge,SF,FynnOfBlood,2799885,Gerardo94,2077747,2,1,Eldrazi Tron,Azorius Control
+12858975,2026-11-25,C32,Challenge,SF,MeninoNey,2903591,MayoDominaria,1112102,2,0,Living End,Jeskai Energy
+12858975,2026-11-25,C32,Challenge,F,MeninoNey,2903591,FynnOfBlood,2799885,2,0,Living End,Eldrazi Tron

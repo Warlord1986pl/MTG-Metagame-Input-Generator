@@ -1,0 +1,8 @@
+EventID,EventDate,Tier,EventClass,Round,WinnerPilot,WinnerLoginID,LoserPilot,LoserLoginID,WinnerGames,LoserGames,WinnerDeck,LoserDeck
+12858972,2026-11-25,C32,Challenge,QF,manohito,2908947,tailorman,1174124,2,1,Broodscale Combo,U
+12858972,2026-11-25,C32,Challenge,QF,Gerardo94,2077747,ejk,1952341,2,1,Azorius Control,Grixis Reanimator
+12858972,2026-11-25,C32,Challenge,QF,gazmon48,1636994,JS2,2774249,2,0,Jeskai Energy,Broodscale Combo
+12858972,2026-11-25,C32,Challenge,QF,niuwaid001,2372533,Fransadness,3143623,2,0,Living End,Broodscale Combo
+12858972,2026-11-25,C32,Challenge,SF,manohito,2908947,gazmon48,1636994,2,0,Broodscale Combo,Jeskai Energy
+12858972,2026-11-25,C32,Challenge,SF,Gerardo94,2077747,niuwaid001,2372533,2,0,Azorius Control,Living End
+12858972,2026-11-25,C32,Challenge,F,Gerardo94,2077747,manohito,2908947,2,1,Azorius Control,Broodscale Combo
